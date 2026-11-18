@@ -30,9 +30,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 GSC_TOKEN = "ipx7mVdPxPqXvvWHMaxgaWIcMWxApeJeainALC4g0uE"
-SECTIONS = ("terbaru", "episode", "toko")
+SECTIONS = ("terbaru", "episode", "toko", "cerita")
 MARKER_RE = re.compile(
-    r"<!-- AUTO:(terbaru|episode|toko):start -->(.*?)<!-- AUTO:\1:end -->",
+    r"<!-- AUTO:(terbaru|episode|toko|cerita):start -->(.*?)<!-- AUTO:\1:end -->",
     re.DOTALL,
 )
 
@@ -110,7 +110,7 @@ def new_items(data, key):
 
 def build(template_text, data):
     """Sisipkan kartu baru ke dalam marker. Kembalikan (output, laporan)."""
-    report = {"inserted": {"terbaru": 0, "episode": 0, "toko": 0}}
+    report = {"inserted": {"terbaru": 0, "episode": 0, "toko": 0, "cerita": 0}}
 
     # Episode baru + manual -> urutan teratas di #episode.
     eps = new_items(data, "episodes") + [i for i in data.get("manual", {}).get("episodes", [])]
@@ -121,6 +121,9 @@ def build(template_text, data):
     # Produk toko baru + manual -> urutan terakhir di #toko.
     shop = new_items(data, "shop") + [i for i in data.get("manual", {}).get("shop", [])]
     shop.sort(key=lambda i: i.get("date", ""))
+    # Cerita baru + manual -> urutan terakhir di #cerita.
+    cerita = new_items(data, "cerita") + [i for i in data.get("manual", {}).get("cerita", [])]
+    cerita.sort(key=lambda i: i.get("date", ""))
 
     def replace_section(match):
         section = match.group(1)
@@ -133,6 +136,10 @@ def build(template_text, data):
             cards = "".join(render_news_card(n) for n in news)
             report["inserted"]["terbaru"] = len(news)
             return "<!-- AUTO:terbaru:start -->" + cards + inner + "<!-- AUTO:terbaru:end -->"
+        if section == "cerita":
+            cards = "".join(render_news_card(n) for n in cerita)
+            report["inserted"]["cerita"] = len(cerita)
+            return "<!-- AUTO:cerita:start -->" + inner + cards + "<!-- AUTO:cerita:end -->"
         cards = "".join(render_shop_card(s) for s in shop)
         report["inserted"]["toko"] = len(shop)
         return "<!-- AUTO:toko:start -->" + inner + cards + "<!-- AUTO:toko:end -->"
