@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f5f7f4;
+        --surface: #ffffff;
+        --surface-2: #eef3ef;
+        --ink: #1d2a24;
+        --muted: #5c6f66;
+        --line: #dde6df;
+        --accent: #0e7a63;
+        --accent-dark: #0a5f4d;
+        --accent-soft: #e2f1ea;
+        --amber: #b97e10;
+        --amber-soft: #fbf0d3;
+        --red: #b3402f;
+        --red-soft: #fbe7e2;
+        --blue: #2563eb;
+        --blue-soft: #e3ecfd;
+        --shadow: 0 2px 10px rgba(29, 42, 36, .06), 0 10px 30px rgba(29, 42, 36, .05);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101613;
+          --surface: #1a221e;
+          --surface-2: #232d28;
+          --ink: #e8efea;
+          --muted: #9db0a6;
+          --line: #2e3b34;
+          --accent: #2fbf9b;
+          --accent-dark: #5fd3b3;
+          --accent-soft: #17382e;
+          --amber: #e0aa3e;
+          --amber-soft: #3a2f14;
+          --red: #e07a68;
+          --red-soft: #3d211c;
+          --blue: #7ea6f5;
+          --blue-soft: #1d2c4d;
+          --shadow: 0 2px 10px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.3);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      button { font-family: inherit; cursor: pointer; }
+      input, select, textarea { font-family: inherit; font-size: 1rem; color: var(--ink); }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px 40px; }
+
+      /* ---------- Tabs ---------- */
+      .tabbar {
+        position: sticky; top: 0; z-index: 40;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .tabbar-inner { max-width: 1180px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+      .tab-btn {
+        border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+        border-radius: 999px; padding: 8px 18px; font-size: .95rem; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 7px; min-height: 2.5rem;
+      }
+      .tab-btn svg { width: 17px; height: 17px; flex: none; }
+      .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0b1512; } }
+      .tab-panel { display: none; padding-top: 22px; }
+      .tab-panel.active { display: block; }
+
+      h2.section-title { font-size: 1.35rem; margin: 0 0 4px; font-weight: 800; letter-spacing: -.01em; }
+      .section-sub { color: var(--muted); margin: 0 0 18px; font-size: .95rem; }
+      h3.block-title { font-size: 1.05rem; margin: 26px 0 12px; font-weight: 700; }
+
+      /* ---------- Cards & stats ---------- */
+      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+      .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-card .label { color: var(--muted); font-size: .85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+      .stat-card .label svg { width: 18px; height: 18px; color: var(--accent); }
+      .stat-card .value { font-size: 1.9rem; font-weight: 800; margin-top: 6px; letter-spacing: -.02em; }
+      .stat-card .hint { color: var(--muted); font-size: .82rem; margin-top: 2px; }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+      .panel { padding: 18px 20px; }
+      .panel h3 { margin: 0 0 12px; font-size: 1rem; font-weight: 700; }
+
+      .list-row { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+      .list-row:last-child { border-bottom: none; padding-bottom: 2px; }
+      .list-row .grow { flex: 1; min-width: 0; }
+      .list-row .t { font-weight: 600; font-size: .95rem; }
+      .list-row .s { color: var(--muted); font-size: .85rem; }
+      .empty-note { color: var(--muted); font-size: .92rem; padding: 8px 0; }
+
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+      .badge.green { background: var(--accent-soft); color: var(--accent-dark); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.red { background: var(--red-soft); color: var(--red); }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.grey { background: var(--surface-2); color: var(--muted); }
+
+      .stage-bar { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+      .stage-bar .name { width: 92px; font-size: .88rem; font-weight: 600; flex: none; }
+      .stage-bar .track { flex: 1; height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+      .stage-bar .fill { height: 100%; background: var(--accent); border-radius: 999px; }
+      .stage-bar .num { width: 28px; text-align: right; font-weight: 700; font-size: .9rem; flex: none; }
+
+      /* ---------- Toolbar & forms ---------- */
+      .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+      .toolbar .search { flex: 1 1 220px; position: relative; }
+      .toolbar .search input { width: 100%; padding: 10px 14px 10px 40px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-height: 2.75rem; }
+      .toolbar .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+      .toolbar select { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-height: 2.75rem; font-weight: 600; }
+      .btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 9px 16px; font-weight: 700; font-size: .92rem; display: inline-flex; align-items: center; gap: 7px; min-height: 2.75rem; }
+      .btn svg { width: 16px; height: 16px; }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .btn.primary { color: #0b1512; } }
+      .btn.small { min-height: 2.25rem; padding: 6px 12px; font-size: .85rem; border-radius: 10px; }
+      .btn.danger { color: var(--red); }
+      .btn.icon-only { padding: 8px; min-width: 2.5rem; justify-content: center; }
+
+      /* ---------- Customer cards ---------- */
+      .cust-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 14px; }
+      .cust-card { padding: 18px; text-align: left; width: 100%; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+      .cust-card:hover { transform: translateY(-2px); }
+      .cust-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+      .avatar { width: 46px; height: 46px; border-radius: 14px; background: var(--accent-soft); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.05rem; flex: none; }
+      .cust-name { font-weight: 700; font-size: 1rem; line-height: 1.3; }
+      .cust-comp { color: var(--muted); font-size: .85rem; }
+      .cust-meta { font-size: .87rem; color: var(--muted); display: grid; gap: 4px; }
+      .cust-meta span { display: flex; align-items: center; gap: 7px; }
+      .cust-meta svg { width: 15px; height: 15px; flex: none; }
+      .cust-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+
+      /* ---------- Pipeline ---------- */
+      .pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: start; }
+      @media (max-width: 1020px) { .pipeline { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .pipeline { grid-template-columns: 1fr; } }
+      .stage-col { background: var(--surface-2); border-radius: var(--radius); padding: 12px; min-height: 120px; }
+      .stage-col h4 { margin: 2px 4px 4px; font-size: .92rem; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+      .stage-col .total { margin: 0 4px 10px; font-size: .8rem; color: var(--muted); }
+      .deal { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+      .deal .d-name { font-weight: 700; font-size: .93rem; line-height: 1.35; }
+      .deal .d-sub { color: var(--muted); font-size: .82rem; }
+      .deal .d-value { font-weight: 800; color: var(--accent-dark); margin-top: 6px; font-size: .98rem; }
+      .deal .d-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+      .deal .d-actions .btn { flex: 1; justify-content: center; }
+      .move-row { display: flex; gap: 6px; margin-top: 6px; }
+      .move-row select { flex: 1; padding: 7px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: .85rem; font-weight: 600; min-height: 2.4rem; }
+
+      /* ---------- Interactions ---------- */
+      .inter-list { display: grid; gap: 12px; }
+      .inter-card { padding: 16px 18px; display: flex; gap: 14px; }
+      .inter-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; flex: none; }
+      .inter-icon svg { width: 19px; height: 19px; }
+      .inter-body { flex: 1; min-width: 0; }
+      .inter-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .inter-top .who { font-weight: 700; }
+      .inter-note { margin: 5px 0 0; font-size: .93rem; }
+      .inter-result { margin-top: 7px; font-size: .88rem; background: var(--surface-2); border-radius: 10px; padding: 8px 11px; }
+      .inter-result b { color: var(--accent-dark); }
+      .inter-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+      /* ---------- Modal ---------- */
+      .overlay { position: fixed; inset: 0; background: rgba(15, 25, 20, .5); display: none; align-items: flex-end; justify-content: center; z-index: 100; padding: 0; }
+      .overlay.open { display: flex; }
+      .modal { background: var(--surface); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 22px; }
+      @media (min-width: 640px) { .overlay { align-items: center; padding: 20px; } .modal { border-radius: 20px; } }
+      .modal h3 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; }
+      .modal .sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+      .field { margin-bottom: 13px; }
+      .field label { display: block; font-size: .85rem; font-weight: 700; margin-bottom: 5px; }
+      .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); min-height: 2.75rem; }
+      .field textarea { resize: vertical; min-height: 74px; }
+      .field .err { color: var(--red); font-size: .8rem; margin-top: 4px; display: none; }
+      .modal-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .modal-actions .btn { flex: 1; justify-content: center; }
+      .detail-grid { display: grid; gap: 9px; margin: 14px 0; }
+      .detail-grid .row { display: flex; gap: 10px; font-size: .93rem; }
+      .detail-grid .k { width: 108px; flex: none; color: var(--muted); font-weight: 600; }
+
+      /* ---------- Guide ---------- */
+      .guide { max-width: 820px; }
+      .guide h3 { font-size: 1.08rem; margin: 26px 0 8px; font-weight: 800; }
+      .guide h3:first-child { margin-top: 4px; }
+      .guide p, .guide li { font-size: .95rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide .card { padding: 18px 20px; margin-top: 14px; }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: .93rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+      .guide th { font-weight: 800; }
+
+      footer { margin-top: 42px; border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: .87rem; }
+      footer p { margin: 0 0 6px; }
+      .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 11px 20px; border-radius: 999px; font-weight: 600; font-size: .9rem; opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 200; max-width: calc(100vw - 32px); text-align: center; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <nav class="tabbar" aria-label="Menu utama">
+      <div class="tabbar-inner" role="tablist">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Ringkasan
+        </button>
+        <button class="tab-btn" data-tab="pelanggan" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Pelanggan
+        </button>
+        <button class="tab-btn" data-tab="prospek" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v5l-4 2v-7L3 4z"/></svg>
+          Prospek
+        </button>
+        <button class="tab-btn" data-tab="interaksi" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Interaksi
+        </button>
+        <button class="tab-btn" data-tab="panduan" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Panduan
+        </button>
+      </div>
+    </nav>
+
+    <div class="wrap">
+      <!-- ================= RINGKASAN ================= -->
+      <section class="tab-panel active" id="panel-ringkasan">
+        <h2 class="section-title">Ringkasan Usaha</h2>
+        <p class="section-sub">Gambaran hubungan pelanggan Anda hari ini, <span id="todayLabel"></span>.</p>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Total Pelanggan</div>
+            <div class="value" id="statCustomers">0</div>
+            <div class="hint" id="statCustomersHint"></div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v5l-4 2v-7L3 4z"/></svg>Prospek Aktif</div>
+            <div class="value" id="statProspects">0</div>
+            <div class="hint" id="statProspectsHint"></div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Penjualan Bulan Ini</div>
+            <div class="value" id="statSales" style="font-size:1.55rem;">Rp0</div>
+            <div class="hint" id="statSalesHint"></div>
+          </div>
+          <div class="stat-card">
+            <div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Follow-up Hari Ini</div>
+            <div class="value" id="statFollow">0</div>
+            <div class="hint">Jatuh tempo pada tanggal hari ini</div>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:14px;">
+          <div class="card panel">
+            <h3>Follow-up Jatuh Tempo Hari Ini</h3>
+            <div id="followTodayList"></div>
+          </div>
+          <div class="card panel">
+            <h3>Pipeline Prospek</h3>
+            <div id="stageSummary"></div>
+            <p class="empty-note" id="pipelineTotal" style="margin-top:8px;"></p>
+          </div>
+        </div>
+
+        <h3 class="block-title">Aktivitas Terbaru</h3>
+        <div class="card panel">
+          <div id="recentList"></div>
+        </div>
+      </section>
+
+      <!-- ================= PELANGGAN ================= -->
+      <section class="tab-panel" id="panel-pelanggan">
+        <h2 class="section-title">Pelanggan</h2>
+        <p class="section-sub">Klik kartu pelanggan untuk melihat data lengkap dan riwayat interaksinya.</p>
+        <div class="toolbar">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" id="custSearch" placeholder="Cari nama, perusahaan, atau nomor WhatsApp…" aria-label="Cari pelanggan" />
+          </div>
+          <select id="custFilter" aria-label="Filter kategori pelanggan">
+            <option value="">Semua Kategori</option>
+            <option value="VIP">VIP</option>
+            <option value="Tetap">Tetap</option>
+            <option value="Baru">Baru</option>
+            <option value="Mitra">Mitra</option>
+          </select>
+          <button class="btn primary" id="btnAddCustomer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Pelanggan
+          </button>
+        </div>
+        <div class="cust-grid" id="custGrid"></div>
+        <p class="empty-note" id="custEmpty" style="display:none;">Tidak ada pelanggan yang cocok dengan pencarian atau filter.</p>
+      </section>
+
+      <!-- ================= PROSPEK ================= -->
+      <section class="tab-panel" id="panel-prospek">
+        <h2 class="section-title">Pipeline Prospek</h2>
+        <p class="section-sub">Pantau calon pelanggan dari pertama dikenal sampai jadi penjualan. Pindahkan tahapnya seiring perkembangan.</p>
+        <div class="toolbar">
+          <button class="btn primary" id="btnAddProspect">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Prospek
+          </button>
+          <span class="empty-note" id="prospectSummary" style="padding:0;"></span>
+        </div>
+        <div class="pipeline" id="pipeline"></div>
+      </section>
+
+      <!-- ================= INTERAKSI ================= -->
+      <section class="tab-panel" id="panel-interaksi">
+        <h2 class="section-title">Catatan Interaksi</h2>
+        <p class="section-sub">Semua riwayat komunikasi dengan pelanggan: telepon, WhatsApp, pertemuan, dan email — lengkap dengan tanggal dan hasilnya.</p>
+        <div class="toolbar">
+          <select id="interCustFilter" aria-label="Filter pelanggan"></select>
+          <select id="interTypeFilter" aria-label="Filter jenis interaksi">
+            <option value="">Semua Jenis</option>
+            <option value="Telepon">Telepon</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Pertemuan">Pertemuan</option>
+            <option value="Email">Email</option>
+          </select>
+          <button class="btn primary" id="btnAddInteraction">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Interaksi
+          </button>
+        </div>
+        <div class="inter-list" id="interList"></div>
+        <p class="empty-note" id="interEmpty" style="display:none;">Tidak ada catatan interaksi yang cocok dengan filter.</p>
+      </section>
+
+      <!-- ================= PANDUAN ================= -->
+      <section class="tab-panel" id="panel-panduan">
+        <h2 class="section-title">Panduan Penggunaan</h2>
+        <p class="section-sub">Buku panduan lengkap Aplikasi CRM untuk usaha kecil.</p>
+        <div class="guide">
+          <h3>1. Mengenal Aplikasi CRM</h3>
+          <p>Aplikasi CRM (Customer Relationship Management) adalah alat bantu pencatatan hubungan pelanggan untuk usaha kecil. Aplikasi ini membantu Anda mengingat siapa pelanggan Anda, siapa calon pelanggan (prospek) yang sedang dikejar, dan kapan harus menghubungi mereka kembali — tanpa perlu menghafal atau mencatat di kertas yang mudah hilang.</p>
+          <p>Aplikasi terdiri dari lima tab:</p>
+          <ul>
+            <li><b>Ringkasan</b> — angka penting usaha Anda dalam sekejap.</li>
+            <li><b>Pelanggan</b> — daftar lengkap pelanggan beserta data kontaknya.</li>
+            <li><b>Prospek</b> — papan pipeline calon pelanggan berdasarkan tahapnya.</li>
+            <li><b>Interaksi</b> — catatan riwayat komunikasi dengan pelanggan.</li>
+            <li><b>Panduan</b> — halaman yang sedang Anda baca ini.</li>
+          </ul>
+
+          <h3>2. Tab Ringkasan</h3>
+          <p>Tab ini menampilkan empat angka utama:</p>
+          <ul>
+            <li><b>Total Pelanggan</b> — jumlah seluruh pelanggan yang tercatat.</li>
+            <li><b>Prospek Aktif</b> — jumlah prospek yang masih berjalan (tahap Baru, Dihubungi, dan Negosiasi).</li>
+            <li><b>Penjualan Bulan Ini</b> — total nilai prospek yang berhasil ditutup sebagai "Menang" pada bulan berjalan.</li>
+            <li><b>Follow-up Hari Ini</b> — jumlah tindak lanjut yang jatuh tempo pada tanggal hari ini.</li>
+          </ul>
+          <p>Di bawahnya ada daftar follow-up yang jatuh tempo hari ini (agar tidak ada pelanggan yang terlewat) dan ringkasan pipeline prospek per tahap. Angka-angka ini terhitung otomatis setiap kali Anda menambah, mengubah, atau menghapus data.</p>
+
+          <h3>3. Mengelola Pelanggan</h3>
+          <ol>
+            <li>Buka tab <b>Pelanggan</b>.</li>
+            <li>Klik <b>Tambah Pelanggan</b>, lalu isi nama, perusahaan, nomor WhatsApp, email, alamat, dan kategori (VIP, Tetap, Baru, atau Mitra). Nama dan nomor WhatsApp wajib diisi.</li>
+            <li>Klik <b>Simpan</b>. Pelanggan baru langsung muncul di daftar.</li>
+            <li>Gunakan kotak <b>pencarian</b> untuk mencari berdasarkan nama, perusahaan, atau nomor WhatsApp, dan gunakan <b>filter kategori</b> untuk menyaring daftar.</li>
+            <li><b>Klik kartu pelanggan</b> untuk membuka detailnya: data kontak lengkap dan seluruh riwayat interaksi dengan pelanggan tersebut.</li>
+            <li>Dari jendela detail, Anda bisa <b>Mengubah</b> data, <b>Menghapus</b> pelanggan, atau <b>Menambah Interaksi</b> baru untuk pelanggan itu.</li>
+          </ol>
+          <p>Menghapus pelanggan juga menghapus catatan interaksi miliknya, jadi pastikan dulu sebelum menghapus. Penghapusan selalu meminta konfirmasi.</p>
+
+          <h3>4. Mengelola Prospek (Pipeline)</h3>
+          <p>Prospek adalah calon pelanggan yang sedang dalam proses menjadi pelanggan. Setiap prospek bergerak melalui lima tahap:</p>
+          <ul>
+            <li><b>Baru</b> — baru dikenal, belum dihubungi.</li>
+            <li><b>Dihubungi</b> — sudah ada komunikasi awal.</li>
+            <li><b>Negosiasi</b> — sedang membahas harga dan penawaran.</li>
+            <li><b>Menang</b> — sepakat membeli. Nilai peluangnya dihitung sebagai penjualan.</li>
+            <li><b>Kalah</b> — batal membeli. Prospek tidak lagi aktif.</li>
+          </ul>
+          <ol>
+            <li>Klik <b>Tambah Prospek</b> untuk mencatat prospek baru: nama kontak, perusahaan, nomor WhatsApp, kebutuhan/catatan, nilai peluang (perkiraan nilai transaksi dalam Rupiah), tahap awal, dan tanggal tindak lanjut bila ada.</li>
+            <li>Untuk memindahkan tahap, gunakan <b>daftar pilihan tahap</b> pada kartu prospek, atau tombol panah untuk maju/mundur satu tahap.</li>
+            <li>Klik <b>Ubah</b> pada kartu untuk memperbaiki data, dan <b>Hapus</b> untuk menghapus prospek (dengan konfirmasi).</li>
+            <li>Saat prospek dipindah ke tahap <b>Menang</b>, tanggal penutupannya tercatat otomatis pada hari itu, dan nilainya masuk ke angka Penjualan Bulan Ini di tab Ringkasan.</li>
+          </ol>
+
+          <h3>5. Mencatat Interaksi</h3>
+          <p>Interaksi adalah setiap komunikasi yang sudah terjadi dengan pelanggan. Mencatatnya membantu Anda mengingat janji dan hasil pembicaraan terakhir.</p>
+          <ol>
+            <li>Buka tab <b>Interaksi</b>, klik <b>Tambah Interaksi</b>.</li>
+            <li>Pilih pelanggan, jenis interaksi (<b>Telepon, WhatsApp, Pertemuan,</b> atau <b>Email</b>), dan tanggalnya.</li>
+            <li>Isi <b>catatan</b> isi pembicaraan dan <b>hasilnya</b> (misalnya "setuju pesan 20 unit, kirim Jumat").</li>
+            <li>Bila perlu ditindaklanjuti, isi <b>tanggal follow-up</b>. Pada tanggal itu, follow-up akan muncul di tab Ringkasan sebagai pengingat.</li>
+            <li>Gunakan filter pelanggan dan filter jenis untuk menelusuri riwayat. Setiap catatan bisa diubah atau dihapus dari tombol pada kartunya.</li>
+          </ol>
+
+          <h3>6. Tips Memakai CRM dengan Efektif</h3>
+          <ul>
+            <li>Catat interaksi <b>segera setelah</b> komunikasi terjadi, selagi masih segar di ingatan.</li>
+            <li>Buka tab Ringkasan setiap pagi untuk melihat follow-up yang jatuh tempo.</li>
+            <li>Perbarui tahap prospek setiap ada perkembangan, agar nilai pipeline selalu jujur.</li>
+            <li>Tandai pelanggan setia dan berbelanja besar sebagai <b>VIP</b> agar mudah diprioritaskan.</li>
+          </ul>
+
+          <h3>7. Batasan Aplikasi</h3>
+          <ul>
+            <li>Aplikasi ini adalah <b>alat pencatatan</b>, bukan sistem otomatisasi pemasaran: aplikasi tidak mengirim pesan, email, atau pengingat otomatis ke pelanggan Anda.</li>
+            <li>Data contoh dan data yang Anda masukkan pada demo ini <b>hanya tersimpan selama aplikasi dibuka</b>. Menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal.</li>
+            <li>Tidak ada sinkronisasi antarperangkat pada versi demo ini.</li>
+          </ul>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Garansi</h3>
+            <p>Aplikasi ini dilindungi garansi perbaikan <b>bug/error</b> — yaitu kesalahan fungsi pada fitur yang dijelaskan dalam buku panduan ini dan ditampilkan pada demo — dan perbaikan tersebut <b>gratis selama masa garansi</b>.</p>
+            <table>
+              <tr><th>Cara Beli</th><th>Paket</th><th>Masa Garansi</th></tr>
+              <tr><td>Beli Sekali</td><td>Pemula</td><td>30 hari</td></tr>
+              <tr><td>Beli Sekali</td><td>Profesional</td><td>60 hari</td></tr>
+              <tr><td>Beli Sekali</td><td>Bisnis</td><td>90 hari</td></tr>
+              <tr><td>Berlangganan</td><td>Semua paket</td><td>Selama langganan aktif</td></tr>
+            </table>
+            <p><b>Yang tidak termasuk garansi:</b></p>
+            <ul>
+              <li>Permintaan fitur baru di luar buku panduan dan demo.</li>
+              <li>Perubahan desain atau perubahan data.</li>
+              <li>Kerusakan akibat pembeli mengubah file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga.</li>
+            </ul>
+            <p><b>Cara klaim:</b> hubungi penjual melalui <b>WhatsApp</b> dan kirimkan <b>video atau screenshot</b> yang menunjukkan bug/error-nya, beserta keterangan singkat fitur apa yang bermasalah. Klaim yang jelas akan diproses lebih cepat.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><b>Catatan jujur:</b> data contoh pada aplikasi ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data contoh awal. Aplikasi ini adalah alat pencatatan pelanggan, bukan sistem otomatisasi pemasaran: tidak ada pengiriman pesan atau pengingat otomatis dari aplikasi ini.</p>
+        <p>Aplikasi CRM — alat bantu manajemen hubungan pelanggan untuk usaha kecil.</p>
+      </footer>
+    </div>
+
+    <!-- Modal generik untuk formulir -->
+    <div class="overlay" id="formOverlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3 id="formTitle">Formulir</h3>
+        <p class="sub" id="formSub"></p>
+        <form id="dynForm" novalidate></form>
+        <div class="modal-actions">
+          <button class="btn" type="button" id="formCancel">Batal</button>
+          <button class="btn primary" type="submit" form="dynForm" id="formSave">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal detail pelanggan -->
+    <div class="overlay" id="detailOverlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3 id="detailName"></h3>
+        <p class="sub" id="detailComp"></p>
+        <div class="detail-grid" id="detailGrid"></div>
+        <h3 style="font-size:1rem; margin-top:18px;">Riwayat Interaksi</h3>
+        <div id="detailHistory"></div>
+        <div class="modal-actions">
+          <button class="btn danger" id="detailDelete">Hapus</button>
+          <button class="btn" id="detailAddInter">+ Interaksi</button>
+          <button class="btn" id="detailEdit">Ubah</button>
+          <button class="btn primary" id="detailClose">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal konfirmasi hapus -->
+    <div class="overlay" id="confirmOverlay">
+      <div class="modal" role="dialog" aria-modal="true" style="max-width:440px;">
+        <h3>Hapus data ini?</h3>
+        <p class="sub" id="confirmText"></p>
+        <div class="modal-actions">
+          <button class="btn" id="confirmCancel">Batal</button>
+          <button class="btn primary" id="confirmOk" style="background:var(--red); border-color:var(--red); color:#fff;">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function () {
+      "use strict";
+      var TODAY = "2026-11-19";
+      var STAGES = ["Baru", "Dihubungi", "Negosiasi", "Menang", "Kalah"];
+      var ACTIVE_STAGES = ["Baru", "Dihubungi", "Negosiasi"];
+
+      /* ---------- Data contoh ---------- */
+      var customers = [
+        { id: 1, nama: "Sari Wulandari", perusahaan: "Toko Berkah Jaya", wa: "0812-3456-7801", email: "sari@berkahjaya.id", alamat: "Jl. Merdeka No. 12, Bandung", kategori: "VIP" },
+        { id: 2, nama: "Budi Santoso", perusahaan: "CV Maju Bersama", wa: "0813-2233-4455", email: "budi@majubersama.co.id", alamat: "Jl. Sudirman Kav. 8, Jakarta Selatan", kategori: "Tetap" },
+        { id: 3, nama: "Dewi Anggraini", perusahaan: "Salon Cantik Dewi", wa: "0821-5566-7788", email: "dewi@saloncantik.id", alamat: "Jl. Kenanga No. 3, Yogyakarta", kategori: "Tetap" },
+        { id: 4, nama: "Andi Pratama", perusahaan: "Bengkel Andi Motor", wa: "0857-1122-3344", email: "andi@andimotor.id", alamat: "Jl. Raya Bekasi Km 21, Bekasi", kategori: "Baru" },
+        { id: 5, nama: "Rina Marlina", perusahaan: "Warung Kopi Rina", wa: "0819-8877-6655", email: "rina@kopirina.id", alamat: "Jl. Cendana No. 45, Semarang", kategori: "Tetap" },
+        { id: 6, nama: "Joko Susilo", perusahaan: "PT Sinar Abadi", wa: "0812-9988-7766", email: "joko@sinarabadi.co.id", alamat: "Kawasan Industri MM2100, Cikarang", kategori: "VIP" },
+        { id: 7, nama: "Fitri Rahmawati", perusahaan: "Butik Fitri Collection", wa: "0838-4433-2211", email: "fitri@fitricollection.id", alamat: "Jl. Malioboro No. 88, Yogyakarta", kategori: "Baru" },
+        { id: 8, nama: "Agus Salim", perusahaan: "Toko Bangunan Agus", wa: "0815-6677-8899", email: "agus@tbagus.id", alamat: "Jl. Gatot Subroto No. 17, Medan", kategori: "Tetap" },
+        { id: 9, nama: "Maya Kusuma", perusahaan: "Kafe Senja", wa: "0822-3344-5566", email: "maya@kafesenja.id", alamat: "Jl. Pantai Berawa No. 9, Bali", kategori: "VIP" },
+        { id: 10, nama: "Dedi Kurniawan", perusahaan: "Dedi Farma Distribusi", wa: "0817-2211-0099", email: "dedi@dedifarma.id", alamat: "Jl. Industri No. 5, Tangerang", kategori: "Mitra" },
+        { id: 11, nama: "Lestari Handayani", perusahaan: "Lestari Catering", wa: "0856-7788-9900", email: "lestari@lestaricatering.id", alamat: "Jl. Melati No. 22, Surabaya", kategori: "Tetap" },
+        { id: 12, nama: "Rizky Firmansyah", perusahaan: "Rizky Elektronik", wa: "0896-5544-3322", email: "rizky@rizkyelektronik.id", alamat: "Jl. Ahmad Yani No. 101, Makassar", kategori: "Baru" }
+      ];
+
+      var prospects = [
+        { id: 1, nama: "Hendra Wijaya", perusahaan: "Toko Sembako Makmur", wa: "0812-1111-2222", catatan: "Butuh pasokan sembako rutin tiap minggu untuk tokonya.", nilai: 15000000, tahap: "Baru", followUp: "2026-11-21", ditutup: "" },
+        { id: 2, nama: "Ratna Sari", perusahaan: "Hotel Pesona Indah", wa: "0813-3333-4444", catatan: "Tertarik paket perlengkapan kamar untuk 40 kamar.", nilai: 45000000, tahap: "Dihubungi", followUp: "2026-11-20", ditutup: "" },
+        { id: 3, nama: "Bambang Riyanto", perusahaan: "Restoran Selera Nusantara", wa: "0821-5555-6666", catatan: "Sedang membandingkan harga bahan baku dengan pemasok lama.", nilai: 30000000, tahap: "Negosiasi", followUp: "2026-11-19", ditutup: "" },
+        { id: 4, nama: "dr. Anita Puspita", perusahaan: "Klinik Sehat Sentosa", wa: "0857-7777-8888", catatan: "Meminta penawaran tertulis untuk kebutuhan operasional klinik.", nilai: 60000000, tahap: "Negosiasi", followUp: "2026-11-24", ditutup: "" },
+        { id: 5, nama: "Yusuf Hamdani", perusahaan: "Sekolah Cerdas Bangsa", wa: "0819-9999-0000", catatan: "Menanyakan paket untuk kantin dan koperasi sekolah.", nilai: 25000000, tahap: "Dihubungi", followUp: "2026-11-25", ditutup: "" },
+        { id: 6, nama: "Zahra Amelia", perusahaan: "Toko Fashion Zahra", wa: "0838-1212-3434", catatan: "Dapat rekomendasi dari pelanggan Butik Fitri Collection.", nilai: 12000000, tahap: "Baru", followUp: "", ditutup: "" },
+        { id: 7, nama: "Fajar Nugroho", perusahaan: "PT Logistik Nusantara", wa: "0812-5656-7878", catatan: "Kontrak pasokan operasional gudang selama 6 bulan.", nilai: 85000000, tahap: "Menang", followUp: "", ditutup: "2026-11-12" },
+        { id: 8, nama: "Sri Wahyuni", perusahaan: "Koperasi Simpan Pinjam Makmur", wa: "0815-9090-1212", catatan: "Anggaran tahun ini sudah habis, diarahkan mencoba lagi awal tahun depan.", nilai: 20000000, tahap: "Kalah", followUp: "", ditutup: "2026-11-05" }
+      ];
+
+      var interactions = [
+        { id: 1, pelangganId: 1, jenis: "WhatsApp", tanggal: "2026-11-18", catatan: "Mengirim katalog produk terbaru dan daftar harga bulan November.", hasil: "Pesan dibaca, Bu Sari meminta penawaran untuk 50 unit.", followUp: "2026-11-19" },
+        { id: 2, pelangganId: 1, jenis: "Telepon", tanggal: "2026-11-10", catatan: "Menanyakan stok barang untuk pesanan akhir bulan.", hasil: "Stok tersedia, pesanan dicatat untuk pengiriman minggu depan.", followUp: "" },
+        { id: 3, pelangganId: 2, jenis: "Pertemuan", tanggal: "2026-11-15", catatan: "Pertemuan di kantor CV Maju Bersama membahas perpanjangan kontrak.", hasil: "Kontrak diperpanjang 3 bulan, pembayaran termin pertama lunas.", followUp: "" },
+        { id: 4, pelangganId: 3, jenis: "WhatsApp", tanggal: "2026-11-17", catatan: "Mengingatkan jadwal pengiriman pesanan perlengkapan salon.", hasil: "Bu Dewi konfirmasi pengiriman hari Kamis diterima.", followUp: "" },
+        { id: 5, pelangganId: 4, jenis: "Telepon", tanggal: "2026-11-16", catatan: "Perkenalan pertama dan penjelasan layanan untuk bengkel.", hasil: "Pak Andi minta dikirim daftar harga lewat WhatsApp.", followUp: "2026-11-19" },
+        { id: 6, pelangganId: 5, jenis: "Email", tanggal: "2026-11-08", catatan: "Mengirim invoice dan rincian pesanan biji kopi bulan ini.", hasil: "Invoice diterima, pembayaran dijadwalkan tanggal 12.", followUp: "" },
+        { id: 7, pelangganId: 6, jenis: "Pertemuan", tanggal: "2026-11-14", catatan: "Presentasi laporan pemakaian kuartal dan rencana kuartal berikutnya.", hasil: "Manajemen puas, ada peluang penambahan volume 20%.", followUp: "2026-11-28" },
+        { id: 8, pelangganId: 7, jenis: "WhatsApp", tanggal: "2026-11-18", catatan: "Menawarkan paket display untuk butik menjelang musim liburan.", hasil: "Bu Fitri tertarik, minta contoh foto produk dulu.", followUp: "2026-11-20" },
+        { id: 9, pelangganId: 8, jenis: "Telepon", tanggal: "2026-11-11", catatan: "Follow-up pembayaran pesanan material yang jatuh tempo.", hasil: "Pak Agus berjanji melunasi paling lambat tanggal 15.", followUp: "" },
+        { id: 10, pelangganId: 9, jenis: "Email", tanggal: "2026-11-13", catatan: "Mengirim proposal paket langganan bahan baku kafe.", hasil: "Proposal diterima dan sedang dipelajari tim Kafe Senja.", followUp: "2026-11-19" },
+        { id: 11, pelangganId: 10, jenis: "Pertemuan", tanggal: "2026-11-09", catatan: "Koordinasi jadwal distribusi wilayah Tangerang dan sekitarnya.", hasil: "Jadwal baru disepakati, mulai berlaku minggu depan.", followUp: "" },
+        { id: 12, pelangganId: 11, jenis: "WhatsApp", tanggal: "2026-11-17", catatan: "Konfirmasi pesanan catering untuk acara kantor tanggal 25.", hasil: "Pesanan 150 pax terkonfirmasi, DP 50% sudah diterima.", followUp: "" },
+        { id: 13, pelangganId: 12, jenis: "Telepon", tanggal: "2026-11-18", catatan: "Menjelaskan garansi dan layanan purna jual produk elektronik.", hasil: "Pak Rizky meminta brosur untuk ditampilkan di tokonya.", followUp: "2026-11-22" },
+        { id: 14, pelangganId: 2, jenis: "Email", tanggal: "2026-11-05", catatan: "Mengirim laporan pengiriman bulan Oktober.", hasil: "Laporan diterima tanpa catatan revisi.", followUp: "" },
+        { id: 15, pelangganId: 6, jenis: "WhatsApp", tanggal: "2026-11-19", catatan: "Konfirmasi jadwal kunjungan rutin minggu ini.", hasil: "Kunjungan disepakati hari Jumat pukul 10.00.", followUp: "" }
+      ];
+
+      var nextCustId = 13, nextProsId = 9, nextInterId = 16;
+      var detailCustId = null;
+
+      /* ---------- Util ---------- */
+      function $(id) { return document.getElementById(id); }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+      function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function fmtDate(iso) {
+        if (!iso) return "—";
+        var d = new Date(iso + "T00:00:00");
+        return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      }
+      function fmtDateShort(iso) {
+        if (!iso) return "—";
+        var d = new Date(iso + "T00:00:00");
+        return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+      }
+      function initials(name) {
+        var parts = String(name || "?").trim().split(/\s+/);
+        return ((parts[0] || "?").charAt(0) + (parts[1] ? parts[1].charAt(0) : "")).toUpperCase();
+      }
+      function custById(id) { for (var i = 0; i < customers.length; i++) if (customers[i].id === id) return customers[i]; return null; }
+      function toast(msg) {
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        setTimeout(function () { t.classList.remove("show"); }, 2400);
+      }
+      function catBadge(cat) {
+        var cls = cat === "VIP" ? "amber" : cat === "Mitra" ? "blue" : cat === "Baru" ? "green" : "grey";
+        return '<span class="badge ' + cls + '">' + esc(cat) + "</span>";
+      }
+      var ICONS = {
+        Telepon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+        WhatsApp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+        Pertemuan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+        Email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>'
+      };
+
+      /* ---------- Tabs ---------- */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
+          btn.classList.add("active"); btn.setAttribute("aria-selected", "true");
+          document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+          window.scrollTo({ top: 0 });
+        });
+      });
+      function goTab(name) {
+        tabBtns.forEach(function (b) { if (b.getAttribute("data-tab") === name) b.click(); });
+      }
+
+      /* ---------- Ringkasan ---------- */
+      function followUpsToday() {
+        var out = [];
+        interactions.forEach(function (it) { if (it.followUp === TODAY) out.push({ tipe: "Interaksi", it: it }); });
+        prospects.forEach(function (p) { if (p.followUp === TODAY && ACTIVE_STAGES.indexOf(p.tahap) >= 0) out.push({ tipe: "Prospek", p: p }); });
+        return out;
+      }
+      function renderSummary() {
+        $("todayLabel").textContent = fmtDate(TODAY);
+        $("statCustomers").textContent = customers.length;
+        var vip = customers.filter(function (c) { return c.kategori === "VIP"; }).length;
+        $("statCustomersHint").textContent = vip + " di antaranya kategori VIP";
+        var aktif = prospects.filter(function (p) { return ACTIVE_STAGES.indexOf(p.tahap) >= 0; });
+        $("statProspects").textContent = aktif.length;
+        var nilaiAktif = aktif.reduce(function (s, p) { return s + p.nilai; }, 0);
+        $("statProspectsHint").textContent = "Total nilai peluang " + rupiah(nilaiAktif);
+        var ym = TODAY.slice(0, 7);
+        var menang = prospects.filter(function (p) { return p.tahap === "Menang" && (p.ditutup || "").slice(0, 7) === ym; });
+        var sales = menang.reduce(function (s, p) { return s + p.nilai; }, 0);
+        $("statSales").textContent = rupiah(sales);
+        $("statSalesHint").textContent = "Dari " + menang.length + " prospek yang menang bulan ini";
+        var fu = followUpsToday();
+        $("statFollow").textContent = fu.length;
+
+        if (!fu.length) {
+          $("followTodayList").innerHTML = '<p class="empty-note">Tidak ada follow-up yang jatuh tempo hari ini. Kerja bagus!</p>';
+        } else {
+          $("followTodayList").innerHTML = fu.map(function (f) {
+            if (f.tipe === "Interaksi") {
+              var c = custById(f.it.pelangganId);
+              return '<div class="list-row"><div class="grow"><div class="t">' + esc(c ? c.nama : "?") + ' <span class="badge green">Interaksi</span></div><div class="s">' + esc(c ? c.perusahaan : "") + " · " + esc(f.it.jenis) + " — " + esc(f.it.hasil) + '</div></div></div>';
+            }
+            return '<div class="list-row"><div class="grow"><div class="t">' + esc(f.p.nama) + ' <span class="badge amber">Prospek · ' + esc(f.p.tahap) + '</span></div><div class="s">' + esc(f.p.perusahaan) + " · nilai peluang " + rupiah(f.p.nilai) + '</div></div></div>';
+          }).join("");
+        }
+
+        var maxCount = 1;
+        STAGES.forEach(function (s) { var n = prospects.filter(function (p) { return p.tahap === s; }).length; if (n > maxCount) maxCount = n; });
+        $("stageSummary").innerHTML = STAGES.map(function (s) {
+          var n = prospects.filter(function (p) { return p.tahap === s; }).length;
+          return '<div class="stage-bar"><span class="name">' + s + '</span><span class="track"><span class="fill" style="width:' + Math.round(n / maxCount * 100) + '%"></span></span><span class="num">' + n + "</span></div>";
+        }).join("");
+        $("pipelineTotal").textContent = "Total seluruh prospek: " + prospects.length + " · total nilai semua tahap: " + rupiah(prospects.reduce(function (s, p) { return s + p.nilai; }, 0));
+
+        var recent = interactions.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; }).slice(0, 5);
+        $("recentList").innerHTML = recent.length ? recent.map(function (it) {
+          var c = custById(it.pelangganId);
+          return '<div class="list-row"><div class="grow"><div class="t">' + esc(c ? c.nama : "?") + ' <span class="badge grey">' + esc(it.jenis) + '</span></div><div class="s">' + esc(it.catatan) + '</div></div><span class="badge grey">' + fmtDateShort(it.tanggal) + "</span></div>";
+        }).join("") : '<p class="empty-note">Belum ada catatan interaksi.</p>';
+      }
+
+      /* ---------- Pelanggan ---------- */
+      function renderCustomers() {
+        var q = $("custSearch").value.trim().toLowerCase();
+        var f = $("custFilter").value;
+        var list = customers.filter(function (c) {
+          var okQ = !q || c.nama.toLowerCase().indexOf(q) >= 0 || c.perusahaan.toLowerCase().indexOf(q) >= 0 || c.wa.replace(/\D/g, "").indexOf(q.replace(/\D/g, "")) >= 0 && q.replace(/\D/g, "") !== "" || c.wa.toLowerCase().indexOf(q) >= 0;
+          if (q && q.replace(/\D/g, "") === "") okQ = c.nama.toLowerCase().indexOf(q) >= 0 || c.perusahaan.toLowerCase().indexOf(q) >= 0;
+          var okF = !f || c.kategori === f;
+          return okQ && okF;
+        });
+        $("custEmpty").style.display = list.length ? "none" : "block";
+        $("custGrid").innerHTML = list.map(function (c) {
+          var nInter = interactions.filter(function (i) { return i.pelangganId === c.id; }).length;
+          return '<button type="button" class="card cust-card" data-cust="' + c.id + '">' +
+            '<span class="cust-head"><span class="avatar">' + esc(initials(c.nama)) + '</span><span><span class="cust-name">' + esc(c.nama) + '</span><br><span class="cust-comp">' + esc(c.perusahaan) + "</span></span></span>" +
+            '<span class="cust-meta">' +
+            '<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' + esc(c.wa) + "</span>" +
+            '<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>' + esc(c.email || "—") + "</span>" +
+            "</span>" +
+            '<span class="cust-foot">' + catBadge(c.kategori) + '<span class="badge grey">' + nInter + " interaksi</span></span>" +
+            "</button>";
+        }).join("");
+        document.querySelectorAll("[data-cust]").forEach(function (el) {
+          el.addEventListener("click", function () { openDetail(Number(el.getAttribute("data-cust"))); });
+        });
+      }
+
+      function openDetail(id) {
+        var c = custById(id); if (!c) return;
+        detailCustId = id;
+        $("detailName").textContent = c.nama;
+        $("detailComp").textContent = c.perusahaan;
+        $("detailGrid").innerHTML =
+          '<div class="row"><span class="k">Kategori</span><span>' + catBadge(c.kategori) + "</span></div>" +
+          '<div class="row"><span class="k">WhatsApp</span><span>' + esc(c.wa) + "</span></div>" +
+          '<div class="row"><span class="k">Email</span><span>' + esc(c.email || "—") + "</span></div>" +
+          '<div class="row"><span class="k">Alamat</span><span>' + esc(c.alamat || "—") + "</span></div>";
+        var hist = interactions.filter(function (i) { return i.pelangganId === id; }).sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+        $("detailHistory").innerHTML = hist.length ? hist.map(function (it) {
+          return '<div class="list-row"><div class="grow"><div class="t">' + esc(it.jenis) + ' · ' + fmtDateShort(it.tanggal) + '</div><div class="s">' + esc(it.catatan) + "<br><b>Hasil:</b> " + esc(it.hasil) + (it.followUp ? "<br><b>Follow-up:</b> " + fmtDateShort(it.followUp) : "") + "</div></div></div>";
+        }).join("") : '<p class="empty-note">Belum ada riwayat interaksi untuk pelanggan ini.</p>';
+        $("detailOverlay").classList.add("open");
+      }
+      function closeDetail() { $("detailOverlay").classList.remove("open"); detailCustId = null; }
+
+      /* ---------- Prospek ---------- */
+      function renderProspects() {
+        var aktif = prospects.filter(function (p) { return ACTIVE_STAGES.indexOf(p.tahap) >= 0; });
+        $("prospectSummary").textContent = aktif.length + " prospek aktif · nilai peluang aktif " + rupiah(aktif.reduce(function (s, p) { return s + p.nilai; }, 0));
+        $("pipeline").innerHTML = STAGES.map(function (stage) {
+          var items = prospects.filter(function (p) { return p.tahap === stage; });
+          var total = items.reduce(function (s, p) { return s + p.nilai; }, 0);
+          var cards = items.length ? items.map(function (p) {
+            var idx = STAGES.indexOf(p.tahap);
+            var opts = STAGES.map(function (s) { return '<option value="' + s + '"' + (s === p.tahap ? " selected" : "") + ">" + s + "</option>"; }).join("");
+            return '<div class="deal">' +
+              '<div class="d-name">' + esc(p.nama) + '</div>' +
+              '<div class="d-sub">' + esc(p.perusahaan) + " · " + esc(p.wa) + "</div>" +
+              (p.catatan ? '<div class="d-sub" style="margin-top:4px;">' + esc(p.catatan) + "</div>" : "") +
+              '<div class="d-value">' + rupiah(p.nilai) + "</div>" +
+              (p.followUp && ACTIVE_STAGES.indexOf(p.tahap) >= 0 ? '<div class="d-sub">Follow-up: ' + fmtDateShort(p.followUp) + "</div>" : "") +
+              (p.ditutup && (p.tahap === "Menang" || p.tahap === "Kalah") ? '<div class="d-sub">Ditutup: ' + fmtDateShort(p.ditutup) + "</div>" : "") +
+              '<div class="move-row"><select data-move="' + p.id + '" aria-label="Pindahkan tahap prospek ' + esc(p.nama) + '">' + opts + "</select></div>" +
+              '<div class="d-actions">' +
+              (idx > 0 ? '<button class="btn small" data-step="' + p.id + '|-1">← Tahap</button>' : "") +
+              (idx < STAGES.length - 1 ? '<button class="btn small" data-step="' + p.id + '|1">Tahap →</button>' : "") +
+              "</div>" +
+              '<div class="d-actions"><button class="btn small" data-edit-pros="' + p.id + '">Ubah</button><button class="btn small danger" data-del-pros="' + p.id + '">Hapus</button></div>' +
+              "</div>";
+          }).join("") : '<p class="empty-note" style="padding:4px;">Belum ada prospek di tahap ini.</p>';
+          return '<div class="stage-col"><h4>' + stage + ' <span class="badge grey">' + items.length + '</span></h4><p class="total">' + rupiah(total) + "</p>" + cards + "</div>";
+        }).join("");
+
+        document.querySelectorAll("[data-move]").forEach(function (sel) {
+          sel.addEventListener("change", function () { moveProspect(Number(sel.getAttribute("data-move")), sel.value); });
+        });
+        document.querySelectorAll("[data-step]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var parts = b.getAttribute("data-step").split("|");
+            var p = prospects.filter(function (x) { return x.id === Number(parts[0]); })[0];
+            if (!p) return;
+            var ni = STAGES.indexOf(p.tahap) + Number(parts[1]);
+            if (ni >= 0 && ni < STAGES.length) moveProspect(p.id, STAGES[ni]);
+          });
+        });
+        document.querySelectorAll("[data-edit-pros]").forEach(function (b) {
+          b.addEventListener("click", function () { openProspectForm(Number(b.getAttribute("data-edit-pros"))); });
+        });
+        document.querySelectorAll("[data-del-pros]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var p = prospects.filter(function (x) { return x.id === Number(b.getAttribute("data-del-pros")); })[0];
+            if (p) confirmDelete("Prospek " + p.nama + " (" + p.perusahaan + ") akan dihapus permanen dari daftar.", function () {
+              prospects = prospects.filter(function (x) { return x.id !== p.id; });
+              renderAll(); toast("Prospek dihapus.");
+            });
+          });
+        });
+      }
+      function moveProspect(id, stage) {
+        var p = prospects.filter(function (x) { return x.id === id; })[0];
+        if (!p) return;
+        p.tahap = stage;
+        if (stage === "Menang" || stage === "Kalah") { if (!p.ditutup) p.ditutup = TODAY; }
+        else p.ditutup = "";
+        renderAll();
+        toast("Prospek " + p.nama + " dipindah ke tahap " + stage + ".");
+      }
+
+      /* ---------- Interaksi ---------- */
+      function renderInterFilter() {
+        var sel = $("interCustFilter");
+        var cur = sel.value;
+        sel.innerHTML = '<option value="">Semua Pelanggan</option>' + customers.map(function (c) {
+          return '<option value="' + c.id + '">' + esc(c.nama) + " — " + esc(c.perusahaan) + "</option>";
+        }).join("");
+        sel.value = cur;
+      }
+      function renderInteractions() {
+        var cf = $("interCustFilter").value, tf = $("interTypeFilter").value;
+        var list = interactions.filter(function (it) {
+          return (!cf || it.pelangganId === Number(cf)) && (!tf || it.jenis === tf);
+        }).sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+        $("interEmpty").style.display = list.length ? "none" : "block";
+        $("interList").innerHTML = list.map(function (it) {
+          var c = custById(it.pelangganId);
+          return '<div class="card inter-card">' +
+            '<div class="inter-icon">' + (ICONS[it.jenis] || ICONS.Telepon) + "</div>" +
+            '<div class="inter-body">' +
+            '<div class="inter-top"><span class="who">' + esc(c ? c.nama : "(pelanggan terhapus)") + '</span><span class="badge grey">' + esc(it.jenis) + " · " + fmtDateShort(it.tanggal) + "</span></div>" +
+            '<div class="s" style="color:var(--muted); font-size:.85rem;">' + esc(c ? c.perusahaan : "") + "</div>" +
+            '<p class="inter-note">' + esc(it.catatan) + "</p>" +
+            '<div class="inter-result"><b>Hasil:</b> ' + esc(it.hasil) + "</div>" +
+            (it.followUp ? '<div style="margin-top:7px;"><span class="badge ' + (it.followUp === TODAY ? "amber" : "grey") + '">Follow-up: ' + fmtDateShort(it.followUp) + (it.followUp === TODAY ? " (hari ini)" : "") + "</span></div>" : "") +
+            '<div class="inter-actions"><button class="btn small" data-edit-inter="' + it.id + '">Ubah</button><button class="btn small danger" data-del-inter="' + it.id + '">Hapus</button></div>' +
+            "</div></div>";
+        }).join("");
+        document.querySelectorAll("[data-edit-inter]").forEach(function (b) {
+          b.addEventListener("click", function () { openInteractionForm(Number(b.getAttribute("data-edit-inter"))); });
+        });
+        document.querySelectorAll("[data-del-inter]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var it = interactions.filter(function (x) { return x.id === Number(b.getAttribute("data-del-inter")); })[0];
+            if (it) confirmDelete("Catatan interaksi " + it.jenis + " tanggal " + fmtDateShort(it.tanggal) + " akan dihapus permanen.", function () {
+              interactions = interactions.filter(function (x) { return x.id !== it.id; });
+              renderAll(); toast("Catatan interaksi dihapus.");
+            });
+          });
+        });
+      }
+
+      /* ---------- Formulir dinamis ---------- */
+      var formHandler = null;
+      function fieldHtml(f, val) {
+        var v = val == null ? "" : val;
+        var req = f.required ? ' <span style="color:var(--red)">*</span>' : "";
+        var inner;
+        if (f.type === "select") {
+          inner = '<select name="' + f.name + '">' + f.options.map(function (o) {
+            var ov = typeof o === "object" ? o.value : o, ol = typeof o === "object" ? o.label : o;
+            return '<option value="' + esc(ov) + '"' + (String(ov) === String(v) ? " selected" : "") + ">" + esc(ol) + "</option>";
+          }).join("") + "</select>";
+        } else if (f.type === "textarea") {
+          inner = '<textarea name="' + f.name + '" placeholder="' + esc(f.placeholder || "") + '">' + esc(v) + "</textarea>";
+        } else {
+          inner = '<input type="' + f.type + '" name="' + f.name + '" value="' + esc(v) + '" placeholder="' + esc(f.placeholder || "") + '"' + (f.min != null ? ' min="' + f.min + '"' : "") + " />";
+        }
+        return '<div class="field"><label for="ff-' + f.name + '">' + f.label + req + "</label>" + inner.replace('name="', 'id="ff-' + f.name + '" name="') + '<div class="err" data-err="' + f.name + '">Kolom ini wajib diisi.</div></div>';
+      }
+      function openForm(title, sub, fields, values, onSave) {
+        $("formTitle").textContent = title;
+        $("formSub").textContent = sub || "";
+        $("dynForm").innerHTML = fields.map(function (f) { return fieldHtml(f, values ? values[f.name] : ""); }).join("");
+        formHandler = function (data) { return onSave(data); };
+        $("formOverlay").classList.add("open");
+      }
+      function closeForm() { $("formOverlay").classList.remove("open"); formHandler = null; }
+      $("dynForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var data = {}, ok = true;
+        new FormData(e.target).forEach(function (v, k) { data[k] = String(v).trim(); });
+        document.querySelectorAll("#dynForm [data-err]").forEach(function (el) { el.style.display = "none"; });
+        if (formHandler) {
+          var missing = formHandler.__required || [];
+          missing.forEach(function (name) {
+            if (!data[name]) {
+              var err = document.querySelector('[data-err="' + name + '"]');
+              if (err) err.style.display = "block";
+              ok = false;
+            }
+          });
+          if (!ok) return;
+          formHandler(data);
+        }
+        closeForm();
+      });
+      $("formCancel").addEventListener("click", closeForm);
+      $("formOverlay").addEventListener("click", function (e) { if (e.target === this) closeForm(); });
+
+      /* Konfirmasi hapus */
+      var confirmCb = null;
+      function confirmDelete(text, cb) { $("confirmText").textContent = text; confirmCb = cb; $("confirmOverlay").classList.add("open"); }
+      $("confirmCancel").addEventListener("click", function () { $("confirmOverlay").classList.remove("open"); confirmCb = null; });
+      $("confirmOk").addEventListener("click", function () { $("confirmOverlay").classList.remove("open"); if (confirmCb) confirmCb(); confirmCb = null; });
+      $("confirmOverlay").addEventListener("click", function (e) { if (e.target === this) { this.classList.remove("open"); confirmCb = null; } });
+
+      /* ---------- Form pelanggan ---------- */
+      var CUST_FIELDS = [
+        { name: "nama", label: "Nama Pelanggan", type: "text", required: true, placeholder: "cth: Sari Wulandari" },
+        { name: "perusahaan", label: "Perusahaan / Usaha", type: "text", placeholder: "cth: Toko Berkah Jaya" },
+        { name: "wa", label: "Nomor WhatsApp", type: "tel", required: true, placeholder: "cth: 0812-3456-7890" },
+        { name: "email", label: "Email", type: "email", placeholder: "cth: nama@usaha.id" },
+        { name: "alamat", label: "Alamat", type: "textarea", placeholder: "Alamat lengkap pelanggan" },
+        { name: "kategori", label: "Kategori", type: "select", options: ["Baru", "Tetap", "VIP", "Mitra"] }
+      ];
+      function openCustomerForm(id) {
+        var c = id ? custById(id) : null;
+        var save = function (data) {
+          if (c) { c.nama = data.nama; c.perusahaan = data.perusahaan; c.wa = data.wa; c.email = data.email; c.alamat = data.alamat; c.kategori = data.kategori; toast("Data pelanggan diperbarui."); }
+          else { customers.push({ id: nextCustId++, nama: data.nama, perusahaan: data.perusahaan, wa: data.wa, email: data.email, alamat: data.alamat, kategori: data.kategori }); toast("Pelanggan baru ditambahkan."); }
+          renderAll();
+          if (detailCustId && c) openDetail(c.id);
+        };
+        save.__required = ["nama", "wa"];
+        formHandlerRequired(save);
+        openForm(c ? "Ubah Pelanggan" : "Tambah Pelanggan", c ? "Perbarui data pelanggan di bawah ini." : "Isi data pelanggan baru di bawah ini.", CUST_FIELDS, c || { kategori: "Baru" }, save);
+      }
+      function formHandlerRequired(fn) { pendingRequired = fn.__required || []; }
+      var pendingRequired = [];
+      var origOpenForm = openForm;
+      openForm = function (title, sub, fields, values, onSave) {
+        onSave.__required = pendingRequired; pendingRequired = [];
+        origOpenForm(title, sub, fields, values, onSave);
+      };
+
+      /* ---------- Form prospek ---------- */
+      var PROS_FIELDS = [
+        { name: "nama", label: "Nama Kontak", type: "text", required: true, placeholder: "cth: Hendra Wijaya" },
+        { name: "perusahaan", label: "Perusahaan / Usaha", type: "text", placeholder: "cth: Toko Sembako Makmur" },
+        { name: "wa", label: "Nomor WhatsApp", type: "tel", placeholder: "cth: 0812-1111-2222" },
+        { name: "catatan", label: "Kebutuhan / Catatan", type: "textarea", placeholder: "Apa yang dibutuhkan prospek ini?" },
+        { name: "nilai", label: "Nilai Peluang (Rp)", type: "number", required: true, min: 0, placeholder: "cth: 15000000" },
+        { name: "tahap", label: "Tahap", type: "select", options: STAGES },
+        { name: "followUp", label: "Tanggal Follow-up (boleh kosong)", type: "date" }
+      ];
+      function openProspectForm(id) {
+        var p = id ? prospects.filter(function (x) { return x.id === id; })[0] : null;
+        var save = function (data) {
+          var nilai = parseInt(data.nilai, 10) || 0;
+          if (p) {
+            p.nama = data.nama; p.perusahaan = data.perusahaan; p.wa = data.wa; p.catatan = data.catatan; p.nilai = nilai; p.followUp = data.followUp;
+            if (p.tahap !== data.tahap) { p.tahap = data.tahap; if (data.tahap === "Menang" || data.tahap === "Kalah") { if (!p.ditutup) p.ditutup = TODAY; } else p.ditutup = ""; }
+            toast("Data prospek diperbarui.");
+          } else {
+            prospects.push({ id: nextProsId++, nama: data.nama, perusahaan: data.perusahaan, wa: data.wa, catatan: data.catatan, nilai: nilai, tahap: data.tahap, followUp: data.followUp, ditutup: (data.tahap === "Menang" || data.tahap === "Kalah") ? TODAY : "" });
+            toast("Prospek baru ditambahkan.");
+          }
+          renderAll();
+        };
+        save.__required = ["nama", "nilai"];
+        formHandlerRequired(save);
+        openForm(p ? "Ubah Prospek" : "Tambah Prospek", p ? "Perbarui data prospek di bawah ini." : "Catat calon pelanggan baru beserta perkiraan nilai peluangnya.", PROS_FIELDS, p || { tahap: "Baru" }, save);
+      }
+
+      /* ---------- Form interaksi ---------- */
+      function openInteractionForm(id, presetCustId) {
+        var it = id ? interactions.filter(function (x) { return x.id === id; })[0] : null;
+        var fields = [
+          { name: "pelangganId", label: "Pelanggan", type: "select", options: customers.map(function (c) { return { value: String(c.id), label: c.nama + " — " + c.perusahaan }; }) },
+          { name: "jenis", label: "Jenis Interaksi", type: "select", options: ["Telepon", "WhatsApp", "Pertemuan", "Email"] },
+          { name: "tanggal", label: "Tanggal", type: "date", required: true },
+          { name: "catatan", label: "Catatan Pembicaraan", type: "textarea", required: true, placeholder: "Apa yang dibicarakan?" },
+          { name: "hasil", label: "Hasil", type: "textarea", required: true, placeholder: "Apa hasil atau kesepakatannya?" },
+          { name: "followUp", label: "Tanggal Follow-up (boleh kosong)", type: "date" }
+        ];
+        var save = function (data) {
+          if (it) {
+            it.pelangganId = Number(data.pelangganId); it.jenis = data.jenis; it.tanggal = data.tanggal; it.catatan = data.catatan; it.hasil = data.hasil; it.followUp = data.followUp;
+            toast("Catatan interaksi diperbarui.");
+          } else {
+            interactions.push({ id: nextInterId++, pelangganId: Number(data.pelangganId), jenis: data.jenis, tanggal: data.tanggal || TODAY, catatan: data.catatan, hasil: data.hasil, followUp: data.followUp });
+            toast("Catatan interaksi ditambahkan.");
+          }
+          renderAll();
+          if (detailCustId) openDetail(detailCustId);
+        };
+        save.__required = ["tanggal", "catatan", "hasil"];
+        formHandlerRequired(save);
+        openForm(it ? "Ubah Interaksi" : "Tambah Interaksi", it ? "Perbarui catatan interaksi di bawah ini." : "Catat komunikasi yang baru saja terjadi dengan pelanggan.", fields, it || { pelangganId: presetCustId ? String(presetCustId) : (customers[0] ? String(customers[0].id) : ""), jenis: "WhatsApp", tanggal: TODAY }, save);
+      }
+
+      /* ---------- Aksi tombol ---------- */
+      $("btnAddCustomer").addEventListener("click", function () { openCustomerForm(null); });
+      $("btnAddProspect").addEventListener("click", function () { openProspectForm(null); });
+      $("btnAddInteraction").addEventListener("click", function () { openInteractionForm(null); });
+      $("custSearch").addEventListener("input", renderCustomers);
+      $("custFilter").addEventListener("change", renderCustomers);
+      $("interCustFilter").addEventListener("change", renderInteractions);
+      $("interTypeFilter").addEventListener("change", renderInteractions);
+      $("detailClose").addEventListener("click", closeDetail);
+      $("detailOverlay").addEventListener("click", function (e) { if (e.target === this) closeDetail(); });
+      $("detailEdit").addEventListener("click", function () { if (detailCustId) { var id = detailCustId; closeDetail(); openCustomerForm(id); detailCustId = id; } });
+      $("detailAddInter").addEventListener("click", function () { if (detailCustId) openInteractionForm(null, detailCustId); });
+      $("detailDelete").addEventListener("click", function () {
+        if (!detailCustId) return;
+        var c = custById(detailCustId); if (!c) return;
+        var id = c.id;
+        confirmDelete("Pelanggan " + c.nama + " beserta seluruh catatan interaksinya akan dihapus permanen.", function () {
+          customers = customers.filter(function (x) { return x.id !== id; });
+          interactions = interactions.filter(function (x) { return x.pelangganId !== id; });
+          closeDetail(); renderAll(); toast("Pelanggan dihapus.");
+        });
+      });
+
+      /* ---------- Render semua ---------- */
+      function renderAll() {
+        renderSummary();
+        renderCustomers();
+        renderProspects();
+        renderInterFilter();
+        renderInteractions();
+      }
+      renderAll();
+    })();
+    </script>
+  </body>
+</html>
