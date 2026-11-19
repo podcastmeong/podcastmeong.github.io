@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi OCR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4f6f3;
+        --surface: #ffffff;
+        --surface-2: #eef2ee;
+        --ink: #1d2a24;
+        --ink-soft: #4c5d54;
+        --ink-faint: #7d8d84;
+        --line: #dde5dd;
+        --accent: #17755c;
+        --accent-dark: #0f5c47;
+        --accent-soft: #e2f1ea;
+        --amber: #b07d1e;
+        --amber-soft: #faf0da;
+        --red: #b3402f;
+        --red-soft: #fbeae6;
+        --shadow: 0 1px 2px rgba(29, 42, 36, .05), 0 10px 28px rgba(29, 42, 36, .07);
+        --shadow-sm: 0 1px 2px rgba(29, 42, 36, .06), 0 4px 12px rgba(29, 42, 36, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131a17;
+          --surface: #1d2622;
+          --surface-2: #242f2a;
+          --ink: #e9efeb;
+          --ink-soft: #b3c2b9;
+          --ink-faint: #84958b;
+          --line: #31403a;
+          --accent: #3cb58f;
+          --accent-dark: #5cc7a6;
+          --accent-soft: #1e3a31;
+          --amber: #e0aa4e;
+          --amber-soft: #3a2f18;
+          --red: #e07a68;
+          --red-soft: #3d2420;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+          --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.25);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      button { font-family: inherit; cursor: pointer; }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      .intro { margin: 6px 2px 18px; }
+      .intro h1 { font-size: 1.55rem; font-weight: 800; letter-spacing: -.01em; margin: 0 0 4px; }
+      .intro p { margin: 0; color: var(--ink-soft); font-size: .95rem; max-width: 56ch; }
+
+      /* Tabs */
+      .tabs {
+        display: flex; gap: 6px; flex-wrap: wrap;
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 999px; padding: 5px; box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+      }
+      .tab-btn {
+        flex: 1 1 auto; border: 0; background: transparent; color: var(--ink-soft);
+        font-weight: 600; font-size: .92rem; padding: 9px 14px; border-radius: 999px;
+        white-space: nowrap; min-height: 2.5rem;
+      }
+      .tab-btn[aria-selected="true"] { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn[aria-selected="true"] { color: #0d1512; } }
+      .tab-btn:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 2px;
+      }
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      /* Cards & stats */
+      .card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+      }
+      .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+      @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+      .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 16px 18px; }
+      .stat .num { font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+      .stat .lbl { color: var(--ink-soft); font-size: .85rem; font-weight: 600; margin-top: 2px; }
+      .stat .sub { color: var(--ink-faint); font-size: .8rem; margin-top: 4px; }
+
+      h2.sec { font-size: 1.12rem; font-weight: 700; margin: 0 0 6px; }
+      .muted { color: var(--ink-soft); }
+      .small { font-size: .86rem; }
+      .empty { text-align: center; color: var(--ink-faint); padding: 26px 10px; }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+        color: var(--ink); font-weight: 600; font-size: .92rem; padding: 9px 16px;
+        min-height: 2.75rem; text-decoration: none;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn.primary { color: #0d1512; } .btn.primary:hover { color: #0d1512; } }
+      .btn.danger { color: var(--red); }
+      .btn.danger:hover { border-color: var(--red); background: var(--red-soft); }
+      .btn:disabled { opacity: .55; cursor: not-allowed; }
+      .btn.sm { min-height: 2.25rem; padding: 6px 12px; font-size: .85rem; border-radius: 10px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+      /* Scan tab */
+      .drop {
+        border: 2px dashed var(--line); border-radius: var(--radius);
+        background: var(--surface-2); padding: 26px 18px; text-align: center;
+      }
+      .drop.drag { border-color: var(--accent); background: var(--accent-soft); }
+      .drop p { margin: 6px 0; }
+      .drop .big { font-weight: 700; font-size: 1.02rem; }
+      .preview { margin-top: 16px; display: none; }
+      .preview.show { display: block; }
+      .preview img {
+        max-width: 100%; max-height: 380px; border-radius: 12px; border: 1px solid var(--line);
+        display: block; margin: 0 auto; background: #fff;
+      }
+      .preview .meta { text-align: center; color: var(--ink-soft); font-size: .85rem; margin-top: 8px; }
+      .status-chip {
+        display: inline-flex; align-items: center; gap: 7px; font-size: .83rem; font-weight: 600;
+        padding: 5px 12px; border-radius: 999px; background: var(--amber-soft); color: var(--amber);
+      }
+      .status-chip.ok { background: var(--accent-soft); color: var(--accent); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+      .progress { display: none; margin-top: 16px; }
+      .progress.show { display: block; }
+      .bar { height: 10px; border-radius: 999px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
+      .bar > div { height: 100%; width: 0%; background: var(--accent); transition: width .25s ease; }
+      .progress .lbl { font-size: .85rem; color: var(--ink-soft); margin-top: 6px; }
+      .alert {
+        display: none; margin-top: 16px; border-radius: 12px; padding: 12px 14px; font-size: .9rem;
+        background: var(--amber-soft); color: var(--ink); border: 1px solid var(--amber);
+      }
+      .alert.show { display: block; }
+      .alert.err { background: var(--red-soft); border-color: var(--red); }
+      .result-box { margin-top: 20px; display: none; }
+      .result-box.show { display: block; }
+      .result-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+      .acc { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
+      .acc .meter { width: 90px; height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+      .acc .meter > div { height: 100%; background: var(--accent); }
+      textarea.result {
+        width: 100%; min-height: 220px; resize: vertical; border: 1px solid var(--line);
+        border-radius: 12px; padding: 14px; font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: .88rem; line-height: 1.6; background: var(--surface); color: var(--ink);
+      }
+      .field { margin-top: 14px; }
+      .field label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+      .field input[type="text"] {
+        width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px;
+        font: inherit; background: var(--surface); color: var(--ink);
+      }
+
+      /* History */
+      .searchbar { display: flex; gap: 10px; margin-bottom: 14px; }
+      .searchbar input {
+        flex: 1; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px;
+        font: inherit; background: var(--surface); color: var(--ink); min-width: 0;
+      }
+      .hist-list { display: grid; gap: 12px; }
+      .hist-item {
+        display: flex; gap: 14px; background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 14px 16px; align-items: flex-start;
+      }
+      .hist-thumb {
+        width: 56px; height: 56px; border-radius: 10px; flex: none; object-fit: cover;
+        border: 1px solid var(--line); background: var(--surface-2);
+      }
+      .hist-icon {
+        width: 56px; height: 56px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center;
+        background: var(--accent-soft); color: var(--accent); font-weight: 800; font-size: .8rem; border: 1px solid var(--line);
+        text-align: center; padding: 4px;
+      }
+      .hist-main { flex: 1; min-width: 0; }
+      .hist-name { font-weight: 700; font-size: .98rem; overflow-wrap: anywhere; }
+      .hist-meta { color: var(--ink-faint); font-size: .82rem; margin-top: 2px; }
+      .hist-snippet { color: var(--ink-soft); font-size: .86rem; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .hist-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .tag {
+        display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+        background: var(--accent-soft); color: var(--accent); vertical-align: middle; margin-left: 6px;
+      }
+
+      /* Guide */
+      .guide h3 { font-size: 1rem; font-weight: 700; margin: 22px 0 6px; }
+      .guide h3:first-child { margin-top: 0; }
+      .guide p, .guide li { color: var(--ink-soft); font-size: .94rem; }
+      .guide ul, .guide ol { margin: 6px 0 6px 20px; padding: 0; }
+      .guide li { margin: 4px 0; }
+      .guide strong { color: var(--ink); }
+      .warranty {
+        margin-top: 24px; border: 1px solid var(--accent); background: var(--accent-soft);
+        border-radius: var(--radius); padding: 18px 20px;
+      }
+      .warranty h3 { margin-top: 0; color: var(--ink); }
+      .warranty p, .warranty li { color: var(--ink-soft); }
+      table.wtable { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: .9rem; }
+      table.wtable th, table.wtable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+      table.wtable th { font-weight: 700; color: var(--ink); }
+
+      footer {
+        margin-top: 28px; color: var(--ink-faint); font-size: .83rem; line-height: 1.6;
+        border-top: 1px solid var(--line); padding-top: 16px;
+      }
+      footer p { margin: 4px 0; }
+
+      /* Modal */
+      .modal-back {
+        display: none; position: fixed; inset: 0; background: rgba(15, 25, 20, .5);
+        z-index: 50; padding: 18px; overflow-y: auto;
+      }
+      .modal-back.show { display: flex; align-items: flex-start; justify-content: center; }
+      .modal {
+        background: var(--surface); color: var(--ink); border-radius: var(--radius);
+        max-width: 640px; width: 100%; padding: 22px; box-shadow: var(--shadow); margin-top: 4vh;
+      }
+      .modal h3 { margin: 0 0 4px; font-size: 1.1rem; overflow-wrap: anywhere; }
+      .modal pre {
+        white-space: pre-wrap; overflow-wrap: anywhere; font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: .86rem; line-height: 1.6; background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 12px; padding: 14px; max-height: 50vh; overflow-y: auto;
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px;
+        font-size: .9rem; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s ease;
+        z-index: 60; max-width: calc(100vw - 32px); text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      @media (prefers-reduced-motion: reduce) {
+        .toast, .bar > div { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Pemindai Dokumen OCR</h1>
+        <p>Ubah foto nota, kartu nama, dan surat menjadi teks yang bisa disalin dan diedit — praktis untuk kebutuhan usaha kecil Anda.</p>
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn" role="tab" id="tabbtn-ringkasan" aria-selected="true" aria-controls="panel-ringkasan" data-tab="ringkasan">Ringkasan</button>
+        <button class="tab-btn" role="tab" id="tabbtn-pindai" aria-selected="false" aria-controls="panel-pindai" data-tab="pindai">Pindai Dokumen</button>
+        <button class="tab-btn" role="tab" id="tabbtn-riwayat" aria-selected="false" aria-controls="panel-riwayat" data-tab="riwayat">Riwayat</button>
+        <button class="tab-btn" role="tab" id="tabbtn-panduan" aria-selected="false" aria-controls="panel-panduan" data-tab="panduan">Panduan</button>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section class="panel active" id="panel-ringkasan" role="tabpanel" aria-labelledby="tabbtn-ringkasan">
+        <div class="stats">
+          <div class="stat">
+            <div class="num" id="stat-docs">0</div>
+            <div class="lbl">Dokumen Dipindai</div>
+            <div class="sub">termasuk dokumen contoh</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="stat-words">0</div>
+            <div class="lbl">Kata Dikenali</div>
+            <div class="sub">dari semua hasil pindai</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="stat-acc">–</div>
+            <div class="lbl">Akurasi Rata-rata</div>
+            <div class="sub">perkiraan mesin OCR</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="stat-last" style="font-size:1.05rem; line-height:1.35;">–</div>
+            <div class="lbl">Dokumen Terakhir</div>
+            <div class="sub" id="stat-last-date">belum ada pindaian</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec">Mulai Memindai</h2>
+          <p class="muted" style="margin:0 0 14px;">Unggah foto dokumen (JPG/PNG), lalu teks di dalamnya akan dikenali otomatis. Belum punya gambar? Coba dulu tiga dokumen contoh di tab Riwayat — hasilnya sudah terpindai dan bisa langsung disalin atau diunduh.</p>
+          <div class="row">
+            <button class="btn primary" data-goto="pindai">Pindai Dokumen Baru</button>
+            <button class="btn" data-goto="riwayat">Lihat Riwayat &amp; Contoh</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PINDAI ============ -->
+      <section class="panel" id="panel-pindai" role="tabpanel" aria-labelledby="tabbtn-pindai">
+        <div class="card">
+          <h2 class="sec">Pindai Dokumen</h2>
+          <p class="muted small" style="margin:0 0 12px;">Status mesin OCR: <span class="status-chip" id="ocr-status"><span class="dot"></span><span id="ocr-status-text">Memeriksa mesin OCR…</span></span></p>
+
+          <div class="drop" id="drop">
+            <p class="big">Tarik &amp; letakkan gambar di sini</p>
+            <p class="muted small">atau pilih file dari perangkat Anda — format JPG atau PNG</p>
+            <div class="row" style="justify-content:center; margin-top:12px;">
+              <label class="btn primary" for="file-input" style="cursor:pointer;">Pilih Gambar Dokumen</label>
+              <input type="file" id="file-input" accept="image/jpeg,image/png,.jpg,.jpeg,.png" hidden />
+            </div>
+          </div>
+
+          <div class="preview" id="preview">
+            <img id="preview-img" alt="Pratinjau gambar dokumen yang dipilih" />
+            <div class="meta" id="preview-meta"></div>
+          </div>
+
+          <div class="field">
+            <label for="doc-name">Nama dokumen (untuk disimpan di riwayat)</label>
+            <input type="text" id="doc-name" placeholder="cth: Nota Toko Berkah Jaya" />
+          </div>
+
+          <div class="row" style="margin-top:16px;">
+            <button class="btn primary" id="scan-btn" disabled>Pindai Sekarang</button>
+            <button class="btn" id="clear-btn" disabled>Bersihkan</button>
+          </div>
+
+          <div class="progress" id="progress">
+            <div class="bar"><div id="progress-bar"></div></div>
+            <div class="lbl" id="progress-label">Menyiapkan mesin OCR…</div>
+          </div>
+
+          <div class="alert" id="scan-alert" role="alert"></div>
+
+          <div class="result-box" id="result-box">
+            <div class="result-head">
+              <h2 class="sec" style="margin:0;">Hasil Pindai</h2>
+              <span class="acc" id="acc-wrap">Akurasi <span class="meter"><div id="acc-bar" style="width:0%"></div></span> <span id="acc-val">–</span></span>
+            </div>
+            <textarea class="result" id="result-text" aria-label="Hasil teks pindaian — bisa diedit sebelum disalin"></textarea>
+            <p class="muted small" style="margin:8px 0 0;">Teks di atas bisa diedit dulu bila ada kata yang kurang tepat, lalu salin atau unduh.</p>
+            <div class="row" style="margin-top:12px;">
+              <button class="btn" id="copy-btn">Salin Teks</button>
+              <button class="btn" id="download-btn">Unduh sebagai .txt</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ RIWAYAT ============ -->
+      <section class="panel" id="panel-riwayat" role="tabpanel" aria-labelledby="tabbtn-riwayat">
+        <div class="searchbar">
+          <input type="search" id="hist-search" placeholder="Cari berdasarkan nama dokumen atau isi teks…" aria-label="Cari di riwayat pindaian" />
+        </div>
+        <div class="hist-list" id="hist-list"></div>
+        <div class="empty" id="hist-empty" style="display:none;">Tidak ada hasil yang cocok dengan pencarian Anda.</div>
+        <p class="muted small" style="margin-top:14px;">Riwayat hanya tersimpan selama aplikasi ini dibuka. Menutup atau memuat ulang halaman akan menghapus seluruh riwayat, termasuk dokumen contoh.</p>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel" aria-labelledby="tabbtn-panduan">
+        <div class="card guide">
+          <h3>Selamat Datang di Aplikasi OCR</h3>
+          <p>Aplikasi ini membantu Anda mengubah gambar dokumen — seperti nota belanja, kartu nama, kwitansi, dan surat — menjadi teks digital yang bisa disalin, diedit, dan disimpan sebagai file teks (.txt). Cocok untuk pemilik usaha kecil yang ingin mencatat transaksi atau mengarsipkan dokumen tanpa mengetik ulang.</p>
+
+          <h3>Cara Memindai Dokumen</h3>
+          <ol>
+            <li>Buka tab <strong>Pindai Dokumen</strong>.</li>
+            <li>Klik <strong>Pilih Gambar Dokumen</strong>, atau tarik dan letakkan file gambar ke kotak unggah. Format yang didukung: <strong>JPG dan PNG</strong>.</li>
+            <li>Periksa pratinjau gambar yang muncul. Isi nama dokumen bila ingin mudah ditemukan di riwayat.</li>
+            <li>Klik <strong>Pindai Sekarang</strong> dan tunggu sampai proses selesai. Bilah kemajuan menunjukkan tahap pemindaian.</li>
+            <li>Hasil teks muncul di bawahnya, lengkap dengan <strong>indikator akurasi</strong>. Periksa dan edit teks bila ada kata yang kurang tepat.</li>
+            <li>Klik <strong>Salin Teks</strong> untuk menyalin, atau <strong>Unduh sebagai .txt</strong> untuk menyimpan sebagai file teks.</li>
+            <li>Hasil pindai otomatis tersimpan di tab <strong>Riwayat</strong>.</li>
+          </ol>
+          <p><strong>Penting:</strong> pemindaian membutuhkan koneksi internet, karena mesin OCR (Tesseract.js) dan data bahasanya dimuat dari internet saat proses pindai berjalan. Bila mesin OCR belum termuat, aplikasi akan menampilkan pesan dan pemindaian tidak dapat dilakukan sampai koneksi tersedia.</p>
+
+          <h3>Tips Agar Hasil Pindai Lebih Akurat</h3>
+          <ul>
+            <li>Foto dokumen dalam keadaan <strong>tegak dan rata</strong>, tidak miring atau terlipat.</li>
+            <li>Pastikan pencahayaan cukup dan merata — hindari bayangan dan pantulan cahaya pada kertas.</li>
+            <li>Gunakan foto yang <strong>tajam dan tidak buram</strong>; dekatkan kamera sampai tulisan memenuhi bingkai foto.</li>
+            <li>Dokumen hasil ketikan atau cetakan dikenali jauh lebih baik daripada tulisan tangan.</li>
+            <li>Akurasi yang ditampilkan adalah perkiraan tingkat keyakinan mesin OCR, bukan jaminan kebenaran. Selalu periksa kembali angka penting seperti total harga, nomor telepon, dan tanggal.</li>
+          </ul>
+
+          <h3>Mengelola Riwayat</h3>
+          <ul>
+            <li>Tab <strong>Riwayat</strong> berisi semua hasil pindai selama aplikasi dibuka, termasuk tiga dokumen contoh.</li>
+            <li>Gunakan kotak <strong>pencarian</strong> untuk menyaring berdasarkan nama dokumen atau isi teks.</li>
+            <li><strong>Lihat</strong> membuka isi lengkap dokumen; <strong>Salin</strong> menyalin teksnya; <strong>Unduh .txt</strong> menyimpannya sebagai file; <strong>Hapus</strong> membuangnya dari riwayat.</li>
+            <li>Riwayat bersifat sementara: data hanya tersimpan selama aplikasi dibuka dan akan hilang bila halaman ditutup atau dimuat ulang. Unduh file .txt untuk dokumen yang ingin disimpan permanen.</li>
+          </ul>
+
+          <h3>Dokumen Contoh</h3>
+          <p>Tiga dokumen contoh — nota toko, kartu nama, dan surat sederhana — sudah tersedia di tab Riwayat dengan hasil teks yang sudah terpindai. Gunakan contoh ini untuk mencoba fitur lihat, salin, dan unduh tanpa perlu mengunggah gambar.</p>
+
+          <h3>Keterbatasan Aplikasi</h3>
+          <ul>
+            <li>Pemindaian OCR membutuhkan koneksi internet (mesin OCR dimuat dari internet).</li>
+            <li>Akurasi hasil tergantung kualitas gambar: foto buram, miring, atau gelap menghasilkan teks yang kurang tepat.</li>
+            <li>Tulisan tangan dan huruf dekoratif sulit dikenali.</li>
+            <li>Data hanya tersimpan selama aplikasi dibuka — tidak ada penyimpanan permanen di aplikasi ini.</li>
+          </ul>
+
+          <div class="warranty">
+            <h3>Garansi</h3>
+            <p>Aplikasi ini dilengkapi garansi perbaikan <strong>bug/error</strong> untuk fitur-fitur yang tercantum di buku panduan dan demo ini, <strong>gratis selama masa garansi</strong>:</p>
+            <table class="wtable">
+              <tr><th>Cara Beli</th><th>Paket</th><th>Masa Garansi</th></tr>
+              <tr><td>Beli Sekali</td><td>Pemula</td><td>30 hari</td></tr>
+              <tr><td>Beli Sekali</td><td>Profesional</td><td>60 hari</td></tr>
+              <tr><td>Beli Sekali</td><td>Bisnis</td><td>90 hari</td></tr>
+              <tr><td>Berlangganan</td><td>Semua paket</td><td>Selama langganan aktif</td></tr>
+            </table>
+            <p><strong>Garansi tidak mencakup:</strong></p>
+            <ul>
+              <li>Permintaan fitur baru di luar buku panduan dan demo.</li>
+              <li>Perubahan desain atau perubahan data.</li>
+              <li>Kerusakan akibat pembeli mengubah file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga (misalnya mesin OCR dari CDN atau koneksi internet pembeli).</li>
+            </ul>
+            <p><strong>Cara klaim:</strong> hubungi penjual melalui <strong>WhatsApp</strong> dan sertakan <strong>video atau screenshot</strong> yang menunjukkan bug/error-nya. Perbaikan akan dikerjakan selama masa garansi masih berlaku.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Catatan jujur:</strong> pemindaian OCR membutuhkan koneksi internet karena mesin OCR dimuat dari internet saat memindai. Akurasi hasil tergantung kualitas gambar dokumen Anda. Data pindaian dan riwayat hanya tersimpan selama aplikasi ini dibuka — unduh hasil penting sebagai file .txt agar tidak hilang.</p>
+      </footer>
+    </div>
+
+    <!-- Modal lihat dokumen -->
+    <div class="modal-back" id="modal-back">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <h3 id="modal-title">Dokumen</h3>
+        <p class="muted small" id="modal-meta" style="margin:0 0 12px;"></p>
+        <pre id="modal-text"></pre>
+        <div class="row" style="margin-top:14px;">
+          <button class="btn" id="modal-copy">Salin Teks</button>
+          <button class="btn" id="modal-download">Unduh .txt</button>
+          <button class="btn primary" id="modal-close">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        /* ---------- Data contoh (hasil sudah terpindai) ---------- */
+        var samples = [
+          {
+            id: "contoh-1",
+            name: "Nota Toko Berkah Jaya",
+            kind: "Nota",
+            sample: true,
+            accuracy: 96,
+            date: "Contoh dokumen",
+            text:
+"TOKO BERKAH JAYA\n" +
+"Jl. Melati No. 12, Jakarta Selatan\n" +
+"Telp. (021) 555-0142\n" +
+"--------------------------------\n" +
+"Nota No : 004512\n" +
+"Tanggal : 18 Nov 2026\n" +
+"Kasir   : Sari\n" +
+"--------------------------------\n" +
+"Beras Pandan Wangi 5kg    Rp62.500\n" +
+"Minyak Goreng 2L          Rp38.000\n" +
+"Gula Pasir 1kg            Rp17.500\n" +
+"Telur Ayam 1kg            Rp28.000\n" +
+"Kopi Bubuk 200g           Rp21.000\n" +
+"--------------------------------\n" +
+"Subtotal                 Rp167.000\n" +
+"Diskon                    -Rp7.000\n" +
+"TOTAL                    Rp160.000\n" +
+"Tunai                    Rp200.000\n" +
+"Kembali                   Rp40.000\n" +
+"--------------------------------\n" +
+"Terima kasih sudah berbelanja!\n" +
+"Barang yang sudah dibeli tidak\n" +
+"dapat ditukar atau dikembalikan."
+          },
+          {
+            id: "contoh-2",
+            name: "Kartu Nama — Dimas Prasetyo",
+            kind: "Kartu Nama",
+            sample: true,
+            accuracy: 94,
+            date: "Contoh dokumen",
+            text:
+"DIMAS PRASETYO\n" +
+"Pemilik & Barista\n" +
+"\n" +
+"KEDAI KOPI SENJA\n" +
+"Kopi Tubruk, Es Kopi Susu & Roti Bakar\n" +
+"\n" +
+"Jl. Kenanga No. 8, Yogyakarta\n" +
+"WA: 0812-3456-7890\n" +
+"Email: dimas@kopisenja.id\n" +
+"Instagram: @kopisenja.yk\n" +
+"\n" +
+"Buka setiap hari 08.00 - 22.00 WIB"
+          },
+          {
+            id: "contoh-3",
+            name: "Surat Keterangan Usaha",
+            kind: "Surat",
+            sample: true,
+            accuracy: 92,
+            date: "Contoh dokumen",
+            text:
+"SURAT KETERANGAN USAHA\n" +
+"Nomor: 09/SKU/XI/2026\n" +
+"\n" +
+"Yang bertanda tangan di bawah ini, Ketua RT 04 RW 07 Kelurahan Sukamaju, menerangkan dengan sebenarnya bahwa:\n" +
+"\n" +
+"Nama        : Ratna Wulandari\n" +
+"Alamat      : Jl. Cempaka No. 21, Sukamaju\n" +
+"Jenis Usaha : Warung Kelontong \"Ratna\"\n" +
+"\n" +
+"adalah benar warga kami dan memiliki usaha warung kelontong yang telah berjalan sejak tahun 2021 sampai sekarang.\n" +
+"\n" +
+"Surat keterangan ini dibuat untuk keperluan pengajuan pembiayaan usaha.\n" +
+"\n" +
+"Sukamaju, 15 November 2026\n" +
+"Ketua RT 04 RW 07\n" +
+"\n" +
+"(Bambang Sutrisno)"
+          }
+        ];
+
+        var scans = samples.slice();
+        var currentFile = null;      // File object terpilih
+        var currentDataUrl = null;   // pratinjau gambar
+        var currentResult = null;    // hasil pindai terakhir {name, text, accuracy}
+        var modalItem = null;
+        var toastTimer = null;
+
+        /* ---------- Util ---------- */
+        function $(id) { return document.getElementById(id); }
+        function countWords(t) {
+          var m = (t || "").trim().match(/\S+/g);
+          return m ? m.length : 0;
+        }
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+        function toast(msg) {
+          var el = $("toast");
+          el.textContent = msg;
+          el.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2600);
+        }
+        function nowLabel() {
+          try {
+            return new Date().toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+          } catch (e) { return ""; }
+        }
+        function downloadTxt(name, text) {
+          var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = (name || "hasil-ocr").replace(/[\\/:*?"<>|]/g, "-") + ".txt";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 800);
+        }
+        function copyText(text, doneMsg) {
+          function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); toast(doneMsg); }
+            catch (e) { toast("Gagal menyalin — salin teks secara manual."); }
+            document.body.removeChild(ta);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () { toast(doneMsg); }, fallback);
+          } else { fallback(); }
+        }
+
+        /* ---------- Tab ---------- */
+        function switchTab(name) {
+          var btns = document.querySelectorAll(".tab-btn");
+          for (var i = 0; i < btns.length; i++) {
+            btns[i].setAttribute("aria-selected", btns[i].getAttribute("data-tab") === name ? "true" : "false");
+          }
+          var panels = document.querySelectorAll(".panel");
+          for (var j = 0; j < panels.length; j++) {
+            panels[j].classList.toggle("active", panels[j].id === "panel-" + name);
+          }
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        var tabBtns = document.querySelectorAll(".tab-btn");
+        for (var i = 0; i < tabBtns.length; i++) {
+          tabBtns[i].addEventListener("click", function () { switchTab(this.getAttribute("data-tab")); });
+        }
+        var gotos = document.querySelectorAll("[data-goto]");
+        for (var g = 0; g < gotos.length; g++) {
+          gotos[g].addEventListener("click", function () { switchTab(this.getAttribute("data-goto")); });
+        }
+
+        /* ---------- Ringkasan ---------- */
+        function renderStats() {
+          var totalWords = 0, accSum = 0;
+          for (var i = 0; i < scans.length; i++) {
+            totalWords += countWords(scans[i].text);
+            accSum += scans[i].accuracy || 0;
+          }
+          $("stat-docs").textContent = scans.length;
+          $("stat-words").textContent = totalWords.toLocaleString("id-ID");
+          $("stat-acc").textContent = scans.length ? Math.round(accSum / scans.length) + "%" : "–";
+          var last = scans[scans.length - 1];
+          if (last) {
+            $("stat-last").textContent = last.name;
+            $("stat-last-date").textContent = last.date;
+          } else {
+            $("stat-last").textContent = "–";
+            $("stat-last-date").textContent = "belum ada pindaian";
+          }
+        }
+
+        /* ---------- Riwayat ---------- */
+        function renderHistory() {
+          var q = $("hist-search").value.trim().toLowerCase();
+          var list = $("hist-list");
+          list.innerHTML = "";
+          var shown = 0;
+          for (var i = scans.length - 1; i >= 0; i--) {
+            (function (item) {
+              if (q && item.name.toLowerCase().indexOf(q) === -1 && item.text.toLowerCase().indexOf(q) === -1) return;
+              shown++;
+              var words = countWords(item.text);
+              var div = document.createElement("div");
+              div.className = "hist-item";
+              var thumbHtml = item.thumb
+                ? '<img class="hist-thumb" src="' + item.thumb + '" alt="" />'
+                : '<div class="hist-icon">' + esc(item.kind || "Teks") + "</div>";
+              div.innerHTML =
+                thumbHtml +
+                '<div class="hist-main">' +
+                  '<div class="hist-name">' + esc(item.name) + (item.sample ? '<span class="tag">Contoh</span>' : "") + "</div>" +
+                  '<div class="hist-meta">' + esc(item.date) + " · " + words + " kata · akurasi " + Math.round(item.accuracy || 0) + "%</div>" +
+                  '<div class="hist-snippet">' + esc(item.text.replace(/\s+/g, " ").slice(0, 160)) + "</div>" +
+                  '<div class="hist-actions">' +
+                    '<button class="btn sm" data-act="view">Lihat</button>' +
+                    '<button class="btn sm" data-act="copy">Salin</button>' +
+                    '<button class="btn sm" data-act="dl">Unduh .txt</button>' +
+                    '<button class="btn sm danger" data-act="del">Hapus</button>' +
+                  "</div>" +
+                "</div>";
+              var btns = div.querySelectorAll("button[data-act]");
+              for (var b = 0; b < btns.length; b++) {
+                btns[b].addEventListener("click", function () {
+                  var act = this.getAttribute("data-act");
+                  if (act === "view") openModal(item);
+                  else if (act === "copy") copyText(item.text, "Teks \"" + item.name + "\" disalin.");
+                  else if (act === "dl") downloadTxt(item.name, item.text);
+                  else if (act === "del") {
+                    scans = scans.filter(function (s) { return s.id !== item.id; });
+                    renderHistory(); renderStats();
+                    toast("Dokumen \"" + item.name + "\" dihapus dari riwayat.");
+                  }
+                });
+              }
+              list.appendChild(div);
+            })(scans[i]);
+          }
+          $("hist-empty").style.display = shown ? "none" : "block";
+        }
+        $("hist-search").addEventListener("input", renderHistory);
+
+        /* ---------- Modal ---------- */
+        function openModal(item) {
+          modalItem = item;
+          $("modal-title").textContent = item.name;
+          $("modal-meta").textContent = item.date + " · " + countWords(item.text) + " kata · akurasi " + Math.round(item.accuracy || 0) + "%";
+          $("modal-text").textContent = item.text;
+          $("modal-back").classList.add("show");
+        }
+        function closeModal() { $("modal-back").classList.remove("show"); modalItem = null; }
+        $("modal-close").addEventListener("click", closeModal);
+        $("modal-back").addEventListener("click", function (e) { if (e.target === this) closeModal(); });
+        $("modal-copy").addEventListener("click", function () { if (modalItem) copyText(modalItem.text, "Teks disalin."); });
+        $("modal-download").addEventListener("click", function () { if (modalItem) downloadTxt(modalItem.name, modalItem.text); });
+
+        /* ---------- Status mesin OCR ---------- */
+        function ocrReady() { return typeof window.Tesseract !== "undefined" && window.Tesseract && typeof window.Tesseract.recognize === "function"; }
+        function refreshOcrStatus() {
+          var chip = $("ocr-status"), txt = $("ocr-status-text");
+          if (ocrReady()) {
+            chip.classList.add("ok");
+            txt.textContent = "Siap — mesin OCR termuat";
+          } else {
+            chip.classList.remove("ok");
+            txt.textContent = "Belum termuat — pemindaian butuh internet";
+          }
+        }
+        refreshOcrStatus();
+        window.addEventListener("load", refreshOcrStatus);
+        var statusPoll = setInterval(function () {
+          refreshOcrStatus();
+          if (ocrReady()) clearInterval(statusPoll);
+        }, 1500);
+        setTimeout(function () { clearInterval(statusPoll); }, 20000);
+
+        /* ---------- Unggah & pratinjau ---------- */
+        var fileInput = $("file-input"), drop = $("drop");
+        function setFile(file) {
+          hideAlert();
+          if (!file) return;
+          var okType = /image\/(jpeg|png)/.test(file.type) || /\.(jpe?g|png)$/i.test(file.name);
+          if (!okType) {
+            showAlert("Format file tidak didukung. Silakan pilih gambar JPG atau PNG.", true);
+            return;
+          }
+          currentFile = file;
+          var reader = new FileReader();
+          reader.onload = function () {
+            currentDataUrl = reader.result;
+            $("preview-img").src = currentDataUrl;
+            $("preview").classList.add("show");
+            $("preview-meta").textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB";
+            if (!$("doc-name").value.trim()) {
+              $("doc-name").value = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+            }
+            $("scan-btn").disabled = false;
+            $("clear-btn").disabled = false;
+            $("result-box").classList.remove("show");
+            currentResult = null;
+          };
+          reader.onerror = function () { showAlert("Gambar tidak dapat dibaca. Coba file lain.", true); };
+          reader.readAsDataURL(file);
+        }
+        fileInput.addEventListener("change", function () { setFile(this.files && this.files[0]); this.value = ""; });
+        ["dragenter", "dragover"].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("drag"); });
+        });
+        ["dragleave", "drop"].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("drag"); });
+        });
+        drop.addEventListener("drop", function (e) {
+          var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f) setFile(f);
+        });
+        $("clear-btn").addEventListener("click", function () {
+          currentFile = null; currentDataUrl = null; currentResult = null;
+          $("preview").classList.remove("show");
+          $("preview-img").removeAttribute("src");
+          $("doc-name").value = "";
+          $("scan-btn").disabled = true;
+          $("clear-btn").disabled = true;
+          $("result-box").classList.remove("show");
+          hideAlert();
+        });
+
+        /* ---------- Pindai ---------- */
+        function showAlert(msg, isErr) {
+          var a = $("scan-alert");
+          a.textContent = msg;
+          a.classList.add("show");
+          a.classList.toggle("err", !!isErr);
+        }
+        function hideAlert() { $("scan-alert").classList.remove("show"); }
+
+        $("scan-btn").addEventListener("click", function () {
+          hideAlert();
+          if (!currentFile || !currentDataUrl) {
+            showAlert("Pilih gambar dokumen terlebih dahulu.", true);
+            return;
+          }
+          if (!ocrReady()) {
+            showAlert("Mesin OCR belum termuat. Pemindaian membutuhkan koneksi internet karena mesin OCR (Tesseract.js) dimuat dari internet — periksa koneksi Anda, lalu muat ulang halaman ini dan coba lagi.", true);
+            return;
+          }
+          var btn = $("scan-btn");
+          btn.disabled = true;
+          btn.textContent = "Memindai…";
+          $("progress").classList.add("show");
+          $("progress-bar").style.width = "2%";
+          $("progress-label").textContent = "Menyiapkan mesin OCR…";
+
+          window.Tesseract.recognize(currentDataUrl, "ind+eng", {
+            logger: function (m) {
+              if (m.status === "recognizing text") {
+                var pct = Math.round((m.progress || 0) * 100);
+                $("progress-bar").style.width = Math.max(2, pct) + "%";
+                $("progress-label").textContent = "Mengenali teks… " + pct + "%";
+              } else if (m.status) {
+                $("progress-label").textContent = "Memproses… (" + m.status + ")";
+              }
+            }
+          }).then(function (result) {
+            var data = result.data || {};
+            var text = (data.text || "").trim();
+            var acc = typeof data.confidence === "number" ? Math.round(data.confidence) : 0;
+            $("progress").classList.remove("show");
+            btn.disabled = false;
+            btn.textContent = "Pindai Sekarang";
+            if (!text) {
+              showAlert("Tidak ada teks yang berhasil dikenali dari gambar ini. Coba foto yang lebih terang, tegak, dan tajam.", true);
+              return;
+            }
+            var name = $("doc-name").value.trim() || currentFile.name.replace(/\.[^.]+$/, "");
+            currentResult = { name: name, text: text, accuracy: acc };
+            $("result-text").value = text;
+            $("acc-val").textContent = acc + "%";
+            $("acc-bar").style.width = acc + "%";
+            $("result-box").classList.add("show");
+            scans.push({
+              id: "scan-" + Date.now(),
+              name: name,
+              kind: "Hasil",
+              sample: false,
+              accuracy: acc,
+              date: nowLabel(),
+              text: text,
+              thumb: currentDataUrl
+            });
+            renderStats(); renderHistory();
+            toast("Pemindaian selesai — tersimpan di Riwayat.");
+            $("result-box").scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }).catch(function () {
+            $("progress").classList.remove("show");
+            btn.disabled = false;
+            btn.textContent = "Pindai Sekarang";
+            showAlert("Pemindaian gagal. Proses OCR membutuhkan koneksi internet untuk memuat mesin dan data bahasa — periksa koneksi Anda, lalu coba lagi. Bila gambar sangat besar, coba gambar yang lebih kecil.", true);
+          });
+        });
+
+        /* ---------- Aksi hasil pindai ---------- */
+        $("copy-btn").addEventListener("click", function () {
+          var t = $("result-text").value;
+          if (t.trim()) copyText(t, "Hasil pindai disalin.");
+        });
+        $("download-btn").addEventListener("click", function () {
+          var t = $("result-text").value;
+          if (!t.trim()) return;
+          var name = currentResult ? currentResult.name : ($("doc-name").value.trim() || "hasil-ocr");
+          downloadTxt(name, t);
+        });
+        /* Bila teks hasil diedit, sinkronkan ke entri riwayat terakhir */
+        $("result-text").addEventListener("change", function () {
+          if (!currentResult) return;
+          currentResult.text = $("result-text").value;
+          for (var i = scans.length - 1; i >= 0; i--) {
+            if (!scans[i].sample && scans[i].name === currentResult.name) { scans[i].text = currentResult.text; break; }
+          }
+          renderStats(); renderHistory();
+        });
+
+        /* ---------- Render awal ---------- */
+        renderStats();
+        renderHistory();
+      })();
+    </script>
+  </body>
+</html>
