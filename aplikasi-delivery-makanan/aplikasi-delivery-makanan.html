@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Delivery Makanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #fdf8f4;
+        --surface: #ffffff;
+        --surface-2: #fff4ec;
+        --ink: #2b211b;
+        --ink-soft: #6f5f55;
+        --line: #f0e2d6;
+        --accent: #e4572e;
+        --accent-dark: #c7431f;
+        --accent-soft: #fdeee7;
+        --green: #1e8e5a;
+        --green-soft: #e4f5ec;
+        --amber: #b97a0f;
+        --amber-soft: #fdf1dc;
+        --blue: #2563eb;
+        --blue-soft: #e6eefc;
+        --red: #c0392b;
+        --red-soft: #fdecea;
+        --gray-soft: #f1ece8;
+        --shadow: 0 2px 10px rgba(120, 72, 40, .07), 0 10px 30px rgba(120, 72, 40, .05);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171210;
+          --surface: #221b17;
+          --surface-2: #2b211b;
+          --ink: #f5ece5;
+          --ink-soft: #bfaea3;
+          --line: #3a2d25;
+          --accent: #f0703f;
+          --accent-dark: #f0703f;
+          --accent-soft: #3a2318;
+          --green: #4cc38a;
+          --green-soft: #173528;
+          --amber: #e5a83c;
+          --amber-soft: #3a2c12;
+          --blue: #6ea8fe;
+          --blue-soft: #1d2c4d;
+          --red: #f0837a;
+          --red-soft: #3d1d19;
+          --gray-soft: #2b211b;
+          --shadow: 0 2px 10px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.5;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      button { font-family: inherit; cursor: pointer; }
+      input, select, textarea { font-family: inherit; font-size: .95rem; color: var(--ink); }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      /* ---------- Header ---------- */
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.55rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-soft); font-size: .95rem; }
+
+      /* ---------- Tabs ---------- */
+      .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+      .tab-btn {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-weight: 600; font-size: .92rem;
+        padding: 8px 16px; border-radius: 999px;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .tab-btn:hover { border-color: var(--accent); color: var(--accent-dark); }
+      .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; }
+
+      /* ---------- Cards & stats ---------- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px; }
+      .stat-card { padding: 18px; }
+      .stat-label { font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 6px; }
+      .stat-value { font-size: 1.7rem; font-weight: 800; margin: 0; letter-spacing: -.01em; }
+      .stat-sub { font-size: .82rem; color: var(--ink-soft); margin: 4px 0 0; }
+      .stat-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 10px;
+      }
+      .stat-icon svg { width: 21px; height: 21px; }
+      .ic-orange { background: var(--accent-soft); color: var(--accent-dark); }
+      .ic-blue { background: var(--blue-soft); color: var(--blue); }
+      .ic-green { background: var(--green-soft); color: var(--green); }
+      .ic-amber { background: var(--amber-soft); color: var(--amber); }
+
+      h2.section-title { font-size: 1.12rem; font-weight: 700; margin: 22px 0 12px; }
+      h2.section-title:first-child { margin-top: 0; }
+
+      /* ---------- Toolbar ---------- */
+      .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+      .search-box { flex: 1 1 220px; position: relative; }
+      .search-box input {
+        width: 100%; padding: 9px 14px 9px 38px;
+        border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+      }
+      .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--ink-soft); pointer-events: none; }
+      .btn {
+        border: none; border-radius: 12px; padding: 9px 18px;
+        font-weight: 700; font-size: .92rem;
+        display: inline-flex; align-items: center; gap: 7px;
+      }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      .btn-ghost { background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-weight: 600; }
+      .btn-ghost:hover { border-color: var(--accent); color: var(--accent-dark); }
+      .btn-small { padding: 6px 12px; font-size: .84rem; border-radius: 10px; min-height: 2.25rem; }
+      .btn-danger-ghost { background: var(--surface); border: 1px solid var(--line); color: var(--red); font-weight: 600; }
+      .btn-danger-ghost:hover { background: var(--red-soft); border-color: var(--red); }
+
+      .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+      .chip {
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+        border-radius: 999px; padding: 6px 14px; font-size: .86rem; font-weight: 600;
+      }
+      .chip.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+      /* ---------- Order cards ---------- */
+      .order-list { display: grid; gap: 12px; }
+      .order-card { padding: 16px 18px; }
+      .order-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+      .order-id { font-weight: 800; font-size: .95rem; }
+      .order-customer { font-weight: 700; font-size: 1.02rem; margin: 2px 0 0; }
+      .order-meta { color: var(--ink-soft); font-size: .87rem; margin: 3px 0 0; }
+      .order-items { margin: 10px 0 0; font-size: .93rem; }
+      .order-items li { margin: 2px 0; }
+      .order-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+      .price-lines { font-size: .86rem; color: var(--ink-soft); }
+      .price-lines .total { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+      .order-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .status-select {
+        border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px;
+        background: var(--surface); font-weight: 600; font-size: .88rem;
+      }
+      .badge { display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+      .badge-baru { background: var(--amber-soft); color: var(--amber); }
+      .badge-dimasak { background: var(--accent-soft); color: var(--accent-dark); }
+      .badge-diantar { background: var(--blue-soft); color: var(--blue); }
+      .badge-terkirim { background: var(--green-soft); color: var(--green); }
+      .badge-batal { background: var(--red-soft); color: var(--red); }
+
+      /* ---------- Menu grid ---------- */
+      .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+      .menu-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+      .menu-tile {
+        height: 92px; display: flex; align-items: center; justify-content: center;
+        font-size: 1.9rem; font-weight: 800; letter-spacing: .02em; color: #fff;
+      }
+      .menu-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+      .menu-name { font-weight: 700; font-size: 1rem; margin: 0; }
+      .menu-cat { font-size: .8rem; color: var(--ink-soft); margin: 0; }
+      .menu-desc { font-size: .86rem; color: var(--ink-soft); margin: 4px 0 0; flex: 1; }
+      .menu-price { font-weight: 800; font-size: 1.08rem; margin: 8px 0 0; }
+      .menu-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+      /* ---------- Kurir ---------- */
+      .kurir-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+      .kurir-card { padding: 18px; }
+      .kurir-head { display: flex; align-items: center; gap: 12px; }
+      .avatar {
+        width: 46px; height: 46px; border-radius: 50%; flex: none;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: #fff; font-size: 1rem;
+      }
+      .kurir-name { font-weight: 700; margin: 0; font-size: 1rem; }
+      .kurir-sub { color: var(--ink-soft); font-size: .85rem; margin: 1px 0 0; }
+      .kurir-stat { display: flex; gap: 8px; margin-top: 14px; }
+      .kurir-stat .box { flex: 1; background: var(--gray-soft); border-radius: 10px; padding: 8px 10px; text-align: center; }
+      .kurir-stat .box b { display: block; font-size: 1.05rem; }
+      .kurir-stat .box span { font-size: .74rem; color: var(--ink-soft); font-weight: 600; }
+      .kurir-actions { display: flex; gap: 8px; margin-top: 12px; }
+      .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+      .dot-on { background: var(--green); }
+      .dot-off { background: var(--ink-soft); }
+
+      .empty { text-align: center; color: var(--ink-soft); padding: 34px 16px; font-size: .94rem; }
+
+      /* ---------- Panduan ---------- */
+      .guide { max-width: 760px; }
+      .guide h3 { font-size: 1.02rem; font-weight: 700; margin: 22px 0 8px; }
+      .guide h3:first-child { margin-top: 0; }
+      .guide p, .guide li { font-size: .94rem; color: var(--ink); }
+      .guide p { margin: 0 0 10px; }
+      .guide ul, .guide ol { margin: 0 0 10px; padding-left: 22px; }
+      .guide li { margin: 4px 0; }
+      .guide .muted { color: var(--ink-soft); }
+      .warranty-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; margin-top: 8px; }
+      .warranty-box h3 { margin-top: 0; }
+
+      /* ---------- Modal ---------- */
+      .modal-backdrop {
+        position: fixed; inset: 0; background: rgba(30, 18, 10, .45);
+        display: none; align-items: flex-end; justify-content: center; z-index: 50; padding: 0;
+      }
+      .modal-backdrop.open { display: flex; }
+      .modal {
+        background: var(--surface); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+        border-radius: 20px 20px 0 0; padding: 22px 20px 26px;
+      }
+      @media (min-width: 640px) {
+        .modal-backdrop { align-items: center; padding: 20px; }
+        .modal { border-radius: 20px; }
+      }
+      .modal h2 { font-size: 1.15rem; font-weight: 800; margin: 0 0 16px; }
+      .field { margin-bottom: 13px; }
+      .field label { display: block; font-size: .86rem; font-weight: 600; margin-bottom: 5px; }
+      .field input, .field select, .field textarea {
+        width: 100%; padding: 9px 12px; border: 1px solid var(--line);
+        border-radius: 10px; background: var(--surface);
+      }
+      .field textarea { min-height: 64px; resize: vertical; }
+      .field .hint { font-size: .8rem; color: var(--ink-soft); margin-top: 4px; }
+      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+      .calc-box { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; font-size: .9rem; margin-bottom: 14px; }
+      .calc-box .row { display: flex; justify-content: space-between; margin: 3px 0; }
+      .calc-box .row.grand { font-weight: 800; font-size: 1rem; border-top: 1px dashed var(--line); padding-top: 7px; margin-top: 7px; }
+      .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; flex-wrap: wrap; }
+      .form-error { color: var(--red); font-size: .86rem; font-weight: 600; margin: 0 0 10px; display: none; }
+
+      footer { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--ink-soft); font-size: .85rem; }
+      footer p { margin: 4px 0; }
+
+      .recent-list { display: grid; gap: 10px; }
+      .recent-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; background: var(--gray-soft); border-radius: 12px; }
+      .recent-item .who { font-weight: 700; font-size: .93rem; }
+      .recent-item .what { color: var(--ink-soft); font-size: .85rem; }
+      .recent-item .amt { font-weight: 800; font-size: .95rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Delivery Makanan</h1>
+        <p>Catat pesanan, atur menu, dan pantau pengantaran makanan usaha kuliner Anda dalam satu tempat.</p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button>
+        <button class="tab-btn" data-tab="pesanan" role="tab">Pesanan</button>
+        <button class="tab-btn" data-tab="menu" role="tab">Menu</button>
+        <button class="tab-btn" data-tab="kurir" role="tab">Kurir</button>
+        <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section id="panel-ringkasan" class="tab-panel active">
+        <div class="stat-grid">
+          <div class="card stat-card">
+            <div class="stat-icon ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+            <p class="stat-label">Pesanan Hari Ini</p>
+            <p class="stat-value" id="stat-total">0</p>
+            <p class="stat-sub">Semua pesanan yang masuk hari ini</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg></div>
+            <p class="stat-label">Sedang Diantar</p>
+            <p class="stat-value" id="stat-diantar">0</p>
+            <p class="stat-sub">Pesanan dalam perjalanan ke pelanggan</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
+            <p class="stat-label">Terkirim Hari Ini</p>
+            <p class="stat-value" id="stat-terkirim">0</p>
+            <p class="stat-sub">Pesanan yang sudah sampai ke pelanggan</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+            <p class="stat-label">Pemasukan Hari Ini</p>
+            <p class="stat-value" id="stat-pemasukan">Rp0</p>
+            <p class="stat-sub">Dari pesanan berstatus Terkirim (termasuk ongkir)</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="section-title">Pesanan Terbaru</h2>
+          <div class="recent-list" id="recent-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ PESANAN ============ -->
+      <section id="panel-pesanan" class="tab-panel">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" id="order-search" placeholder="Cari nama pelanggan, menu, atau nomor pesanan…" aria-label="Cari pesanan" />
+          </div>
+          <button class="btn btn-primary" id="btn-add-order">+ Tambah Pesanan</button>
+        </div>
+        <div class="chips" id="status-chips">
+          <button class="chip active" data-status="Semua">Semua</button>
+          <button class="chip" data-status="Baru">Baru</button>
+          <button class="chip" data-status="Dimasak">Dimasak</button>
+          <button class="chip" data-status="Diantar">Diantar</button>
+          <button class="chip" data-status="Terkirim">Terkirim</button>
+          <button class="chip" data-status="Batal">Batal</button>
+        </div>
+        <div class="order-list" id="order-list"></div>
+        <div class="empty card" id="order-empty" style="display:none;">Tidak ada pesanan yang cocok dengan pencarian atau filter ini.</div>
+      </section>
+
+      <!-- ============ MENU ============ -->
+      <section id="panel-menu" class="tab-panel">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" id="menu-search" placeholder="Cari menu…" aria-label="Cari menu" />
+          </div>
+          <button class="btn btn-primary" id="btn-add-menu">+ Tambah Menu</button>
+        </div>
+        <div class="menu-grid" id="menu-grid"></div>
+        <div class="empty card" id="menu-empty" style="display:none;">Tidak ada menu yang cocok dengan pencarian ini.</div>
+      </section>
+
+      <!-- ============ KURIR ============ -->
+      <section id="panel-kurir" class="tab-panel">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" id="kurir-search" placeholder="Cari nama kurir…" aria-label="Cari kurir" />
+          </div>
+          <button class="btn btn-primary" id="btn-add-kurir">+ Tambah Kurir</button>
+        </div>
+        <div class="kurir-list" id="kurir-list"></div>
+        <div class="empty card" id="kurir-empty" style="display:none;">Tidak ada kurir yang cocok dengan pencarian ini.</div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section id="panel-panduan" class="tab-panel">
+        <div class="card guide">
+          <h3>Selamat Datang di Aplikasi Delivery Makanan</h3>
+          <p>Aplikasi ini membantu usaha kuliner kecil mencatat dan mengelola jasa antar makanan: menerima pesanan, mengatur menu, menugaskan kurir, dan memantau pengantaran sampai makanan diterima pelanggan. Aplikasi terdiri dari lima tab: <b>Ringkasan</b>, <b>Pesanan</b>, <b>Menu</b>, <b>Kurir</b>, dan <b>Panduan</b> (halaman ini).</p>
+
+          <h3>Tab Ringkasan</h3>
+          <p>Menampilkan gambaran usaha Anda hari ini:</p>
+          <ul>
+            <li><b>Pesanan Hari Ini</b> — jumlah seluruh pesanan yang tercatat.</li>
+            <li><b>Sedang Diantar</b> — pesanan yang sedang dalam perjalanan bersama kurir.</li>
+            <li><b>Terkirim Hari Ini</b> — pesanan yang sudah sampai ke pelanggan.</li>
+            <li><b>Pemasukan Hari Ini</b> — total nilai pesanan berstatus Terkirim, sudah termasuk ongkos kirim.</li>
+          </ul>
+          <p>Di bawahnya ada daftar <b>Pesanan Terbaru</b> agar Anda bisa melihat aktivitas terakhir sekilas. Semua angka diperbarui otomatis setiap kali ada pesanan ditambah, diubah statusnya, atau dihapus.</p>
+
+          <h3>Tab Pesanan</h3>
+          <p>Di sinilah pekerjaan harian dilakukan:</p>
+          <ol>
+            <li>Tekan <b>+ Tambah Pesanan</b>, lalu isi nama pelanggan, pilih menu, jumlah porsi, alamat pengantaran, dan jarak tempuh (km).</li>
+            <li><b>Ongkos kirim dihitung otomatis</b> dari jarak: 0–3 km Rp5.000, lebih dari 3–6 km Rp8.000, lebih dari 6–10 km Rp12.000, dan lebih dari 10 km Rp18.000. Total bayar (harga menu × jumlah + ongkir) tampil sebelum pesanan disimpan.</li>
+            <li>Pilih kurir yang akan mengantar (boleh dikosongkan dulu dan diisi menyusul lewat tombol Ubah).</li>
+            <li>Ubah status pesanan mengikuti perjalanan makanan: <b>Baru</b> → <b>Dimasak</b> → <b>Diantar</b> → <b>Terkirim</b>. Jika pelanggan membatalkan, pilih status <b>Batal</b>.</li>
+            <li>Gunakan kotak pencarian untuk mencari berdasarkan nama pelanggan, menu, atau nomor pesanan, dan tombol filter untuk menampilkan status tertentu saja.</li>
+            <li>Tombol <b>Hapus</b> menghapus pesanan dari daftar. Penghapusan tidak bisa dibatalkan, jadi pastikan dulu sebelum menekan tombol konfirmasi.</li>
+          </ol>
+          <p class="muted">Harga yang tercatat pada pesanan adalah harga menu saat pesanan dibuat. Jika harga menu diubah kemudian, pesanan lama tidak ikut berubah.</p>
+
+          <h3>Tab Menu</h3>
+          <ul>
+            <li>Tekan <b>+ Tambah Menu</b> untuk menambahkan makanan atau minuman baru: nama, kategori, harga, dan keterangan singkat.</li>
+            <li>Tombol <b>Ubah</b> pada kartu menu mengganti nama, kategori, harga, atau keterangan.</li>
+            <li>Tombol <b>Hapus</b> menghapus menu. Menu yang dihapus tidak lagi bisa dipilih pada pesanan baru, tetapi pesanan lama yang sudah tercatat tetap tampil seperti semula.</li>
+            <li>Gunakan pencarian untuk menemukan menu dengan cepat.</li>
+          </ul>
+
+          <h3>Tab Kurir</h3>
+          <ul>
+            <li>Tekan <b>+ Tambah Kurir</b> untuk mendaftarkan kurir: nama, nomor HP, kendaraan beserta plat nomor, dan status aktif/tidak aktif.</li>
+            <li>Setiap kartu kurir menampilkan jumlah <b>pesanan aktif</b> (pesanan yang ditugaskan kepadanya dan belum Terkirim atau Batal) serta jumlah pesanan yang sudah ia selesaikan.</li>
+            <li>Tombol <b>Ubah</b> mengganti data kurir; tombol <b>Hapus</b> menghapus kurir. Pesanan lama tetap tercatat, hanya nama kurirnya menjadi tidak terdaftar.</li>
+            <li>Kurir berstatus tidak aktif tidak muncul pada pilihan kurir saat membuat pesanan baru.</li>
+          </ul>
+
+          <h3>Alur Kerja Harian yang Disarankan</h3>
+          <ol>
+            <li>Pesanan masuk (telepon/WhatsApp) → catat di tab Pesanan dengan status <b>Baru</b>.</li>
+            <li>Dapur mulai memasak → ubah status menjadi <b>Dimasak</b>.</li>
+            <li>Makanan selesai dan kurir berangkat → pastikan kurir sudah dipilih, lalu ubah status menjadi <b>Diantar</b>.</li>
+            <li>Kurir mengabari makanan sudah diterima → ubah status menjadi <b>Terkirim</b>. Pemasukan hari ini bertambah otomatis.</li>
+            <li>Sore hari, cek tab Ringkasan untuk rekap penjualan hari itu.</li>
+          </ol>
+
+          <h3>Hal yang Perlu Diketahui</h3>
+          <ul>
+            <li>Data contoh yang tampil saat aplikasi dibuka hanya tersimpan selama aplikasi dibuka. Menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal.</li>
+            <li>Aplikasi ini adalah alat <b>pencatatan</b> pengiriman makanan untuk internal usaha Anda — bukan aplikasi pemesanan bagi pelanggan, tidak menerima pembayaran online, dan tidak melacak posisi kurir lewat GPS.</li>
+            <li>Ongkos kirim dihitung dari jarak yang Anda masukkan; pastikan jarak diisi sesuai perkiraan jarak sebenarnya ke alamat pelanggan.</li>
+          </ul>
+
+          <div class="warranty-box">
+            <h3>Garansi</h3>
+            <p>Setiap pembelian aplikasi ini dilengkapi garansi perbaikan <b>bug/error</b> — yaitu kesalahan program pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada demo — secara <b>gratis selama masa garansi</b>:</p>
+            <ul>
+              <li><b>Beli Sekali — Pemula:</b> garansi 30 hari.</li>
+              <li><b>Beli Sekali — Profesional:</b> garansi 60 hari.</li>
+              <li><b>Beli Sekali — Bisnis:</b> garansi 90 hari.</li>
+              <li><b>Berlangganan:</b> garansi berlaku selama masa langganan aktif.</li>
+            </ul>
+            <p>Garansi <b>tidak mencakup</b>:</p>
+            <ul>
+              <li>Permintaan fitur baru di luar buku panduan dan demo.</li>
+              <li>Perubahan desain, tampilan, atau struktur data.</li>
+              <li>Kerusakan atau error yang timbul karena pembeli mengubah file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga (misalnya peramban, perangkat, atau jaringan).</li>
+            </ul>
+            <p><b>Cara klaim:</b> hubungi penjual melalui WhatsApp dan kirimkan video atau screenshot yang menunjukkan bug/error beserta penjelasan singkat kapan masalah terjadi. Perbaikan akan dikerjakan dan dikirimkan kembali sebagai file aplikasi yang diperbarui.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p>Data contoh pada aplikasi ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data awal.</p>
+        <p>Aplikasi ini adalah alat pencatatan pengiriman makanan untuk internal usaha Anda, bukan aplikasi pemesanan bagi pelanggan dan bukan pelacak GPS kurir.</p>
+      </footer>
+    </div>
+
+    <!-- ============ MODAL PESANAN ============ -->
+    <div class="modal-backdrop" id="modal-order">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="order-modal-title">
+        <h2 id="order-modal-title">Tambah Pesanan</h2>
+        <p class="form-error" id="order-error"></p>
+        <form id="form-order">
+          <div class="field">
+            <label for="f-customer">Nama Pelanggan</label>
+            <input type="text" id="f-customer" placeholder="cth. Ibu Ratna" autocomplete="off" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-menu">Menu</label>
+              <select id="f-menu"></select>
+            </div>
+            <div class="field">
+              <label for="f-qty">Jumlah (porsi)</label>
+              <input type="number" id="f-qty" min="1" step="1" value="1" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-address">Alamat Pengantaran</label>
+            <textarea id="f-address" placeholder="cth. Jl. Melati No. 12, dekat masjid"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-distance">Jarak Tempuh (km)</label>
+              <input type="number" id="f-distance" min="0" step="0.5" value="2" />
+              <p class="hint">Ongkir otomatis: 0–3 km Rp5.000 · 3–6 km Rp8.000 · 6–10 km Rp12.000 · &gt;10 km Rp18.000</p>
+            </div>
+            <div class="field">
+              <label for="f-kurir">Kurir Pengantar</label>
+              <select id="f-kurir"></select>
+            </div>
+          </div>
+          <div class="calc-box" id="order-calc"></div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-close>Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Pesanan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ MODAL MENU ============ -->
+    <div class="modal-backdrop" id="modal-menu">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="menu-modal-title">
+        <h2 id="menu-modal-title">Tambah Menu</h2>
+        <p class="form-error" id="menu-error"></p>
+        <form id="form-menu">
+          <div class="field">
+            <label for="m-name">Nama Menu</label>
+            <input type="text" id="m-name" placeholder="cth. Nasi Goreng Spesial" autocomplete="off" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="m-cat">Kategori</label>
+              <input type="text" id="m-cat" placeholder="cth. Makanan Berat" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="m-price">Harga (Rp)</label>
+              <input type="number" id="m-price" min="0" step="500" placeholder="cth. 25000" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="m-desc">Keterangan Singkat</label>
+            <input type="text" id="m-desc" placeholder="cth. Nasi goreng dengan telur, ayam, dan kerupuk" autocomplete="off" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-close>Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Menu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ MODAL KURIR ============ -->
+    <div class="modal-backdrop" id="modal-kurir">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="kurir-modal-title">
+        <h2 id="kurir-modal-title">Tambah Kurir</h2>
+        <p class="form-error" id="kurir-error"></p>
+        <form id="form-kurir">
+          <div class="field">
+            <label for="k-name">Nama Kurir</label>
+            <input type="text" id="k-name" placeholder="cth. Andi Pratama" autocomplete="off" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="k-phone">Nomor HP</label>
+              <input type="tel" id="k-phone" placeholder="cth. 0812-3456-7890" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="k-vehicle">Kendaraan &amp; Plat</label>
+              <input type="text" id="k-vehicle" placeholder="cth. Honda Beat · B 1234 ABC" autocomplete="off" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="k-active">Status Kurir</label>
+            <select id="k-active">
+              <option value="aktif">Aktif — bisa ditugaskan</option>
+              <option value="nonaktif">Tidak aktif</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-close>Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Kurir</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ MODAL KONFIRMASI HAPUS ============ -->
+    <div class="modal-backdrop" id="modal-confirm">
+      <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">Hapus Data?</h2>
+        <p id="confirm-text" style="margin:0 0 18px;"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close>Batal</button>
+          <button type="button" class="btn btn-primary" id="confirm-yes" style="background:var(--red);">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      /* ================= Data contoh ================= */
+      var MENU_COLORS = ["#e4572e", "#1e8e5a", "#b97a0f", "#7c4dbd", "#2563eb", "#c2185b", "#0e7c86", "#8a5a2b"];
+
+      var menus = [
+        { id: 1, name: "Nasi Goreng Spesial", cat: "Makanan Berat", price: 25000, desc: "Nasi goreng dengan telur mata sapi, suwiran ayam, dan kerupuk udang." },
+        { id: 2, name: "Ayam Geprek Sambal Bawang", cat: "Makanan Berat", price: 20000, desc: "Ayam goreng tepung digeprek dengan sambal bawang segar, plus lalapan." },
+        { id: 3, name: "Mie Ayam Bakso", cat: "Mie & Bakso", price: 18000, desc: "Mie ayam dengan bakso sapi, pangsit, dan kuah kaldu gurih." },
+        { id: 4, name: "Soto Ayam Lamongan", cat: "Makanan Berkuah", price: 20000, desc: "Soto ayam kuah kuning dengan koya, telur, dan sambal." },
+        { id: 5, name: "Sate Ayam Madura (10 tusuk)", cat: "Makanan Berat", price: 28000, desc: "Sate ayam bumbu kacang dengan lontong dan bawang goreng." },
+        { id: 6, name: "Bakso Sapi Komplit", cat: "Mie & Bakso", price: 22000, desc: "Bakso sapi besar dan kecil, mie, tahu, dan pangsit goreng." },
+        { id: 7, name: "Es Teh Manis", cat: "Minuman", price: 6000, desc: "Teh manis dingin pelepas dahaga, gula asli." },
+        { id: 8, name: "Jus Alpukat", cat: "Minuman", price: 12000, desc: "Jus alpukat segar dengan susu kental manis cokelat." }
+      ];
+
+      var kurirs = [
+        { id: 1, name: "Andi Pratama", phone: "0812-3401-2210", vehicle: "Honda Beat · B 4521 KJA", active: true },
+        { id: 2, name: "Budi Santoso", phone: "0813-8820-1145", vehicle: "Yamaha Mio · B 6712 TQR", active: true },
+        { id: 3, name: "Dedi Kurniawan", phone: "0821-5577-9034", vehicle: "Honda Vario · B 3098 PLM", active: true },
+        { id: 4, name: "Eko Wijaya", phone: "0857-1190-6642", vehicle: "Suzuki Nex · B 5540 WZK", active: true },
+        { id: 5, name: "Fajar Ramadhan", phone: "0896-2234-7815", vehicle: "Honda Scoopy · B 7819 HFD", active: false }
+      ];
+
+      var STATUSES = ["Baru", "Dimasak", "Diantar", "Terkirim", "Batal"];
+
+      var orders = [
+        { id: "PS-001", customer: "Ibu Ratna", menuId: 1, menuName: "Nasi Goreng Spesial", price: 25000, qty: 2, address: "Jl. Melati No. 12, dekat masjid", distance: 2.5, ongkir: 5000, kurirId: 1, status: "Terkirim", time: "09.15" },
+        { id: "PS-002", customer: "Pak Hendra", menuId: 5, menuName: "Sate Ayam Madura (10 tusuk)", price: 28000, qty: 1, address: "Perumahan Griya Asri Blok C3 No. 8", distance: 4, ongkir: 8000, kurirId: 2, status: "Terkirim", time: "09.40" },
+        { id: "PS-003", customer: "Mbak Sari", menuId: 3, menuName: "Mie Ayam Bakso", price: 18000, qty: 3, address: "Jl. Kenanga No. 45, kos Melati kamar 7", distance: 1.5, ongkir: 5000, kurirId: 1, status: "Terkirim", time: "10.05" },
+        { id: "PS-004", customer: "Mas Rizky", menuId: 2, menuName: "Ayam Geprek Sambal Bawang", price: 20000, qty: 2, address: "Jl. Anggrek No. 3, samping warung kopi", distance: 5.5, ongkir: 8000, kurirId: 3, status: "Diantar", time: "10.30" },
+        { id: "PS-005", customer: "Ibu Dewi", menuId: 4, menuName: "Soto Ayam Lamongan", price: 20000, qty: 4, address: "Jl. Cempaka Putih No. 21", distance: 7, ongkir: 12000, kurirId: 2, status: "Diantar", time: "10.50" },
+        { id: "PS-006", customer: "Pak Bambang", menuId: 6, menuName: "Bakso Sapi Komplit", price: 22000, qty: 2, address: "Kantor Kelurahan, Jl. Merdeka No. 100", distance: 3, ongkir: 5000, kurirId: null, status: "Dimasak", time: "11.10" },
+        { id: "PS-007", customer: "Mbak Tania", menuId: 8, menuName: "Jus Alpukat", price: 12000, qty: 2, address: "Jl. Flamboyan No. 9", distance: 2, ongkir: 5000, kurirId: null, status: "Baru", time: "11.25" },
+        { id: "PS-008", customer: "Mas Galih", menuId: 1, menuName: "Nasi Goreng Spesial", price: 25000, qty: 1, address: "Jl. Dahlia No. 17, pagar hitam", distance: 6, ongkir: 8000, kurirId: 4, status: "Terkirim", time: "11.40" },
+        { id: "PS-009", customer: "Ibu Yuni", menuId: 7, menuName: "Es Teh Manis", price: 6000, qty: 5, address: "Jl. Mawar No. 30, acara arisan RT 04", distance: 4.5, ongkir: 8000, kurirId: 3, status: "Terkirim", time: "12.00" },
+        { id: "PS-010", customer: "Pak Surya", menuId: 2, menuName: "Ayam Geprek Sambal Bawang", price: 20000, qty: 1, address: "Jl. Sakura No. 2", distance: 8, ongkir: 12000, kurirId: null, status: "Batal", time: "12.15" }
+      ];
+
+      var nextMenuId = 9;
+      var nextKurirId = 6;
+      var nextOrderNum = 11;
+      var activeStatusFilter = "Semua";
+      var editingOrderId = null;
+      var editingMenuId = null;
+      var editingKurirId = null;
+      var confirmCallback = null;
+
+      /* ================= Util ================= */
+      function rp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function ongkirFor(distance) {
+        var d = parseFloat(distance) || 0;
+        if (d <= 3) return 5000;
+        if (d <= 6) return 8000;
+        if (d <= 10) return 12000;
+        return 18000;
+      }
+      function orderTotal(o) { return o.price * o.qty + o.ongkir; }
+      function menuById(id) { for (var i = 0; i < menus.length; i++) if (menus[i].id === id) return menus[i]; return null; }
+      function kurirById(id) { for (var i = 0; i < kurirs.length; i++) if (kurirs[i].id === id) return kurirs[i]; return null; }
+      function kurirName(id) { var k = kurirById(id); return k ? k.name : "Belum ditugaskan"; }
+      function initials(name) {
+        var parts = String(name || "?").trim().split(/\s+/);
+        return ((parts[0] || "?").charAt(0) + (parts[1] ? parts[1].charAt(0) : "")).toUpperCase();
+      }
+      function badgeClass(status) {
+        return { "Baru": "badge-baru", "Dimasak": "badge-dimasak", "Diantar": "badge-diantar", "Terkirim": "badge-terkirim", "Batal": "badge-batal" }[status] || "badge-baru";
+      }
+      function $(id) { return document.getElementById(id); }
+
+      /* ================= Tabs ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ================= Render: Ringkasan ================= */
+      function renderSummary() {
+        var diantar = 0, terkirim = 0, pemasukan = 0;
+        orders.forEach(function (o) {
+          if (o.status === "Diantar") diantar++;
+          if (o.status === "Terkirim") { terkirim++; pemasukan += orderTotal(o); }
+        });
+        $("stat-total").textContent = orders.length;
+        $("stat-diantar").textContent = diantar;
+        $("stat-terkirim").textContent = terkirim;
+        $("stat-pemasukan").textContent = rp(pemasukan);
+
+        var recent = orders.slice(-5).reverse();
+        $("recent-list").innerHTML = recent.map(function (o) {
+          return '<div class="recent-item">' +
+            '<div><div class="who">' + esc(o.customer) + ' <span class="what">· ' + esc(o.id) + ' · ' + esc(o.time) + ' WIB</span></div>' +
+            '<div class="what">' + esc(o.menuName) + ' × ' + o.qty + ' — kurir: ' + esc(kurirName(o.kurirId)) + '</div></div>' +
+            '<div style="text-align:right;"><div class="amt">' + rp(orderTotal(o)) + '</div>' +
+            '<span class="badge ' + badgeClass(o.status) + '">' + esc(o.status) + '</span></div></div>';
+        }).join("") || '<div class="empty">Belum ada pesanan.</div>';
+      }
+
+      /* ================= Render: Pesanan ================= */
+      function renderOrders() {
+        var q = $("order-search").value.trim().toLowerCase();
+        var list = orders.filter(function (o) {
+          var matchStatus = activeStatusFilter === "Semua" || o.status === activeStatusFilter;
+          var matchQ = !q || o.customer.toLowerCase().indexOf(q) >= 0 || o.menuName.toLowerCase().indexOf(q) >= 0 || o.id.toLowerCase().indexOf(q) >= 0;
+          return matchStatus && matchQ;
+        });
+        $("order-empty").style.display = list.length ? "none" : "block";
+        $("order-list").innerHTML = list.slice().reverse().map(function (o) {
+          var opts = STATUSES.map(function (s) {
+            return '<option value="' + s + '"' + (s === o.status ? " selected" : "") + '>' + s + '</option>';
+          }).join("");
+          return '<article class="card order-card">' +
+            '<div class="order-top"><div>' +
+              '<span class="order-id">' + esc(o.id) + '</span> <span class="order-meta">· ' + esc(o.time) + ' WIB</span>' +
+              '<p class="order-customer">' + esc(o.customer) + '</p>' +
+              '<p class="order-meta">' + esc(o.address) + ' · jarak ' + o.distance + ' km</p>' +
+              '<p class="order-meta">Kurir: ' + esc(kurirName(o.kurirId)) + '</p>' +
+            '</div><span class="badge ' + badgeClass(o.status) + '">' + esc(o.status) + '</span></div>' +
+            '<ul class="order-items"><li>' + esc(o.menuName) + ' × ' + o.qty + ' — ' + rp(o.price * o.qty) + '</li></ul>' +
+            '<div class="order-foot"><div class="price-lines">' +
+              '<div>Ongkos kirim: ' + rp(o.ongkir) + '</div>' +
+              '<div class="total">Total: ' + rp(orderTotal(o)) + '</div></div>' +
+            '<div class="order-actions">' +
+              '<label style="font-size:.84rem;font-weight:600;color:var(--ink-soft);">Status <select class="status-select" data-status-for="' + esc(o.id) + '" aria-label="Ubah status pesanan ' + esc(o.id) + '">' + opts + '</select></label>' +
+              '<button class="btn btn-ghost btn-small" data-edit-order="' + esc(o.id) + '">Ubah</button>' +
+              '<button class="btn btn-danger-ghost btn-small" data-del-order="' + esc(o.id) + '">Hapus</button>' +
+            '</div></div></article>';
+        }).join("");
+
+        document.querySelectorAll("[data-status-for]").forEach(function (sel) {
+          sel.addEventListener("change", function () {
+            var o = findOrder(sel.getAttribute("data-status-for"));
+            if (o) { o.status = sel.value; renderAll(); }
+          });
+        });
+        document.querySelectorAll("[data-edit-order]").forEach(function (b) {
+          b.addEventListener("click", function () { openOrderModal(findOrder(b.getAttribute("data-edit-order"))); });
+        });
+        document.querySelectorAll("[data-del-order]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var o = findOrder(b.getAttribute("data-del-order"));
+            askConfirm("Pesanan " + o.id + " untuk " + o.customer + " akan dihapus dari daftar. Tindakan ini tidak bisa dibatalkan.", function () {
+              orders = orders.filter(function (x) { return x.id !== o.id; });
+              renderAll();
+            });
+          });
+        });
+      }
+      function findOrder(id) { for (var i = 0; i < orders.length; i++) if (orders[i].id === id) return orders[i]; return null; }
+
+      $("order-search").addEventListener("input", renderOrders);
+      document.querySelectorAll("#status-chips .chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          document.querySelectorAll("#status-chips .chip").forEach(function (c) { c.classList.remove("active"); });
+          chip.classList.add("active");
+          activeStatusFilter = chip.getAttribute("data-status");
+          renderOrders();
+        });
+      });
+
+      /* ================= Render: Menu ================= */
+      function renderMenus() {
+        var q = $("menu-search").value.trim().toLowerCase();
+        var list = menus.filter(function (m) {
+          return !q || m.name.toLowerCase().indexOf(q) >= 0 || m.cat.toLowerCase().indexOf(q) >= 0;
+        });
+        $("menu-empty").style.display = list.length ? "none" : "block";
+        $("menu-grid").innerHTML = list.map(function (m) {
+          var color = MENU_COLORS[(m.id - 1) % MENU_COLORS.length];
+          return '<article class="card menu-card">' +
+            '<div class="menu-tile" style="background:' + color + ';">' + esc(initials(m.name)) + '</div>' +
+            '<div class="menu-body"><p class="menu-name">' + esc(m.name) + '</p>' +
+            '<p class="menu-cat">' + esc(m.cat) + '</p>' +
+            '<p class="menu-desc">' + esc(m.desc) + '</p>' +
+            '<p class="menu-price">' + rp(m.price) + '</p>' +
+            '<div class="menu-actions">' +
+              '<button class="btn btn-ghost btn-small" data-edit-menu="' + m.id + '">Ubah</button>' +
+              '<button class="btn btn-danger-ghost btn-small" data-del-menu="' + m.id + '">Hapus</button>' +
+            '</div></div></article>';
+        }).join("");
+        document.querySelectorAll("[data-edit-menu]").forEach(function (b) {
+          b.addEventListener("click", function () { openMenuModal(menuById(Number(b.getAttribute("data-edit-menu")))); });
+        });
+        document.querySelectorAll("[data-del-menu]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var m = menuById(Number(b.getAttribute("data-del-menu")));
+            askConfirm('Menu "' + m.name + '" akan dihapus dan tidak bisa dipilih pada pesanan baru. Pesanan lama tetap tercatat.', function () {
+              menus = menus.filter(function (x) { return x.id !== m.id; });
+              renderAll();
+            });
+          });
+        });
+      }
+      $("menu-search").addEventListener("input", renderMenus);
+
+      /* ================= Render: Kurir ================= */
+      function renderKurirs() {
+        var q = $("kurir-search").value.trim().toLowerCase();
+        var list = kurirs.filter(function (k) { return !q || k.name.toLowerCase().indexOf(q) >= 0; });
+        $("kurir-empty").style.display = list.length ? "none" : "block";
+        $("kurir-list").innerHTML = list.map(function (k, idx) {
+          var aktif = 0, selesai = 0;
+          orders.forEach(function (o) {
+            if (o.kurirId === k.id) {
+              if (o.status === "Terkirim") selesai++;
+              else if (o.status !== "Batal") aktif++;
+            }
+          });
+          var color = MENU_COLORS[idx % MENU_COLORS.length];
+          return '<article class="card kurir-card">' +
+            '<div class="kurir-head"><div class="avatar" style="background:' + color + ';">' + esc(initials(k.name)) + '</div>' +
+            '<div><p class="kurir-name">' + esc(k.name) + '</p>' +
+            '<p class="kurir-sub"><span class="dot ' + (k.active ? "dot-on" : "dot-off") + '"></span>' + (k.active ? "Aktif" : "Tidak aktif") + '</p></div></div>' +
+            '<p class="kurir-sub" style="margin-top:10px;">' + esc(k.phone) + '<br />' + esc(k.vehicle) + '</p>' +
+            '<div class="kurir-stat"><div class="box"><b>' + aktif + '</b><span>Pesanan Aktif</span></div>' +
+            '<div class="box"><b>' + selesai + '</b><span>Selesai Diantar</span></div></div>' +
+            '<div class="kurir-actions">' +
+              '<button class="btn btn-ghost btn-small" data-edit-kurir="' + k.id + '">Ubah</button>' +
+              '<button class="btn btn-danger-ghost btn-small" data-del-kurir="' + k.id + '">Hapus</button>' +
+            '</div></article>';
+        }).join("");
+        document.querySelectorAll("[data-edit-kurir]").forEach(function (b) {
+          b.addEventListener("click", function () { openKurirModal(kurirById(Number(b.getAttribute("data-edit-kurir")))); });
+        });
+        document.querySelectorAll("[data-del-kurir]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var k = kurirById(Number(b.getAttribute("data-del-kurir")));
+            askConfirm('Kurir "' + k.name + '" akan dihapus dari daftar. Pesanan lama yang tercatat atas namanya tetap tampil.', function () {
+              kurirs = kurirs.filter(function (x) { return x.id !== k.id; });
+              renderAll();
+            });
+          });
+        });
+      }
+      $("kurir-search").addEventListener("input", renderKurirs);
+
+      function renderAll() { renderSummary(); renderOrders(); renderMenus(); renderKurirs(); }
+
+      /* ================= Modal umum ================= */
+      function openModal(id) { $(id).classList.add("open"); }
+      function closeModal(el) { el.classList.remove("open"); }
+      document.querySelectorAll(".modal-backdrop").forEach(function (bd) {
+        bd.addEventListener("click", function (e) { if (e.target === bd) closeModal(bd); });
+        bd.querySelectorAll("[data-close]").forEach(function (b) {
+          b.addEventListener("click", function () { closeModal(bd); });
+        });
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") document.querySelectorAll(".modal-backdrop.open").forEach(closeModal);
+      });
+      function askConfirm(text, cb) {
+        $("confirm-text").textContent = text;
+        $("confirm-yes").textContent = "Ya, Hapus";
+        confirmCallback = cb;
+        openModal("modal-confirm");
+      }
+      $("confirm-yes").addEventListener("click", function () {
+        closeModal($("modal-confirm"));
+        if (confirmCallback) { var cb = confirmCallback; confirmCallback = null; cb(); }
+      });
+      function showError(id, msg) { var el = $(id); el.textContent = msg; el.style.display = msg ? "block" : "none"; }
+
+      /* ================= Form Pesanan ================= */
+      function fillOrderFormOptions(selectedMenuId, selectedKurirId) {
+        $("f-menu").innerHTML = menus.map(function (m) {
+          return '<option value="' + m.id + '"' + (m.id === selectedMenuId ? " selected" : "") + '>' + esc(m.name) + ' — ' + rp(m.price) + '</option>';
+        }).join("");
+        var opts = '<option value="">— Belum ditugaskan —</option>';
+        kurirs.filter(function (k) { return k.active; }).forEach(function (k) {
+          opts += '<option value="' + k.id + '"' + (k.id === selectedKurirId ? " selected" : "") + '>' + esc(k.name) + '</option>';
+        });
+        if (selectedKurirId && !kurirById(selectedKurirId)) { /* kurir terhapus */ }
+        else if (selectedKurirId && !kurirById(selectedKurirId).active) {
+          var k = kurirById(selectedKurirId);
+          opts += '<option value="' + k.id + '" selected>' + esc(k.name) + ' (tidak aktif)</option>';
+        }
+        $("f-kurir").innerHTML = opts;
+      }
+      function updateOrderCalc() {
+        var m = menuById(Number($("f-menu").value));
+        var qty = Math.max(1, parseInt($("f-qty").value, 10) || 1);
+        var ong = ongkirFor($("f-distance").value);
+        var sub = m ? m.price * qty : 0;
+        $("order-calc").innerHTML =
+          '<div class="row"><span>' + (m ? esc(m.name) : "Menu") + ' × ' + qty + '</span><span>' + rp(sub) + '</span></div>' +
+          '<div class="row"><span>Ongkos kirim (otomatis)</span><span>' + rp(ong) + '</span></div>' +
+          '<div class="row grand"><span>Total Bayar</span><span>' + rp(sub + ong) + '</span></div>';
+      }
+      ["f-menu", "f-qty", "f-distance"].forEach(function (id) {
+        $(id).addEventListener("input", updateOrderCalc);
+        $(id).addEventListener("change", updateOrderCalc);
+      });
+
+      function openOrderModal(order) {
+        editingOrderId = order ? order.id : null;
+        $("order-modal-title").textContent = order ? "Ubah Pesanan " + order.id : "Tambah Pesanan";
+        showError("order-error", "");
+        fillOrderFormOptions(order ? order.menuId : (menus[0] ? menus[0].id : null), order ? order.kurirId : null);
+        $("f-customer").value = order ? order.customer : "";
+        $("f-qty").value = order ? order.qty : 1;
+        $("f-address").value = order ? order.address : "";
+        $("f-distance").value = order ? order.distance : 2;
+        if (order) $("f-kurir").value = order.kurirId ? String(order.kurirId) : "";
+        updateOrderCalc();
+        openModal("modal-order");
+      }
+      $("btn-add-order").addEventListener("click", function () {
+        if (!menus.length) { askConfirm("Belum ada menu yang terdaftar. Tambahkan menu dulu di tab Menu sebelum membuat pesanan.", function () {}); $("confirm-yes").textContent = "Mengerti"; return; }
+        openOrderModal(null);
+      });
+      $("form-order").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var customer = $("f-customer").value.trim();
+        var address = $("f-address").value.trim();
+        var m = menuById(Number($("f-menu").value));
+        var qty = parseInt($("f-qty").value, 10);
+        var distance = parseFloat($("f-distance").value);
+        if (!customer) return showError("order-error", "Nama pelanggan wajib diisi.");
+        if (!m) return showError("order-error", "Pilih menu terlebih dahulu.");
+        if (!qty || qty < 1) return showError("order-error", "Jumlah minimal 1 porsi.");
+        if (!address) return showError("order-error", "Alamat pengantaran wajib diisi.");
+        if (isNaN(distance) || distance < 0) return showError("order-error", "Jarak tempuh tidak valid.");
+        var kurirVal = $("f-kurir").value;
+        var data = {
+          customer: customer, menuId: m.id, menuName: m.name, price: m.price, qty: qty,
+          address: address, distance: distance, ongkir: ongkirFor(distance),
+          kurirId: kurirVal ? Number(kurirVal) : null
+        };
+        if (editingOrderId) {
+          var o = findOrder(editingOrderId);
+          for (var key in data) o[key] = data[key];
+        } else {
+          var now = new Date();
+          var hh = String(now.getHours()).padStart(2, "0"), mm = String(now.getMinutes()).padStart(2, "0");
+          data.id = "PS-" + String(nextOrderNum++).padStart(3, "0");
+          data.status = "Baru";
+          data.time = hh + "." + mm;
+          orders.push(data);
+        }
+        closeModal($("modal-order"));
+        renderAll();
+      });
+
+      /* ================= Form Menu ================= */
+      function openMenuModal(m) {
+        editingMenuId = m ? m.id : null;
+        $("menu-modal-title").textContent = m ? "Ubah Menu" : "Tambah Menu";
+        showError("menu-error", "");
+        $("m-name").value = m ? m.name : "";
+        $("m-cat").value = m ? m.cat : "";
+        $("m-price").value = m ? m.price : "";
+        $("m-desc").value = m ? m.desc : "";
+        openModal("modal-menu");
+      }
+      $("btn-add-menu").addEventListener("click", function () { openMenuModal(null); });
+      $("form-menu").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var name = $("m-name").value.trim();
+        var cat = $("m-cat").value.trim() || "Lainnya";
+        var price = parseInt($("m-price").value, 10);
+        var desc = $("m-desc").value.trim();
+        if (!name) return showError("menu-error", "Nama menu wajib diisi.");
+        if (isNaN(price) || price < 0) return showError("menu-error", "Harga harus berupa angka 0 atau lebih.");
+        if (editingMenuId) {
+          var m = menuById(editingMenuId);
+          m.name = name; m.cat = cat; m.price = price; m.desc = desc;
+        } else {
+          menus.push({ id: nextMenuId++, name: name, cat: cat, price: price, desc: desc });
+        }
+        closeModal($("modal-menu"));
+        renderAll();
+      });
+
+      /* ================= Form Kurir ================= */
+      function openKurirModal(k) {
+        editingKurirId = k ? k.id : null;
+        $("kurir-modal-title").textContent = k ? "Ubah Kurir" : "Tambah Kurir";
+        showError("kurir-error", "");
+        $("k-name").value = k ? k.name : "";
+        $("k-phone").value = k ? k.phone : "";
+        $("k-vehicle").value = k ? k.vehicle : "";
+        $("k-active").value = k && !k.active ? "nonaktif" : "aktif";
+        openModal("modal-kurir");
+      }
+      $("btn-add-kurir").addEventListener("click", function () { openKurirModal(null); });
+      $("form-kurir").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var name = $("k-name").value.trim();
+        var phone = $("k-phone").value.trim();
+        var vehicle = $("k-vehicle").value.trim();
+        if (!name) return showError("kurir-error", "Nama kurir wajib diisi.");
+        if (!phone) return showError("kurir-error", "Nomor HP wajib diisi.");
+        if (!vehicle) return showError("kurir-error", "Kendaraan dan plat nomor wajib diisi.");
+        var active = $("k-active").value === "aktif";
+        if (editingKurirId) {
+          var k = kurirById(editingKurirId);
+          k.name = name; k.phone = phone; k.vehicle = vehicle; k.active = active;
+        } else {
+          kurirs.push({ id: nextKurirId++, name: name, phone: phone, vehicle: vehicle, active: active });
+        }
+        closeModal($("modal-kurir"));
+        renderAll();
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>
