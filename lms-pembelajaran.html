@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>Learning Management System (LMS)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#f3f6f4;
+        --surface:#ffffff;
+        --surface-soft:#eef3f0;
+        --ink:#1d2b26;
+        --ink-soft:#51625b;
+        --ink-faint:#7d8f87;
+        --line:#dde7e1;
+        --teal:#0e6e5c;
+        --teal-dark:#0a5748;
+        --teal-soft:#e2f1ec;
+        --amber:#b97a12;
+        --amber-soft:#fbf0da;
+        --red:#b3372f;
+        --red-soft:#fbe9e7;
+        --blue:#256d8f;
+        --blue-soft:#e3f0f6;
+        --radius:16px;
+        --radius-sm:10px;
+        --shadow:0 1px 2px rgba(23,48,40,.05),0 8px 24px rgba(23,48,40,.06);
+        --shadow-lg:0 12px 40px rgba(23,48,40,.18);
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:15.5px;line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2.25rem}
+      button{font-family:inherit;cursor:pointer}
+      input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
+      a{color:var(--teal)}
+      :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+      .wrap{max-width:1080px;margin:0 auto;padding:0 18px 48px}
+
+      /* ---------- Header ---------- */
+      header.app-head{padding:30px 0 6px}
+      .head-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between}
+      .head-row h1{font-size:clamp(24px,4.5vw,34px);line-height:1.15;margin:0;font-weight:800;letter-spacing:-.01em}
+      .head-row .sub{margin:6px 0 0;color:var(--ink-soft);font-size:15px}
+      .head-row .sub strong{color:var(--teal-dark)}
+      .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+      .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:var(--shadow);min-width:118px}
+      .stat b{display:block;font-size:20px;line-height:1.1}
+      .stat span{font-size:12.5px;color:var(--ink-faint)}
+
+      /* ---------- Tabs ---------- */
+      nav.tabs{
+        position:sticky;top:0;z-index:30;background:var(--bg);
+        padding:14px 0 10px;margin-top:14px;
+      }
+      .tabs-inner{display:flex;flex-wrap:wrap;gap:8px}
+      .tab-btn{
+        display:inline-flex;align-items:center;gap:8px;
+        border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+        border-radius:999px;padding:8px 16px;font-size:14.5px;font-weight:600;
+        transition:background .15s,color .15s,border-color .15s;
+      }
+      .tab-btn svg{width:17px;height:17px;flex:none}
+      .tab-btn:hover{border-color:var(--teal);color:var(--teal-dark)}
+      .tab-btn.active{background:var(--teal);border-color:var(--teal);color:#fff}
+      .tab-btn.active svg{stroke:#fff}
+
+      /* ---------- Panels & cards ---------- */
+      .panel{display:none}
+      .panel.active{display:block}
+      .panel-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:14px 0 6px}
+      .panel-head h2{font-size:21px;margin:0;font-weight:800}
+      .panel-head p{margin:2px 0 0;color:var(--ink-soft);font-size:14px}
+      .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 16px}
+      .toolbar .grow{flex:1 1 200px}
+      .field{
+        width:100%;border:1px solid var(--line);border-radius:var(--radius-sm);
+        background:var(--surface);padding:9px 12px;
+      }
+      .field:focus{border-color:var(--teal);outline:none;box-shadow:0 0 0 3px var(--teal-soft)}
+      select.field{width:auto;min-width:170px}
+      .search-box{position:relative}
+      .search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-faint);pointer-events:none}
+      .search-box input{padding-left:36px}
+
+      .btn{
+        display:inline-flex;align-items:center;gap:7px;border-radius:var(--radius-sm);
+        border:1px solid var(--teal);background:var(--teal);color:#fff;
+        padding:8px 16px;font-size:14.5px;font-weight:700;min-height:2.5rem;
+      }
+      .btn:hover{background:var(--teal-dark)}
+      .btn.ghost{background:var(--surface);color:var(--teal-dark);border-color:var(--line)}
+      .btn.ghost:hover{border-color:var(--teal);background:var(--teal-soft)}
+      .btn.small{padding:5px 12px;min-height:2.25rem;font-size:13.5px}
+      .btn.danger{background:var(--surface);color:var(--red);border-color:var(--line)}
+      .btn.danger:hover{background:var(--red-soft);border-color:var(--red)}
+      .btn svg{width:16px;height:16px}
+
+      .card{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px;
+      }
+      .card h3{margin:0 0 4px;font-size:17px;font-weight:700}
+      .meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--ink-soft);font-size:13.5px;margin:6px 0}
+      .meta span{display:inline-flex;align-items:center;gap:5px}
+      .meta svg{width:14px;height:14px;stroke:var(--ink-faint)}
+      .card .body-text{color:var(--ink-soft);font-size:14.5px;margin:8px 0 0}
+      .card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+      .tag{
+        display:inline-block;font-size:12px;font-weight:700;letter-spacing:.02em;
+        padding:3px 10px;border-radius:999px;background:var(--teal-soft);color:var(--teal-dark);
+      }
+      .tag.amber{background:var(--amber-soft);color:var(--amber)}
+      .tag.red{background:var(--red-soft);color:var(--red)}
+      .tag.blue{background:var(--blue-soft);color:var(--blue)}
+      .tag.gray{background:var(--surface-soft);color:var(--ink-soft)}
+      .empty{
+        border:1.5px dashed var(--line);border-radius:var(--radius);padding:34px 20px;
+        text-align:center;color:var(--ink-faint);background:var(--surface);
+      }
+      .empty b{display:block;color:var(--ink-soft);font-size:16px;margin-bottom:4px}
+
+      /* ---------- Tables ---------- */
+      .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+      table{width:100%;border-collapse:collapse;font-size:14.5px}
+      thead th{
+        text-align:left;background:var(--surface-soft);color:var(--ink-soft);
+        font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;
+        padding:12px 16px;border-bottom:1px solid var(--line);
+      }
+      tbody td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+      tbody tr:last-child td{border-bottom:none}
+      .score{font-weight:800;font-size:16px}
+      .score.good{color:var(--teal-dark)} .score.mid{color:var(--amber)} .score.low{color:var(--red)}
+
+      /* ---------- Quiz ---------- */
+      .quiz-setup{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .q-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px}
+      .q-card .q-num{font-size:12.5px;font-weight:700;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.05em}
+      .q-card .q-text{font-size:16px;font-weight:600;margin:6px 0 12px}
+      .opt{
+        display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+        border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);
+        padding:11px 14px;margin-bottom:8px;font-size:15px;min-height:2.75rem;
+      }
+      .opt:hover{border-color:var(--teal)}
+      .opt.picked{border-color:var(--teal);background:var(--teal-soft);font-weight:600}
+      .opt.correct{border-color:var(--teal);background:var(--teal-soft)}
+      .opt.wrong{border-color:var(--red);background:var(--red-soft)}
+      .opt .letter{
+        flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);
+        display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#fff;
+      }
+      .opt.picked .letter,.opt.correct .letter{border-color:var(--teal);background:var(--teal);color:#fff}
+      .opt.wrong .letter{border-color:var(--red);background:var(--red);color:#fff}
+      .q-feedback{font-size:14px;margin-top:6px;font-weight:600}
+      .q-feedback.ok{color:var(--teal-dark)} .q-feedback.no{color:var(--red)}
+      .quiz-result{
+        text-align:center;padding:28px 20px;
+      }
+      .quiz-result .big-score{font-size:52px;font-weight:800;line-height:1;color:var(--teal-dark)}
+      .quiz-result p{color:var(--ink-soft);margin:8px 0 0}
+      .progress-note{font-size:13.5px;color:var(--ink-faint);margin:0 0 10px}
+
+      /* ---------- Forum ---------- */
+      .topic-card{cursor:pointer}
+      .topic-card:hover{border-color:var(--teal)}
+      .reply{border-left:3px solid var(--teal-soft);padding:10px 14px;margin:12px 0;background:var(--surface-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+      .reply .who{font-weight:700;font-size:14px}
+      .reply .when{color:var(--ink-faint);font-size:12.5px;margin-left:8px}
+      .reply p{margin:4px 0 0;font-size:14.5px;color:var(--ink)}
+      .reply-form{display:grid;gap:10px;margin-top:16px}
+      .back-link{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--teal-dark);font-weight:700;font-size:14.5px;padding:6px 0;min-height:2.25rem}
+      .back-link svg{width:16px;height:16px}
+
+      /* ---------- Panduan ---------- */
+      .guide h3{margin:22px 0 6px;font-size:17px}
+      .guide h3:first-child{margin-top:4px}
+      .guide ol{margin:6px 0 0;padding-left:22px;color:var(--ink-soft)}
+      .guide ol li{margin-bottom:5px}
+      .guide p{color:var(--ink-soft)}
+      .warranty{border-color:#ecd9ae;background:#fffdf6}
+      .warranty h3{margin-top:0}
+      .warranty ul{margin:6px 0 0;padding-left:20px;color:var(--ink-soft)}
+      .warranty li{margin-bottom:5px}
+      .note-box{
+        border:1px solid var(--blue);background:var(--blue-soft);border-radius:var(--radius-sm);
+        padding:12px 16px;font-size:14.5px;color:var(--ink);margin-top:16px;
+      }
+
+      footer.app-foot{
+        margin-top:36px;border-top:1px solid var(--line);padding-top:16px;
+        color:var(--ink-faint);font-size:13.5px;text-align:center;
+      }
+
+      /* ---------- Modal ---------- */
+      .overlay{
+        position:fixed;inset:0;background:rgba(20,35,30,.45);z-index:60;
+        display:none;align-items:flex-end;justify-content:center;padding:0;
+      }
+      .overlay.open{display:flex}
+      .modal{
+        background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow:auto;
+        border-radius:20px 20px 0 0;padding:24px 22px 28px;box-shadow:var(--shadow-lg);
+      }
+      @media(min-width:640px){
+        .overlay{align-items:center;padding:20px}
+        .modal{border-radius:20px}
+      }
+      .modal h3{margin:0 0 4px;font-size:19px;font-weight:800}
+      .modal .hint{color:var(--ink-soft);font-size:14px;margin:0 0 14px}
+      .form-grid{display:grid;gap:12px}
+      .form-grid label{font-size:13.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:5px}
+      .form-grid .field{width:100%}
+      textarea.field{min-height:96px;resize:vertical}
+      .modal-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:18px}
+      .radio-row{display:flex;flex-direction:column;gap:8px}
+      .radio-row label{
+        display:flex;gap:10px;align-items:center;font-weight:500;color:var(--ink);
+        border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;margin:0;cursor:pointer;
+      }
+      .radio-row input{width:18px;height:18px;accent-color:var(--teal)}
+
+      /* ---------- Toast ---------- */
+      .toast{
+        position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+        background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;
+        font-size:14.5px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:80;
+        max-width:calc(100vw - 32px);text-align:center;
+      }
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+      /* ---------- Responsive table -> cards ---------- */
+      @media(max-width:680px){
+        .quiz-setup{grid-template-columns:1fr}
+        .stat{min-width:0;flex:1 1 30%}
+        table,thead,tbody,tr,td{display:block}
+        thead{display:none}
+        tbody td{border-bottom:none;padding:5px 16px;display:flex;justify-content:space-between;gap:16px}
+        tbody td:first-child{padding-top:14px;font-weight:700}
+        tbody td:last-child{padding-bottom:14px;border-bottom:1px solid var(--line)}
+        tbody td::before{content:attr(data-label);color:var(--ink-faint);font-size:13px;font-weight:600}
+        tbody td:first-child::before{content:""}
+        select.field{width:100%}
+        .toolbar .grow{flex-basis:100%}
+      }
+      @media(prefers-reduced-motion:reduce){
+        *{transition:none!important;scroll-behavior:auto!important}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="app-head">
+        <div class="head-row">
+          <div>
+            <h1>Learning Management System (LMS)</h1>
+            <p class="sub">Sistem Manajemen Pembelajaran &middot; <strong>SMP Negeri 5 Jakarta</strong> &middot; Tahun Ajaran 2026/2027</p>
+          </div>
+        </div>
+        <div class="stats" id="stats"></div>
+      </header>
+
+      <nav class="tabs" aria-label="Menu utama">
+        <div class="tabs-inner" id="tabs"></div>
+      </nav>
+
+      <main id="panels"></main>
+
+      <footer class="app-foot">
+        Versi demo v1 &mdash; data contoh hanya berlaku selama aplikasi dibuka. Data akan kembali ke data contoh saat aplikasi ditutup dan dibuka lagi.
+      </footer>
+    </div>
+
+    <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+      <div class="modal" id="modal"></div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      "use strict";
+      /* ================= Data contoh (tersimpan di memori halaman) ================= */
+      var MAPEL = ["Matematika","Bahasa Indonesia","IPA","IPS","Bahasa Inggris"];
+      var HARI = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+      var KELAS = ["7A","7B","8A","8B","9A","9B"];
+      var _id = 100;
+      function nid(){ return ++_id; }
+      function today(){ return new Date().toISOString().slice(0,10); }
+
+      var state = {
+        materi: [
+          {id:nid(), judul:"Pecahan dan Desimal", mapel:"Matematika", kelas:"7A", tanggal:"2026-11-10", dibaca:true,
+           isi:"Materi ini membahas cara mengubah pecahan biasa menjadi desimal dan sebaliknya, membandingkan nilai pecahan, serta operasi penjumlahan dan pengurangan pecahan dalam soal cerita sehari-hari, misalnya membagi kue dan mengukur bahan masakan."},
+          {id:nid(), judul:"Teks Deskripsi", mapel:"Bahasa Indonesia", kelas:"7A", tanggal:"2026-11-11", dibaca:true,
+           isi:"Teks deskripsi adalah teks yang menggambarkan suatu objek secara rinci sehingga pembaca seolah melihat, mendengar, dan merasakan sendiri. Pelajari struktur identifikasi dan deskripsi bagian, serta kaidah kebahasaannya seperti kata sifat dan kalimat perincian."},
+          {id:nid(), judul:"Sistem Tata Surya", mapel:"IPA", kelas:"7B", tanggal:"2026-11-12", dibaca:false,
+           isi:"Mengenal Matahari sebagai pusat tata surya, delapan planet beserta ciri-cirinya, satelit alami Bumi yaitu Bulan, serta benda langit lain seperti asteroid, meteor, dan komet. Dilengkapi pembahasan gerhana Matahari dan gerhana Bulan."},
+          {id:nid(), judul:"Peta dan Globe", mapel:"IPS", kelas:"7A", tanggal:"2026-11-13", dibaca:false,
+           isi:"Peta adalah gambaran permukaan Bumi pada bidang datar dengan skala tertentu. Materi ini membahas komponen peta (judul, skala, legenda, arah mata angin), perbedaan peta umum dan peta khusus, serta cara membaca globe dan garis lintang-bujur."},
+          {id:nid(), judul:"Simple Present Tense", mapel:"Bahasa Inggris", kelas:"8A", tanggal:"2026-11-14", dibaca:false,
+           isi:"Simple present tense digunakan untuk menyatakan kebiasaan dan fakta umum. Rumus: Subject + Verb 1 (tambah -s/-es untuk he/she/it). Contoh: She goes to school every day. The sun rises in the east. Latihan tersedia di akhir materi."},
+          {id:nid(), judul:"Aljabar Dasar: Unsur dan Operasi", mapel:"Matematika", kelas:"8A", tanggal:"2026-11-16", dibaca:false,
+           isi:"Pengenalan bentuk aljabar: variabel, koefisien, konstanta, dan suku sejenis. Dilanjutkan dengan penjumlahan, pengurangan, dan perkalian suku aljabar, serta penerapannya untuk menyelesaikan persamaan linear satu variabel."},
+          {id:nid(), judul:"Ekosistem dan Interaksi Makhluk Hidup", mapel:"IPA", kelas:"8B", tanggal:"2026-11-17", dibaca:false,
+           isi:"Ekosistem tersusun dari komponen biotik dan abiotik yang saling berinteraksi. Materi ini membahas rantai makanan, jaring-jaring makanan, piramida energi, serta simbiosis mutualisme, komensalisme, dan parasitisme dengan contoh di lingkungan Indonesia."},
+          {id:nid(), judul:"Teks Berita", mapel:"Bahasa Indonesia", kelas:"8A", tanggal:"2026-11-18", dibaca:false,
+           isi:"Teks berita menyampaikan informasi peristiwa yang aktual dan faktual. Pelajari unsur 5W+1H (apa, siapa, kapan, di mana, mengapa, bagaimana), struktur kepala berita–tubuh berita–ekor berita, dan ciri bahasa berita yang lugas dan baku."}
+        ],
+        tugas: [
+          {id:nid(), judul:"Latihan Soal Pecahan dan Desimal", mapel:"Matematika", kelas:"7A", tenggat:"2026-11-22", status:"Belum dikumpulkan", siswa:"", tglKumpul:""},
+          {id:nid(), judul:"Menulis Teks Deskripsi tentang Sekolahku", mapel:"Bahasa Indonesia", kelas:"7A", tenggat:"2026-11-20", status:"Sudah dikumpulkan", siswa:"Andi Pratama", tglKumpul:"2026-11-18"},
+          {id:nid(), judul:"Laporan Pengamatan Sistem Tata Surya", mapel:"IPA", kelas:"7B", tenggat:"2026-11-19", status:"Dinilai", siswa:"Siti Rahmawati", tglKumpul:"2026-11-17"},
+          {id:nid(), judul:"Worksheet Simple Present Tense", mapel:"Bahasa Inggris", kelas:"8A", tenggat:"2026-11-25", status:"Belum dikumpulkan", siswa:"", tglKumpul:""},
+          {id:nid(), judul:"Membuat Peta Lingkungan Sekitar Rumah", mapel:"IPS", kelas:"7A", tenggat:"2026-11-27", status:"Belum dikumpulkan", siswa:"", tglKumpul:""}
+        ],
+        soal: [
+          {id:nid(), mapel:"Matematika", tanya:"Hasil dari 3/4 + 1/2 adalah …", opsi:["5/4","4/6","1","3/8"], benar:0},
+          {id:nid(), mapel:"Matematika", tanya:"Bentuk desimal dari 3/5 adalah …", opsi:["0,35","0,6","0,53","0,06"], benar:1},
+          {id:nid(), mapel:"Matematika", tanya:"25% dari 200 adalah …", opsi:["25","40","50","75"], benar:2},
+          {id:nid(), mapel:"Matematika", tanya:"KPK dari 6 dan 8 adalah …", opsi:["12","18","48","24"], benar:3},
+          {id:nid(), mapel:"Matematika", tanya:"Jika x + 7 = 15, maka nilai x adalah …", opsi:["6","7","8","9"], benar:2},
+          {id:nid(), mapel:"IPA", tanya:"Planet yang paling dekat dengan Matahari adalah …", opsi:["Venus","Bumi","Merkurius","Mars"], benar:2},
+          {id:nid(), mapel:"IPA", tanya:"Satuan gaya dalam Sistem Internasional (SI) adalah …", opsi:["Joule","Newton","Watt","Pascal"], benar:1},
+          {id:nid(), mapel:"IPA", tanya:"Organ tumbuhan yang paling utama untuk fotosintesis adalah …", opsi:["Akar","Batang","Bunga","Daun"], benar:3},
+          {id:nid(), mapel:"IPA", tanya:"Pada tekanan udara normal, air mendidih pada suhu …", opsi:["90°C","100°C","80°C","120°C"], benar:1},
+          {id:nid(), mapel:"IPA", tanya:"Planet terbesar di tata surya adalah …", opsi:["Saturnus","Neptunus","Jupiter","Uranus"], benar:2}
+        ],
+        nilai: [
+          {id:nid(), siswa:"Andi Pratama", mapel:"Matematika", jenis:"Tugas", skor:85, tanggal:"2026-11-15"},
+          {id:nid(), siswa:"Siti Rahmawati", mapel:"IPA", jenis:"Kuis", skor:90, tanggal:"2026-11-16"},
+          {id:nid(), siswa:"Budi Santoso", mapel:"Bahasa Indonesia", jenis:"Tugas", skor:78, tanggal:"2026-11-16"},
+          {id:nid(), siswa:"Dewi Lestari", mapel:"Matematika", jenis:"Kuis", skor:95, tanggal:"2026-11-17"},
+          {id:nid(), siswa:"Rizky Ramadhan", mapel:"Bahasa Inggris", jenis:"Tugas", skor:88, tanggal:"2026-11-18"},
+          {id:nid(), siswa:"Putri Ayu Ningrum", mapel:"IPS", jenis:"Tugas", skor:92, tanggal:"2026-11-18"}
+        ],
+        forum: [
+          {id:nid(), judul:"Tanya Jawab PR Matematika", penulis:"Bu Ratna Wijaya (Guru Matematika)", tanggal:"2026-11-17",
+           isi:"Silakan bertanya di sini jika ada soal PR pecahan dan desimal yang belum dipahami. Tulis nomor soalnya, ya.",
+           balasan:[
+             {nama:"Andi Pratama", tanggal:"2026-11-17", teks:"Bu, nomor 4 cara mengubah 7/8 menjadi desimal bagaimana? Saya masih bingung."},
+             {nama:"Bu Ratna Wijaya (Guru Matematika)", tanggal:"2026-11-17", teks:"Bagus, Andi. 7 dibagi 8 = 0,875. Jadi 7/8 = 0,875. Coba kerjakan nomor 5 dengan cara yang sama."}
+           ]},
+          {id:nid(), judul:"Pengumuman Ujian Tengah Semester", penulis:"Pak Hadi Prasetyo (Wali Kelas 7A)", tanggal:"2026-11-18",
+           isi:"Ujian Tengah Semester dilaksanakan mulai Senin, 30 November 2026. Jadwal lengkap menyusul. Mohon siswa mempersiapkan diri dan melengkapi semua tugas sebelum ujian.",
+           balasan:[
+             {nama:"Siti Rahmawati", tanggal:"2026-11-18", teks:"Baik, Pak. Apakah materi UTS sampai bab tata surya saja untuk IPA?"},
+             {nama:"Pak Hadi Prasetyo (Wali Kelas 7A)", tanggal:"2026-11-18", teks:"Betul, Siti. Untuk IPA materinya bab 1 sampai 3. Semangat belajarnya!"}
+           ]},
+          {id:nid(), judul:"Diskusi Kelompok: Presentasi Ekosistem", penulis:"Dewi Lestari", tanggal:"2026-11-19",
+           isi:"Kelompok 3, kita bagi tugas presentasi ekosistem hari Jumat: saya bagian rantai makanan, siapa yang mau bagian simbiosis?",
+           balasan:[
+             {nama:"Rizky Ramadhan", tanggal:"2026-11-19", teks:"Saya bagian simbiosis. Nanti malam saya kirimkan contoh-contohnya di sini."}
+           ]}
+        ],
+        jadwal: [
+          {id:nid(), hari:"Senin", jam:"07.00 – 08.30", mapel:"Matematika", guru:"Bu Ratna Wijaya", kelas:"7A"},
+          {id:nid(), hari:"Senin", jam:"08.30 – 10.00", mapel:"Bahasa Indonesia", guru:"Pak Dedi Supriadi", kelas:"7A"},
+          {id:nid(), hari:"Selasa", jam:"07.00 – 08.30", mapel:"IPA", guru:"Bu Maya Kusuma", kelas:"7B"},
+          {id:nid(), hari:"Rabu", jam:"08.30 – 10.00", mapel:"Bahasa Inggris", guru:"Ms. Sarah Lim", kelas:"8A"},
+          {id:nid(), hari:"Kamis", jam:"07.00 – 08.30", mapel:"IPS", guru:"Pak Bambang Sutrisno", kelas:"7A"},
+          {id:nid(), hari:"Jumat", jam:"07.00 – 08.15", mapel:"Matematika", guru:"Bu Ratna Wijaya", kelas:"8A"},
+          {id:nid(), hari:"Sabtu", jam:"08.00 – 09.30", mapel:"IPA", guru:"Bu Maya Kusuma", kelas:"8B"}
+        ]
+      };
+
+      /* ================= Utilitas ================= */
+      function esc(s){
+        return String(s == null ? "" : s)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+      function fmtTgl(iso){
+        if(!iso) return "—";
+        var d = new Date(iso + "T00:00:00");
+        if(isNaN(d)) return iso;
+        return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+      }
+      function toast(msg){
+        var t = document.getElementById("toast");
+        t.textContent = msg; t.classList.add("show");
+        clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+      }
+      function icon(name){
+        var p = {
+          book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+          clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/>',
+          quiz:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+          award:'<circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/>',
+          forum:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+          cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+          info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+          search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+          plus:'<path d="M12 5v14M5 12h14"/>',
+          check:'<path d="M20 6 9 17l-5-5"/>',
+          edit:'<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+          trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>',
+          clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+          user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+          users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+          download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+          back:'<path d="m12 19-7-7 7-7M19 12H5"/>'
+        };
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (p[name]||"") + "</svg>";
+      }
+    </script>
+    <script>
+      "use strict";
+      /* ================= Navigasi tab ================= */
+      var TABS = [
+        {key:"materi", label:"Materi", ic:"book"},
+        {key:"tugas", label:"Tugas", ic:"clip"},
+        {key:"kuis", label:"Kuis", ic:"quiz"},
+        {key:"nilai", label:"Nilai", ic:"award"},
+        {key:"forum", label:"Forum", ic:"forum"},
+        {key:"jadwal", label:"Jadwal", ic:"cal"},
+        {key:"panduan", label:"Panduan", ic:"info"}
+      ];
+      var activeTab = "materi";
+      var filter = { materiQ:"", materiMapel:"", tugasStatus:"", nilaiQ:"", nilaiMapel:"" };
+      var forumOpenId = null;
+      var quiz = null; // {mapel, nama, soal:[], jawab:{}, selesai:false, skor:0}
+
+      function buildTabs(){
+        var html = "";
+        TABS.forEach(function(t){
+          html += '<button type="button" class="tab-btn' + (activeTab===t.key?" active":"") + '" data-tab="' + t.key + '">' + icon(t.ic) + esc(t.label) + "</button>";
+        });
+        document.getElementById("tabs").innerHTML = html;
+        var btns = document.querySelectorAll(".tab-btn");
+        for(var i=0;i<btns.length;i++){
+          btns[i].addEventListener("click", function(){
+            activeTab = this.getAttribute("data-tab");
+            buildTabs(); render();
+          });
+        }
+      }
+      function renderStats(){
+        var belumTugas = state.tugas.filter(function(t){return t.status==="Belum dikumpulkan";}).length;
+        var belumBaca = state.materi.filter(function(m){return !m.dibaca;}).length;
+        document.getElementById("stats").innerHTML =
+          '<div class="stat"><b>' + state.materi.length + '</b><span>Materi pelajaran</span></div>' +
+          '<div class="stat"><b>' + belumTugas + '</b><span>Tugas belum dikumpulkan</span></div>' +
+          '<div class="stat"><b>' + state.soal.length + '</b><span>Soal di bank kuis</span></div>' +
+          '<div class="stat"><b>' + belumBaca + '</b><span>Materi belum dibaca</span></div>';
+      }
+      function render(){
+        renderStats();
+        var p = document.getElementById("panels");
+        var html = "";
+        TABS.forEach(function(t){
+          html += '<section class="panel' + (activeTab===t.key?" active":"") + '" id="panel-' + t.key + '"></section>';
+        });
+        p.innerHTML = html;
+        if(activeTab==="materi") renderMateri();
+        else if(activeTab==="tugas") renderTugas();
+        else if(activeTab==="kuis") renderKuis();
+        else if(activeTab==="nilai") renderNilai();
+        else if(activeTab==="forum") renderForum();
+        else if(activeTab==="jadwal") renderJadwal();
+        else if(activeTab==="panduan") renderPanduan();
+      }
+      function panelEl(key){ return document.getElementById("panel-" + key); }
+      function opsiMapel(sel, semua){
+        var h = semua ? '<option value="">Semua Mata Pelajaran</option>' : "";
+        MAPEL.forEach(function(m){ h += '<option value="' + esc(m) + '"' + (sel===m?" selected":"") + ">" + esc(m) + "</option>"; });
+        return h;
+      }
+      function opsiKelas(sel){
+        var h = "";
+        KELAS.forEach(function(k){ h += '<option value="' + k + '"' + (sel===k?" selected":"") + ">Kelas " + k + "</option>"; });
+        return h;
+      }
+
+      /* ================= MATERI ================= */
+      function renderMateri(){
+        var el = panelEl("materi");
+        var list = state.materi.filter(function(m){
+          var q = filter.materiQ.trim().toLowerCase();
+          var okQ = !q || m.judul.toLowerCase().indexOf(q) >= 0 || m.isi.toLowerCase().indexOf(q) >= 0;
+          var okM = !filter.materiMapel || m.mapel === filter.materiMapel;
+          return okQ && okM;
+        });
+        var h = '<div class="panel-head"><div><h2>Materi Pelajaran</h2><p>Materi online per mata pelajaran. Tandai materi yang sudah selesai dipelajari.</p></div>' +
+          '<button type="button" class="btn" id="btn-add-materi">' + icon("plus") + ' Tambah Materi</button></div>';
+        h += '<div class="toolbar"><div class="search-box grow">' + icon("search") +
+          '<input class="field" id="materi-q" type="search" placeholder="Cari judul atau isi materi…" value="' + esc(filter.materiQ) + '"></div>' +
+          '<select class="field" id="materi-mapel" aria-label="Saring mata pelajaran">' + opsiMapel(filter.materiMapel, true) + "</select></div>";
+        if(!list.length){
+          h += '<div class="empty"><b>Tidak ada materi yang cocok</b>Coba ubah kata kunci atau saring mata pelajaran lain.</div>';
+        }
+        list.forEach(function(m){
+          h += '<article class="card"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">' +
+            '<span class="tag">' + esc(m.mapel) + '</span>' +
+            (m.dibaca ? '<span class="tag">Sudah dibaca</span>' : '<span class="tag amber">Belum dibaca</span>') + "</div>" +
+            "<h3 style='margin-top:10px'>" + esc(m.judul) + "</h3>" +
+            '<div class="meta"><span>' + icon("users") + "Kelas " + esc(m.kelas) + '</span><span>' + icon("cal") + fmtTgl(m.tanggal) + "</span></div>" +
+            '<p class="body-text">' + esc(m.isi) + "</p>" +
+            '<div class="card-actions">' +
+              '<button type="button" class="btn small ghost" data-act="baca" data-id="' + m.id + '">' + icon("check") + (m.dibaca ? "Batalkan tanda dibaca" : "Tandai sudah dibaca") + "</button>" +
+              '<button type="button" class="btn small ghost" data-act="edit-materi" data-id="' + m.id + '">' + icon("edit") + " Ubah</button>" +
+              '<button type="button" class="btn small danger" data-act="hapus-materi" data-id="' + m.id + '">' + icon("trash") + " Hapus</button>" +
+            "</div></article>";
+        });
+        el.innerHTML = h;
+        document.getElementById("btn-add-materi").addEventListener("click", function(){ formMateri(null); });
+        var q = document.getElementById("materi-q");
+        q.addEventListener("input", function(){ filter.materiQ = this.value; var pos = this.selectionStart; renderMateri(); var nq = document.getElementById("materi-q"); nq.focus(); try{nq.setSelectionRange(pos,pos);}catch(e){} });
+        document.getElementById("materi-mapel").addEventListener("change", function(){ filter.materiMapel = this.value; renderMateri(); });
+        bindCardActions(el, {
+          "baca": function(id){
+            var m = findById(state.materi, id); if(!m) return;
+            m.dibaca = !m.dibaca; render();
+            toast(m.dibaca ? "Materi ditandai sudah dibaca." : "Tanda dibaca dibatalkan.");
+          },
+          "edit-materi": function(id){ formMateri(findById(state.materi, id)); },
+          "hapus-materi": function(id){
+            var m = findById(state.materi, id); if(!m) return;
+            confirmHapus("Hapus materi", 'Materi "' + m.judul + '" akan dihapus dari daftar.', function(){
+              state.materi = state.materi.filter(function(x){return x.id !== id;});
+              render(); toast("Materi dihapus.");
+            });
+          }
+        });
+      }
+      function findById(arr, id){ for(var i=0;i<arr.length;i++){ if(arr[i].id === id) return arr[i]; } return null; }
+      function bindCardActions(root, handlers){
+        var btns = root.querySelectorAll("[data-act]");
+        for(var i=0;i<btns.length;i++){
+          btns[i].addEventListener("click", function(){
+            var fn = handlers[this.getAttribute("data-act")];
+            if(fn) fn(parseInt(this.getAttribute("data-id"), 10));
+          });
+        }
+      }
+
+      /* ================= TUGAS ================= */
+      function statusTag(s){
+        if(s === "Dinilai") return '<span class="tag">Dinilai</span>';
+        if(s === "Sudah dikumpulkan") return '<span class="tag blue">Sudah dikumpulkan</span>';
+        return '<span class="tag amber">Belum dikumpulkan</span>';
+      }
+      function renderTugas(){
+        var el = panelEl("tugas");
+        var list = state.tugas.filter(function(t){ return !filter.tugasStatus || t.status === filter.tugasStatus; });
+        var h = '<div class="panel-head"><div><h2>Tugas &amp; Pengumpulan</h2><p>Daftar tugas siswa beserta status pengumpulannya.</p></div>' +
+          '<button type="button" class="btn" id="btn-add-tugas">' + icon("plus") + ' Tambah Tugas</button></div>';
+        h += '<div class="toolbar"><select class="field" id="tugas-status" aria-label="Saring status tugas">' +
+          '<option value="">Semua Status</option>' +
+          ["Belum dikumpulkan","Sudah dikumpulkan","Dinilai"].map(function(s){ return '<option value="' + s + '"' + (filter.tugasStatus===s?" selected":"") + ">" + s + "</option>"; }).join("") +
+          "</select></div>";
+        if(!list.length) h += '<div class="empty"><b>Tidak ada tugas dengan status ini</b>Coba pilih status lain atau tambahkan tugas baru.</div>';
+        list.forEach(function(t){
+          h += '<article class="card"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">' +
+            '<span class="tag">' + esc(t.mapel) + "</span>" + statusTag(t.status) + "</div>" +
+            "<h3 style='margin-top:10px'>" + esc(t.judul) + "</h3>" +
+            '<div class="meta"><span>' + icon("users") + "Kelas " + esc(t.kelas) + '</span><span>' + icon("clock") + "Tenggat: " + fmtTgl(t.tenggat) + "</span></div>";
+          if(t.siswa){
+            h += '<p class="body-text">Dikumpulkan oleh <strong>' + esc(t.siswa) + "</strong> pada " + fmtTgl(t.tglKumpul) + ".</p>";
+          }
+          h += '<div class="card-actions">';
+          if(t.status === "Belum dikumpulkan"){
+            h += '<button type="button" class="btn small" data-act="kumpul" data-id="' + t.id + '">' + icon("check") + " Tandai Sudah Dikumpulkan</button>";
+          }
+          if(t.status === "Sudah dikumpulkan"){
+            h += '<button type="button" class="btn small ghost" data-act="nilai-tugas" data-id="' + t.id + '">' + icon("award") + " Beri Nilai</button>";
+          }
+          h += '<button type="button" class="btn small danger" data-act="hapus-tugas" data-id="' + t.id + '">' + icon("trash") + " Hapus</button>";
+          h += "</div></article>";
+        });
+        el.innerHTML = h;
+        document.getElementById("btn-add-tugas").addEventListener("click", function(){ formTugas(); });
+        document.getElementById("tugas-status").addEventListener("change", function(){ filter.tugasStatus = this.value; renderTugas(); });
+        bindCardActions(el, {
+          "kumpul": function(id){ formKumpul(findById(state.tugas, id)); },
+          "nilai-tugas": function(id){ formNilaiTugas(findById(state.tugas, id)); },
+          "hapus-tugas": function(id){
+            var t = findById(state.tugas, id); if(!t) return;
+            confirmHapus("Hapus tugas", 'Tugas "' + t.judul + '" akan dihapus.', function(){
+              state.tugas = state.tugas.filter(function(x){return x.id !== id;});
+              render(); toast("Tugas dihapus.");
+            });
+          }
+        });
+      }
+
+      /* ================= KUIS ================= */
+      function renderKuis(){
+        var el = panelEl("kuis");
+        var h = '<div class="panel-head"><div><h2>Kuis Online</h2><p>Pilih mata pelajaran, kerjakan soal pilihan ganda, lalu klik Selesai untuk melihat skor.</p></div>' +
+          '<button type="button" class="btn ghost" id="btn-add-soal">' + icon("plus") + " Tambah Soal ke Bank Soal</button></div>";
+        if(!quiz){
+          h += '<div class="card"><h3>Mulai Kuis</h3><div class="quiz-setup" style="margin-top:12px">' +
+            '<div><label for="kuis-nama" style="font-size:13.5px;font-weight:700;color:var(--ink-soft)">Nama siswa</label>' +
+            '<input class="field" id="kuis-nama" type="text" placeholder="Mis. Andi Pratama" style="margin-top:5px"></div>' +
+            '<div><label for="kuis-mapel" style="font-size:13.5px;font-weight:700;color:var(--ink-soft)">Mata pelajaran</label>' +
+            '<select class="field" id="kuis-mapel" style="width:100%;margin-top:5px">' +
+              '<option value="Matematika">Matematika (' + state.soal.filter(function(s){return s.mapel==="Matematika";}).length + ' soal)</option>' +
+              '<option value="IPA">IPA (' + state.soal.filter(function(s){return s.mapel==="IPA";}).length + ' soal)</option>' +
+            "</select></div></div>" +
+            '<div class="card-actions"><button type="button" class="btn" id="btn-mulai-kuis">Mulai Kuis</button></div>' +
+            '<p class="body-text">Skor kuis yang selesai akan otomatis tercatat di tab Nilai atas nama siswa.</p></div>';
+          h += renderBankSoal();
+          el.innerHTML = h;
+          document.getElementById("btn-add-soal").addEventListener("click", formSoal);
+          document.getElementById("btn-mulai-kuis").addEventListener("click", function(){
+            var nama = document.getElementById("kuis-nama").value.trim();
+            var mapel = document.getElementById("kuis-mapel").value;
+            if(!nama){ toast("Isi nama siswa dulu sebelum mulai kuis."); document.getElementById("kuis-nama").focus(); return; }
+            var soal = state.soal.filter(function(s){ return s.mapel === mapel; });
+            if(!soal.length){ toast("Belum ada soal untuk mata pelajaran ini."); return; }
+            quiz = { mapel: mapel, nama: nama, soal: soal, jawab: {}, selesai: false, skor: 0 };
+            renderKuis(); window.scrollTo({top:0, behavior:"smooth"});
+          });
+          bindBankActions(el);
+          return;
+        }
+        // Sedang / selesai mengerjakan
+        h += '<p class="progress-note">Kuis ' + esc(quiz.mapel) + " &middot; Siswa: <strong>" + esc(quiz.nama) + "</strong> &middot; " + quiz.soal.length + " soal</p>";
+        if(quiz.selesai){
+          h += '<div class="card quiz-result"><div class="big-score">' + quiz.skor + '</div>' +
+            "<p>Skor akhir dari 100 &middot; Benar " + quiz.benar + " dari " + quiz.soal.length + " soal. Skor ini sudah tercatat di tab Nilai.</p>" +
+            '<div class="card-actions" style="justify-content:center"><button type="button" class="btn" id="btn-kuis-ulang">Kerjakan Kuis Lain</button>' +
+            '<button type="button" class="btn ghost" id="btn-lihat-nilai">Lihat Tab Nilai</button></div></div>';
+        }
+        quiz.soal.forEach(function(s, idx){
+          var picked = quiz.jawab[s.id];
+          h += '<div class="q-card"><div class="q-num">Soal ' + (idx+1) + " dari " + quiz.soal.length + "</div>" +
+            '<div class="q-text">' + esc(s.tanya) + "</div>";
+          s.opsi.forEach(function(op, oi){
+            var cls = "opt";
+            if(quiz.selesai){
+              if(oi === s.benar) cls += " correct";
+              else if(picked === oi) cls += " wrong";
+            } else if(picked === oi) cls += " picked";
+            h += '<button type="button" class="' + cls + '" data-soal="' + s.id + '" data-opsi="' + oi + '"' + (quiz.selesai ? " disabled" : "") + '>' +
+              '<span class="letter">' + "ABCD"[oi] + "</span><span>" + esc(op) + "</span></button>";
+          });
+          if(quiz.selesai){
+            if(picked === s.benar) h += '<div class="q-feedback ok">Benar. Jawaban: ' + esc(s.opsi[s.benar]) + "</div>";
+            else if(picked === undefined) h += '<div class="q-feedback no">Tidak dijawab. Jawaban benar: ' + esc(s.opsi[s.benar]) + "</div>";
+            else h += '<div class="q-feedback no">Salah. Jawaban benar: ' + esc(s.opsi[s.benar]) + "</div>";
+          }
+          h += "</div>";
+        });
+        if(!quiz.selesai){
+          h += '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">' +
+            '<button type="button" class="btn" id="btn-selesai-kuis">' + icon("check") + " Selesai &amp; Lihat Skor</button>" +
+            '<button type="button" class="btn ghost" id="btn-batal-kuis">Batalkan Kuis</button></div>';
+        }
+        el.innerHTML = h;
+        document.getElementById("btn-add-soal").addEventListener("click", formSoal);
+        if(!quiz.selesai){
+          var opts = el.querySelectorAll(".opt");
+          for(var i=0;i<opts.length;i++){
+            opts[i].addEventListener("click", function(){
+              quiz.jawab[this.getAttribute("data-soal")] = parseInt(this.getAttribute("data-opsi"), 10);
+              renderKuis();
+            });
+          }
+          document.getElementById("btn-selesai-kuis").addEventListener("click", selesaiKuis);
+          document.getElementById("btn-batal-kuis").addEventListener("click", function(){ quiz = null; renderKuis(); });
+        } else {
+          document.getElementById("btn-kuis-ulang").addEventListener("click", function(){ quiz = null; renderKuis(); });
+          document.getElementById("btn-lihat-nilai").addEventListener("click", function(){ activeTab = "nilai"; buildTabs(); render(); });
+        }
+      }
+      function selesaiKuis(){
+        var benar = 0;
+        quiz.soal.forEach(function(s){ if(quiz.jawab[s.id] === s.benar) benar++; });
+        quiz.benar = benar;
+        quiz.skor = Math.round(benar / quiz.soal.length * 100);
+        quiz.selesai = true;
+        state.nilai.unshift({ id: nid(), siswa: quiz.nama, mapel: quiz.mapel, jenis: "Kuis", skor: quiz.skor, tanggal: today() });
+        renderKuis(); renderStats();
+        window.scrollTo({top:0, behavior:"smooth"});
+        toast("Kuis selesai. Skor: " + quiz.skor);
+      }
+      function renderBankSoal(){
+        var h = '<div class="panel-head" style="margin-top:22px"><div><h2 style="font-size:18px">Bank Soal</h2><p>Semua soal yang tersedia untuk kuis.</p></div></div>';
+        MAPEL.forEach(function(mp){
+          var items = state.soal.filter(function(s){ return s.mapel === mp; });
+          if(!items.length) return;
+          h += '<div class="card"><span class="tag">' + esc(mp) + '</span><div style="margin-top:10px">';
+          items.forEach(function(s){
+            h += '<div style="display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)">' +
+              '<div><div style="font-weight:600">' + esc(s.tanya) + '</div>' +
+              '<div style="color:var(--ink-soft);font-size:13.5px">Jawaban benar: ' + esc(s.opsi[s.benar]) + "</div></div>" +
+              '<button type="button" class="btn small danger" data-hapus-soal="' + s.id + '">' + icon("trash") + " Hapus</button></div>";
+          });
+          h += "</div></div>";
+        });
+        return h;
+      }
+      function bindBankActions(el){
+        var btns = el.querySelectorAll("[data-hapus-soal]");
+        for(var i=0;i<btns.length;i++){
+          btns[i].addEventListener("click", function(){
+            var id = parseInt(this.getAttribute("data-hapus-soal"), 10);
+            var s = findById(state.soal, id); if(!s) return;
+            confirmHapus("Hapus soal", 'Soal "' + s.tanya + '" akan dihapus dari bank soal.', function(){
+              state.soal = state.soal.filter(function(x){ return x.id !== id; });
+              render(); toast("Soal dihapus dari bank soal.");
+            });
+          });
+        }
+      }
+
+      /* ================= NILAI ================= */
+      function renderNilai(){
+        var el = panelEl("nilai");
+        var list = state.nilai.filter(function(n){
+          var q = filter.nilaiQ.trim().toLowerCase();
+          var okQ = !q || n.siswa.toLowerCase().indexOf(q) >= 0;
+          var okM = !filter.nilaiMapel || n.mapel === filter.nilaiMapel;
+          return okQ && okM;
+        });
+        var h = '<div class="panel-head"><div><h2>Nilai Siswa</h2><p>Nilai tugas dan kuis per siswa. Hasil kuis yang dikerjakan di aplikasi tercatat otomatis di sini.</p></div>' +
+          '<button type="button" class="btn ghost" id="btn-csv">' + icon("download") + " Ekspor CSV</button></div>";
+        h += '<div class="toolbar"><div class="search-box grow">' + icon("search") +
+          '<input class="field" id="nilai-q" type="search" placeholder="Cari nama siswa…" value="' + esc(filter.nilaiQ) + '"></div>' +
+          '<select class="field" id="nilai-mapel" aria-label="Saring mata pelajaran">' + opsiMapel(filter.nilaiMapel, true) + "</select>" +
+          '<button type="button" class="btn" id="btn-add-nilai">' + icon("plus") + " Tambah Nilai</button></div>";
+        if(!list.length){
+          h += '<div class="empty"><b>Belum ada nilai yang cocok</b>Coba ubah pencarian, atau tambahkan nilai secara manual.</div>';
+        } else {
+          h += '<div class="table-wrap"><table><thead><tr><th>Nama Siswa</th><th>Mata Pelajaran</th><th>Jenis</th><th>Skor</th><th>Tanggal</th><th></th></tr></thead><tbody>';
+          list.forEach(function(n){
+            var cls = n.skor >= 80 ? "good" : (n.skor >= 65 ? "mid" : "low");
+            h += "<tr><td data-label=''>" + esc(n.siswa) + "</td>" +
+              "<td data-label='Mata Pelajaran'>" + esc(n.mapel) + "</td>" +
+              "<td data-label='Jenis'>" + esc(n.jenis) + "</td>" +
+              "<td data-label='Skor'><span class='score " + cls + "'>" + n.skor + "</span></td>" +
+              "<td data-label='Tanggal'>" + fmtTgl(n.tanggal) + "</td>" +
+              "<td data-label=''><button type='button' class='btn small danger' data-hapus-nilai='" + n.id + "'>Hapus</button></td></tr>";
+          });
+          h += "</tbody></table></div>";
+          var total = list.reduce(function(a,n){ return a + n.skor; }, 0);
+          h += '<p style="color:var(--ink-soft);font-size:14px;margin-top:10px">Menampilkan ' + list.length + " nilai &middot; Rata-rata: <strong>" + (Math.round(total / list.length * 10) / 10) + "</strong></p>";
+        }
+        el.innerHTML = h;
+        document.getElementById("btn-add-nilai").addEventListener("click", formNilai);
+        document.getElementById("btn-csv").addEventListener("click", eksporCSV);
+        var q = document.getElementById("nilai-q");
+        q.addEventListener("input", function(){ filter.nilaiQ = this.value; var pos = this.selectionStart; renderNilai(); var nq = document.getElementById("nilai-q"); nq.focus(); try{nq.setSelectionRange(pos,pos);}catch(e){} });
+        document.getElementById("nilai-mapel").addEventListener("change", function(){ filter.nilaiMapel = this.value; renderNilai(); });
+        var btns = el.querySelectorAll("[data-hapus-nilai]");
+        for(var i=0;i<btns.length;i++){
+          btns[i].addEventListener("click", function(){
+            var id = parseInt(this.getAttribute("data-hapus-nilai"), 10);
+            var n = findById(state.nilai, id); if(!n) return;
+            confirmHapus("Hapus nilai", "Nilai " + n.jenis + " " + n.mapel + " atas nama " + n.siswa + " (" + n.skor + ") akan dihapus.", function(){
+              state.nilai = state.nilai.filter(function(x){ return x.id !== id; });
+              renderNilai(); toast("Nilai dihapus.");
+            });
+          });
+        }
+      }
+      function eksporCSV(){
+        var rows = [["Nama Siswa","Mata Pelajaran","Jenis Nilai","Skor","Tanggal"]];
+        state.nilai.forEach(function(n){ rows.push([n.siswa, n.mapel, n.jenis, n.skor, n.tanggal]); });
+        var csv = rows.map(function(r){
+          return r.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(";");
+        }).join("\r\n");
+        var blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"});
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "nilai-siswa-lms.csv";
+        document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+        toast("File CSV nilai berhasil diunduh.");
+      }
+
+      /* ================= FORUM ================= */
+      function renderForum(){
+        var el = panelEl("forum");
+        if(forumOpenId){
+          var t = findById(state.forum, forumOpenId);
+          if(!t){ forumOpenId = null; renderForum(); return; }
+          var h = '<button type="button" class="back-link" id="btn-back-forum">' + icon("back") + " Kembali ke daftar topik</button>";
+          h += '<article class="card"><span class="tag blue">Topik Diskusi</span>' +
+            "<h3 style='margin-top:10px;font-size:19px'>" + esc(t.judul) + "</h3>" +
+            '<div class="meta"><span>' + icon("user") + esc(t.penulis) + '</span><span>' + icon("cal") + fmtTgl(t.tanggal) + "</span></div>" +
+            '<p class="body-text" style="color:var(--ink)">' + esc(t.isi) + "</p></article>";
+          h += '<div class="card"><h3>Balasan (' + t.balasan.length + ")</h3>";
+          if(!t.balasan.length) h += '<p class="body-text">Belum ada balasan. Jadilah yang pertama menanggapi.</p>';
+          t.balasan.forEach(function(b){
+            h += '<div class="reply"><span class="who">' + esc(b.nama) + '</span><span class="when">' + fmtTgl(b.tanggal) + "</span><p>" + esc(b.teks) + "</p></div>";
+          });
+          h += '<form class="reply-form" id="form-balasan"><div>' +
+            '<label for="balas-nama" style="font-size:13.5px;font-weight:700;color:var(--ink-soft)">Nama Anda</label>' +
+            '<input class="field" id="balas-nama" type="text" placeholder="Mis. Andi Pratama" style="margin-top:5px"></div>' +
+            '<div><label for="balas-teks" style="font-size:13.5px;font-weight:700;color:var(--ink-soft)">Isi balasan</label>' +
+            '<textarea class="field" id="balas-teks" placeholder="Tulis balasan Anda…" style="margin-top:5px"></textarea></div>' +
+            '<div><button type="submit" class="btn">Kirim Balasan</button></div></form></div>';
+          el.innerHTML = h;
+          document.getElementById("btn-back-forum").addEventListener("click", function(){ forumOpenId = null; renderForum(); });
+          document.getElementById("form-balasan").addEventListener("submit", function(ev){
+            ev.preventDefault();
+            var nama = document.getElementById("balas-nama").value.trim();
+            var teks = document.getElementById("balas-teks").value.trim();
+            if(!nama || !teks){ toast("Isi nama dan balasan terlebih dahulu."); return; }
+            t.balasan.push({ nama: nama, tanggal: today(), teks: teks });
+            renderForum(); toast("Balasan terkirim.");
+          });
+          return;
+        }
+        var h = '<div class="panel-head"><div><h2>Forum Kelas</h2><p>Diskusi antara guru dan siswa. Klik topik untuk membuka dan ikut membalas.</p></div>' +
+          '<button type="button" class="btn" id="btn-add-topik">' + icon("plus") + " Topik Baru</button></div>";
+        if(!state.forum.length) h += '<div class="empty"><b>Belum ada topik diskusi</b>Buat topik pertama untuk memulai diskusi kelas.</div>';
+        state.forum.forEach(function(t){
+          h += '<article class="card topic-card" data-topik="' + t.id + '" role="button" tabindex="0" aria-label="Buka topik ' + esc(t.judul) + '">' +
+            "<h3>" + esc(t.judul) + "</h3>" +
+            '<div class="meta"><span>' + icon("user") + esc(t.penulis) + '</span><span>' + icon("cal") + fmtTgl(t.tanggal) + '</span><span>' + icon("forum") + t.balasan.length + " balasan</span></div>" +
+            '<p class="body-text">' + esc(t.isi) + "</p></article>";
+        });
+        el.innerHTML = h;
+        document.getElementById("btn-add-topik").addEventListener("click", formTopik);
+        var cards = el.querySelectorAll("[data-topik]");
+        for(var i=0;i<cards.length;i++){
+          (function(c){
+            function open(){ forumOpenId = parseInt(c.getAttribute("data-topik"), 10); renderForum(); window.scrollTo({top:0, behavior:"smooth"}); }
+            c.addEventListener("click", open);
+            c.addEventListener("keydown", function(ev){ if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); open(); } });
+          })(cards[i]);
+        }
+      }
+
+      /* ================= JADWAL ================= */
+      function renderJadwal(){
+        var el = panelEl("jadwal");
+        var h = '<div class="panel-head"><div><h2>Jadwal Belajar Mingguan</h2><p>Jadwal pelajaran Senin sampai Sabtu.</p></div>' +
+          '<button type="button" class="btn" id="btn-add-jadwal">' + icon("plus") + " Tambah Jadwal</button></div>";
+        HARI.forEach(function(hari){
+          var items = state.jadwal.filter(function(j){ return j.hari === hari; });
+          h += '<div class="card"><div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0">' + hari + '</h3><span class="tag gray">' + items.length + " pelajaran</span></div>";
+          if(!items.length){
+            h += '<p class="body-text">Belum ada jadwal pada hari ini.</p>';
+          } else {
+            items.forEach(function(j){
+              h += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">' +
+                '<div><div style="font-weight:700">' + esc(j.mapel) + ' <span style="color:var(--ink-faint);font-weight:500">· Kelas ' + esc(j.kelas) + "</span></div>" +
+                '<div class="meta" style="margin:2px 0 0"><span>' + icon("clock") + " " + esc(j.jam) + " &middot; " + esc(j.guru) + "</span></div></div>" +
+                '<div style="display:flex;gap:8px"><button type="button" class="btn small ghost" data-edit-jadwal="' + j.id + '">' + icon("edit") + ' Ubah</button>' +
+                '<button type="button" class="btn small danger" data-hapus-jadwal="' + j.id + '">' + icon("trash") + " Hapus</button></div></div>";
+            });
+          }
+          h += "</div>";
+        });
+        el.innerHTML = h;
+        document.getElementById("btn-add-jadwal").addEventListener("click", function(){ formJadwal(null); });
+        var eb = el.querySelectorAll("[data-edit-jadwal]");
+        for(var i=0;i<eb.length;i++) eb[i].addEventListener("click", function(){ formJadwal(findById(state.jadwal, parseInt(this.getAttribute("data-edit-jadwal"), 10))); });
+        var hb = el.querySelectorAll("[data-hapus-jadwal]");
+        for(var j=0;j<hb.length;j++) hb[j].addEventListener("click", function(){
+          var id = parseInt(this.getAttribute("data-hapus-jadwal"), 10);
+          var jd = findById(state.jadwal, id); if(!jd) return;
+          confirmHapus("Hapus jadwal", "Jadwal " + jd.mapel + " hari " + jd.hari + " (" + jd.jam + ") akan dihapus.", function(){
+            state.jadwal = state.jadwal.filter(function(x){ return x.id !== id; });
+            renderJadwal(); toast("Jadwal dihapus.");
+          });
+        });
+      }
+
+      /* ================= PANDUAN & GARANSI ================= */
+      function renderPanduan(){
+        var el = panelEl("panduan");
+        el.innerHTML =
+        '<div class="panel-head"><div><h2>Panduan Penggunaan</h2><p>Cara memakai setiap fitur Learning Management System (LMS), langkah demi langkah.</p></div></div>' +
+        '<div class="card guide">' +
+          "<h3>Tab Materi</h3><ol>" +
+          "<li>Buka tab <strong>Materi</strong> untuk melihat daftar materi pelajaran dari semua mata pelajaran.</li>" +
+          "<li>Gunakan kolom pencarian untuk mencari judul atau isi materi, dan menu saring untuk memilih mata pelajaran tertentu.</li>" +
+          "<li>Klik <strong>Tandai sudah dibaca</strong> pada materi yang sudah selesai dipelajari.</li>" +
+          "<li>Guru dapat klik <strong>Tambah Materi</strong> untuk menambah materi baru, atau <strong>Ubah</strong> / <strong>Hapus</strong> pada materi yang sudah ada.</li></ol>" +
+          "<h3>Tab Tugas</h3><ol>" +
+          "<li>Buka tab <strong>Tugas</strong> untuk melihat daftar tugas dan tenggatnya.</li>" +
+          "<li>Saring daftar berdasarkan status: Belum dikumpulkan, Sudah dikumpulkan, atau Dinilai.</li>" +
+          "<li>Setelah siswa menyerahkan tugas, klik <strong>Tandai Sudah Dikumpulkan</strong>, lalu isi nama siswa dan tanggal pengumpulan.</li>" +
+          "<li>Klik <strong>Beri Nilai</strong> untuk menilai tugas yang sudah dikumpulkan; nilai otomatis tercatat di tab Nilai.</li>" +
+          "<li>Klik <strong>Tambah Tugas</strong> untuk membuat tugas baru.</li></ol>" +
+          "<h3>Tab Kuis</h3><ol>" +
+          "<li>Isi nama siswa, pilih mata pelajaran (Matematika atau IPA), lalu klik <strong>Mulai Kuis</strong>.</li>" +
+          "<li>Pilih satu jawaban untuk setiap soal dengan mengklik pilihan A, B, C, atau D.</li>" +
+          "<li>Setelah semua soal dijawab, klik <strong>Selesai &amp; Lihat Skor</strong>.</li>" +
+          "<li>Skor dan jawaban yang benar/salah akan tampil, dan skor otomatis tercatat di tab Nilai.</li>" +
+          "<li>Guru dapat menambah soal baru lewat tombol <strong>Tambah Soal ke Bank Soal</strong>, atau menghapus soal dari daftar Bank Soal.</li></ol>" +
+          "<h3>Tab Nilai</h3><ol>" +
+          "<li>Lihat seluruh nilai tugas dan kuis dalam satu tabel.</li>" +
+          "<li>Cari berdasarkan nama siswa atau saring berdasarkan mata pelajaran.</li>" +
+          "<li>Klik <strong>Tambah Nilai</strong> untuk memasukkan nilai secara manual.</li>" +
+          "<li>Klik <strong>Ekspor CSV</strong> untuk mengunduh seluruh nilai sebagai file yang dapat dibuka di Microsoft Excel atau Google Sheets.</li></ol>" +
+          "<h3>Tab Forum</h3><ol>" +
+          "<li>Klik salah satu topik untuk membuka isi diskusi dan semua balasannya.</li>" +
+          "<li>Isi nama dan balasan di bagian bawah topik, lalu klik <strong>Kirim Balasan</strong>.</li>" +
+          "<li>Klik <strong>Topik Baru</strong> untuk membuat topik diskusi atau pengumuman baru.</li></ol>" +
+          "<h3>Tab Jadwal</h3><ol>" +
+          "<li>Lihat jadwal belajar mingguan dari hari Senin sampai Sabtu, lengkap dengan jam, guru, dan kelas.</li>" +
+          "<li>Klik <strong>Tambah Jadwal</strong> untuk menambah jadwal, atau <strong>Ubah</strong> / <strong>Hapus</strong> pada jadwal yang sudah ada.</li></ol>" +
+          '<div class="note-box"><strong>Catatan:</strong> Video dan ujian online real-time adalah pengembangan lanjutan (butuh backend) dan belum tersedia di versi demo v1 ini.</div>' +
+        "</div>" +
+        '<div class="card warranty"><h3>Garansi</h3>' +
+          "<p>Perbaikan bug/error gratis untuk fitur yang tercantum di panduan selama masa garansi:</p><ul>" +
+          "<li><strong>Beli Sekali:</strong> Pemula 30 hari / Profesional 60 hari / Bisnis 90 hari.</li>" +
+          "<li><strong>Berlangganan:</strong> garansi + dukungan selama langganan aktif.</li></ul>" +
+          "<p>Klaim via WhatsApp dengan mengirim video/screenshot bug.</p>" +
+          "<p><strong>TIDAK termasuk garansi:</strong></p><ul>" +
+          "<li>Permintaan fitur baru.</li>" +
+          "<li>Perubahan desain/data.</li>" +
+          "<li>Kerusakan karena pembeli mengedit file sendiri.</li>" +
+          "<li>Layanan pihak ketiga (hosting/domain pembeli).</li></ul>" +
+        "</div>";
+      }
+    </script>
+    <script>
+      "use strict";
+      /* ================= Modal & formulir ================= */
+      var overlay = document.getElementById("overlay");
+      var modal = document.getElementById("modal");
+      function openModal(html){
+        modal.innerHTML = html;
+        overlay.classList.add("open");
+        var first = modal.querySelector("input,select,textarea");
+        if(first) first.focus();
+      }
+      function closeModal(){ overlay.classList.remove("open"); modal.innerHTML = ""; }
+      overlay.addEventListener("click", function(e){ if(e.target === overlay) closeModal(); });
+      document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeModal(); });
+
+      function fieldText(id, label, val, ph){
+        return '<div><label for="' + id + '">' + label + '</label><input class="field" id="' + id + '" type="text" value="' + esc(val || "") + '" placeholder="' + esc(ph || "") + '"></div>';
+      }
+      function fieldArea(id, label, val, ph){
+        return '<div><label for="' + id + '">' + label + '</label><textarea class="field" id="' + id + '" placeholder="' + esc(ph || "") + '">' + esc(val || "") + "</textarea></div>";
+      }
+      function fieldDate(id, label, val){
+        return '<div><label for="' + id + '">' + label + '</label><input class="field" id="' + id + '" type="date" value="' + esc(val || "") + '"></div>';
+      }
+      function fieldSelect(id, label, optionsHtml){
+        return '<div><label for="' + id + '">' + label + '</label><select class="field" id="' + id + '" style="width:100%">' + optionsHtml + "</select></div>";
+      }
+      function modalActions(saveLabel){
+        return '<div class="modal-actions"><button type="button" class="btn ghost" id="m-cancel">Batal</button>' +
+          '<button type="submit" class="btn">' + esc(saveLabel || "Simpan") + "</button></div>";
+      }
+      function bindCancel(){
+        document.getElementById("m-cancel").addEventListener("click", closeModal);
+      }
+      function val(id){ return document.getElementById(id).value.trim(); }
+
+      function formMateri(m){
+        var isEdit = !!m;
+        m = m || { judul:"", mapel:"Matematika", kelas:"7A", tanggal: today(), isi:"" };
+        openModal('<form id="m-form"><h3>' + (isEdit ? "Ubah Materi" : "Tambah Materi Baru") + '</h3>' +
+          '<p class="hint">Isi judul, mata pelajaran, kelas, tanggal, dan ringkasan isi materi.</p><div class="form-grid">' +
+          fieldText("f-judul","Judul materi", m.judul, "Mis. Pecahan dan Desimal") +
+          fieldSelect("f-mapel","Mata Pelajaran", opsiMapel(m.mapel, false)) +
+          fieldSelect("f-kelas","Kelas", opsiKelas(m.kelas)) +
+          fieldDate("f-tanggal","Tanggal terbit", m.tanggal) +
+          fieldArea("f-isi","Isi / ringkasan materi", m.isi, "Tulis ringkasan isi materi di sini…") +
+          "</div>" + modalActions(isEdit ? "Simpan Perubahan" : "Tambah Materi") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var judul = val("f-judul"), isi = val("f-isi");
+          if(!judul || !isi){ toast("Judul dan isi materi wajib diisi."); return; }
+          if(isEdit){
+            m.judul = judul; m.mapel = val("f-mapel"); m.kelas = document.getElementById("f-kelas").value;
+            m.tanggal = document.getElementById("f-tanggal").value || today(); m.isi = isi;
+            toast("Materi berhasil diubah.");
+          } else {
+            state.materi.unshift({ id: nid(), judul: judul, mapel: val("f-mapel"), kelas: document.getElementById("f-kelas").value, tanggal: document.getElementById("f-tanggal").value || today(), isi: isi, dibaca: false });
+            toast("Materi baru berhasil ditambahkan.");
+          }
+          closeModal(); render();
+        });
+      }
+
+      function formTugas(){
+        openModal('<form id="m-form"><h3>Tambah Tugas Baru</h3>' +
+          '<p class="hint">Tugas baru berstatus "Belum dikumpulkan".</p><div class="form-grid">' +
+          fieldText("f-judul","Judul tugas", "", "Mis. Latihan Soal Pecahan") +
+          fieldSelect("f-mapel","Mata Pelajaran", opsiMapel("Matematika", false)) +
+          fieldSelect("f-kelas","Kelas", opsiKelas("7A")) +
+          fieldDate("f-tenggat","Tenggat pengumpulan", today()) +
+          "</div>" + modalActions("Tambah Tugas") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var judul = val("f-judul");
+          if(!judul){ toast("Judul tugas wajib diisi."); return; }
+          state.tugas.unshift({ id: nid(), judul: judul, mapel: val("f-mapel"), kelas: document.getElementById("f-kelas").value, tenggat: document.getElementById("f-tenggat").value || today(), status: "Belum dikumpulkan", siswa: "", tglKumpul: "" });
+          closeModal(); render(); toast("Tugas baru berhasil ditambahkan.");
+        });
+      }
+
+      function formKumpul(t){
+        if(!t) return;
+        openModal('<form id="m-form"><h3>Tandai Sudah Dikumpulkan</h3>' +
+          '<p class="hint">Tugas: <strong>' + esc(t.judul) + '</strong></p><div class="form-grid">' +
+          fieldText("f-siswa","Nama siswa yang mengumpulkan", "", "Mis. Andi Pratama") +
+          fieldDate("f-tgl","Tanggal pengumpulan", today()) +
+          "</div>" + modalActions("Simpan Pengumpulan") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var siswa = val("f-siswa");
+          if(!siswa){ toast("Nama siswa wajib diisi."); return; }
+          t.siswa = siswa; t.tglKumpul = document.getElementById("f-tgl").value || today(); t.status = "Sudah dikumpulkan";
+          closeModal(); render(); toast("Tugas ditandai sudah dikumpulkan oleh " + siswa + ".");
+        });
+      }
+
+      function formNilaiTugas(t){
+        if(!t) return;
+        openModal('<form id="m-form"><h3>Beri Nilai Tugas</h3>' +
+          '<p class="hint">Tugas: <strong>' + esc(t.judul) + "</strong> &middot; Siswa: <strong>" + esc(t.siswa) + '</strong></p><div class="form-grid">' +
+          '<div><label for="f-skor">Skor (0–100)</label><input class="field" id="f-skor" type="number" min="0" max="100" step="1" placeholder="Mis. 85"></div>' +
+          "</div>" + modalActions("Simpan Nilai") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var skor = parseInt(document.getElementById("f-skor").value, 10);
+          if(isNaN(skor) || skor < 0 || skor > 100){ toast("Skor harus berupa angka 0 sampai 100."); return; }
+          t.status = "Dinilai";
+          state.nilai.unshift({ id: nid(), siswa: t.siswa, mapel: t.mapel, jenis: "Tugas", skor: skor, tanggal: today() });
+          closeModal(); render(); toast("Nilai " + skor + " untuk " + t.siswa + " tersimpan di tab Nilai.");
+        });
+      }
+
+      function formSoal(){
+        openModal('<form id="m-form"><h3>Tambah Soal ke Bank Soal</h3>' +
+          '<p class="hint">Tulis pertanyaan, empat pilihan jawaban, lalu tentukan jawaban yang benar.</p><div class="form-grid">' +
+          fieldSelect("f-mapel","Mata Pelajaran", opsiMapel("Matematika", false)) +
+          fieldArea("f-tanya","Pertanyaan", "", "Tulis pertanyaan di sini…") +
+          fieldText("f-op0","Pilihan A", "", "") +
+          fieldText("f-op1","Pilihan B", "", "") +
+          fieldText("f-op2","Pilihan C", "", "") +
+          fieldText("f-op3","Pilihan D", "", "") +
+          '<div><label>Jawaban yang benar</label><div class="radio-row">' +
+          [0,1,2,3].map(function(i){
+            return '<label><input type="radio" name="f-benar" value="' + i + '"' + (i===0 ? " checked" : "") + "> Pilihan " + "ABCD"[i] + "</label>";
+          }).join("") +
+          "</div></div></div>" + modalActions("Tambah Soal") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var tanya = val("f-tanya");
+          var opsi = [val("f-op0"), val("f-op1"), val("f-op2"), val("f-op3")];
+          if(!tanya || opsi.some(function(o){ return !o; })){ toast("Pertanyaan dan keempat pilihan jawaban wajib diisi."); return; }
+          var benar = parseInt(modal.querySelector('input[name="f-benar"]:checked').value, 10);
+          state.soal.push({ id: nid(), mapel: val("f-mapel"), tanya: tanya, opsi: opsi, benar: benar });
+          closeModal(); render(); toast("Soal baru ditambahkan ke bank soal.");
+        });
+      }
+
+      function formNilai(){
+        openModal('<form id="m-form"><h3>Tambah Nilai Manual</h3>' +
+          '<p class="hint">Masukkan nilai tugas atau kuis yang belum tercatat otomatis.</p><div class="form-grid">' +
+          fieldText("f-siswa","Nama siswa", "", "Mis. Andi Pratama") +
+          fieldSelect("f-mapel","Mata Pelajaran", opsiMapel("Matematika", false)) +
+          fieldSelect("f-jenis","Jenis nilai", '<option value="Tugas">Tugas</option><option value="Kuis">Kuis</option>') +
+          '<div><label for="f-skor">Skor (0–100)</label><input class="field" id="f-skor" type="number" min="0" max="100" step="1" placeholder="Mis. 85"></div>' +
+          fieldDate("f-tanggal","Tanggal", today()) +
+          "</div>" + modalActions("Tambah Nilai") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var siswa = val("f-siswa");
+          var skor = parseInt(document.getElementById("f-skor").value, 10);
+          if(!siswa){ toast("Nama siswa wajib diisi."); return; }
+          if(isNaN(skor) || skor < 0 || skor > 100){ toast("Skor harus berupa angka 0 sampai 100."); return; }
+          state.nilai.unshift({ id: nid(), siswa: siswa, mapel: val("f-mapel"), jenis: document.getElementById("f-jenis").value, skor: skor, tanggal: document.getElementById("f-tanggal").value || today() });
+          closeModal(); renderNilai(); toast("Nilai berhasil ditambahkan.");
+        });
+      }
+
+      function formTopik(){
+        openModal('<form id="m-form"><h3>Buat Topik Baru</h3>' +
+          '<p class="hint">Topik akan langsung tampil di daftar forum kelas.</p><div class="form-grid">' +
+          fieldText("f-judul","Judul topik", "", "Mis. Tanya Jawab PR IPA") +
+          fieldText("f-penulis","Nama Anda", "", "Mis. Bu Maya Kusuma (Guru IPA)") +
+          fieldArea("f-isi","Isi topik / pengumuman", "", "Tulis isi topik di sini…") +
+          "</div>" + modalActions("Buat Topik") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var judul = val("f-judul"), penulis = val("f-penulis"), isi = val("f-isi");
+          if(!judul || !penulis || !isi){ toast("Judul, nama, dan isi topik wajib diisi."); return; }
+          var t = { id: nid(), judul: judul, penulis: penulis, tanggal: today(), isi: isi, balasan: [] };
+          state.forum.unshift(t);
+          closeModal(); forumOpenId = t.id; renderForum();
+          toast("Topik baru berhasil dibuat.");
+        });
+      }
+
+      function formJadwal(j){
+        var isEdit = !!j;
+        j = j || { hari:"Senin", jam:"07.00 – 08.30", mapel:"Matematika", guru:"", kelas:"7A" };
+        var hariOpts = HARI.map(function(h){ return '<option value="' + h + '"' + (j.hari===h?" selected":"") + ">" + h + "</option>"; }).join("");
+        openModal('<form id="m-form"><h3>' + (isEdit ? "Ubah Jadwal" : "Tambah Jadwal") + '</h3>' +
+          '<p class="hint">Tentukan hari, jam, mata pelajaran, guru, dan kelas.</p><div class="form-grid">' +
+          fieldSelect("f-hari","Hari", hariOpts) +
+          fieldText("f-jam","Jam pelajaran", j.jam, "Mis. 07.00 – 08.30") +
+          fieldSelect("f-mapel","Mata Pelajaran", opsiMapel(j.mapel, false)) +
+          fieldText("f-guru","Nama guru", j.guru, "Mis. Bu Ratna Wijaya") +
+          fieldSelect("f-kelas","Kelas", opsiKelas(j.kelas)) +
+          "</div>" + modalActions(isEdit ? "Simpan Perubahan" : "Tambah Jadwal") + "</form>");
+        bindCancel();
+        document.getElementById("m-form").addEventListener("submit", function(ev){
+          ev.preventDefault();
+          var jam = val("f-jam"), guru = val("f-guru");
+          if(!jam || !guru){ toast("Jam dan nama guru wajib diisi."); return; }
+          if(isEdit){
+            j.hari = document.getElementById("f-hari").value; j.jam = jam; j.mapel = val("f-mapel");
+            j.guru = guru; j.kelas = document.getElementById("f-kelas").value;
+            toast("Jadwal berhasil diubah.");
+          } else {
+            state.jadwal.push({ id: nid(), hari: document.getElementById("f-hari").value, jam: jam, mapel: val("f-mapel"), guru: guru, kelas: document.getElementById("f-kelas").value });
+            toast("Jadwal baru berhasil ditambahkan.");
+          }
+          closeModal(); renderJadwal();
+        });
+      }
+
+      function confirmHapus(judul, pesan, onYes){
+        openModal('<h3>' + esc(judul) + '</h3><p class="hint">' + esc(pesan) + '</p>' +
+          '<div class="modal-actions"><button type="button" class="btn ghost" id="m-cancel">Batal</button>' +
+          '<button type="button" class="btn danger" id="m-yes" style="background:var(--red);color:#fff;border-color:var(--red)">' + icon("trash") + " Ya, Hapus</button></div>");
+        bindCancel();
+        document.getElementById("m-yes").addEventListener("click", function(){ closeModal(); onYes(); });
+      }
+
+      /* ================= Mulai ================= */
+      buildTabs();
+      render();
+    </script>
+  </body>
+</html>
