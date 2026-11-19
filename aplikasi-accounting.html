@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Accounting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+
+      :root {
+        --bg: #f6f7f4;
+        --surface: #ffffff;
+        --surface-2: #eef3ee;
+        --ink: #22302a;
+        --ink-soft: #5c6f66;
+        --line: #e2e9e2;
+        --accent: #17705c;
+        --accent-ink: #ffffff;
+        --accent-soft: #e2f1ea;
+        --in: #17705c;
+        --in-soft: #e2f1ea;
+        --out: #b4552d;
+        --out-soft: #faeadd;
+        --gold: #a97b16;
+        --gold-soft: #f7ecd2;
+        --danger: #b3372f;
+        --shadow: 0 1px 2px rgba(34, 48, 42, .05), 0 8px 24px rgba(34, 48, 42, .06);
+        --shadow-lg: 0 12px 40px rgba(34, 48, 42, .18);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141a17;
+          --surface: #1e2622;
+          --surface-2: #27312c;
+          --ink: #e7efe9;
+          --ink-soft: #a3b5ab;
+          --line: #33413a;
+          --accent: #3fae8f;
+          --accent-ink: #0e1a15;
+          --accent-soft: #23473a;
+          --in: #4cc39e;
+          --in-soft: #23473a;
+          --out: #e08a5f;
+          --out-soft: #4a3226;
+          --gold: #dcb254;
+          --gold-soft: #453a1e;
+          --danger: #e07a72;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+          --shadow-lg: 0 12px 40px rgba(0,0,0,.5);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      /* ---------- Header ---------- */
+      .page-head { margin: 8px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; font-weight: 800; letter-spacing: -.02em; margin: 0 0 4px; }
+      .page-head p { margin: 0; color: var(--ink-soft); font-size: .95rem; max-width: 60ch; }
+
+      /* ---------- Tabs ---------- */
+      .tabs {
+        display: flex; gap: 6px; flex-wrap: wrap;
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 999px; padding: 5px; box-shadow: var(--shadow);
+        position: sticky; top: 10px; z-index: 20;
+      }
+      .tab-btn {
+        flex: 1 1 auto; border: 0; background: transparent; color: var(--ink-soft);
+        font: inherit; font-weight: 600; font-size: .9rem;
+        padding: 9px 14px; border-radius: 999px; cursor: pointer; min-height: 2.75rem;
+        white-space: nowrap;
+      }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: var(--accent-ink); }
+      .tab-panel { display: none; margin-top: 20px; }
+      .tab-panel.active { display: block; }
+
+      /* ---------- Cards & stats ---------- */
+      .card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+      }
+      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px; }
+      .stat { padding: 16px; }
+      .stat .label { font-size: .8rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 6px; }
+      .stat .value { font-size: 1.13rem; font-weight: 800; letter-spacing: -.01em; margin: 0; white-space: nowrap; }
+      .stat .sub { font-size: .8rem; color: var(--ink-soft); margin: 4px 0 0; }
+      .stat .value.pos { color: var(--in); }
+      .stat .value.neg { color: var(--out); }
+      .chip {
+        display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 9px;
+        border-radius: 999px; vertical-align: middle;
+      }
+      .chip.in { background: var(--in-soft); color: var(--in); }
+      .chip.out { background: var(--out-soft); color: var(--out); }
+
+      .section-title { font-size: 1.08rem; font-weight: 700; margin: 26px 0 10px; }
+      .section-title:first-child { margin-top: 0; }
+
+      /* ---------- Tables ---------- */
+      .table-card { padding: 6px 0; overflow: hidden; }
+      table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+      th, td { padding: 11px 16px; text-align: left; vertical-align: top; }
+      th { font-size: .76rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+      tbody tr + tr td { border-top: 1px solid var(--line); }
+      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      tr.total-row td { font-weight: 800; border-top: 2px solid var(--line); background: var(--surface-2); }
+      .amt-in { color: var(--in); font-weight: 700; }
+      .amt-out { color: var(--out); font-weight: 700; }
+      .muted { color: var(--ink-soft); }
+      .empty { padding: 28px 18px; text-align: center; color: var(--ink-soft); }
+
+      /* ---------- Toolbar / forms ---------- */
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 14px; }
+      .field { display: flex; flex-direction: column; gap: 5px; flex: 1 1 150px; }
+      .field.grow { flex: 2 1 200px; }
+      .field label { font-size: .8rem; font-weight: 600; color: var(--ink-soft); }
+      input, select, textarea {
+        font: inherit; font-size: .93rem; color: var(--ink);
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 10px; padding: 9px 12px; width: 100%;
+      }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn {
+        font: inherit; font-weight: 700; font-size: .9rem; cursor: pointer;
+        border-radius: 10px; padding: 9px 16px; min-height: 2.75rem;
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .btn.primary:hover { filter: brightness(1.07); }
+      .btn.small { min-height: 2.25rem; padding: 5px 12px; font-size: .83rem; border-radius: 8px; }
+      .btn.danger { color: var(--danger); }
+      .row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+
+      .summary-line { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: .9rem; margin: 0 0 14px; color: var(--ink-soft); }
+      .summary-line strong { color: var(--ink); }
+
+      /* ---------- Modal ---------- */
+      .overlay {
+        display: none; position: fixed; inset: 0; z-index: 50;
+        background: rgba(20, 28, 24, .55); padding: 16px;
+        align-items: flex-start; justify-content: center; overflow-y: auto;
+      }
+      .overlay.open { display: flex; }
+      .modal {
+        background: var(--surface); border-radius: 20px; box-shadow: var(--shadow-lg);
+        width: 100%; max-width: 480px; padding: 22px; margin: auto 0;
+      }
+      .modal h2 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 800; }
+      .modal .field { margin-bottom: 12px; }
+      .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+      .form-error { display: none; background: var(--out-soft); color: var(--out); border-radius: 10px; padding: 9px 12px; font-size: .87rem; font-weight: 600; margin-bottom: 12px; }
+      .form-error.show { display: block; }
+      .seg { display: flex; gap: 6px; background: var(--surface-2); border-radius: 10px; padding: 4px; }
+      .seg button { flex: 1; border: 0; background: transparent; font: inherit; font-weight: 700; font-size: .9rem; border-radius: 8px; padding: 8px; cursor: pointer; color: var(--ink-soft); min-height: 2.5rem; }
+      .seg button.sel-in { background: var(--surface); color: var(--in); box-shadow: var(--shadow); }
+      .seg button.sel-out { background: var(--surface); color: var(--out); box-shadow: var(--shadow); }
+
+      /* ---------- Neraca ---------- */
+      .neraca-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+      @media (min-width: 760px) { .neraca-grid { grid-template-columns: 1fr 1fr; } .neraca-grid .wide { grid-column: 1 / -1; } }
+      .neraca-card h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; }
+      .neraca-card table th, .neraca-card table td { padding-left: 0; padding-right: 0; }
+      .balance-note { text-align: center; font-weight: 700; margin-top: 14px; }
+      .balance-note .ok { color: var(--in); }
+
+      /* ---------- Panduan ---------- */
+      .guide { max-width: 74ch; }
+      .guide h2 { font-size: 1.25rem; font-weight: 800; margin: 30px 0 10px; letter-spacing: -.01em; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1.02rem; font-weight: 700; margin: 20px 0 6px; }
+      .guide p, .guide li { font-size: .95rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 12px; }
+      .guide li { margin-bottom: 5px; }
+      .guide .card { margin: 14px 0; }
+      .guide table { font-size: .9rem; }
+      .warranty { border: 1.5px solid var(--gold); background: var(--gold-soft); border-radius: var(--radius); padding: 18px; margin: 14px 0; }
+      .warranty h2 { margin-top: 0; }
+      .warranty, .warranty p, .warranty li { color: var(--ink); }
+
+      footer { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--ink-soft); font-size: .85rem; }
+      footer p { margin: 0 0 6px; }
+
+      /* ---------- Mobile table → stacked ---------- */
+      @media (max-width: 640px) {
+        .page-head h1 { font-size: 1.4rem; }
+        .tabs { border-radius: 18px; }
+        .tab-btn { flex: 1 1 30%; font-size: .83rem; padding: 8px 6px; }
+        .stack-table thead { display: none; }
+        .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
+        .stack-table tr { padding: 12px 16px; }
+        .stack-table tbody tr + tr { border-top: 1px solid var(--line); }
+        .stack-table td { padding: 2px 0; border: 0 !important; text-align: left !important; white-space: normal; }
+        .stack-table td::before { content: attr(data-label); display: block; font-size: .7rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
+        .stack-table td.cell-main { font-weight: 700; font-size: 1rem; }
+        .stack-table td.cell-main::before { display: none; }
+        .stack-table .row-actions { justify-content: flex-start; margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Accounting</h1>
+        <p>Pembukuan sederhana untuk usaha kecil: catat pemasukan dan pengeluaran, pantau kas, piutang, dan utang, lalu lihat laporan laba rugi dan neraca sederhana — semua dari satu tempat.</p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" role="tab" data-tab="ringkasan">Ringkasan</button>
+        <button class="tab-btn" role="tab" data-tab="jurnal">Jurnal</button>
+        <button class="tab-btn" role="tab" data-tab="labarugi">Laporan Laba Rugi</button>
+        <button class="tab-btn" role="tab" data-tab="neraca">Neraca Sederhana</button>
+        <button class="tab-btn" role="tab" data-tab="panduan">Panduan</button>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section class="tab-panel active" id="panel-ringkasan">
+        <div class="stat-grid" id="statGrid"></div>
+
+        <h2 class="section-title">Transaksi Terakhir</h2>
+        <div class="card table-card">
+          <table class="stack-table">
+            <thead>
+              <tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Akun</th><th class="num">Jumlah</th></tr>
+            </thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+        </div>
+
+        <h2 class="section-title">Pengeluaran per Kategori (Semua Waktu)</h2>
+        <div class="card table-card">
+          <table>
+            <thead><tr><th>Kategori</th><th class="num">Total</th></tr></thead>
+            <tbody id="expenseCatBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ JURNAL ============ -->
+      <section class="tab-panel" id="panel-jurnal">
+        <div class="toolbar">
+          <div class="field grow">
+            <label for="fSearch">Cari keterangan atau kategori</label>
+            <input type="search" id="fSearch" placeholder="cth. penjualan, sewa, gaji…" />
+          </div>
+          <div class="field">
+            <label for="fJenis">Jenis</label>
+            <select id="fJenis">
+              <option value="">Semua jenis</option>
+              <option value="masuk">Pemasukan</option>
+              <option value="keluar">Pengeluaran</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fKategori">Kategori</label>
+            <select id="fKategori"><option value="">Semua kategori</option></select>
+          </div>
+          <div class="field">
+            <label for="fBulan">Bulan</label>
+            <select id="fBulan"><option value="">Semua bulan</option></select>
+          </div>
+        </div>
+
+        <p class="summary-line" id="jurnalSummary"></p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <button class="btn primary" id="btnAdd">+ Tambah Transaksi</button>
+          <button class="btn" id="btnCsv">Unduh CSV</button>
+        </div>
+
+        <div class="card table-card">
+          <table class="stack-table">
+            <thead>
+              <tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th>Kategori</th><th>Akun</th><th class="num">Jumlah</th><th class="num">Aksi</th></tr>
+            </thead>
+            <tbody id="jurnalBody"></tbody>
+          </table>
+          <div class="empty" id="jurnalEmpty" style="display:none;">Tidak ada transaksi yang cocok dengan pencarian atau filter. Coba longgarkan filter, atau tambah transaksi baru.</div>
+        </div>
+      </section>
+
+      <!-- ============ LABA RUGI ============ -->
+      <section class="tab-panel" id="panel-labarugi">
+        <div class="toolbar">
+          <div class="field" style="max-width:260px;">
+            <label for="lrBulan">Bulan laporan</label>
+            <select id="lrBulan"></select>
+          </div>
+        </div>
+        <div class="card table-card">
+          <table>
+            <tbody id="lrBody"></tbody>
+          </table>
+        </div>
+        <p class="muted" style="font-size:.88rem; margin-top:12px;">Setoran modal, pelunasan piutang, pembayaran utang, dan prive tidak ditampilkan di laporan laba rugi karena bukan pendapatan atau beban usaha — ketiganya adalah perpindahan antar-akun. Pembelian stok dihitung sebagai pengeluaran pada bulan pembelian (metode kas sederhana).</p>
+      </section>
+
+      <!-- ============ NERACA ============ -->
+      <section class="tab-panel" id="panel-neraca">
+        <p class="muted" id="neracaDate" style="margin-top:0;"></p>
+        <div class="neraca-grid">
+          <div class="card neraca-card">
+            <h3>Aset</h3>
+            <table><tbody id="neracaAset"></tbody></table>
+          </div>
+          <div>
+            <div class="card neraca-card" style="margin-bottom:14px;">
+              <h3>Utang</h3>
+              <table><tbody id="neracaUtang"></tbody></table>
+            </div>
+            <div class="card neraca-card">
+              <h3>Modal</h3>
+              <table><tbody id="neracaModal"></tbody></table>
+            </div>
+          </div>
+        </div>
+        <p class="balance-note" id="neracaBalance"></p>
+        <p class="muted" style="font-size:.88rem;">Ini neraca sederhana dengan metode kas: persediaan barang tidak dinilai sebagai aset di sini (pembelian stok sudah dihitung sebagai pengeluaran di laporan laba rugi), dan tidak ada penyusutan aset tetap. Laba ditahan adalah akumulasi laba/rugi dari seluruh transaksi yang tercatat.</p>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="tab-panel" id="panel-panduan">
+        <div class="guide">
+          <h2>Selamat Datang di Aplikasi Accounting</h2>
+          <p>Aplikasi Accounting adalah aplikasi pembukuan sederhana untuk usaha kecil — warung, toko, jasa, dan usaha rumahan — yang ingin mencatat uang masuk dan keluar dengan rapi tanpa perlu memahami akuntansi yang rumit. Semua pencatatan memakai metode kas sederhana: transaksi dicatat saat uang (atau hak/kewajiban) benar-benar bergerak.</p>
+          <p>Aplikasi ini terdiri dari lima tab: <strong>Ringkasan</strong>, <strong>Jurnal</strong>, <strong>Laporan Laba Rugi</strong>, <strong>Neraca Sederhana</strong>, dan <strong>Panduan</strong> ini. Saat pertama dibuka, aplikasi berisi 25 transaksi contoh selama dua bulan agar Anda bisa langsung melihat cara kerjanya. Silakan ubah atau hapus contoh tersebut dan ganti dengan data usaha Anda sendiri.</p>
+
+          <h2>1. Tab Ringkasan</h2>
+          <p>Tab Ringkasan adalah halaman pertama yang menampilkan kesehatan keuangan usaha Anda sekilas:</p>
+          <ul>
+            <li><strong>Total Pemasukan</strong> — seluruh uang masuk yang tercatat (penjualan, pendapatan lain, setoran modal, dan pelunasan piutang).</li>
+            <li><strong>Total Pengeluaran</strong> — seluruh uang keluar yang tercatat.</li>
+            <li><strong>Laba/Rugi Bulan Ini</strong> — selisih pendapatan dan beban usaha pada bulan berjalan. Angka hijau berarti laba, angka oranye berarti rugi. Setoran modal dan pembayaran utang tidak dihitung sebagai pendapatan/beban.</li>
+            <li><strong>Saldo Kas</strong> — sisa uang tunai di tangan menurut catatan (akun Kas).</li>
+            <li><strong>Piutang</strong> — total tagihan ke pelanggan yang belum dibayar.</li>
+            <li><strong>Utang</strong> — total kewajiban Anda ke pemasok yang belum dibayar.</li>
+          </ul>
+          <p>Di bawah kartu ringkasan ada daftar <strong>Transaksi Terakhir</strong> dan rincian <strong>Pengeluaran per Kategori</strong> agar Anda tahu pos pengeluaran terbesar usaha Anda.</p>
+
+          <h2>2. Tab Jurnal — Mencatat Transaksi</h2>
+          <p>Jurnal adalah buku catatan utama. Semua laporan di aplikasi ini dihitung otomatis dari jurnal, jadi pastikan setiap transaksi tercatat di sini.</p>
+          <h3>Menambah transaksi</h3>
+          <ol>
+            <li>Klik tombol <strong>+ Tambah Transaksi</strong>.</li>
+            <li>Pilih jenisnya: <strong>Pemasukan</strong> (uang masuk) atau <strong>Pengeluaran</strong> (uang keluar).</li>
+            <li>Isi <strong>tanggal</strong>, <strong>keterangan</strong> (tulis singkat dan jelas, cth. "Penjualan tunai minggu pertama"), <strong>kategori</strong>, <strong>akun</strong>, dan <strong>jumlah</strong> dalam rupiah (tulis angka saja, tanpa titik).</li>
+            <li>Klik <strong>Simpan</strong>. Transaksi langsung muncul di jurnal dan semua laporan ikut terhitung ulang.</li>
+          </ol>
+          <h3>Mengubah dan menghapus</h3>
+          <p>Setiap baris transaksi memiliki tombol <strong>Ubah</strong> dan <strong>Hapus</strong>. Ubah membuka formulir yang sama dengan data yang sudah terisi. Hapus akan meminta konfirmasi terlebih dahulu agar tidak terhapus tidak sengaja. Perubahan dan penghapusan langsung memengaruhi Ringkasan, Laporan Laba Rugi, dan Neraca.</p>
+          <h3>Mencari dan menyaring</h3>
+          <ul>
+            <li><strong>Kotak pencarian</strong> — cari berdasarkan kata pada keterangan atau kategori.</li>
+            <li><strong>Filter Jenis</strong> — tampilkan hanya pemasukan atau hanya pengeluaran.</li>
+            <li><strong>Filter Kategori</strong> — tampilkan satu kategori tertentu.</li>
+            <li><strong>Filter Bulan</strong> — tampilkan transaksi pada bulan tertentu.</li>
+          </ul>
+          <p>Di atas daftar ada ringkasan hasil saringan: jumlah transaksi, total pemasukan, dan total pengeluaran dari transaksi yang sedang tampil.</p>
+          <h3>Unduh CSV</h3>
+          <p>Tombol <strong>Unduh CSV</strong> mengunduh transaksi yang sedang tampil (mengikuti pencarian dan filter) sebagai berkas CSV yang bisa dibuka di Excel, Google Sheets, atau LibreOffice — berguna untuk arsip atau dibagikan ke pihak lain.</p>
+
+          <h2>3. Kategori dan Akun</h2>
+          <h3>Kategori pemasukan</h3>
+          <ul>
+            <li><strong>Penjualan</strong> — hasil menjual barang atau jasa. Penjualan tunai dicatat pada akun Kas/Bank; penjualan yang belum dibayar dicatat pada akun Piutang.</li>
+            <li><strong>Pendapatan Lain-lain</strong> — pemasukan di luar penjualan utama, cth. menjual kemasan bekas.</li>
+            <li><strong>Setoran Modal</strong> — uang pribadi pemilik yang dimasukkan ke usaha. Bukan pendapatan, jadi tidak masuk laporan laba rugi.</li>
+            <li><strong>Pelunasan Piutang</strong> — pelanggan membayar tagihannya. Dicatat sebagai pemasukan pada akun Kas/Bank, dan otomatis mengurangi saldo Piutang.</li>
+          </ul>
+          <h3>Kategori pengeluaran</h3>
+          <ul>
+            <li><strong>Pembelian Stok</strong> — membeli barang dagangan. Jika dibeli secara kredit, pilih akun Utang agar tercatat sebagai utang.</li>
+            <li><strong>Gaji Karyawan</strong>, <strong>Sewa Tempat</strong>, <strong>Listrik &amp; Air</strong>, <strong>Transportasi</strong>, <strong>Perlengkapan</strong>, dan <strong>Beban Lain-lain</strong> — biaya operasional usaha, masuk laporan laba rugi sebagai beban.</li>
+            <li><strong>Pembayaran Utang</strong> — membayar utang ke pemasok. Dicatat sebagai pengeluaran pada akun Kas/Bank, dan otomatis mengurangi saldo Utang. Bukan beban, jadi tidak masuk laporan laba rugi.</li>
+            <li><strong>Prive</strong> — pengambilan uang usaha untuk keperluan pribadi pemilik. Mengurangi kas, tetapi bukan beban usaha.</li>
+          </ul>
+          <h3>Akun</h3>
+          <ul>
+            <li><strong>Kas</strong> — uang tunai di tangan / di laci toko.</li>
+            <li><strong>Bank</strong> — uang di rekening bank atau e-wallet usaha.</li>
+            <li><strong>Piutang</strong> — dipakai khusus untuk penjualan yang belum dibayar pelanggan.</li>
+            <li><strong>Utang</strong> — dipakai khusus untuk pembelian yang belum dibayar ke pemasok.</li>
+          </ul>
+
+          <h2>4. Tab Laporan Laba Rugi</h2>
+          <p>Laporan ini menjawab pertanyaan terpenting: bulan ini usaha saya untung atau rugi? Pilih bulan pada menu di atas laporan, lalu laporan menampilkan:</p>
+          <ul>
+            <li>Total setiap kategori <strong>pendapatan</strong> (Penjualan dan Pendapatan Lain-lain) beserta totalnya.</li>
+            <li>Total setiap kategori <strong>beban</strong> (pembelian stok, gaji, sewa, listrik &amp; air, transportasi, perlengkapan, beban lain-lain) beserta totalnya.</li>
+            <li><strong>Laba/Rugi bersih</strong> bulan tersebut: total pendapatan dikurangi total beban.</li>
+          </ul>
+          <p>Gunakan laporan ini setiap akhir bulan untuk menilai harga jual, mengendalikan biaya terbesar, dan merencanakan pembelian stok berikutnya.</p>
+
+          <h2>5. Tab Neraca Sederhana</h2>
+          <p>Neraca menunjukkan posisi keuangan usaha pada saat ini, dalam tiga kelompok:</p>
+          <ul>
+            <li><strong>Aset</strong> — yang dimiliki usaha: saldo Kas, saldo Bank, dan Piutang usaha.</li>
+            <li><strong>Utang</strong> — kewajiban yang belum dibayar: Utang usaha ke pemasok.</li>
+            <li><strong>Modal</strong> — setoran modal pemilik ditambah laba ditahan (akumulasi laba/rugi selama usaha berjalan).</li>
+          </ul>
+          <p>Pada neraca yang sehat, <strong>Total Aset selalu sama dengan Total Utang + Modal</strong>. Aplikasi menghitungnya otomatis dari jurnal dan menampilkan status keseimbangannya di bawah neraca. Perlu diingat: ini neraca sederhana metode kas — persediaan tidak dinilai sebagai aset dan tidak ada penyusutan, jadi jangan gunakan neraca ini untuk laporan resmi.</p>
+
+          <h2>6. Tips Pemakaian</h2>
+          <ul>
+            <li>Catat transaksi di hari yang sama agar tidak lupa; lima menit sehari jauh lebih ringan daripada merapel sebulan.</li>
+            <li>Samakan saldo Kas dan Bank di aplikasi dengan uang fisik dan mutasi rekening secara berkala. Jika berbeda, biasanya ada transaksi yang belum tercatat.</li>
+            <li>Unduh CSV secara berkala sebagai arsip cadangan di luar aplikasi.</li>
+            <li>Gunakan keterangan yang konsisten (cth. selalu "Bayar sewa tempat") agar pencarian dan laporan per kategori mudah dibaca.</li>
+            <li>Pisahkan uang usaha dan uang pribadi. Setiap uang pribadi yang masuk dicatat sebagai Setoran Modal, dan setiap pengambilan dicatat sebagai Prive.</li>
+          </ul>
+
+          <h2>7. Keterbatasan Aplikasi</h2>
+          <ul>
+            <li>Data hanya tersimpan <strong>selama aplikasi dibuka</strong>. Menutup atau memuat ulang halaman akan mengembalikan data ke 25 transaksi contoh. Unduh CSV untuk menyimpan arsip Anda.</li>
+            <li>Aplikasi ini adalah pembukuan sederhana satu pengguna — tidak ada login, tidak ada sinkronisasi antar-perangkat, dan tidak terhubung ke bank atau layanan pajak.</li>
+            <li>Aplikasi ini <strong>bukan pengganti akuntan atau laporan pajak resmi</strong>. Untuk kewajiban pajak dan laporan keuangan formal, konsultasikan dengan akuntan atau konsultan pajak.</li>
+          </ul>
+
+          <div class="warranty">
+            <h2>Garansi</h2>
+            <p>Aplikasi ini dilengkapi garansi perbaikan <strong>bug/error</strong> pada fitur yang dijelaskan di buku panduan ini dan yang tampil pada demo. Apabila Anda menemukan fitur yang tidak bekerja sebagaimana mestinya — misalnya tombol tidak merespons, hitungan tidak sesuai dengan cara yang dijelaskan di panduan, atau tampilan error — perbaikan akan dilakukan <strong>gratis selama masa garansi masih berlaku</strong>.</p>
+            <h3>Masa garansi</h3>
+            <ul>
+              <li><strong>Beli Sekali — Pemula:</strong> 30 hari sejak pembelian.</li>
+              <li><strong>Beli Sekali — Profesional:</strong> 60 hari sejak pembelian.</li>
+              <li><strong>Beli Sekali — Bisnis:</strong> 90 hari sejak pembelian.</li>
+              <li><strong>Berlangganan:</strong> selama masa langganan aktif.</li>
+            </ul>
+            <h3>Yang tidak termasuk garansi</h3>
+            <ul>
+              <li>Permintaan fitur baru di luar yang dijelaskan di buku panduan dan demo.</li>
+              <li>Perubahan desain, tampilan, atau struktur data di luar spesifikasi awal.</li>
+              <li>Kerusakan atau error yang timbul karena pembeli mengubah, menambah, atau menghapus isi file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga (misalnya peramban, perangkat, atau jaringan internet pembeli).</li>
+            </ul>
+            <h3>Cara klaim garansi</h3>
+            <ol>
+              <li>Hubungi penjual melalui <strong>WhatsApp</strong>.</li>
+              <li>Kirimkan <strong>video atau screenshot</strong> yang menunjukkan bug/error-nya, beserta keterangan singkat: fitur apa yang dipakai dan langkah apa saja yang dilakukan sampai error muncul.</li>
+              <li>Tim akan memeriksa laporan Anda. Jika termasuk garansi, perbaikan dikerjakan dan file hasil perbaikan dikirimkan kembali kepada Anda tanpa biaya selama masa garansi.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Catatan:</strong> Data contoh dan perubahan Anda hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal. Unduh CSV dari tab Jurnal untuk menyimpan arsip.</p>
+        <p>Aplikasi Accounting adalah aplikasi pembukuan sederhana untuk pencatatan harian usaha kecil. Aplikasi ini bukan pengganti akuntan, konsultan pajak, atau laporan keuangan dan pajak resmi.</p>
+      </footer>
+    </div>
+
+    <!-- ============ MODAL FORM ============ -->
+    <div class="overlay" id="formOverlay" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+      <div class="modal">
+        <h2 id="formTitle">Tambah Transaksi</h2>
+        <div class="form-error" id="formError"></div>
+        <div class="field">
+          <label>Jenis transaksi</label>
+          <div class="seg">
+            <button type="button" id="segMasuk">Pemasukan</button>
+            <button type="button" id="segKeluar">Pengeluaran</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="inTanggal">Tanggal</label>
+          <input type="date" id="inTanggal" />
+        </div>
+        <div class="field">
+          <label for="inKeterangan">Keterangan</label>
+          <input type="text" id="inKeterangan" placeholder="cth. Penjualan tunai hari ini" maxlength="120" />
+        </div>
+        <div class="field">
+          <label for="inKategori">Kategori</label>
+          <select id="inKategori"></select>
+        </div>
+        <div class="field">
+          <label for="inAkun">Akun</label>
+          <select id="inAkun">
+            <option value="Kas">Kas</option>
+            <option value="Bank">Bank</option>
+            <option value="Piutang">Piutang</option>
+            <option value="Utang">Utang</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="inJumlah">Jumlah (Rp)</label>
+          <input type="number" id="inJumlah" min="0" step="any" inputmode="numeric" placeholder="cth. 150000" />
+        </div>
+        <div class="modal-actions">
+          <button class="btn" id="btnCancelForm">Batal</button>
+          <button class="btn primary" id="btnSaveForm">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MODAL HAPUS ============ -->
+    <div class="overlay" id="delOverlay" role="dialog" aria-modal="true" aria-labelledby="delTitle">
+      <div class="modal">
+        <h2 id="delTitle">Hapus Transaksi?</h2>
+        <p id="delText" style="margin:0;"></p>
+        <div class="modal-actions">
+          <button class="btn" id="btnCancelDel">Batal</button>
+          <button class="btn danger" id="btnConfirmDel" style="font-weight:800;">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      /* ================= Data contoh: 25 transaksi, Okt–Nov 2026 ================= */
+      var KAT_MASUK = ["Penjualan", "Pendapatan Lain-lain", "Setoran Modal", "Pelunasan Piutang"];
+      var KAT_KELUAR = ["Pembelian Stok", "Gaji Karyawan", "Sewa Tempat", "Listrik & Air", "Transportasi", "Perlengkapan", "Pembayaran Utang", "Beban Lain-lain", "Prive"];
+      var KAT_PENDAPATAN = ["Penjualan", "Pendapatan Lain-lain"];
+      var KAT_BEBAN = ["Pembelian Stok", "Gaji Karyawan", "Sewa Tempat", "Listrik & Air", "Transportasi", "Perlengkapan", "Beban Lain-lain"];
+      var BULAN_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      var BULAN_SINGKAT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+      var txs = [
+        { id: 1,  tanggal: "2026-10-01", keterangan: "Setoran modal awal usaha", jenis: "masuk",  kategori: "Setoran Modal",     akun: "Kas",     jumlah: 10000000 },
+        { id: 2,  tanggal: "2026-10-02", keterangan: "Penjualan tunai minggu pertama", jenis: "masuk", kategori: "Penjualan",     akun: "Kas",     jumlah: 3250000 },
+        { id: 3,  tanggal: "2026-10-03", keterangan: "Pembelian stok barang dagang", jenis: "keluar", kategori: "Pembelian Stok", akun: "Kas",    jumlah: 2400000 },
+        { id: 4,  tanggal: "2026-10-05", keterangan: "Penjualan via transfer bank", jenis: "masuk", kategori: "Penjualan",          akun: "Bank",    jumlah: 3475000 },
+        { id: 5,  tanggal: "2026-10-07", keterangan: "Penjualan kredit ke Toko Berkah", jenis: "masuk", kategori: "Penjualan",       akun: "Piutang", jumlah: 1500000 },
+        { id: 6,  tanggal: "2026-10-10", keterangan: "Bayar sewa tempat bulan Oktober", jenis: "keluar", kategori: "Sewa Tempat",   akun: "Bank",    jumlah: 1200000 },
+        { id: 7,  tanggal: "2026-10-12", keterangan: "Pembelian stok tambahan", jenis: "keluar", kategori: "Pembelian Stok",          akun: "Kas",     jumlah: 1650000 },
+        { id: 8,  tanggal: "2026-10-14", keterangan: "Bayar listrik dan air", jenis: "keluar", kategori: "Listrik & Air",              akun: "Kas",     jumlah: 385000 },
+        { id: 9,  tanggal: "2026-10-16", keterangan: "Penjualan tunai", jenis: "masuk", kategori: "Penjualan",                          akun: "Kas",     jumlah: 2940000 },
+        { id: 10, tanggal: "2026-10-19", keterangan: "Pembelian perlengkapan toko", jenis: "keluar", kategori: "Perlengkapan",         akun: "Kas",     jumlah: 275000 },
+        { id: 11, tanggal: "2026-10-21", keterangan: "Pelunasan piutang Toko Berkah", jenis: "masuk", kategori: "Pelunasan Piutang",    akun: "Kas",     jumlah: 1500000 },
+        { id: 12, tanggal: "2026-10-25", keterangan: "Gaji karyawan bulan Oktober", jenis: "keluar", kategori: "Gaji Karyawan",        akun: "Bank",    jumlah: 2800000 },
+        { id: 13, tanggal: "2026-10-28", keterangan: "Penjualan tunai akhir bulan", jenis: "masuk", kategori: "Penjualan",              akun: "Kas",     jumlah: 2415000 },
+        { id: 14, tanggal: "2026-10-30", keterangan: "Biaya transportasi pengiriman barang", jenis: "keluar", kategori: "Transportasi", akun: "Kas",     jumlah: 180000 },
+        { id: 15, tanggal: "2026-11-02", keterangan: "Penjualan tunai awal bulan", jenis: "masuk", kategori: "Penjualan",               akun: "Kas",     jumlah: 3480000 },
+        { id: 16, tanggal: "2026-11-03", keterangan: "Pembelian stok secara kredit", jenis: "keluar", kategori: "Pembelian Stok",       akun: "Utang",   jumlah: 2200000 },
+        { id: 17, tanggal: "2026-11-05", keterangan: "Penjualan via transfer bank", jenis: "masuk", kategori: "Penjualan",               akun: "Bank",    jumlah: 3260000 },
+        { id: 18, tanggal: "2026-11-07", keterangan: "Bayar sewa tempat bulan November", jenis: "keluar", kategori: "Sewa Tempat",      akun: "Bank",    jumlah: 1200000 },
+        { id: 19, tanggal: "2026-11-09", keterangan: "Penjualan kredit ke Kios Makmur", jenis: "masuk", kategori: "Penjualan",          akun: "Piutang", jumlah: 950000 },
+        { id: 20, tanggal: "2026-11-11", keterangan: "Bayar listrik dan air", jenis: "keluar", kategori: "Listrik & Air",                akun: "Kas",     jumlah: 412000 },
+        { id: 21, tanggal: "2026-11-13", keterangan: "Pembayaran utang stok (sebagian)", jenis: "keluar", kategori: "Pembayaran Utang", akun: "Kas",     jumlah: 1200000 },
+        { id: 22, tanggal: "2026-11-15", keterangan: "Penjualan tunai", jenis: "masuk", kategori: "Penjualan",                            akun: "Kas",     jumlah: 2875000 },
+        { id: 23, tanggal: "2026-11-16", keterangan: "Penjualan kemasan bekas", jenis: "masuk", kategori: "Pendapatan Lain-lain",         akun: "Kas",     jumlah: 150000 },
+        { id: 24, tanggal: "2026-11-17", keterangan: "Beli perlengkapan dan ATK", jenis: "keluar", kategori: "Perlengkapan",             akun: "Kas",     jumlah: 320000 },
+        { id: 25, tanggal: "2026-11-18", keterangan: "Biaya transportasi dan bensin", jenis: "keluar", kategori: "Transportasi",          akun: "Kas",     jumlah: 210000 }
+      ];
+      var nextId = 26;
+      var editingId = null;
+      var deletingId = null;
+      var formJenis = "masuk";
+
+      /* ================= Helper ================= */
+      function $(id) { return document.getElementById(id); }
+      function fmtRp(n) {
+        var neg = n < 0;
+        var s = "Rp" + Math.abs(Math.round(n)).toLocaleString("id-ID");
+        return neg ? "-" + s : s;
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function monthKey(tanggal) { return tanggal.slice(0, 7); }
+      function monthLabel(key) {
+        var p = key.split("-");
+        return BULAN_ID[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function fmtDate(tanggal) {
+        var p = tanggal.split("-");
+        return parseInt(p[2], 10) + " " + BULAN_SINGKAT[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function sortedTxs() {
+        return txs.slice().sort(function (a, b) {
+          if (a.tanggal !== b.tanggal) return a.tanggal < b.tanggal ? 1 : -1;
+          return b.id - a.id;
+        });
+      }
+      function monthsInData() {
+        var seen = {};
+        txs.forEach(function (t) { seen[monthKey(t.tanggal)] = true; });
+        return Object.keys(seen).sort();
+      }
+
+      /* ================= Perhitungan ================= */
+      function saldoAkun(akun) {
+        var s = 0;
+        txs.forEach(function (t) {
+          if (t.akun !== akun) return;
+          s += t.jenis === "masuk" ? t.jumlah : -t.jumlah;
+        });
+        return s;
+      }
+      function piutangSaldo() {
+        var s = 0;
+        txs.forEach(function (t) {
+          if (t.kategori === "Penjualan" && t.akun === "Piutang" && t.jenis === "masuk") s += t.jumlah;
+          if (t.kategori === "Pelunasan Piutang" && t.jenis === "masuk") s -= t.jumlah;
+        });
+        return s;
+      }
+      function utangSaldo() {
+        var s = 0;
+        txs.forEach(function (t) {
+          if (t.kategori === "Pembelian Stok" && t.akun === "Utang" && t.jenis === "keluar") s += t.jumlah;
+          if (t.kategori === "Pembayaran Utang" && t.jenis === "keluar") s -= t.jumlah;
+        });
+        return s;
+      }
+      function modalSaldo() {
+        var s = 0;
+        txs.forEach(function (t) {
+          if (t.kategori === "Setoran Modal") s += t.jenis === "masuk" ? t.jumlah : -t.jumlah;
+          if (t.kategori === "Prive" && t.jenis === "keluar") s -= t.jumlah;
+        });
+        return s;
+      }
+      function labaRugi(key) {
+        var pend = {}, beban = {}, totP = 0, totB = 0;
+        KAT_PENDAPATAN.forEach(function (k) { pend[k] = 0; });
+        KAT_BEBAN.forEach(function (k) { beban[k] = 0; });
+        txs.forEach(function (t) {
+          if (key && monthKey(t.tanggal) !== key) return;
+          if (t.jenis === "masuk" && pend.hasOwnProperty(t.kategori)) { pend[t.kategori] += t.jumlah; totP += t.jumlah; }
+          if (t.jenis === "keluar" && beban.hasOwnProperty(t.kategori)) { beban[t.kategori] += t.jumlah; totB += t.jumlah; }
+        });
+        return { pend: pend, beban: beban, totP: totP, totB: totB, laba: totP - totB };
+      }
+      function bulanIniKey() {
+        var now = new Date();
+        var key = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+        var ada = txs.some(function (t) { return monthKey(t.tanggal) === key; });
+        if (ada) return key;
+        var ms = monthsInData();
+        return ms.length ? ms[ms.length - 1] : key;
+      }
+
+      /* ================= Ringkasan ================= */
+      function renderRingkasan() {
+        var totMasuk = 0, totKeluar = 0;
+        txs.forEach(function (t) { if (t.jenis === "masuk") totMasuk += t.jumlah; else totKeluar += t.jumlah; });
+        var key = bulanIniKey();
+        var lr = labaRugi(key);
+        var kas = saldoAkun("Kas"), bank = saldoAkun("Bank");
+        var stats = [
+          { label: "Total Pemasukan", value: fmtRp(totMasuk), cls: "pos", sub: "Semua waktu, " + txs.filter(function(t){return t.jenis==="masuk";}).length + " transaksi" },
+          { label: "Total Pengeluaran", value: fmtRp(totKeluar), cls: "neg", sub: "Semua waktu, " + txs.filter(function(t){return t.jenis==="keluar";}).length + " transaksi" },
+          { label: "Laba/Rugi — " + monthLabel(key), value: fmtRp(lr.laba), cls: lr.laba >= 0 ? "pos" : "neg", sub: lr.laba >= 0 ? "Usaha laba bulan ini" : "Usaha rugi bulan ini" },
+          { label: "Saldo Kas", value: fmtRp(kas), cls: "", sub: "Saldo Bank: " + fmtRp(bank) },
+          { label: "Piutang", value: fmtRp(piutangSaldo()), cls: "", sub: "Tagihan pelanggan belum dibayar" },
+          { label: "Utang", value: fmtRp(utangSaldo()), cls: "", sub: "Kewajiban ke pemasok belum dibayar" }
+        ];
+        $("statGrid").innerHTML = stats.map(function (s) {
+          return '<div class="card stat"><p class="label">' + esc(s.label) + '</p><p class="value ' + s.cls + '">' + esc(s.value) + '</p><p class="sub">' + esc(s.sub) + "</p></div>";
+        }).join("");
+
+        var recent = sortedTxs().slice(0, 5);
+        $("recentBody").innerHTML = recent.map(function (t) {
+          return "<tr>" +
+            '<td data-label="Tanggal">' + fmtDate(t.tanggal) + "</td>" +
+            '<td class="cell-main" data-label="Keterangan">' + esc(t.keterangan) + "</td>" +
+            '<td data-label="Kategori">' + esc(t.kategori) + "</td>" +
+            '<td data-label="Akun">' + esc(t.akun) + "</td>" +
+            '<td class="num" data-label="Jumlah"><span class="' + (t.jenis === "masuk" ? "amt-in" : "amt-out") + '">' + (t.jenis === "masuk" ? "+" : "-") + fmtRp(t.jumlah) + "</span></td>" +
+            "</tr>";
+        }).join("") || '<tr><td colspan="5" class="empty">Belum ada transaksi.</td></tr>';
+
+        var catTotals = {};
+        txs.forEach(function (t) {
+          if (t.jenis !== "keluar") return;
+          catTotals[t.kategori] = (catTotals[t.kategori] || 0) + t.jumlah;
+        });
+        var rows = Object.keys(catTotals).sort(function (a, b) { return catTotals[b] - catTotals[a]; });
+        $("expenseCatBody").innerHTML = rows.map(function (k) {
+          return "<tr><td>" + esc(k) + '</td><td class="num amt-out">' + fmtRp(catTotals[k]) + "</td></tr>";
+        }).join("") + (rows.length ? '<tr class="total-row"><td>Total Pengeluaran</td><td class="num">' + fmtRp(totKeluar) + "</td></tr>" : '<tr><td colspan="2" class="empty">Belum ada pengeluaran.</td></tr>');
+      }
+
+      /* ================= Jurnal ================= */
+      function refreshFilterOptions() {
+        var katSel = $("fKategori"), curKat = katSel.value;
+        var kats = {};
+        KAT_MASUK.concat(KAT_KELUAR).forEach(function (k) { kats[k] = true; });
+        txs.forEach(function (t) { kats[t.kategori] = true; });
+        katSel.innerHTML = '<option value="">Semua kategori</option>' + Object.keys(kats).sort().map(function (k) {
+          return '<option value="' + esc(k) + '">' + esc(k) + "</option>";
+        }).join("");
+        katSel.value = curKat;
+
+        var blnSel = $("fBulan"), curBln = blnSel.value;
+        blnSel.innerHTML = '<option value="">Semua bulan</option>' + monthsInData().slice().reverse().map(function (k) {
+          return '<option value="' + k + '">' + monthLabel(k) + "</option>";
+        }).join("");
+        blnSel.value = curBln;
+
+        var lrSel = $("lrBulan"), curLr = lrSel.value;
+        var ms = monthsInData().slice().reverse();
+        lrSel.innerHTML = ms.map(function (k) {
+          return '<option value="' + k + '">' + monthLabel(k) + "</option>";
+        }).join("");
+        if (ms.indexOf(curLr) >= 0) lrSel.value = curLr;
+        else if (ms.length) lrSel.value = ms[0];
+      }
+
+      function filteredTxs() {
+        var q = $("fSearch").value.trim().toLowerCase();
+        var jenis = $("fJenis").value, kat = $("fKategori").value, bln = $("fBulan").value;
+        return sortedTxs().filter(function (t) {
+          if (jenis && t.jenis !== jenis) return false;
+          if (kat && t.kategori !== kat) return false;
+          if (bln && monthKey(t.tanggal) !== bln) return false;
+          if (q && (t.keterangan + " " + t.kategori + " " + t.akun).toLowerCase().indexOf(q) < 0) return false;
+          return true;
+        });
+      }
+
+      function renderJurnal() {
+        var list = filteredTxs();
+        var totM = 0, totK = 0;
+        list.forEach(function (t) { if (t.jenis === "masuk") totM += t.jumlah; else totK += t.jumlah; });
+        $("jurnalSummary").innerHTML =
+          "<span>Menampilkan <strong>" + list.length + "</strong> transaksi</span>" +
+          "<span>Pemasukan: <strong>" + fmtRp(totM) + "</strong></span>" +
+          "<span>Pengeluaran: <strong>" + fmtRp(totK) + "</strong></span>" +
+          "<span>Selisih: <strong>" + fmtRp(totM - totK) + "</strong></span>";
+        $("jurnalEmpty").style.display = list.length ? "none" : "block";
+        $("jurnalBody").innerHTML = list.map(function (t) {
+          return "<tr>" +
+            '<td data-label="Tanggal">' + fmtDate(t.tanggal) + "</td>" +
+            '<td class="cell-main" data-label="Keterangan">' + esc(t.keterangan) + "</td>" +
+            '<td data-label="Jenis"><span class="chip ' + (t.jenis === "masuk" ? "in" : "out") + '">' + (t.jenis === "masuk" ? "Masuk" : "Keluar") + "</span></td>" +
+            '<td data-label="Kategori">' + esc(t.kategori) + "</td>" +
+            '<td data-label="Akun">' + esc(t.akun) + "</td>" +
+            '<td class="num" data-label="Jumlah"><span class="' + (t.jenis === "masuk" ? "amt-in" : "amt-out") + '">' + (t.jenis === "masuk" ? "+" : "-") + fmtRp(t.jumlah) + "</span></td>" +
+            '<td class="num" data-label="Aksi"><div class="row-actions">' +
+              '<button class="btn small" data-edit="' + t.id + '">Ubah</button>' +
+              '<button class="btn small danger" data-del="' + t.id + '">Hapus</button>' +
+            "</div></td></tr>";
+        }).join("");
+      }
+
+      /* ================= Laba Rugi ================= */
+      function renderLR() {
+        var key = $("lrBulan").value;
+        if (!key) { $("lrBody").innerHTML = '<tr><td class="empty">Belum ada data transaksi.</td></tr>'; return; }
+        var lr = labaRugi(key);
+        var html = '<tr><td colspan="2" style="font-weight:800; background:var(--surface-2);">Pendapatan — ' + monthLabel(key) + "</td></tr>";
+        KAT_PENDAPATAN.forEach(function (k) {
+          html += "<tr><td>" + esc(k) + '</td><td class="num">' + fmtRp(lr.pend[k]) + "</td></tr>";
+        });
+        html += '<tr class="total-row"><td>Total Pendapatan</td><td class="num">' + fmtRp(lr.totP) + "</td></tr>";
+        html += '<tr><td colspan="2" style="font-weight:800; background:var(--surface-2);">Beban &amp; Pengeluaran</td></tr>';
+        KAT_BEBAN.forEach(function (k) {
+          html += "<tr><td>" + esc(k) + '</td><td class="num">' + fmtRp(lr.beban[k]) + "</td></tr>";
+        });
+        html += '<tr class="total-row"><td>Total Beban</td><td class="num">' + fmtRp(lr.totB) + "</td></tr>";
+        html += '<tr class="total-row"><td>' + (lr.laba >= 0 ? "Laba Bersih" : "Rugi Bersih") + '</td><td class="num"><span class="' + (lr.laba >= 0 ? "amt-in" : "amt-out") + '">' + fmtRp(lr.laba) + "</span></td></tr>";
+        $("lrBody").innerHTML = html;
+      }
+
+      /* ================= Neraca ================= */
+      function renderNeraca() {
+        var kas = saldoAkun("Kas"), bank = saldoAkun("Bank"), piu = piutangSaldo();
+        var utang = utangSaldo();
+        var modal = modalSaldo();
+        var totalAset = kas + bank + piu;
+        var labaDitahan = totalAset - utang - modal;
+        var totalPasiva = utang + modal + labaDitahan;
+        var now = new Date();
+        $("neracaDate").textContent = "Posisi per " + now.getDate() + " " + BULAN_ID[now.getMonth()] + " " + now.getFullYear() + ", dihitung otomatis dari jurnal.";
+        $("neracaAset").innerHTML =
+          "<tr><td>Kas</td><td class=\"num\">" + fmtRp(kas) + "</td></tr>" +
+          "<tr><td>Bank</td><td class=\"num\">" + fmtRp(bank) + "</td></tr>" +
+          "<tr><td>Piutang Usaha</td><td class=\"num\">" + fmtRp(piu) + "</td></tr>" +
+          '<tr class="total-row"><td>Total Aset</td><td class="num">' + fmtRp(totalAset) + "</td></tr>";
+        $("neracaUtang").innerHTML =
+          "<tr><td>Utang Usaha</td><td class=\"num\">" + fmtRp(utang) + "</td></tr>" +
+          '<tr class="total-row"><td>Total Utang</td><td class="num">' + fmtRp(utang) + "</td></tr>";
+        $("neracaModal").innerHTML =
+          "<tr><td>Modal Disetor (setelah prive)</td><td class=\"num\">" + fmtRp(modal) + "</td></tr>" +
+          "<tr><td>Laba Ditahan (akumulasi laba/rugi)</td><td class=\"num\">" + fmtRp(labaDitahan) + "</td></tr>" +
+          '<tr class="total-row"><td>Total Modal</td><td class="num">' + fmtRp(modal + labaDitahan) + "</td></tr>";
+        $("neracaBalance").innerHTML =
+          "Total Aset " + fmtRp(totalAset) + " &nbsp;=&nbsp; Total Utang + Modal " + fmtRp(totalPasiva) +
+          (totalAset === totalPasiva ? ' &nbsp;<span class="ok">✓ Seimbang</span>' : "");
+      }
+
+      function renderAll() {
+        refreshFilterOptions();
+        renderRingkasan();
+        renderJurnal();
+        renderLR();
+        renderNeraca();
+      }
+
+      /* ================= Form tambah/ubah ================= */
+      function fillKategoriOptions() {
+        var list = formJenis === "masuk" ? KAT_MASUK : KAT_KELUAR;
+        $("inKategori").innerHTML = list.map(function (k) {
+          return '<option value="' + esc(k) + '">' + esc(k) + "</option>";
+        }).join("");
+      }
+      function setFormJenis(j) {
+        formJenis = j;
+        $("segMasuk").className = j === "masuk" ? "sel-in" : "";
+        $("segKeluar").className = j === "keluar" ? "sel-out" : "";
+        fillKategoriOptions();
+      }
+      function openForm(tx) {
+        $("formError").className = "form-error";
+        if (tx) {
+          editingId = tx.id;
+          $("formTitle").textContent = "Ubah Transaksi";
+          setFormJenis(tx.jenis);
+          $("inTanggal").value = tx.tanggal;
+          $("inKeterangan").value = tx.keterangan;
+          $("inKategori").value = tx.kategori;
+          $("inAkun").value = tx.akun;
+          $("inJumlah").value = tx.jumlah;
+        } else {
+          editingId = null;
+          $("formTitle").textContent = "Tambah Transaksi";
+          setFormJenis("masuk");
+          var now = new Date();
+          $("inTanggal").value = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+          $("inKeterangan").value = "";
+          $("inAkun").value = "Kas";
+          $("inJumlah").value = "";
+        }
+        $("formOverlay").classList.add("open");
+      }
+      function closeForm() { $("formOverlay").classList.remove("open"); }
+      function saveForm() {
+        var tanggal = $("inTanggal").value;
+        var keterangan = $("inKeterangan").value.trim();
+        var kategori = $("inKategori").value;
+        var akun = $("inAkun").value;
+        var jumlah = parseFloat($("inJumlah").value);
+        var err = "";
+        if (!tanggal) err = "Tanggal belum diisi.";
+        else if (!keterangan) err = "Keterangan belum diisi.";
+        else if (!kategori) err = "Kategori belum dipilih.";
+        else if (isNaN(jumlah) || jumlah <= 0) err = "Jumlah harus berupa angka lebih besar dari 0.";
+        if (err) {
+          var e = $("formError");
+          e.textContent = err;
+          e.className = "form-error show";
+          return;
+        }
+        if (editingId !== null) {
+          for (var i = 0; i < txs.length; i++) {
+            if (txs[i].id === editingId) {
+              txs[i] = { id: editingId, tanggal: tanggal, keterangan: keterangan, jenis: formJenis, kategori: kategori, akun: akun, jumlah: jumlah };
+              break;
+            }
+          }
+        } else {
+          txs.push({ id: nextId++, tanggal: tanggal, keterangan: keterangan, jenis: formJenis, kategori: kategori, akun: akun, jumlah: jumlah });
+        }
+        closeForm();
+        renderAll();
+      }
+
+      /* ================= Hapus ================= */
+      function openDelete(id) {
+        deletingId = id;
+        var tx = null;
+        txs.forEach(function (t) { if (t.id === id) tx = t; });
+        if (!tx) return;
+        $("delText").textContent = "Transaksi \"" + tx.keterangan + "\" (" + fmtDate(tx.tanggal) + ", " + fmtRp(tx.jumlah) + ") akan dihapus dari jurnal. Semua laporan akan dihitung ulang.";
+        $("delOverlay").classList.add("open");
+      }
+      function closeDelete() { $("delOverlay").classList.remove("open"); deletingId = null; }
+
+      /* ================= CSV ================= */
+      function downloadCsv() {
+        var list = filteredTxs().slice().reverse();
+        var lines = ["Tanggal;Keterangan;Jenis;Kategori;Akun;Jumlah (Rp)"];
+        list.forEach(function (t) {
+          function q(s) { return '"' + String(s).replace(/"/g, '""') + '"'; }
+          lines.push([t.tanggal, q(t.keterangan), t.jenis === "masuk" ? "Pemasukan" : "Pengeluaran", q(t.kategori), t.akun, Math.round(t.jumlah)].join(";"));
+        });
+        var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "jurnal-accounting.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      }
+
+      /* ================= Event ================= */
+      document.querySelectorAll(".tab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+          document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.remove("active"); });
+          btn.classList.add("active");
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      ["fSearch", "fJenis", "fKategori", "fBulan"].forEach(function (id) {
+        $(id).addEventListener("input", renderJurnal);
+        $(id).addEventListener("change", renderJurnal);
+      });
+      $("lrBulan").addEventListener("change", renderLR);
+      $("btnAdd").addEventListener("click", function () { openForm(null); });
+      $("btnCsv").addEventListener("click", downloadCsv);
+      $("segMasuk").addEventListener("click", function () { setFormJenis("masuk"); });
+      $("segKeluar").addEventListener("click", function () { setFormJenis("keluar"); });
+      $("btnCancelForm").addEventListener("click", closeForm);
+      $("btnSaveForm").addEventListener("click", saveForm);
+      $("formOverlay").addEventListener("click", function (e) { if (e.target === this) closeForm(); });
+      $("btnCancelDel").addEventListener("click", closeDelete);
+      $("delOverlay").addEventListener("click", function (e) { if (e.target === this) closeDelete(); });
+      $("btnConfirmDel").addEventListener("click", function () {
+        if (deletingId !== null) {
+          txs = txs.filter(function (t) { return t.id !== deletingId; });
+        }
+        closeDelete();
+        renderAll();
+      });
+      $("jurnalBody").addEventListener("click", function (e) {
+        var editBtn = e.target.closest("[data-edit]");
+        var delBtn = e.target.closest("[data-del]");
+        if (editBtn) {
+          var id = parseInt(editBtn.getAttribute("data-edit"), 10);
+          var tx = null;
+          txs.forEach(function (t) { if (t.id === id) tx = t; });
+          if (tx) openForm(tx);
+        } else if (delBtn) {
+          openDelete(parseInt(delBtn.getAttribute("data-del"), 10));
+        }
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>
