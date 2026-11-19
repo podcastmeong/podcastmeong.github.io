@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Aplikasi Pembayaran Sekolah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#f4f6f3;
+    --card:#ffffff;
+    --card-2:#f8faf8;
+    --ink:#1c2b26;
+    --ink-soft:#4c5d55;
+    --muted:#7b8a82;
+    --line:#e2e8e2;
+    --brand:#0e6b5c;
+    --brand-dark:#0a5246;
+    --brand-soft:#e3f2ec;
+    --amber:#b97f16;
+    --amber-soft:#fbf0d7;
+    --red:#b3372c;
+    --red-soft:#fbe9e6;
+    --green:#177245;
+    --green-soft:#e2f3e7;
+    --shadow:0 10px 30px rgba(28,60,48,.08), 0 2px 6px rgba(28,60,48,.05);
+    --shadow-sm:0 4px 14px rgba(28,60,48,.07);
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#121714;
+      --card:#1c2420;
+      --card-2:#232d28;
+      --ink:#e9f0ec;
+      --ink-soft:#b9c8bf;
+      --muted:#8fa398;
+      --line:#2e3a34;
+      --brand:#3cbfa5;
+      --brand-dark:#7adcc4;
+      --brand-soft:#173a31;
+      --amber:#e0aa3e;
+      --amber-soft:#3a2f14;
+      --red:#ef8a7d;
+      --red-soft:#3d201b;
+      --green:#5cc98a;
+      --green-soft:#173527;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --shadow-sm:0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15.5px;line-height:1.55;
+  }
+  button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2.25rem}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:1rem;color:var(--ink)}
+  a{color:var(--brand)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 18px 40px}
+
+  /* ---------- Header ---------- */
+  header.hero{padding:34px 0 8px}
+  .hero h1{
+    font-family:"Fraunces",Georgia,serif;font-weight:700;
+    font-size:clamp(1.7rem,4.5vw,2.5rem);line-height:1.15;margin:0 0 8px;letter-spacing:-.01em;
+  }
+  .hero p.lede{margin:0;color:var(--ink-soft);max-width:640px;font-size:1.02rem}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 6px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px 18px}
+  .stat .label{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stat .value{font-size:1.35rem;font-weight:800;margin-top:4px}
+  .stat .sub{font-size:.82rem;color:var(--ink-soft);margin-top:2px}
+  .stat.accent .value{color:var(--brand)}
+  .stat.warn .value{color:var(--red)}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{
+    position:sticky;top:0;z-index:30;background:var(--bg);
+    padding:14px 0 10px;display:flex;gap:8px;flex-wrap:wrap;
+  }
+  .tab-btn{
+    border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    border-radius:999px;padding:9px 18px;font-weight:700;font-size:.95rem;
+    box-shadow:var(--shadow-sm);transition:all .15s ease;
+  }
+  .tab-btn:hover{color:var(--brand);border-color:var(--brand)}
+  .tab-btn[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+  @media (prefers-color-scheme: dark){ .tab-btn[aria-selected="true"]{color:#0c1a15} }
+  section.panel{display:none;padding-top:8px}
+  section.panel.active{display:block}
+  .panel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:10px 0 16px}
+  .panel-head h2{font-family:"Fraunces",Georgia,serif;font-size:1.45rem;margin:0}
+  .panel-head p{margin:4px 0 0;color:var(--ink-soft);max-width:620px}
+
+  /* ---------- Cards & controls ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .toolbar .grow{flex:1 1 200px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:.83rem;font-weight:700;color:var(--ink-soft)}
+  .field .hint{font-size:.8rem;color:var(--muted)}
+  input[type="text"],input[type="search"],input[type="number"],input[type="date"],select,textarea{
+    background:var(--card);border:1.5px solid var(--line);border-radius:12px;
+    padding:9px 12px;width:100%;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:var(--brand)}
+  .btn{
+    border:none;border-radius:12px;padding:10px 18px;font-weight:700;font-size:.95rem;
+    background:var(--brand);color:#fff;box-shadow:var(--shadow-sm);
+  }
+  .btn:hover{background:var(--brand-dark)}
+  @media (prefers-color-scheme: dark){ .btn{color:#0c1a15} .btn:hover{color:#0c1a15} }
+  .btn.ghost{background:var(--card);color:var(--brand);border:1.5px solid var(--brand);box-shadow:none}
+  .btn.ghost:hover{background:var(--brand-soft)}
+  .btn.small{padding:7px 12px;font-size:.85rem;border-radius:10px;min-height:2.25rem}
+  .btn.danger-ghost{background:var(--card);color:var(--red);border:1.5px solid var(--red);box-shadow:none}
+  .btn.danger-ghost:hover{background:var(--red-soft)}
+  .count-note{color:var(--muted);font-size:.88rem;margin:0 0 10px}
+
+  /* ---------- Tables ---------- */
+  .table-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    text-align:left;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--muted);background:var(--card-2);padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--card-2)}
+  .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  th.num{text-align:right}
+  .stu-name{font-weight:700}
+  .stu-sub{font-size:.83rem;color:var(--muted)}
+  .badge{display:inline-block;padding:3px 11px;border-radius:999px;font-size:.78rem;font-weight:700;white-space:nowrap}
+  .badge.lunas{background:var(--green-soft);color:var(--green)}
+  .badge.belum{background:var(--amber-soft);color:var(--amber)}
+  .badge.telat{background:var(--red-soft);color:var(--red)}
+  .badge.jenis{background:var(--brand-soft);color:var(--brand)}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .empty{padding:34px 20px;text-align:center;color:var(--muted)}
+  .progress{height:8px;border-radius:99px;background:var(--line);overflow:hidden;min-width:90px;margin-top:6px}
+  .progress i{display:block;height:100%;background:var(--brand);border-radius:99px}
+
+  /* ---------- Layout grids ---------- */
+  .grid-2{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  form .field{margin-bottom:13px}
+  .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* ---------- Kwitansi cards ---------- */
+  .receipt-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:18px;text-align:left;width:100%;color:var(--ink)}
+  .receipt-card:hover{border-color:var(--brand)}
+  .receipt-card .rno{font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.03em}
+  .receipt-card .rname{font-weight:800;font-size:1.05rem;margin:5px 0 2px}
+  .receipt-card .rdetail{color:var(--ink-soft);font-size:.88rem}
+  .receipt-card .ramount{font-weight:800;font-size:1.15rem;margin-top:10px}
+
+  /* ---------- Laporan ---------- */
+  .bar-row{display:grid;grid-template-columns:64px 1fr 130px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .bar-row:last-child{border-bottom:none}
+  .bar-track{height:14px;background:var(--line);border-radius:99px;overflow:hidden}
+  .bar-fill{height:100%;background:var(--brand);border-radius:99px}
+  .bar-row .bval{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:.92rem}
+
+  /* ---------- Panduan ---------- */
+  .guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .guide-card h3{margin:0 0 8px;font-size:1.08rem;color:var(--brand)}
+  .guide-card ol{margin:0;padding-left:20px;color:var(--ink-soft)}
+  .guide-card ol li{margin-bottom:6px}
+  .guide-card p{color:var(--ink-soft);margin:0 0 8px}
+  .warranty{border:2px solid var(--brand);background:var(--brand-soft)}
+  .warranty h3{color:var(--brand)}
+  .warranty ul{margin:6px 0 12px;padding-left:20px;color:var(--ink-soft)}
+  .warranty table{margin:10px 0}
+  .warranty td,.warranty th{border-bottom:1px solid var(--line)}
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(15,30,24,.5);z-index:60;
+    display:none;align-items:flex-start;justify-content:center;padding:22px 14px;overflow-y:auto;
+  }
+  .modal-backdrop.open{display:flex}
+  .modal{background:var(--card);border-radius:20px;box-shadow:var(--shadow);width:100%;max-width:560px;padding:24px;margin:auto 0}
+  .modal.wide{max-width:640px}
+  .modal h3{margin:0 0 4px;font-family:"Fraunces",Georgia,serif;font-size:1.3rem}
+  .modal .sub{color:var(--ink-soft);margin:0 0 16px;font-size:.93rem}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+  textarea.reminder{width:100%;min-height:210px;resize:vertical;line-height:1.6}
+
+  /* ---------- Kwitansi cetak ---------- */
+  .receipt-paper{background:#fff;color:#1c2b26;border:1.5px dashed #b9cdc2;border-radius:14px;padding:26px;font-size:.95rem}
+  .receipt-paper .rp-head{text-align:center;border-bottom:2px solid #0e6b5c;padding-bottom:14px;margin-bottom:16px}
+  .receipt-paper .rp-head .school{font-family:"Fraunces",Georgia,serif;font-size:1.35rem;font-weight:700;color:#0a5246}
+  .receipt-paper .rp-head .addr{font-size:.83rem;color:#5a6d63}
+  .receipt-paper .rp-title{text-align:center;font-weight:800;letter-spacing:.14em;margin:12px 0 4px}
+  .receipt-paper .rp-no{text-align:center;font-size:.85rem;color:#5a6d63;margin-bottom:16px}
+  .rp-row{display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px dotted #d5e0d8}
+  .rp-row span:first-child{color:#5a6d63}
+  .rp-row span:last-child{font-weight:700;text-align:right}
+  .rp-total{display:flex;justify-content:space-between;padding:14px 0 4px;font-size:1.12rem;font-weight:800}
+  .rp-foot{margin-top:18px;display:flex;justify-content:space-between;gap:16px;font-size:.85rem;color:#5a6d63}
+  .rp-sign{text-align:center}
+  .rp-sign .nm{margin-top:52px;font-weight:700;color:#1c2b26;border-top:1px solid #9db8ab;padding-top:4px}
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:12px;font-weight:600;
+    box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:all .25s ease;z-index:90;max-width:92vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer.honest{
+    margin-top:34px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 20px;color:var(--ink-soft);font-size:.9rem;box-shadow:var(--shadow-sm);
+  }
+
+  /* ---------- Mobile table -> cards ---------- */
+  @media (max-width:760px){
+    .stats{grid-template-columns:1fr 1fr}
+    .grid-2,.guide-grid{grid-template-columns:1fr}
+    .form-2col{grid-template-columns:1fr}
+    .table-card{border:none;box-shadow:none;background:transparent;overflow:visible}
+    table,thead,tbody,tr,td{display:block;width:100%}
+    thead{display:none}
+    tbody tr{
+      background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      box-shadow:var(--shadow-sm);padding:10px 6px;margin-bottom:12px;
+    }
+    tbody td{border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:9px 12px;text-align:right}
+    tbody td:last-child{border-bottom:none}
+    tbody td::before{content:attr(data-label);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding-top:2px}
+    tbody td .num,tbody td{text-align:right}
+    .bar-row{grid-template-columns:52px 1fr 104px}
+    .hero{padding-top:24px}
+  }
+  @media print{
+    body{background:#fff}
+    header.hero,nav.tabs,section.panel,footer.honest,#toast,.no-print{display:none !important}
+    #printArea{display:block !important}
+  }
+  #printArea{display:none;max-width:720px;margin:0 auto;padding:24px 18px 40px}
+  .print-toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+  .print-toolbar p{margin:0;color:var(--ink-soft);font-size:.92rem;flex:1 1 260px}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Aplikasi Pembayaran Sekolah</h1>
+    <p class="lede">Kelola tagihan SPP dan biaya sekolah, catat pembayaran, pantau tunggakan, terbitkan kwitansi digital, dan lihat laporan pemasukan — untuk sekolah dan kampus.</p>
+    <div class="stats">
+      <div class="stat accent"><div class="label">Total Tagihan</div><div class="value" id="statTotalTagihan">–</div><div class="sub" id="statJumlahTagihan">–</div></div>
+      <div class="stat"><div class="label">Sudah Dibayar</div><div class="value" id="statTerbayar">–</div><div class="sub" id="statJumlahBayar">–</div></div>
+      <div class="stat warn"><div class="label">Total Tunggakan</div><div class="value" id="statTunggakan">–</div><div class="sub" id="statSiswaNunggak">–</div></div>
+      <div class="stat"><div class="label">Siswa Lunas</div><div class="value" id="statLunas">–</div><div class="sub" id="statSiswaTotal">–</div></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Navigasi aplikasi">
+    <button class="tab-btn" role="tab" aria-selected="true" data-tab="tagihan">Tagihan</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="pembayaran">Pembayaran</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tunggakan">Tunggakan</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="kwitansi">Kwitansi</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <!-- ============ TAB TAGIHAN ============ -->
+  <section class="panel active" id="panel-tagihan" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Daftar Tagihan</h2>
+        <p>Tagihan SPP dan biaya sekolah per siswa. Buat tagihan baru, ubah, atau hapus tagihan yang sudah ada.</p>
+      </div>
+      <button class="btn" id="btnTagihanBaru">+ Buat Tagihan Baru</button>
+    </div>
+    <div class="toolbar">
+      <div class="field grow"><label for="cariTagihan">Cari siswa / NIS</label><input type="search" id="cariTagihan" placeholder="Ketik nama atau NIS…" /></div>
+      <div class="field"><label for="filterKelasTagihan">Kelas</label><select id="filterKelasTagihan"><option value="">Semua Kelas</option></select></div>
+      <div class="field"><label for="filterStatusTagihan">Status</label><select id="filterStatusTagihan"><option value="">Semua Status</option><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
+      <div class="field"><label for="filterJenisTagihan">Jenis Tagihan</label><select id="filterJenisTagihan"><option value="">Semua Jenis</option><option>SPP Bulanan</option><option>Uang Gedung</option><option>Uang Kegiatan</option><option>Uang Buku</option></select></div>
+    </div>
+    <p class="count-note" id="noteTagihan"></p>
+    <div class="table-card">
+      <table>
+        <thead><tr>
+          <th>Siswa</th><th>Kelas</th><th>Jenis Tagihan</th><th class="num">Jumlah</th><th class="num">Terbayar</th><th>Jatuh Tempo</th><th>Status</th><th>Aksi</th>
+        </tr></thead>
+        <tbody id="tbodyTagihan"></tbody>
+      </table>
+      <div class="empty" id="emptyTagihan" hidden>Tidak ada tagihan yang cocok dengan filter. Coba ubah kata kunci atau filter di atas.</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB PEMBAYARAN ============ -->
+  <section class="panel" id="panel-pembayaran" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Catat Pembayaran</h2>
+        <p>Rekam pembayaran dari siswa atau orang tua. Tagihan otomatis berstatus Lunas bila terbayar penuh; pembayaran sebagian juga bisa dicatat.</p>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <form id="formPembayaran">
+          <div class="field">
+            <label for="paySiswa">Siswa</label>
+            <select id="paySiswa" required></select>
+          </div>
+          <div class="field">
+            <label for="payTagihan">Tagihan yang Dibayar</label>
+            <select id="payTagihan" required></select>
+            <span class="hint" id="paySisaInfo"></span>
+          </div>
+          <div class="form-2col">
+            <div class="field">
+              <label for="payJumlah">Jumlah Bayar (Rp)</label>
+              <input type="number" id="payJumlah" min="1" placeholder="cth. 350000" required />
+            </div>
+            <div class="field">
+              <label for="payTanggal">Tanggal Bayar</label>
+              <input type="date" id="payTanggal" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="payMetode">Metode Pembayaran</label>
+            <select id="payMetode">
+              <option>Tunai</option>
+              <option>Transfer</option>
+              <option>QRIS</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" style="width:100%">Simpan Pembayaran</button>
+          <p class="hint" style="margin:10px 0 0">Setelah tersimpan, kwitansi digital otomatis dibuat di tab Kwitansi.</p>
+        </form>
+      </div>
+      <div>
+        <div class="toolbar">
+          <div class="field grow"><label for="cariPembayaran">Cari riwayat</label><input type="search" id="cariPembayaran" placeholder="Nama siswa, nomor kwitansi, jenis tagihan…" /></div>
+          <div class="field"><label for="filterMetode">Metode</label><select id="filterMetode"><option value="">Semua Metode</option><option>Tunai</option><option>Transfer</option><option>QRIS</option></select></div>
+        </div>
+        <p class="count-note" id="notePembayaran"></p>
+        <div class="table-card">
+          <table>
+            <thead><tr>
+              <th>Tanggal</th><th>Siswa</th><th>Tagihan</th><th>Metode</th><th class="num">Jumlah</th><th>No. Kwitansi</th>
+            </tr></thead>
+            <tbody id="tbodyPembayaran"></tbody>
+          </table>
+          <div class="empty" id="emptyPembayaran" hidden>Belum ada pembayaran yang cocok. Catat pembayaran baru lewat formulir di samping.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB TUNGGAKAN ============ -->
+  <section class="panel" id="panel-tunggakan" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Daftar Tunggakan</h2>
+        <p>Siswa yang masih memiliki tagihan belum lunas, diurutkan dari tunggakan terbesar. Gunakan tombol Kirim Pengingat untuk menyalin pesan WhatsApp yang sopan ke orang tua.</p>
+      </div>
+    </div>
+    <p class="count-note" id="noteTunggakan"></p>
+    <div class="table-card">
+      <table>
+        <thead><tr>
+          <th>Siswa</th><th>Kelas</th><th class="num">Tagihan Menunggak</th><th class="num">Total Tunggakan</th><th>Jatuh Tempo Terdekat</th><th>Keterlambatan</th><th>Aksi</th>
+        </tr></thead>
+        <tbody id="tbodyTunggakan"></tbody>
+      </table>
+      <div class="empty" id="emptyTunggakan" hidden>Hebat — tidak ada tunggakan. Semua tagihan sudah lunas.</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB KWITANSI ============ -->
+  <section class="panel" id="panel-kwitansi" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Kwitansi Digital</h2>
+        <p>Satu kwitansi terbit untuk setiap pembayaran yang tercatat, dengan nomor otomatis. Klik kwitansi untuk melihat tampilan lengkapnya, mencetak, atau mengunduhnya.</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="field grow"><label for="cariKwitansi">Cari kwitansi</label><input type="search" id="cariKwitansi" placeholder="Nomor kwitansi atau nama siswa…" /></div>
+    </div>
+    <p class="count-note" id="noteKwitansi"></p>
+    <div class="grid-cards" id="gridKwitansi"></div>
+    <div class="empty card" id="emptyKwitansi" hidden>Belum ada kwitansi. Kwitansi muncul otomatis setelah pembayaran dicatat di tab Pembayaran.</div>
+  </section>
+
+  <!-- ============ TAB LAPORAN ============ -->
+  <section class="panel" id="panel-laporan" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Laporan Pemasukan Sekolah</h2>
+        <p>Ringkasan keuangan dari seluruh tagihan dan pembayaran yang tercatat saat ini.</p>
+      </div>
+      <button class="btn" id="btnCsv">Unduh Laporan CSV</button>
+    </div>
+    <div class="stats" style="margin-top:0">
+      <div class="stat accent"><div class="label">Total Tagihan Bulan Ini</div><div class="value" id="lapBulanIni">–</div><div class="sub" id="lapBulanIniSub">–</div></div>
+      <div class="stat"><div class="label">Total Sudah Dibayar</div><div class="value" id="lapTerbayar">–</div><div class="sub" id="lapTerbayarSub">–</div></div>
+      <div class="stat warn"><div class="label">Total Tunggakan</div><div class="value" id="lapTunggakan">–</div><div class="sub" id="lapTunggakanSub">–</div></div>
+      <div class="stat"><div class="label">Lunas vs Menunggak</div><div class="value" id="lapLunasVs">–</div><div class="sub">siswa</div></div>
+    </div>
+    <div class="grid-2" style="grid-template-columns:1fr 1fr;margin-top:18px">
+      <div class="card">
+        <h3 style="margin:0 0 6px;font-size:1.05rem">Pemasukan Terbayar per Kelas</h3>
+        <div id="lapBars"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px;font-size:1.05rem">Pemasukan per Metode</h3>
+        <div id="lapMetode"></div>
+      </div>
+    </div>
+    <div class="table-card" style="margin-top:18px">
+      <table>
+        <thead><tr>
+          <th>Kelas</th><th class="num">Jumlah Siswa</th><th class="num">Total Tagihan</th><th class="num">Sudah Dibayar</th><th class="num">Tunggakan</th><th class="num">% Lunas</th>
+        </tr></thead>
+        <tbody id="tbodyLaporan"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ TAB PANDUAN ============ -->
+  <section class="panel" id="panel-panduan" role="tabpanel">
+    <div class="panel-head">
+      <div>
+        <h2>Panduan Penggunaan</h2>
+        <p>Buku panduan lengkap aplikasi ini. Ikuti langkah-langkah di bawah untuk memakai setiap tab.</p>
+      </div>
+    </div>
+    <div class="guide-grid">
+      <div class="card guide-card">
+        <h3>1. Tab Tagihan</h3>
+        <ol>
+          <li>Buka tab <strong>Tagihan</strong> untuk melihat semua tagihan SPP dan biaya sekolah per siswa.</li>
+          <li>Klik <strong>+ Buat Tagihan Baru</strong>, isi nama siswa, NIS, kelas, jenis tagihan (SPP Bulanan, Uang Gedung, Uang Kegiatan, atau Uang Buku), jumlah, dan tanggal jatuh tempo, lalu klik <strong>Simpan Tagihan</strong>.</li>
+          <li>Klik <strong>Edit</strong> pada baris tagihan untuk mengubah datanya, atau <strong>Hapus</strong> untuk menghapus tagihan (pembayaran yang terkait ikut terhapus).</li>
+          <li>Gunakan kotak <strong>Cari</strong> serta filter <strong>Kelas</strong>, <strong>Status</strong>, dan <strong>Jenis Tagihan</strong> untuk menyaring daftar.</li>
+          <li>Status tagihan berubah otomatis: <em>Lunas</em> bila sudah terbayar penuh, <em>Belum Lunas</em> bila belum atau baru dibayar sebagian.</li>
+        </ol>
+      </div>
+      <div class="card guide-card">
+        <h3>2. Tab Pembayaran</h3>
+        <ol>
+          <li>Buka tab <strong>Pembayaran</strong>.</li>
+          <li>Pilih <strong>Siswa</strong>, lalu pilih <strong>Tagihan yang Dibayar</strong> — daftar hanya menampilkan tagihan siswa tersebut yang belum lunas, lengkap dengan sisa yang harus dibayar.</li>
+          <li>Isi <strong>Jumlah Bayar</strong> (boleh sebagian, tidak boleh melebihi sisa tagihan), <strong>Tanggal Bayar</strong>, dan <strong>Metode</strong> (Tunai, Transfer, atau QRIS).</li>
+          <li>Klik <strong>Simpan Pembayaran</strong>. Bila total pembayaran mencapai jumlah tagihan, status tagihan otomatis menjadi <strong>Lunas</strong>.</li>
+          <li>Semua pembayaran tampil di <strong>Riwayat Pembayaran</strong>; gunakan kotak cari dan filter metode untuk menemukannya kembali.</li>
+        </ol>
+      </div>
+      <div class="card guide-card">
+        <h3>3. Tab Tunggakan</h3>
+        <ol>
+          <li>Buka tab <strong>Tunggakan</strong> untuk melihat siswa yang masih memiliki tagihan belum lunas.</li>
+          <li>Setiap baris menampilkan total tunggakan per siswa, jumlah tagihan yang menunggak, jatuh tempo terdekat, dan jumlah hari keterlambatan (dihitung dari tanggal hari ini).</li>
+          <li>Klik <strong>Kirim Pengingat</strong> pada baris siswa untuk membuka teks pesan WhatsApp yang sopan dan siap kirim, berisi nama siswa, rincian tunggakan, dan jatuh tempo.</li>
+          <li>Klik <strong>Salin Pesan</strong>, lalu tempel pesan tersebut ke WhatsApp orang tua siswa.</li>
+        </ol>
+      </div>
+      <div class="card guide-card">
+        <h3>4. Tab Kwitansi</h3>
+        <ol>
+          <li>Setiap pembayaran yang tersimpan otomatis menghasilkan satu <strong>kwitansi digital</strong> bernomor urut, misalnya KW/2026/0001.</li>
+          <li>Buka tab <strong>Kwitansi</strong>, lalu cari kwitansi berdasarkan nomor atau nama siswa bila perlu.</li>
+          <li><strong>Klik kartu kwitansi</strong> untuk melihat tampilan kwitansi lengkap: nama sekolah, nama siswa, NIS, kelas, rincian tagihan, jumlah, metode, dan status pelunasan tagihan.</li>
+          <li>Klik <strong>Tampilan Cetak</strong> untuk melihat kwitansi sendirian dalam tampilan siap cetak (lalu gunakan menu Cetak pada browser Anda), atau <strong>Unduh</strong> untuk menyimpannya sebagai berkas HTML yang bisa dibuka, dicetak, dan dibagikan.</li>
+        </ol>
+      </div>
+      <div class="card guide-card">
+        <h3>5. Tab Laporan</h3>
+        <ol>
+          <li>Buka tab <strong>Laporan</strong> untuk melihat ringkasan pemasukan sekolah: total tagihan bulan ini, total yang sudah dibayar, total tunggakan, serta jumlah siswa lunas dibanding menunggak.</li>
+          <li>Lihat grafik <strong>Pemasukan Terbayar per Kelas</strong> dan rincian <strong>Pemasukan per Metode</strong> (Tunai, Transfer, QRIS).</li>
+          <li>Tabel di bagian bawah merinci setiap kelas: jumlah siswa, total tagihan, yang sudah dibayar, tunggakan, dan persentase lunas.</li>
+          <li>Klik <strong>Unduh Laporan CSV</strong> untuk mengunduh laporan sebagai berkas CSV yang dapat dibuka di Excel atau Google Sheets.</li>
+        </ol>
+      </div>
+      <div class="card guide-card">
+        <h3>6. Catatan Penting</h3>
+        <p>Aplikasi ini adalah <strong>versi demo v1</strong> yang berjalan sepenuhnya di browser Anda.</p>
+        <ul style="margin:0;padding-left:20px;color:var(--ink-soft)">
+          <li style="margin-bottom:6px">Data contoh (nama siswa, tagihan, pembayaran) hanya berlaku selama aplikasi dibuka dan akan kembali seperti semula setelah halaman ditutup atau dimuat ulang — data tidak tersimpan permanen.</li>
+          <li style="margin-bottom:6px">Pembayaran yang dicatat di sini adalah pencatatan manual oleh petugas. Pembayaran online sungguhan (orang tua membayar sendiri lewat QRIS/transfer otomatis) membutuhkan gateway pembayaran dan merupakan pengembangan lanjutan.</li>
+          <li>Untuk penggunaan resmi sekolah, data siswa sungguhan dimasukkan oleh petugas melalui tab Tagihan.</li>
+        </ul>
+      </div>
+      <div class="card guide-card warranty" style="grid-column:1/-1">
+        <h3>Garansi</h3>
+        <p>Perbaikan <strong>bug/error gratis</strong> untuk fitur-fitur yang tercantum di panduan ini, sesuai paket pembelian Anda:</p>
+        <table>
+          <thead><tr><th>Cara Beli</th><th>Paket</th><th>Masa Garansi</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Cara Beli">Beli Sekali</td><td data-label="Paket">Pemula</td><td data-label="Masa Garansi">30 hari</td></tr>
+            <tr><td data-label="Cara Beli">Beli Sekali</td><td data-label="Paket">Profesional</td><td data-label="Masa Garansi">60 hari</td></tr>
+            <tr><td data-label="Cara Beli">Beli Sekali</td><td data-label="Paket">Bisnis</td><td data-label="Masa Garansi">90 hari</td></tr>
+            <tr><td data-label="Cara Beli">Berlangganan</td><td data-label="Paket">Semua paket</td><td data-label="Masa Garansi">Garansi dan dukungan selama langganan aktif</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Cara klaim garansi:</strong></p>
+        <ol>
+          <li>Rekam <strong>video atau screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+          <li>Kirim video/screenshot tersebut <strong>via WhatsApp</strong> ke penjual, disertai penjelasan singkat langkah yang dilakukan sebelum error muncul.</li>
+          <li>Perbaikan bug yang tercakup garansi dikerjakan tanpa biaya selama masa garansi masih berlaku.</li>
+        </ol>
+        <p><strong>TIDAK termasuk garansi:</strong></p>
+        <ul>
+          <li>Permintaan fitur baru di luar yang tercantum di panduan ini.</li>
+          <li>Perubahan desain atau perubahan data.</li>
+          <li>Kerusakan karena pembeli mengedit file aplikasi sendiri.</li>
+          <li>Layanan pihak ketiga, termasuk hosting dan domain milik pembeli.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="honest">
+    Versi demo v1 — data contoh hanya berlaku selama aplikasi dibuka. Data tidak tersimpan permanen. Pembayaran online sungguhan butuh gateway pembayaran (pengembangan lanjutan).
+  </footer>
+</div>
+
+<!-- ============ MODAL TAGIHAN ============ -->
+<div class="modal-backdrop" id="modalTagihan">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTagihanTitle">
+    <h3 id="modalTagihanTitle">Buat Tagihan Baru</h3>
+    <p class="sub">Isi data tagihan di bawah ini.</p>
+    <form id="formTagihan">
+      <input type="hidden" id="billId" />
+      <div class="form-2col">
+        <div class="field"><label for="billNama">Nama Siswa</label><input type="text" id="billNama" placeholder="cth. Salsabila Zahra" required /></div>
+        <div class="field"><label for="billNis">NIS</label><input type="text" id="billNis" placeholder="cth. 2024015" required /></div>
+      </div>
+      <div class="form-2col">
+        <div class="field"><label for="billKelas">Kelas</label>
+          <select id="billKelas"><option>10A</option><option>10B</option><option>11A</option><option>11B</option><option>12A</option><option>12B</option></select>
+        </div>
+        <div class="field"><label for="billJenis">Jenis Tagihan</label>
+          <select id="billJenis"><option>SPP Bulanan</option><option>Uang Gedung</option><option>Uang Kegiatan</option><option>Uang Buku</option></select>
+        </div>
+      </div>
+      <div class="form-2col">
+        <div class="field"><label for="billJumlah">Jumlah (Rp)</label><input type="number" id="billJumlah" min="1000" placeholder="cth. 350000" required /></div>
+        <div class="field"><label for="billTempo">Jatuh Tempo</label><input type="date" id="billTempo" required /></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" data-close="modalTagihan">Batal</button>
+        <button type="submit" class="btn">Simpan Tagihan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL KONFIRMASI HAPUS ============ -->
+<div class="modal-backdrop" id="modalHapus">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3>Hapus Tagihan?</h3>
+    <p class="sub" id="hapusText"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn ghost" data-close="modalHapus">Batal</button>
+      <button type="button" class="btn" id="btnKonfirmHapus" style="background:var(--red)">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL PENGINGAT ============ -->
+<div class="modal-backdrop" id="modalPengingat">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <h3>Pesan Pengingat untuk Orang Tua</h3>
+    <p class="sub">Salin teks di bawah ini, lalu tempel ke WhatsApp orang tua siswa.</p>
+    <textarea class="reminder" id="reminderText" readonly></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn ghost" data-close="modalPengingat">Tutup</button>
+      <button type="button" class="btn" id="btnSalinPengingat">Salin Pesan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL KWITANSI ============ -->
+<div class="modal-backdrop" id="modalKwitansi">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div id="receiptDetail"></div>
+    <div class="modal-actions no-print">
+      <button type="button" class="btn ghost" data-close="modalKwitansi">Tutup</button>
+      <button type="button" class="btn ghost" id="btnUnduhKwitansi">Unduh Kwitansi</button>
+      <button type="button" class="btn" id="btnCetakKwitansi">Tampilan Cetak</button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea">
+  <div class="print-toolbar no-print">
+    <button type="button" class="btn ghost" id="btnKembaliCetak">← Kembali ke Aplikasi</button>
+    <p>Tampilan siap cetak. Gunakan menu <strong>Cetak</strong> pada browser Anda (atau tekan Ctrl+P) untuk mencetak kwitansi ini, atau kembali dan gunakan tombol Unduh Kwitansi.</p>
+  </div>
+  <div id="printReceipt"></div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ================= DATA CONTOH =================
+   Data contoh realistis Indonesia untuk keperluan demo.
+   Hanya berlaku selama aplikasi dibuka (tanpa penyimpanan permanen). */
+var SEKOLAH = "SMA Nusantara Bangsa";
+var ALAMAT_SEKOLAH = "Jl. Pendidikan No. 88, Yogyakarta";
+var today = new Date(); today.setHours(0,0,0,0);
+
+var billSeq = 0, paySeq = 0, receiptSeq = 0;
+function mkBill(nama, nis, kelas, jenis, jumlah, tempo, terbayar){
+  billSeq++;
+  return { id:"B"+billSeq, nama:nama, nis:nis, kelas:kelas, jenis:jenis, jumlah:jumlah, tempo:tempo, terbayar:terbayar||0 };
+}
+function mkPay(bill, jumlah, tanggal, metode){
+  paySeq++; receiptSeq++;
+  return { id:"P"+paySeq, billId:bill.id, nama:bill.nama, nis:bill.nis, kelas:bill.kelas,
+           jenis:bill.jenis, tempo:bill.tempo, billJumlah:bill.jumlah,
+           jumlah:jumlah, tanggal:tanggal, metode:metode,
+           no:"KW/2026/"+String(receiptSeq).padStart(4,"0") };
+}
+
+var bills = [
+  mkBill("Ahmad Rizky Pratama","2024001","10A","SPP Bulanan",350000,"2026-11-10",350000),
+  mkBill("Siti Nurhaliza","2024002","10A","SPP Bulanan",350000,"2026-11-10",350000),
+  mkBill("Budi Santoso","2024003","10A","Uang Buku",275000,"2026-11-05",0),
+  mkBill("Dewi Lestari Anggraini","2024004","10B","SPP Bulanan",350000,"2026-11-10",200000),
+  mkBill("Fajar Ramadhan","2024005","10B","Uang Kegiatan",150000,"2026-10-28",0),
+  mkBill("Putri Ayu Wulandari","2024006","10B","SPP Bulanan",350000,"2026-11-10",350000),
+  mkBill("Rizky Febrianto","2024007","11A","Uang Gedung",1500000,"2026-11-25",750000),
+  mkBill("Intan Permata Sari","2024008","11A","SPP Bulanan",375000,"2026-11-10",375000),
+  mkBill("Bagas Aditya Nugroho","2024009","11A","SPP Bulanan",375000,"2026-11-10",0),
+  mkBill("Maya Kartika Dewi","2024010","11B","Uang Buku",300000,"2026-11-01",0),
+  mkBill("Dimas Prasetyo","2024011","11B","SPP Bulanan",375000,"2026-11-10",375000),
+  mkBill("Rina Amelia Putri","2024012","11B","Uang Kegiatan",175000,"2026-11-15",175000),
+  mkBill("Eko Wahyu Saputra","2024013","12A","SPP Bulanan",400000,"2026-11-10",0),
+  mkBill("Fitri Rahmawati","2024014","12A","Uang Gedung",2000000,"2026-12-05",2000000),
+  mkBill("Galih Permana","2024015","12A","Uang Buku",325000,"2026-11-08",100000),
+  mkBill("Hana Safitri Nuraini","2024016","12B","SPP Bulanan",400000,"2026-11-10",400000),
+  mkBill("Ilham Kurniawan","2024017","12B","SPP Bulanan",400000,"2026-11-10",0),
+  mkBill("Salsabila Zahra","2024018","12B","Uang Kegiatan",200000,"2026-11-20",0),
+  mkBill("Yoga Pratama Wijaya","2024019","10A","Uang Kegiatan",150000,"2026-11-18",150000),
+  mkBill("Nadia Kusuma Wardani","2024020","11A","Uang Buku",300000,"2026-11-12",300000)
+];
+
+var payments = [];
+(function seedPayments(){
+  var seed = [
+    ["B1",350000,"2026-11-03","Transfer"],
+    ["B2",350000,"2026-11-04","QRIS"],
+    ["B4",200000,"2026-11-06","Tunai"],
+    ["B6",350000,"2026-11-02","Transfer"],
+    ["B7",750000,"2026-11-07","Transfer"],
+    ["B8",375000,"2026-11-05","QRIS"],
+    ["B11",375000,"2026-11-08","Tunai"],
+    ["B12",175000,"2026-11-09","QRIS"],
+    ["B14",2000000,"2026-11-01","Transfer"],
+    ["B15",100000,"2026-11-06","Tunai"],
+    ["B16",400000,"2026-11-04","Transfer"],
+    ["B19",150000,"2026-11-10","QRIS"],
+    ["B20",300000,"2026-11-11","Transfer"]
+  ];
+  seed.forEach(function(s){
+    var b = bills.find(function(x){return x.id===s[0];});
+    if(b) payments.push(mkPay(b, s[1], s[2], s[3]));
+  });
+})();
+
+/* ================= UTILITAS ================= */
+function rp(n){ return "Rp" + Math.round(n).toLocaleString("id-ID"); }
+function fmtTgl(iso){
+  if(!iso) return "–";
+  var d = new Date(iso+"T00:00:00");
+  return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+}
+function statusOf(b){ return b.terbayar >= b.jumlah ? "Lunas" : "Belum Lunas"; }
+function sisaOf(b){ return Math.max(0, b.jumlah - b.terbayar); }
+function daysLate(b){
+  var d = new Date(b.tempo+"T00:00:00");
+  return Math.floor((today - d)/86400000);
+}
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function $(id){ return document.getElementById(id); }
+var toastTimer = null;
+function toast(msg){
+  var t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 3200);
+}
+function kelasList(){
+  var s = {};
+  bills.forEach(function(b){ s[b.kelas]=true; });
+  return Object.keys(s).sort();
+}
+function studentsMap(){
+  var m = {};
+  bills.forEach(function(b){
+    if(!m[b.nis]) m[b.nis] = { nama:b.nama, nis:b.nis, kelas:b.kelas };
+  });
+  return m;
+}
+
+/* ================= NAVIGASI TAB ================= */
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".tab-btn").forEach(function(x){ x.setAttribute("aria-selected","false"); });
+    btn.setAttribute("aria-selected","true");
+    document.querySelectorAll("section.panel").forEach(function(p){ p.classList.remove("active"); });
+    $("panel-"+btn.getAttribute("data-tab")).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+});
+function gotoTab(name){
+  document.querySelector('.tab-btn[data-tab="'+name+'"]').click();
+}
+
+/* ================= MODAL ================= */
+function openModal(id){ $(id).classList.add("open"); }
+function closeModal(id){ $(id).classList.remove("open"); }
+document.querySelectorAll("[data-close]").forEach(function(el){
+  el.addEventListener("click", function(){ closeModal(el.getAttribute("data-close")); });
+});
+document.querySelectorAll(".modal-backdrop").forEach(function(m){
+  m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("open"); });
+});
+
+/* ================= RENDER: STATISTIK ATAS ================= */
+function renderStats(){
+  var total = bills.reduce(function(a,b){return a+b.jumlah;},0);
+  var terbayar = bills.reduce(function(a,b){return a+b.terbayar;},0);
+  var tunggakan = total - terbayar;
+  var sm = studentsMap();
+  var lunasNis = {}, nunggakNis = {};
+  bills.forEach(function(b){
+    if(statusOf(b)==="Lunas") lunasNis[b.nis]=true; else nunggakNis[b.nis]=true;
+  });
+  var siswaLunas = Object.keys(lunasNis).filter(function(n){ return !nunggakNis[n]; }).length;
+  $("statTotalTagihan").textContent = rp(total);
+  $("statJumlahTagihan").textContent = bills.length + " tagihan tercatat";
+  $("statTerbayar").textContent = rp(terbayar);
+  $("statJumlahBayar").textContent = payments.length + " pembayaran masuk";
+  $("statTunggakan").textContent = rp(tunggakan);
+  $("statSiswaNunggak").textContent = Object.keys(nunggakNis).length + " siswa masih menunggak";
+  $("statLunas").textContent = siswaLunas + " siswa";
+  $("statSiswaTotal").textContent = "dari " + Object.keys(sm).length + " siswa";
+}
+
+/* ================= RENDER: TAGIHAN ================= */
+function fillKelasFilter(){
+  var sel = $("filterKelasTagihan");
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Semua Kelas</option>';
+  kelasList().forEach(function(k){
+    var o = document.createElement("option"); o.value=k; o.textContent="Kelas "+k; sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+function renderBills(){
+  fillKelasFilter();
+  var q = $("cariTagihan").value.trim().toLowerCase();
+  var fk = $("filterKelasTagihan").value;
+  var fs = $("filterStatusTagihan").value;
+  var fj = $("filterJenisTagihan").value;
+  var rows = bills.filter(function(b){
+    if(q && b.nama.toLowerCase().indexOf(q)===-1 && b.nis.indexOf(q)===-1) return false;
+    if(fk && b.kelas!==fk) return false;
+    if(fs && statusOf(b)!==fs) return false;
+    if(fj && b.jenis!==fj) return false;
+    return true;
+  });
+  var tb = $("tbodyTagihan"); tb.innerHTML = "";
+  rows.forEach(function(b){
+    var st = statusOf(b);
+    var late = st!=="Lunas" && daysLate(b)>0;
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td data-label="Siswa"><div><div class="stu-name">'+esc(b.nama)+'</div><div class="stu-sub">NIS '+esc(b.nis)+'</div></div></td>'+
+      '<td data-label="Kelas">'+esc(b.kelas)+'</td>'+
+      '<td data-label="Jenis"><span class="badge jenis">'+esc(b.jenis)+'</span></td>'+
+      '<td data-label="Jumlah" class="num">'+rp(b.jumlah)+'</td>'+
+      '<td data-label="Terbayar" class="num"><div>'+rp(b.terbayar)+'<div class="progress"><i style="width:'+Math.min(100, b.jumlah? (b.terbayar/b.jumlah*100):0)+'%"></i></div></div></td>'+
+      '<td data-label="Jatuh Tempo">'+fmtTgl(b.tempo)+(late?' <span class="badge telat">Telat '+daysLate(b)+' hari</span>':'')+'</td>'+
+      '<td data-label="Status"><span class="badge '+(st==="Lunas"?"lunas":"belum")+'">'+st+'</span></td>'+
+      '<td data-label="Aksi"><div class="row-actions"><button class="btn ghost small" data-edit="'+b.id+'">Edit</button><button class="btn danger-ghost small" data-del="'+b.id+'">Hapus</button></div></td>';
+    tb.appendChild(tr);
+  });
+  $("emptyTagihan").hidden = rows.length>0;
+  $("noteTagihan").textContent = "Menampilkan " + rows.length + " dari " + bills.length + " tagihan.";
+  tb.querySelectorAll("[data-edit]").forEach(function(btn){
+    btn.addEventListener("click", function(){ openBillForm(btn.getAttribute("data-edit")); });
+  });
+  tb.querySelectorAll("[data-del]").forEach(function(btn){
+    btn.addEventListener("click", function(){ askDelete(btn.getAttribute("data-del")); });
+  });
+}
+["cariTagihan","filterKelasTagihan","filterStatusTagihan","filterJenisTagihan"].forEach(function(id){
+  $(id).addEventListener("input", renderBills);
+  $(id).addEventListener("change", renderBills);
+});
+
+/* ---- Form tagihan (buat / edit) ---- */
+function openBillForm(id){
+  var f = $("formTagihan"); f.reset();
+  if(id){
+    var b = bills.find(function(x){return x.id===id;});
+    if(!b) return;
+    $("modalTagihanTitle").textContent = "Edit Tagihan";
+    $("billId").value = b.id; $("billNama").value = b.nama; $("billNis").value = b.nis;
+    $("billKelas").value = b.kelas; $("billJenis").value = b.jenis;
+    $("billJumlah").value = b.jumlah; $("billTempo").value = b.tempo;
+  } else {
+    $("modalTagihanTitle").textContent = "Buat Tagihan Baru";
+    $("billId").value = "";
+    $("billTempo").value = "2026-12-10";
+  }
+  openModal("modalTagihan");
+}
+$("btnTagihanBaru").addEventListener("click", function(){ openBillForm(null); });
+$("formTagihan").addEventListener("submit", function(e){
+  e.preventDefault();
+  var id = $("billId").value;
+  var data = {
+    nama: $("billNama").value.trim(), nis: $("billNis").value.trim(),
+    kelas: $("billKelas").value, jenis: $("billJenis").value,
+    jumlah: parseInt($("billJumlah").value,10), tempo: $("billTempo").value
+  };
+  if(!data.nama || !data.nis || !data.jumlah || data.jumlah<=0 || !data.tempo){
+    toast("Mohon lengkapi semua kolom dengan benar."); return;
+  }
+  if(id){
+    var b = bills.find(function(x){return x.id===id;});
+    b.nama=data.nama; b.nis=data.nis; b.kelas=data.kelas; b.jenis=data.jenis;
+    b.jumlah=data.jumlah; b.tempo=data.tempo;
+    if(b.terbayar > b.jumlah) b.terbayar = b.jumlah;
+    toast("Tagihan " + data.nama + " berhasil diperbarui.");
+  } else {
+    bills.push(mkBill(data.nama, data.nis, data.kelas, data.jenis, data.jumlah, data.tempo, 0));
+    toast("Tagihan baru untuk " + data.nama + " berhasil dibuat.");
+  }
+  closeModal("modalTagihan");
+  renderAll();
+});
+
+/* ---- Hapus tagihan ---- */
+var pendingDeleteId = null;
+function askDelete(id){
+  var b = bills.find(function(x){return x.id===id;});
+  if(!b) return;
+  pendingDeleteId = id;
+  var nPay = payments.filter(function(p){return p.billId===id;}).length;
+  $("hapusText").textContent = "Tagihan " + b.jenis + " sebesar " + rp(b.jumlah) + " atas nama " + b.nama +
+    " akan dihapus permanen dari daftar demo ini." +
+    (nPay>0 ? " " + nPay + " riwayat pembayaran dan kwitansi terkait tagihan ini juga ikut terhapus." : "");
+  openModal("modalHapus");
+}
+$("btnKonfirmHapus").addEventListener("click", function(){
+  if(!pendingDeleteId) return;
+  bills = bills.filter(function(b){return b.id!==pendingDeleteId;});
+  payments = payments.filter(function(p){return p.billId!==pendingDeleteId;});
+  pendingDeleteId = null;
+  closeModal("modalHapus");
+  toast("Tagihan berhasil dihapus.");
+  renderAll();
+});
+
+/* ================= PEMBAYARAN ================= */
+function renderPayOptions(){
+  var siswaSel = $("paySiswa");
+  var prevSiswa = siswaSel.value;
+  var sm = studentsMap();
+  var nisList = Object.keys(sm).filter(function(nis){
+    return bills.some(function(b){ return b.nis===nis && statusOf(b)!=="Lunas"; });
+  }).sort(function(a,b){ return sm[a].nama.localeCompare(sm[b].nama); });
+  siswaSel.innerHTML = "";
+  if(nisList.length===0){
+    var o = document.createElement("option"); o.value=""; o.textContent="Semua tagihan sudah lunas";
+    siswaSel.appendChild(o);
+  }
+  nisList.forEach(function(nis){
+    var o = document.createElement("option");
+    o.value = nis; o.textContent = sm[nis].nama + " — Kelas " + sm[nis].kelas + " (NIS " + nis + ")";
+    siswaSel.appendChild(o);
+  });
+  if(nisList.indexOf(prevSiswa)>-1) siswaSel.value = prevSiswa;
+  renderPayBills();
+}
+function renderPayBills(){
+  var nis = $("paySiswa").value;
+  var sel = $("payTagihan");
+  var prev = sel.value;
+  sel.innerHTML = "";
+  var open = bills.filter(function(b){ return b.nis===nis && statusOf(b)!=="Lunas"; });
+  open.forEach(function(b){
+    var o = document.createElement("option");
+    o.value = b.id;
+    o.textContent = b.jenis + " — total " + rp(b.jumlah) + ", sisa " + rp(sisaOf(b)) + ", tempo " + fmtTgl(b.tempo);
+    sel.appendChild(o);
+  });
+  if(open.some(function(b){return b.id===prev;})) sel.value = prev;
+  updateSisaInfo();
+}
+function updateSisaInfo(){
+  var b = bills.find(function(x){return x.id===$("payTagihan").value;});
+  if(!b){ $("paySisaInfo").textContent = ""; return; }
+  $("paySisaInfo").textContent = "Sisa tagihan ini: " + rp(sisaOf(b)) + " dari total " + rp(b.jumlah) + " (sudah dibayar " + rp(b.terbayar) + ").";
+  var j = $("payJumlah");
+  if(!j.value) j.value = sisaOf(b);
+}
+$("paySiswa").addEventListener("change", renderPayBills);
+$("payTagihan").addEventListener("change", updateSisaInfo);
+
+$("formPembayaran").addEventListener("submit", function(e){
+  e.preventDefault();
+  var b = bills.find(function(x){return x.id===$("payTagihan").value;});
+  if(!b){ toast("Tidak ada tagihan yang dipilih."); return; }
+  var jumlah = parseInt($("payJumlah").value,10);
+  var tanggal = $("payTanggal").value;
+  var metode = $("payMetode").value;
+  if(!jumlah || jumlah<=0){ toast("Jumlah bayar harus lebih dari Rp0."); return; }
+  if(jumlah > sisaOf(b)){ toast("Jumlah bayar melebihi sisa tagihan (" + rp(sisaOf(b)) + ")."); return; }
+  if(!tanggal){ toast("Mohon isi tanggal bayar."); return; }
+  b.terbayar += jumlah;
+  var p = mkPay(b, jumlah, tanggal, metode);
+  payments.unshift(p);
+  renderAll();
+  toast("Pembayaran " + rp(jumlah) + " dari " + b.nama + " tersimpan. Kwitansi " + p.no + " diterbitkan." +
+        (statusOf(b)==="Lunas" ? " Tagihan kini LUNAS." : ""));
+  $("payJumlah").value = "";
+});
+
+function renderPayments(){
+  var q = $("cariPembayaran").value.trim().toLowerCase();
+  var fm = $("filterMetode").value;
+  var rows = payments.filter(function(p){
+    if(fm && p.metode!==fm) return false;
+    if(q){
+      var hay = (p.nama+" "+p.no+" "+p.jenis+" "+p.nis).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+  var tb = $("tbodyPembayaran"); tb.innerHTML = "";
+  rows.forEach(function(p){
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td data-label="Tanggal">'+fmtTgl(p.tanggal)+'</td>'+
+      '<td data-label="Siswa"><div><div class="stu-name">'+esc(p.nama)+'</div><div class="stu-sub">Kelas '+esc(p.kelas)+' · NIS '+esc(p.nis)+'</div></div></td>'+
+      '<td data-label="Tagihan">'+esc(p.jenis)+'</td>'+
+      '<td data-label="Metode"><span class="badge jenis">'+esc(p.metode)+'</span></td>'+
+      '<td data-label="Jumlah" class="num">'+rp(p.jumlah)+'</td>'+
+      '<td data-label="No. Kwitansi">'+esc(p.no)+'</td>';
+    tb.appendChild(tr);
+  });
+  $("emptyPembayaran").hidden = rows.length>0;
+  var totalRows = rows.reduce(function(a,p){return a+p.jumlah;},0);
+  $("notePembayaran").textContent = "Menampilkan " + rows.length + " dari " + payments.length + " pembayaran · total tampil " + rp(totalRows) + ".";
+}
+["cariPembayaran","filterMetode"].forEach(function(id){
+  $(id).addEventListener("input", renderPayments);
+  $(id).addEventListener("change", renderPayments);
+});
+
+/* ================= TUNGGAKAN ================= */
+function tunggakanPerSiswa(){
+  var m = {};
+  bills.forEach(function(b){
+    if(statusOf(b)==="Lunas") return;
+    if(!m[b.nis]) m[b.nis] = { nama:b.nama, nis:b.nis, kelas:b.kelas, total:0, count:0, tempoTerdekat:null, maxLate:0, rincian:[] };
+    var g = m[b.nis];
+    g.total += sisaOf(b); g.count++;
+    if(!g.tempoTerdekat || b.tempo < g.tempoTerdekat) g.tempoTerdekat = b.tempo;
+    g.maxLate = Math.max(g.maxLate, daysLate(b));
+    g.rincian.push(b);
+  });
+  return Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.total-a.total;});
+}
+function renderTunggakan(){
+  var rows = tunggakanPerSiswa();
+  var tb = $("tbodyTunggakan"); tb.innerHTML = "";
+  rows.forEach(function(g){
+    var tr = document.createElement("tr");
+    var lateHtml = g.maxLate>0
+      ? '<span class="badge telat">Telat ' + g.maxLate + ' hari</span>'
+      : '<span class="badge belum">Belum jatuh tempo</span>';
+    tr.innerHTML =
+      '<td data-label="Siswa"><div><div class="stu-name">'+esc(g.nama)+'</div><div class="stu-sub">NIS '+esc(g.nis)+'</div></div></td>'+
+      '<td data-label="Kelas">'+esc(g.kelas)+'</td>'+
+      '<td data-label="Tagihan Menunggak" class="num">'+g.count+' tagihan</td>'+
+      '<td data-label="Total Tunggakan" class="num"><strong>'+rp(g.total)+'</strong></td>'+
+      '<td data-label="Jatuh Tempo Terdekat">'+fmtTgl(g.tempoTerdekat)+'</td>'+
+      '<td data-label="Keterlambatan">'+lateHtml+'</td>'+
+      '<td data-label="Aksi"><button class="btn small" data-remind="'+esc(g.nis)+'">Kirim Pengingat</button></td>';
+    tb.appendChild(tr);
+  });
+  $("emptyTunggakan").hidden = rows.length>0;
+  var totalAll = rows.reduce(function(a,g){return a+g.total;},0);
+  $("noteTunggakan").textContent = rows.length + " siswa menunggak · total tunggakan " + rp(totalAll) + ". Keterlambatan dihitung dari tanggal hari ini (" + fmtTgl(today.toISOString().slice(0,10)) + ").";
+  tb.querySelectorAll("[data-remind]").forEach(function(btn){
+    btn.addEventListener("click", function(){ openReminder(btn.getAttribute("data-remind")); });
+  });
+}
+function openReminder(nis){
+  var g = tunggakanPerSiswa().find(function(x){return x.nis===nis;});
+  if(!g) return;
+  var lines = [];
+  lines.push("Assalamu'alaikum warahmatullahi wabarakatuh.");
+  lines.push("");
+  lines.push("Yth. Bapak/Ibu Orang Tua/Wali dari " + g.nama + " (Kelas " + g.kelas + ", NIS " + g.nis + "),");
+  lines.push("");
+  lines.push("Kami dari bagian Tata Usaha " + SEKOLAH + " menginformasikan bahwa putra/putri Bapak/Ibu masih memiliki tunggakan pembayaran sekolah sebagai berikut:");
+  lines.push("");
+  g.rincian.slice().sort(function(a,b){return a.tempo<b.tempo?-1:1;}).forEach(function(b){
+    lines.push("- " + b.jenis + ": " + rp(sisaOf(b)) + " (jatuh tempo " + fmtTgl(b.tempo) + ")");
+  });
+  lines.push("");
+  lines.push("Total tunggakan: " + rp(g.total) + ", dengan jatuh tempo terdekat " + fmtTgl(g.tempoTerdekat) + ".");
+  lines.push("");
+  lines.push("Mohon kiranya pembayaran dapat segera dilunasi melalui loket Tata Usaha sekolah atau dengan menghubungi kami terlebih dahulu. Apabila Bapak/Ibu sudah melakukan pembayaran, mohon abaikan pesan ini dan kirimkan bukti pembayarannya kepada kami.");
+  lines.push("");
+  lines.push("Terima kasih atas perhatian dan kerja samanya.");
+  lines.push("");
+  lines.push("Hormat kami,");
+  lines.push("Tata Usaha " + SEKOLAH);
+  $("reminderText").value = lines.join("\n");
+  openModal("modalPengingat");
+}
+$("btnSalinPengingat").addEventListener("click", function(){
+  var ta = $("reminderText");
+  function done(){ toast("Pesan pengingat tersalin. Tempelkan ke WhatsApp orang tua siswa."); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done, function(){
+      ta.select(); document.execCommand("copy"); done();
+    });
+  } else {
+    ta.select(); document.execCommand("copy"); done();
+  }
+});
+
+/* ================= KWITANSI ================= */
+var currentReceiptId = null;
+function renderReceipts(){
+  var q = $("cariKwitansi").value.trim().toLowerCase();
+  var rows = payments.filter(function(p){
+    if(!q) return true;
+    return (p.no+" "+p.nama+" "+p.jenis).toLowerCase().indexOf(q)>-1;
+  });
+  var grid = $("gridKwitansi"); grid.innerHTML = "";
+  rows.forEach(function(p){
+    var btn = document.createElement("button");
+    btn.className = "receipt-card"; btn.type = "button";
+    btn.innerHTML =
+      '<div class="rno">'+esc(p.no)+' · '+fmtTgl(p.tanggal)+'</div>'+
+      '<div class="rname">'+esc(p.nama)+'</div>'+
+      '<div class="rdetail">'+esc(p.jenis)+' · Kelas '+esc(p.kelas)+' · via '+esc(p.metode)+'</div>'+
+      '<div class="ramount">'+rp(p.jumlah)+'</div>';
+    btn.addEventListener("click", function(){ openReceipt(p.id); });
+    grid.appendChild(btn);
+  });
+  $("emptyKwitansi").hidden = rows.length>0;
+  $("noteKwitansi").textContent = "Menampilkan " + rows.length + " dari " + payments.length + " kwitansi.";
+}
+$("cariKwitansi").addEventListener("input", renderReceipts);
+
+function receiptPaperHtml(p){
+  var b = bills.find(function(x){return x.id===p.billId;});
+  var statusTagihan = b ? statusOf(b) : (p.jumlah>=p.billJumlah ? "Lunas" : "Belum Lunas");
+  var terbayarTagihan = b ? b.terbayar : p.jumlah;
+  return ''+
+  '<div class="receipt-paper">'+
+    '<div class="rp-head"><div class="school">'+esc(SEKOLAH)+'</div><div class="addr">'+esc(ALAMAT_SEKOLAH)+' · Telp. (0274) 555-088 · tatausaha@nusantarabangsa.sch.id</div></div>'+
+    '<div class="rp-title">KWITANSI PEMBAYARAN</div>'+
+    '<div class="rp-no">Nomor: '+esc(p.no)+'</div>'+
+    '<div class="rp-row"><span>Tanggal Pembayaran</span><span>'+fmtTgl(p.tanggal)+'</span></div>'+
+    '<div class="rp-row"><span>Nama Siswa</span><span>'+esc(p.nama)+'</span></div>'+
+    '<div class="rp-row"><span>NIS / Kelas</span><span>'+esc(p.nis)+' / '+esc(p.kelas)+'</span></div>'+
+    '<div class="rp-row"><span>Jenis Tagihan</span><span>'+esc(p.jenis)+'</span></div>'+
+    '<div class="rp-row"><span>Jatuh Tempo Tagihan</span><span>'+fmtTgl(p.tempo)+'</span></div>'+
+    '<div class="rp-row"><span>Total Tagihan</span><span>'+rp(p.billJumlah)+'</span></div>'+
+    '<div class="rp-row"><span>Sudah Dibayar (termasuk ini)</span><span>'+rp(terbayarTagihan)+'</span></div>'+
+    '<div class="rp-row"><span>Status Tagihan</span><span>'+statusTagihan+'</span></div>'+
+    '<div class="rp-row"><span>Metode Pembayaran</span><span>'+esc(p.metode)+'</span></div>'+
+    '<div class="rp-total"><span>Jumlah Diterima</span><span>'+rp(p.jumlah)+'</span></div>'+
+    '<div class="rp-foot"><div>Kwitansi ini diterbitkan secara elektronik oleh sistem pembayaran sekolah dan sah sebagai bukti pembayaran.</div>'+
+    '<div class="rp-sign">Petugas Tata Usaha<div class="nm">Bagian Tata Usaha</div></div></div>'+
+  '</div>';
+}
+function openReceipt(payId){
+  var p = payments.find(function(x){return x.id===payId;});
+  if(!p) return;
+  currentReceiptId = payId;
+  $("receiptDetail").innerHTML = receiptPaperHtml(p);
+  openModal("modalKwitansi");
+}
+$("btnCetakKwitansi").addEventListener("click", function(){
+  var p = payments.find(function(x){return x.id===currentReceiptId;});
+  if(!p) return;
+  $("printReceipt").innerHTML = receiptPaperHtml(p);
+  closeModal("modalKwitansi");
+  document.querySelector(".wrap").style.display = "none";
+  $("printArea").style.display = "block";
+  window.scrollTo({top:0});
+});
+$("btnKembaliCetak").addEventListener("click", function(){
+  $("printArea").style.display = "none";
+  document.querySelector(".wrap").style.display = "";
+});
+$("btnUnduhKwitansi").addEventListener("click", function(){
+  var p = payments.find(function(x){return x.id===currentReceiptId;});
+  if(!p) return;
+  var html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Kwitansi ' + esc(p.no) + '</title>' +
+    '<style>body{font-family:Arial,sans-serif;background:#f4f6f3;padding:24px}.receipt-paper{max-width:640px;margin:0 auto;background:#fff;color:#1c2b26;border:1.5px dashed #b9cdc2;border-radius:14px;padding:26px}' +
+    '.rp-head{text-align:center;border-bottom:2px solid #0e6b5c;padding-bottom:14px;margin-bottom:16px}.school{font-size:22px;font-weight:700;color:#0a5246}.addr{font-size:13px;color:#5a6d63}' +
+    '.rp-title{text-align:center;font-weight:800;letter-spacing:.14em;margin:12px 0 4px}.rp-no{text-align:center;font-size:13px;color:#5a6d63;margin-bottom:16px}' +
+    '.rp-row{display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px dotted #d5e0d8}.rp-row span:first-child{color:#5a6d63}.rp-row span:last-child{font-weight:700;text-align:right}' +
+    '.rp-total{display:flex;justify-content:space-between;padding:14px 0 4px;font-size:18px;font-weight:800}.rp-foot{margin-top:18px;display:flex;justify-content:space-between;gap:16px;font-size:13px;color:#5a6d63}' +
+    '.rp-sign{text-align:center}.rp-sign .nm{margin-top:52px;font-weight:700;color:#1c2b26;border-top:1px solid #9db8ab;padding-top:4px}</style></head><body>' +
+    receiptPaperHtml(p) + '</body></html>';
+  var blob = new Blob([html], {type:"text/html"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "kwitansi-" + p.no.replace(/\//g,"-") + ".html";
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  toast("Kwitansi " + p.no + " diunduh sebagai berkas HTML.");
+});
+
+/* ================= LAPORAN ================= */
+function renderLaporan(){
+  var ym = today.toISOString().slice(0,7);
+  var namaBulan = today.toLocaleDateString("id-ID",{month:"long", year:"numeric"});
+  var billsBulanIni = bills.filter(function(b){ return b.tempo.slice(0,7)===ym; });
+  var totalBulanIni = billsBulanIni.reduce(function(a,b){return a+b.jumlah;},0);
+  var total = bills.reduce(function(a,b){return a+b.jumlah;},0);
+  var terbayar = bills.reduce(function(a,b){return a+b.terbayar;},0);
+  var tunggakan = total - terbayar;
+  var sm = studentsMap();
+  var lunasNis = {}, nunggakNis = {};
+  bills.forEach(function(b){
+    if(statusOf(b)==="Lunas") lunasNis[b.nis]=true; else nunggakNis[b.nis]=true;
+  });
+  var siswaLunas = Object.keys(lunasNis).filter(function(n){return !nunggakNis[n];}).length;
+  var siswaNunggak = Object.keys(nunggakNis).length;
+
+  $("lapBulanIni").textContent = rp(totalBulanIni);
+  $("lapBulanIniSub").textContent = billsBulanIni.length + " tagihan jatuh tempo " + namaBulan;
+  $("lapTerbayar").textContent = rp(terbayar);
+  $("lapTerbayarSub").textContent = total>0 ? Math.round(terbayar/total*100) + "% dari total tagihan " + rp(total) : "–";
+  $("lapTunggakan").textContent = rp(tunggakan);
+  $("lapTunggakanSub").textContent = siswaNunggak + " siswa masih menunggak";
+  $("lapLunasVs").textContent = siswaLunas + " vs " + siswaNunggak;
+
+  /* per kelas */
+  var perKelas = {};
+  bills.forEach(function(b){
+    if(!perKelas[b.kelas]) perKelas[b.kelas] = { kelas:b.kelas, siswa:{}, total:0, terbayar:0 };
+    var g = perKelas[b.kelas];
+    g.siswa[b.nis]=true; g.total+=b.jumlah; g.terbayar+=b.terbayar;
+  });
+  var kelasArr = Object.keys(perKelas).sort().map(function(k){return perKelas[k];});
+  var maxBayar = Math.max.apply(null, kelasArr.map(function(g){return g.terbayar;}).concat([1]));
+
+  var bars = $("lapBars"); bars.innerHTML = "";
+  kelasArr.forEach(function(g){
+    var row = document.createElement("div"); row.className = "bar-row";
+    row.innerHTML = '<div><strong>Kelas '+esc(g.kelas)+'</strong></div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+Math.round(g.terbayar/maxBayar*100)+'%"></div></div>'+
+      '<div class="bval">'+rp(g.terbayar)+'</div>';
+    bars.appendChild(row);
+  });
+
+  var perMetode = { "Tunai":0, "Transfer":0, "QRIS":0 };
+  payments.forEach(function(p){ perMetode[p.metode] = (perMetode[p.metode]||0) + p.jumlah; });
+  var maxMetode = Math.max(perMetode["Tunai"], perMetode["Transfer"], perMetode["QRIS"], 1);
+  var met = $("lapMetode"); met.innerHTML = "";
+  ["Tunai","Transfer","QRIS"].forEach(function(m){
+    var row = document.createElement("div"); row.className = "bar-row";
+    row.innerHTML = '<div><strong>'+m+'</strong></div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+Math.round(perMetode[m]/maxMetode*100)+'%"></div></div>'+
+      '<div class="bval">'+rp(perMetode[m])+'</div>';
+    met.appendChild(row);
+  });
+
+  var tb = $("tbodyLaporan"); tb.innerHTML = "";
+  kelasArr.forEach(function(g){
+    var pct = g.total>0 ? Math.round(g.terbayar/g.total*100) : 0;
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td data-label="Kelas"><strong>Kelas '+esc(g.kelas)+'</strong></td>'+
+      '<td data-label="Jumlah Siswa" class="num">'+Object.keys(g.siswa).length+'</td>'+
+      '<td data-label="Total Tagihan" class="num">'+rp(g.total)+'</td>'+
+      '<td data-label="Sudah Dibayar" class="num">'+rp(g.terbayar)+'</td>'+
+      '<td data-label="Tunggakan" class="num">'+rp(g.total-g.terbayar)+'</td>'+
+      '<td data-label="% Lunas" class="num">'+pct+'%</td>';
+    tb.appendChild(tr);
+  });
+  var trT = document.createElement("tr");
+  trT.innerHTML =
+    '<td data-label="Kelas"><strong>Total Semua Kelas</strong></td>'+
+    '<td data-label="Jumlah Siswa" class="num"><strong>'+Object.keys(sm).length+'</strong></td>'+
+    '<td data-label="Total Tagihan" class="num"><strong>'+rp(total)+'</strong></td>'+
+    '<td data-label="Sudah Dibayar" class="num"><strong>'+rp(terbayar)+'</strong></td>'+
+    '<td data-label="Tunggakan" class="num"><strong>'+rp(tunggakan)+'</strong></td>'+
+    '<td data-label="% Lunas" class="num"><strong>'+(total>0?Math.round(terbayar/total*100):0)+'%</strong></td>';
+  tb.appendChild(trT);
+}
+$("btnCsv").addEventListener("click", function(){
+  function q(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }
+  var lines = [];
+  var namaBulan = today.toLocaleDateString("id-ID",{month:"long", year:"numeric"});
+  lines.push(["Laporan Pembayaran — " + SEKOLAH].map(q).join(";"));
+  lines.push(["Dibuat pada", fmtTgl(today.toISOString().slice(0,10))].map(q).join(";"));
+  lines.push([]);
+  lines.push(["RINGKASAN PER KELAS"].map(q).join(";"));
+  lines.push(["Kelas","Jumlah Siswa","Total Tagihan (Rp)","Sudah Dibayar (Rp)","Tunggakan (Rp)","% Lunas"].map(q).join(";"));
+  var perKelas = {};
+  bills.forEach(function(b){
+    if(!perKelas[b.kelas]) perKelas[b.kelas] = { siswa:{}, total:0, terbayar:0 };
+    perKelas[b.kelas].siswa[b.nis]=true; perKelas[b.kelas].total+=b.jumlah; perKelas[b.kelas].terbayar+=b.terbayar;
+  });
+  var totT=0, totB=0;
+  Object.keys(perKelas).sort().forEach(function(k){
+    var g = perKelas[k]; totT+=g.total; totB+=g.terbayar;
+    lines.push([k, Object.keys(g.siswa).length, g.total, g.terbayar, g.total-g.terbayar, (g.total>0?Math.round(g.terbayar/g.total*100):0)+"%"].map(q).join(";"));
+  });
+  lines.push(["TOTAL", Object.keys(studentsMap()).length, totT, totB, totT-totB, (totT>0?Math.round(totB/totT*100):0)+"%"].map(q).join(";"));
+  lines.push([]);
+  lines.push(["RINCIAN TAGIHAN"].map(q).join(";"));
+  lines.push(["Nama Siswa","NIS","Kelas","Jenis Tagihan","Jumlah (Rp)","Terbayar (Rp)","Sisa (Rp)","Jatuh Tempo","Status"].map(q).join(";"));
+  bills.forEach(function(b){
+    lines.push([b.nama, b.nis, b.kelas, b.jenis, b.jumlah, b.terbayar, sisaOf(b), fmtTgl(b.tempo), statusOf(b)].map(q).join(";"));
+  });
+  lines.push([]);
+  lines.push(["RINCIAN PEMBAYARAN"].map(q).join(";"));
+  lines.push(["No. Kwitansi","Tanggal","Nama Siswa","NIS","Kelas","Jenis Tagihan","Metode","Jumlah (Rp)"].map(q).join(";"));
+  payments.forEach(function(p){
+    lines.push([p.no, fmtTgl(p.tanggal), p.nama, p.nis, p.kelas, p.jenis, p.metode, p.jumlah].map(q).join(";"));
+  });
+  var csvText = "﻿" + lines.join("\r\n");
+  var blob = new Blob([csvText], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "laporan-pembayaran-sekolah-" + today.toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  toast("Laporan CSV diunduh (periode berjalan, " + namaBulan + ").");
+});
+
+/* ================= RENDER SEMUA & INISIALISASI ================= */
+function renderAll(){
+  renderStats();
+  renderBills();
+  renderPayOptions();
+  renderPayments();
+  renderTunggakan();
+  renderReceipts();
+  renderLaporan();
+}
+$("payTanggal").value = today.toISOString().slice(0,10);
+renderAll();
+</script>
+</body>
+</html>
