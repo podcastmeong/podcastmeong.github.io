@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Ujian Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root{
+        --bg:#f3f7f5; --surface:#ffffff; --surface-2:#edf3f0; --ink:#1d2b29; --muted:#5d716c;
+        --line:#dce7e2; --accent:#0e7a66; --accent-strong:#095c4c; --accent-soft:#dff0ea;
+        --amber:#a86f08; --amber-soft:#fbf0d3; --red:#b3372a; --red-soft:#fbe9e6;
+        --green:#1e7d46; --green-soft:#e2f2e6; --blue:#1d5fa8; --blue-soft:#e3eef9;
+        --radius:16px; --shadow:0 8px 28px rgba(20,54,46,.09); --shadow-sm:0 2px 10px rgba(20,54,46,.07);
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0e1514; --surface:#17211f; --surface-2:#1e2b28; --ink:#e8f0ed; --muted:#9db4ad;
+          --line:#2b3d39; --accent:#35bd9c; --accent-strong:#5fd0b2; --accent-soft:#17392f;
+          --amber:#e3ab45; --amber-soft:#3a2f13; --red:#e58a7c; --red-soft:#3d211c;
+          --green:#5ec788; --green-soft:#17351f; --blue:#7db1e8; --blue-soft:#1b2f47;
+          --shadow:0 8px 28px rgba(0,0,0,.4); --shadow-sm:0 2px 10px rgba(0,0,0,.3);
+        }
+      }
+      html{ scroll-behavior:smooth; }
+      body{
+        margin:0; background:var(--bg); color:var(--ink);
+        font-family:"Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size:15.5px; line-height:1.55;
+      }
+      .wrap{ max-width:1060px; margin:0 auto; padding:18px 16px 40px; }
+      .intro{ margin:6px 2px 16px; }
+      .intro h1{ font-size:clamp(22px,4.5vw,30px); margin:0 0 4px; letter-spacing:-.02em; font-weight:800; }
+      .intro p{ margin:0; color:var(--muted); max-width:62ch; }
+
+      /* Navigasi tab */
+      nav.tabs{
+        position:sticky; top:10px; z-index:40; display:flex; flex-wrap:wrap; gap:6px;
+        background:var(--surface); border:1px solid var(--line); border-radius:999px;
+        padding:6px; box-shadow:var(--shadow-sm); margin-bottom:20px;
+      }
+      nav.tabs button{
+        flex:1 1 auto; border:0; background:transparent; color:var(--muted); cursor:pointer;
+        font:inherit; font-weight:600; font-size:14.5px; padding:9px 14px; border-radius:999px;
+        min-height:40px; white-space:nowrap; transition:background .15s, color .15s;
+      }
+      nav.tabs button:hover{ color:var(--ink); background:var(--surface-2); }
+      nav.tabs button.active{ background:var(--accent); color:#fff; }
+      @media (prefers-color-scheme: dark){ nav.tabs button.active{ color:#0b1512; } }
+
+      section.panel{ display:none; }
+      section.panel.active{ display:block; animation:fade .18s ease; }
+      @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+      @media (prefers-reduced-motion: reduce){ section.panel.active{ animation:none; } html{scroll-behavior:auto;} }
+
+      .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:20px; margin-bottom:16px; }
+      .card h2{ margin:0 0 4px; font-size:19px; letter-spacing:-.01em; }
+      .card h3{ margin:0 0 6px; font-size:16px; }
+      .sub{ color:var(--muted); margin:0 0 14px; font-size:14px; }
+
+      .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+      .toolbar .spacer{ flex:1; }
+      .toolbar label{ font-size:13.5px; font-weight:600; color:var(--muted); }
+      select, input[type="text"], input[type="number"], input[type="date"], input[type="time"], textarea{
+        font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--line);
+        border-radius:10px; padding:8px 12px; min-height:40px;
+      }
+      select:focus, input:focus, textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+      textarea{ width:100%; resize:vertical; }
+
+      .btn{
+        font:inherit; font-weight:700; font-size:14.5px; cursor:pointer; border-radius:11px;
+        padding:9px 18px; min-height:42px; border:1px solid transparent; display:inline-flex;
+        align-items:center; gap:7px; justify-content:center; text-decoration:none;
+      }
+      .btn-primary{ background:var(--accent); color:#fff; }
+      .btn-primary:hover{ background:var(--accent-strong); }
+      @media (prefers-color-scheme: dark){ .btn-primary{ color:#0b1512; } .btn-primary:hover{ color:#0b1512; } }
+      .btn-ghost{ background:var(--surface); color:var(--ink); border-color:var(--line); }
+      .btn-ghost:hover{ background:var(--surface-2); }
+      .btn-danger{ background:var(--red-soft); color:var(--red); border-color:transparent; }
+      .btn-danger:hover{ filter:brightness(.97); }
+      .btn-sm{ padding:6px 12px; min-height:36px; font-size:13.5px; border-radius:9px; }
+      .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+      .badge{ display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+      .b-subject{ background:var(--blue-soft); color:var(--blue); }
+      .b-mudah{ background:var(--green-soft); color:var(--green); }
+      .b-sedang{ background:var(--amber-soft); color:var(--amber); }
+      .b-sulit{ background:var(--red-soft); color:var(--red); }
+      .b-lulus{ background:var(--green-soft); color:var(--green); }
+      .b-gagal{ background:var(--red-soft); color:var(--red); }
+      .b-upcoming{ background:var(--accent-soft); color:var(--accent-strong); }
+      @media (prefers-color-scheme: dark){ .b-upcoming{ color:var(--accent); } }
+      .b-today{ background:var(--amber-soft); color:var(--amber); }
+      .b-past{ background:var(--surface-2); color:var(--muted); }
+
+      /* Daftar soal */
+      .soal-item{ border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; background:var(--surface); }
+      .soal-item .meta{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:center; }
+      .soal-item .q{ font-weight:600; margin:0 0 10px; }
+      .soal-item ol.opts{ list-style:none; margin:0 0 10px; padding:0; display:grid; gap:5px; }
+      .soal-item ol.opts li{ padding:6px 12px; border-radius:9px; background:var(--surface-2); font-size:14.5px; }
+      .soal-item ol.opts li.key{ background:var(--green-soft); font-weight:700; }
+      .soal-item .keyline{ font-size:13.5px; color:var(--muted); margin:0 0 10px; }
+      .row-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+      /* Tabel */
+      .table-wrap{ overflow:visible; }
+      table{ width:100%; border-collapse:collapse; font-size:14.5px; }
+      th{ text-align:left; font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:10px 12px; border-bottom:2px solid var(--line); }
+      td{ padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+      tr:last-child td{ border-bottom:0; }
+      td.num, th.num{ text-align:right; }
+      .rank-1{ font-weight:800; }
+      .medal{ font-size:15px; }
+      @media (max-width:680px){
+        table, thead, tbody, tr, td{ display:block; width:100%; }
+        thead{ display:none; }
+        tr{ border:1px solid var(--line); border-radius:12px; padding:8px 6px; margin-bottom:10px; background:var(--surface); }
+        td{ border-bottom:0; padding:5px 10px; display:flex; justify-content:space-between; gap:14px; text-align:right; }
+        td::before{ content:attr(data-label); font-weight:700; font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; text-align:left; }
+        td.num{ text-align:right; }
+        td .row-actions{ justify-content:flex-end; }
+      }
+
+      /* Statistik */
+      .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+      .stat{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow-sm); }
+      .stat .n{ font-size:28px; font-weight:800; letter-spacing:-.02em; line-height:1.1; }
+      .stat .l{ color:var(--muted); font-size:13.5px; font-weight:600; margin-top:2px; }
+
+      /* Modal */
+      .overlay{ position:fixed; inset:0; background:rgba(10,25,21,.5); display:none; align-items:flex-start; justify-content:center; padding:22px 14px; z-index:100; overflow-y:auto; }
+      .overlay.open{ display:flex; }
+      .modal{ background:var(--surface); color:var(--ink); border-radius:20px; box-shadow:var(--shadow); width:100%; max-width:620px; padding:24px; margin:auto 0; }
+      .modal h2{ margin:0 0 4px; font-size:19px; }
+      .modal .sub{ margin-bottom:16px; }
+      .field{ margin-bottom:13px; }
+      .field label{ display:block; font-weight:700; font-size:13.5px; margin-bottom:5px; }
+      .field input, .field select, .field textarea{ width:100%; }
+      .field .hint{ font-size:12.5px; color:var(--muted); margin-top:4px; }
+      .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      @media (max-width:560px){ .grid2{ grid-template-columns:1fr; } }
+      .optgrid{ display:grid; gap:10px; }
+      .optrow{ display:flex; gap:8px; align-items:center; }
+      .optrow .letter{ font-weight:800; width:22px; text-align:center; color:var(--muted); }
+      .optrow input[type="text"]{ flex:1; }
+      .optrow label.keypick{ display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; padding:6px 4px; }
+      .pick-list{ max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:8px; display:grid; gap:4px; }
+      .pick-list label{ display:flex; gap:10px; align-items:flex-start; padding:9px 10px; border-radius:9px; cursor:pointer; font-size:14px; }
+      .pick-list label:hover{ background:var(--surface-2); }
+      .pick-list input{ margin-top:3px; width:18px; height:18px; accent-color:var(--accent); flex:none; }
+      .modal-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
+
+      /* Penilaian / pengerjaan */
+      .exam-head{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:14px; }
+      .timer{ font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; background:var(--accent-soft); color:var(--accent-strong); padding:8px 18px; border-radius:12px; }
+      @media (prefers-color-scheme: dark){ .timer{ color:var(--accent); } }
+      .timer.warn{ background:var(--red-soft); color:var(--red); }
+      .progress{ height:10px; background:var(--surface-2); border-radius:999px; overflow:hidden; margin-bottom:18px; }
+      .progress > div{ height:100%; background:var(--accent); border-radius:999px; transition:width .25s; }
+      .qcard .qnum{ font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 6px; }
+      .qcard .qtext{ font-size:18px; font-weight:700; margin:0 0 16px; line-height:1.45; }
+      .choices{ display:grid; gap:10px; margin-bottom:18px; }
+      .choices label{ display:flex; gap:12px; align-items:flex-start; border:1.5px solid var(--line); border-radius:13px; padding:13px 15px; cursor:pointer; font-size:15.5px; transition:border-color .12s, background .12s; }
+      .choices label:hover{ border-color:var(--accent); }
+      .choices label.picked{ border-color:var(--accent); background:var(--accent-soft); font-weight:600; }
+      .choices input{ width:19px; height:19px; margin-top:2px; accent-color:var(--accent); flex:none; }
+      .choices .cl{ font-weight:800; color:var(--accent-strong); }
+      @media (prefers-color-scheme: dark){ .choices .cl{ color:var(--accent); } }
+      .navq{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 18px; }
+      .navq button{ width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit; font-weight:700; font-size:13.5px; cursor:pointer; }
+      .navq button.answered{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-strong); }
+      .navq button.current{ background:var(--accent); color:#fff; border-color:var(--accent); }
+      @media (prefers-color-scheme: dark){ .navq button.answered{ color:var(--accent); } .navq button.current{ color:#0b1512; } }
+      .exam-nav{ display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:center; }
+      .score-hero{ text-align:center; padding:10px 0 4px; }
+      .score-hero .big{ font-size:56px; font-weight:800; letter-spacing:-.03em; line-height:1; }
+      .review-item{ border:1px solid var(--line); border-radius:13px; padding:14px 16px; margin-bottom:10px; }
+      .review-item.ok{ border-left:5px solid var(--green); }
+      .review-item.bad{ border-left:5px solid var(--red); }
+      .review-item p{ margin:0 0 6px; }
+      .review-item .ans{ font-size:14px; color:var(--muted); }
+      .review-item .ans b{ color:var(--ink); }
+
+      .exam-card{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; background:var(--surface); }
+      .exam-card .info h3{ margin:0 0 3px; font-size:16.5px; }
+      .exam-card .info p{ margin:0; color:var(--muted); font-size:13.5px; }
+      .exam-card .badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+
+      .empty{ text-align:center; color:var(--muted); padding:28px 16px; border:1.5px dashed var(--line); border-radius:14px; font-size:14.5px; }
+
+      /* Panduan */
+      .guide h3{ margin:22px 0 8px; font-size:16.5px; }
+      .guide h3:first-child{ margin-top:0; }
+      .guide ol, .guide ul{ margin:0 0 6px; padding-left:22px; }
+      .guide li{ margin-bottom:5px; }
+      .guide p{ margin:0 0 8px; }
+      .warranty{ background:var(--accent-soft); border-radius:14px; padding:18px 20px; margin-top:10px; }
+      .warranty h3{ margin-top:0; }
+      @media (prefers-color-scheme: dark){ .warranty{ background:var(--surface-2); } }
+
+      footer{ margin-top:26px; border-top:1px solid var(--line); padding-top:16px; color:var(--muted); font-size:13.5px; text-align:center; }
+      .toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--bg); padding:11px 20px; border-radius:12px; font-weight:600; font-size:14px; opacity:0; pointer-events:none; transition:.25s; z-index:200; max-width:92vw; text-align:center; box-shadow:var(--shadow); }
+      .toast.show{ opacity:1; transform:translateX(-50%); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Aplikasi Ujian Online</h1>
+        <p>Susun bank soal, buat ujian, atur jadwal, dan nilai hasil siswa secara otomatis — untuk sekolah, kampus, dan lembaga pelatihan.</p>
+      </div>
+
+      <nav class="tabs" id="tabNav" aria-label="Navigasi utama">
+        <button data-tab="soal" class="active">Bank Soal</button>
+        <button data-tab="ujian">Ujian</button>
+        <button data-tab="jadwal">Jadwal</button>
+        <button data-tab="nilai">Penilaian</button>
+        <button data-tab="hasil">Hasil</button>
+        <button data-tab="laporan">Laporan</button>
+        <button data-tab="panduan">Panduan</button>
+      </nav>
+
+      <!-- ============ BANK SOAL ============ -->
+      <section class="panel active" id="panel-soal">
+        <div class="card">
+          <h2>Bank Soal Pilihan Ganda</h2>
+          <p class="sub" id="soalCount"></p>
+          <div class="toolbar">
+            <label for="filterMapel">Mata Pelajaran</label>
+            <select id="filterMapel">
+              <option value="">Semua Mata Pelajaran</option>
+            </select>
+            <input type="text" id="cariSoal" placeholder="Cari pertanyaan…" aria-label="Cari pertanyaan" style="flex:1;min-width:160px;" />
+            <span class="spacer"></span>
+            <button class="btn btn-primary" id="btnTambahSoal">+ Tambah Soal</button>
+          </div>
+          <div id="soalList"></div>
+        </div>
+      </section>
+
+      <!-- ============ UJIAN ============ -->
+      <section class="panel" id="panel-ujian">
+        <div class="card">
+          <h2>Daftar Ujian</h2>
+          <p class="sub">Buat ujian dari soal-soal di bank soal, tentukan durasi dan nilai minimum lulus (KKM), lalu mulai ujian dari tombol <b>Mulai Ujian</b>.</p>
+          <div class="toolbar">
+            <span class="spacer"></span>
+            <button class="btn btn-primary" id="btnTambahUjian">+ Buat Ujian Baru</button>
+          </div>
+          <div id="ujianList"></div>
+        </div>
+      </section>
+
+      <!-- ============ JADWAL ============ -->
+      <section class="panel" id="panel-jadwal">
+        <div class="card">
+          <h2>Jadwal Ujian</h2>
+          <p class="sub">Jadwal yang akan datang ditandai hijau, jadwal hari ini kuning, dan yang sudah lewat berwarna abu-abu.</p>
+          <div class="toolbar">
+            <span class="spacer"></span>
+            <button class="btn btn-primary" id="btnTambahJadwal">+ Tambah Jadwal</button>
+          </div>
+          <div id="jadwalList"></div>
+        </div>
+      </section>
+
+      <!-- ============ PENILAIAN ============ -->
+      <section class="panel" id="panel-nilai">
+        <div id="nilaiRoot"></div>
+      </section>
+
+      <!-- ============ HASIL ============ -->
+      <section class="panel" id="panel-hasil">
+        <div class="card">
+          <h2>Hasil Ujian &amp; Peringkat</h2>
+          <p class="sub">Hasil diurutkan dari skor tertinggi di setiap ujian. Peringkat 1–3 ditandai medali.</p>
+          <div class="toolbar">
+            <label for="filterHasil">Ujian</label>
+            <select id="filterHasil"><option value="">Semua Ujian</option></select>
+          </div>
+          <div class="table-wrap"><table id="hasilTable">
+            <thead><tr>
+              <th>Peringkat</th><th>Nama Peserta</th><th>Ujian</th><th class="num">Skor</th><th class="num">Benar</th><th>Status</th><th>Tanggal</th>
+            </tr></thead>
+            <tbody id="hasilBody"></tbody>
+          </table></div>
+          <div id="hasilEmpty" class="empty" style="display:none;">Belum ada hasil untuk pilihan ini. Kerjakan ujian di tab Penilaian untuk menambah hasil.</div>
+        </div>
+      </section>
+
+      <!-- ============ LAPORAN ============ -->
+      <section class="panel" id="panel-laporan">
+        <div class="stats" id="laporanStats"></div>
+        <div class="card">
+          <h2>Ringkasan per Ujian</h2>
+          <p class="sub">Rekap jumlah peserta, rata-rata skor, dan kelulusan untuk setiap ujian.</p>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>Ujian</th><th>Mata Pelajaran</th><th class="num">Peserta</th><th class="num">Rata-rata Skor</th><th class="num">Lulus</th><th class="num">Tidak Lulus</th><th class="num">Kelulusan</th>
+            </tr></thead>
+            <tbody id="laporanBody"></tbody>
+          </table></div>
+          <div class="toolbar" style="margin:16px 0 0;">
+            <span class="spacer"></span>
+            <button class="btn btn-primary" id="btnCsv">⬇ Unduh Laporan CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Panduan Penggunaan</h2>
+          <p class="sub">Buku panduan lengkap Aplikasi Ujian Online — ikuti langkah demi langkah untuk setiap tab.</p>
+
+          <h3>1. Tab Bank Soal — Mengelola Soal</h3>
+          <ol>
+            <li>Buka tab <b>Bank Soal</b> untuk melihat semua soal pilihan ganda yang tersimpan.</li>
+            <li>Gunakan menu <b>Mata Pelajaran</b> untuk menyaring soal (Matematika, Bahasa Indonesia, IPA, Bahasa Inggris, IPS), atau ketik kata kunci di kolom <b>Cari pertanyaan</b>.</li>
+            <li>Klik <b>+ Tambah Soal</b>, isi pertanyaan, empat pilihan jawaban A–D, pilih kunci jawaban, mata pelajaran, dan tingkat kesulitan, lalu klik <b>Simpan Soal</b>.</li>
+            <li>Klik <b>Edit</b> pada soal untuk mengubah isinya, atau <b>Hapus</b> untuk menghapus soal dari bank (soal yang dihapus tidak lagi muncul saat membuat ujian baru).</li>
+          </ol>
+
+          <h3>2. Tab Ujian — Membuat Ujian</h3>
+          <ol>
+            <li>Buka tab <b>Ujian</b>, lalu klik <b>+ Buat Ujian Baru</b>.</li>
+            <li>Isi <b>nama ujian</b> dan pilih <b>mata pelajaran</b> — daftar soal di bawahnya otomatis menampilkan soal dari mata pelajaran tersebut.</li>
+            <li>Centang soal-soal yang akan dipakai, isi <b>durasi</b> (menit) dan <b>nilai minimum lulus / KKM</b> (0–100), lalu klik <b>Simpan Ujian</b>.</li>
+            <li>Ujian yang sudah dibuat bisa diubah dengan tombol <b>Edit</b>, dihapus dengan <b>Hapus</b>, atau langsung dimulai dengan <b>Mulai Ujian</b>.</li>
+          </ol>
+
+          <h3>3. Tab Jadwal — Mengatur Jadwal Ujian</h3>
+          <ol>
+            <li>Buka tab <b>Jadwal</b>, lalu klik <b>+ Tambah Jadwal</b>.</li>
+            <li>Isi nama ujian, mata pelajaran, tanggal, jam mulai, durasi, dan kelas peserta, lalu klik <b>Simpan Jadwal</b>.</li>
+            <li>Lencana status menunjukkan jadwal <b>Akan Datang</b> (hijau), <b>Hari Ini</b> (kuning), atau <b>Selesai</b> (abu-abu, untuk jadwal yang sudah lewat).</li>
+            <li>Pakai tombol <b>Edit</b> untuk mengubah jadwal dan <b>Hapus</b> untuk membatalkannya.</li>
+          </ol>
+
+          <h3>4. Tab Penilaian — Cara Siswa Mengerjakan Ujian</h3>
+          <ol>
+            <li>Buka tab <b>Penilaian</b>, tulis <b>nama peserta</b>, pilih ujian yang akan dikerjakan, lalu klik <b>Mulai Mengerjakan</b>. Tombol <b>Mulai Ujian</b> di tab Ujian juga membawa siswa ke halaman ini.</li>
+            <li>Soal tampil <b>satu per satu</b>. Klik salah satu pilihan jawaban A–D untuk menjawab.</li>
+            <li>Gunakan tombol <b>Sebelumnya</b> dan <b>Berikutnya</b> untuk berpindah soal, atau klik nomor soal pada deretan angka untuk melompat langsung. Nomor berwarna hijau berarti soal sudah dijawab.</li>
+            <li>Perhatikan <b>timer mundur</b> di kanan atas — waktu berjalan sesuai durasi ujian. Jika waktu habis, ujian otomatis selesai dan dinilai apa adanya.</li>
+            <li>Setelah semua soal diperiksa, klik <b>Selesai &amp; Nilai</b> dan konfirmasi. Jawaban langsung dinilai otomatis.</li>
+            <li>Hasil akhir menampilkan skor (skala 0–100), jumlah jawaban benar, status <b>Lulus / Tidak Lulus</b> berdasarkan KKM, serta rincian benar–salah untuk setiap soal beserta kunci jawabannya.</li>
+          </ol>
+
+          <h3>5. Tab Hasil — Melihat Peringkat</h3>
+          <ol>
+            <li>Buka tab <b>Hasil</b> untuk melihat semua hasil ujian yang sudah dikerjakan, termasuk hasil contoh yang sudah terisi.</li>
+            <li>Pilih ujian pada menu <b>Ujian</b> untuk fokus pada satu ujian; hasil selalu diurutkan dari skor tertinggi sehingga peringkat terlihat jelas.</li>
+            <li>Status <b>Lulus</b> berarti skor mencapai atau melampaui KKM ujian tersebut.</li>
+          </ol>
+
+          <h3>6. Tab Laporan — Rekap &amp; Ekspor</h3>
+          <ol>
+            <li>Buka tab <b>Laporan</b> untuk melihat ringkasan: jumlah ujian, jumlah soal di bank, jumlah peserta yang sudah mengerjakan, rata-rata skor, dan tingkat kelulusan keseluruhan.</li>
+            <li>Tabel di bawahnya merinci setiap ujian: jumlah peserta, rata-rata skor, jumlah lulus dan tidak lulus, serta persentase kelulusan.</li>
+            <li>Klik <b>Unduh Laporan CSV</b> untuk mengunduh laporan (ringkasan, rekap per ujian, dan rincian semua hasil) sebagai file CSV yang bisa dibuka di Excel atau Google Sheets.</li>
+          </ol>
+
+          <div class="warranty">
+            <h3>Garansi</h3>
+            <p>Perbaikan <b>bug/error gratis</b> untuk fitur yang tercantum di panduan ini, dengan masa garansi sesuai paket pembelian:</p>
+            <ul>
+              <li><b>Beli Sekali — Pemula:</b> garansi 30 hari.</li>
+              <li><b>Beli Sekali — Profesional:</b> garansi 60 hari.</li>
+              <li><b>Beli Sekali — Bisnis:</b> garansi 90 hari.</li>
+              <li><b>Berlangganan:</b> garansi dan dukungan berlaku selama masa langganan aktif.</li>
+            </ul>
+            <p><b>Cara klaim:</b> hubungi kami via WhatsApp dengan mengirimkan <b>video atau screenshot</b> yang menunjukkan bug/error-nya, beserta keterangan singkat kapan masalah terjadi.</p>
+            <p><b>Tidak termasuk garansi:</b></p>
+            <ul>
+              <li>Permintaan fitur baru di luar panduan ini.</li>
+              <li>Perubahan desain atau perubahan data.</li>
+              <li>Kerusakan akibat pembeli mengedit file sendiri.</li>
+              <li>Layanan pihak ketiga, termasuk hosting dan domain milik pembeli.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer>Versi demo v1 — data contoh hanya berlaku selama aplikasi dibuka. Data tidak tersimpan permanen. Ujian serentak multi-siswa sungguhan butuh backend (versi pembeli).</footer>
+    </div>
+
+    <!-- Modal generik -->
+    <div class="overlay" id="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 id="modalTitle"></h2>
+        <p class="sub" id="modalSub"></p>
+        <form id="modalForm"></form>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ================= DATA CONTOH ================= */
+const MAPEL = ["Matematika","Bahasa Indonesia","IPA","Bahasa Inggris","IPS"];
+const TINGKAT = ["Mudah","Sedang","Sulit"];
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+let idSeq = 1000;
+const nid = () => ++idSeq;
+
+let bankSoal = [
+  // Matematika
+  {id:1, mapel:"Matematika", tingkat:"Mudah", tanya:"Hasil dari 25 × 4 − 36 ÷ 6 adalah …", opsi:["90","94","96","104"], kunci:1},
+  {id:2, mapel:"Matematika", tingkat:"Sedang", tanya:"FPB dari 24 dan 36 adalah …", opsi:["6","8","12","18"], kunci:2},
+  {id:3, mapel:"Matematika", tingkat:"Sedang", tanya:"Jika 3x + 5 = 20, maka nilai x adalah …", opsi:["3","4","5","6"], kunci:2},
+  {id:4, mapel:"Matematika", tingkat:"Sedang", tanya:"Luas lingkaran dengan jari-jari 7 cm (π = 22/7) adalah …", opsi:["144 cm²","154 cm²","164 cm²","308 cm²"], kunci:1},
+  {id:5, mapel:"Matematika", tingkat:"Mudah", tanya:"Rata-rata dari bilangan 6, 7, 8, 9, dan 10 adalah …", opsi:["7","7,5","8","8,5"], kunci:2},
+  {id:6, mapel:"Matematika", tingkat:"Mudah", tanya:"Sebuah segitiga memiliki alas 10 cm dan tinggi 6 cm. Luas segitiga tersebut adalah …", opsi:["16 cm²","30 cm²","36 cm²","60 cm²"], kunci:1},
+  // Bahasa Indonesia
+  {id:7, mapel:"Bahasa Indonesia", tingkat:"Mudah", tanya:"Sinonim (persamaan kata) dari kata \u201cgembira\u201d adalah …", opsi:["sedih","senang","marah","takut"], kunci:1},
+  {id:8, mapel:"Bahasa Indonesia", tingkat:"Mudah", tanya:"Antonim (lawan kata) dari kata \u201ctinggi\u201d adalah …", opsi:["besar","panjang","rendah","lebar"], kunci:2},
+  {id:9, mapel:"Bahasa Indonesia", tingkat:"Sedang", tanya:"Penulisan kata baku yang benar adalah …", opsi:["apotik","jadual","sistem","aktip"], kunci:2},
+  {id:10, mapel:"Bahasa Indonesia", tingkat:"Sedang", tanya:"Kalimat berikut yang menggunakan huruf kapital dengan benar adalah …", opsi:["Ibu pergi ke pasar pada hari Minggu.","ibu pergi ke Pasar pada hari minggu.","Ibu pergi ke Pasar pada hari Minggu.","ibu Pergi ke pasar pada Hari Minggu."], kunci:0},
+  {id:11, mapel:"Bahasa Indonesia", tingkat:"Sulit", tanya:"Bacalah kalimat berikut: \u201cPagi itu, Sinta berangkat ke sekolah dengan hati yang riang karena akan bertemu teman-temannya.\u201d Ide pokok kalimat tersebut adalah …", opsi:["Sinta bertemu teman-temannya","Sinta berangkat ke sekolah dengan riang","Sekolah Sinta sangat menyenangkan","Pagi hari adalah waktu berangkat sekolah"], kunci:1},
+  // IPA
+  {id:12, mapel:"IPA", tingkat:"Mudah", tanya:"Gas yang dihasilkan tumbuhan saat fotosintesis adalah …", opsi:["karbon dioksida","nitrogen","oksigen","hidrogen"], kunci:2},
+  {id:13, mapel:"IPA", tingkat:"Mudah", tanya:"Organ tubuh manusia yang berfungsi memompa darah ke seluruh tubuh adalah …", opsi:["paru-paru","hati","ginjal","jantung"], kunci:3},
+  {id:14, mapel:"IPA", tingkat:"Sedang", tanya:"Satuan gaya dalam Sistem Internasional (SI) adalah …", opsi:["joule","newton","watt","pascal"], kunci:1},
+  {id:15, mapel:"IPA", tingkat:"Mudah", tanya:"Perubahan wujud benda dari cair menjadi gas disebut …", opsi:["membeku","mencair","menguap","mengembun"], kunci:2},
+  {id:16, mapel:"IPA", tingkat:"Sedang", tanya:"Planet yang paling dekat dengan Matahari adalah …", opsi:["Venus","Bumi","Mars","Merkurius"], kunci:3},
+  // Bahasa Inggris
+  {id:17, mapel:"Bahasa Inggris", tingkat:"Mudah", tanya:"She ___ to school every day.", opsi:["go","goes","going","gone"], kunci:1},
+  {id:18, mapel:"Bahasa Inggris", tingkat:"Mudah", tanya:"The past tense of \u201ceat\u201d is …", opsi:["eats","eating","ate","eaten food"], kunci:2},
+  {id:19, mapel:"Bahasa Inggris", tingkat:"Sedang", tanya:"The synonym of \u201chappy\u201d is …", opsi:["sad","angry","glad","tired"], kunci:2},
+  {id:20, mapel:"Bahasa Inggris", tingkat:"Sedang", tanya:"The book is ___ the table. (Buku itu berada di atas meja.)", opsi:["on","in","under","behind"], kunci:0},
+  {id:21, mapel:"Bahasa Inggris", tingkat:"Sulit", tanya:"The plural form of \u201cchild\u201d is …", opsi:["childs","childes","children","childrens"], kunci:2},
+  // IPS
+  {id:22, mapel:"IPS", tingkat:"Mudah", tanya:"Ibu kota Provinsi Jawa Barat adalah …", opsi:["Semarang","Bandung","Surabaya","Yogyakarta"], kunci:1},
+  {id:23, mapel:"IPS", tingkat:"Mudah", tanya:"Proklamasi Kemerdekaan Indonesia dibacakan pada tanggal …", opsi:["17 Agustus 1945","20 Mei 1908","28 Oktober 1928","1 Juni 1945"], kunci:0},
+  {id:24, mapel:"IPS", tingkat:"Sedang", tanya:"Mata uang negara Jepang adalah …", opsi:["won","yuan","yen","ringgit"], kunci:2},
+  {id:25, mapel:"IPS", tingkat:"Sedang", tanya:"Sungai terpanjang di Indonesia adalah …", opsi:["Sungai Musi","Sungai Barito","Sungai Kapuas","Sungai Bengawan Solo"], kunci:2},
+];
+
+let daftarUjian = [
+  {id:1, nama:"Ujian Harian Matematika — Aljabar & Geometri", mapel:"Matematika", soalIds:[1,2,3,4,5,6], durasi:30, kkm:70},
+  {id:2, nama:"Try Out Bahasa Indonesia Kelas 9", mapel:"Bahasa Indonesia", soalIds:[7,8,9,10,11], durasi:45, kkm:75},
+  {id:3, nama:"Ulangan IPA — Energi & Tata Surya", mapel:"IPA", soalIds:[12,13,14,15,16], durasi:30, kkm:70},
+  {id:4, nama:"Kuis Bahasa Inggris — Simple Present Tense", mapel:"Bahasa Inggris", soalIds:[17,18,19,20,21], durasi:20, kkm:65},
+];
+
+/* Tanggal contoh dibuat relatif terhadap hari ini agar status jadwal selalu masuk akal */
+function isoOffset(hari){
+  const d = new Date(); d.setDate(d.getDate() + hari);
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+}
+function fmtTanggal(iso){
+  if(!iso) return "—";
+  const p = iso.split("-"); if(p.length!==3) return iso;
+  return parseInt(p[2],10)+" "+BULAN[parseInt(p[1],10)-1]+" "+p[0];
+}
+function statusJadwal(iso){
+  const today = isoOffset(0);
+  if(iso > today) return {label:"Akan Datang", cls:"b-upcoming"};
+  if(iso === today) return {label:"Hari Ini", cls:"b-today"};
+  return {label:"Selesai", cls:"b-past"};
+}
+
+let daftarJadwal = [
+  {id:1, nama:"Ujian Harian Matematika — Aljabar & Geometri", mapel:"Matematika", tanggal:isoOffset(5), jam:"07:30", durasi:30, kelas:"Kelas 8A"},
+  {id:2, nama:"Try Out Bahasa Indonesia Kelas 9", mapel:"Bahasa Indonesia", tanggal:isoOffset(8), jam:"09:00", durasi:45, kelas:"Kelas 9B"},
+  {id:3, nama:"Kuis Bahasa Inggris — Simple Present Tense", mapel:"Bahasa Inggris", tanggal:isoOffset(0), jam:"10:00", durasi:20, kelas:"Kelas 7C"},
+  {id:4, nama:"Ulangan IPA — Energi & Tata Surya", mapel:"IPA", tanggal:isoOffset(-7), jam:"08:00", durasi:30, kelas:"Kelas 7A"},
+  {id:5, nama:"Ujian Harian Matematika — Aljabar & Geometri", mapel:"Matematika", tanggal:isoOffset(-3), jam:"07:30", durasi:30, kelas:"Kelas 8B"},
+];
+
+let daftarHasil = [
+  // Ujian 1 (6 soal, KKM 70) — tanggal saat ulangan kelas 8B, 3 hari lalu
+  {id:1, nama:"Andini Prameswari", ujianId:1, benar:6, total:6, skor:100, tanggal:isoOffset(-3)},
+  {id:2, nama:"Budi Santoso", ujianId:1, benar:5, total:6, skor:83, tanggal:isoOffset(-3)},
+  {id:3, nama:"Citra Lestari", ujianId:1, benar:5, total:6, skor:83, tanggal:isoOffset(-3)},
+  {id:4, nama:"Dimas Prasetyo", ujianId:1, benar:4, total:6, skor:67, tanggal:isoOffset(-3)},
+  {id:5, nama:"Eka Rahmawati", ujianId:1, benar:3, total:6, skor:50, tanggal:isoOffset(-3)},
+  {id:6, nama:"Fajar Nugroho", ujianId:1, benar:2, total:6, skor:33, tanggal:isoOffset(-3)},
+  // Ujian 3 (5 soal, KKM 70) — tanggal ulangan IPA, 7 hari lalu
+  {id:7, nama:"Gita Ayu Lestari", ujianId:3, benar:5, total:5, skor:100, tanggal:isoOffset(-7)},
+  {id:8, nama:"Hadi Wijaya", ujianId:3, benar:4, total:5, skor:80, tanggal:isoOffset(-7)},
+  {id:9, nama:"Intan Permata", ujianId:3, benar:4, total:5, skor:80, tanggal:isoOffset(-7)},
+  {id:10, nama:"Joko Susilo", ujianId:3, benar:3, total:5, skor:60, tanggal:isoOffset(-7)},
+  {id:11, nama:"Kirana Maharani", ujianId:3, benar:2, total:5, skor:40, tanggal:isoOffset(-7)},
+  // Ujian 2 (5 soal, KKM 75)
+  {id:12, nama:"Lukman Hakim", ujianId:2, benar:5, total:5, skor:100, tanggal:isoOffset(-1)},
+  {id:13, nama:"Maya Kusuma", ujianId:2, benar:4, total:5, skor:80, tanggal:isoOffset(-1)},
+  {id:14, nama:"Naufal Rizky", ujianId:2, benar:3, total:5, skor:60, tanggal:isoOffset(-1)},
+];
+
+/* ================= UTILITAS ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LETTERS = ["A","B","C","D"];
+const soalById = id => bankSoal.find(s => s.id === id);
+const ujianById = id => daftarUjian.find(u => u.id === id);
+let toastTimer = null;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+/* ================= NAVIGASI TAB ================= */
+function switchTab(name){
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll("section.panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + name));
+  if(name === "nilai") renderNilai();
+  if(name === "hasil") renderHasil();
+  if(name === "laporan") renderLaporan();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("#tabNav").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if(b) switchTab(b.dataset.tab);
+});
+
+/* ================= MODAL ================= */
+const overlay = $("#overlay"), modalForm = $("#modalForm");
+function openModal(title, sub, html){
+  $("#modalTitle").textContent = title;
+  $("#modalSub").textContent = sub || "";
+  modalForm.innerHTML = html;
+  overlay.classList.add("open");
+}
+function closeModal(){ overlay.classList.remove("open"); modalForm.innerHTML = ""; }
+overlay.addEventListener("click", e => { if(e.target === overlay) closeModal(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+function confirmBox(pesan, onYes){
+  openModal("Hapus data ini?", pesan, `
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="mCancel">Batal</button>
+      <button type="button" class="btn btn-danger" id="mYes">Ya, Hapus</button>
+    </div>`);
+  $("#mCancel").onclick = closeModal;
+  $("#mYes").onclick = () => { closeModal(); onYes(); };
+}
+const cancelBtn = `<button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>`;
+
+/* ================= BANK SOAL ================= */
+function isiFilterMapel(){
+  const sel = $("#filterMapel");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">Semua Mata Pelajaran</option>` + MAPEL.map(m => `<option ${m===cur?"selected":""}>${esc(m)}</option>`).join("");
+}
+function renderSoal(){
+  isiFilterMapel();
+  const f = $("#filterMapel").value;
+  const q = $("#cariSoal").value.trim().toLowerCase();
+  const list = bankSoal.filter(s =>
+    (!f || s.mapel === f) &&
+    (!q || s.tanya.toLowerCase().includes(q) || s.opsi.some(o => o.toLowerCase().includes(q)))
+  );
+  $("#soalCount").innerHTML = `Total <b>${bankSoal.length} soal</b> di bank soal` + (f || q ? ` — menampilkan ${list.length} soal sesuai saringan.` : ".");
+  const el = $("#soalList");
+  if(!list.length){ el.innerHTML = `<div class="empty">Tidak ada soal yang cocok. Coba ubah saringan atau tambah soal baru.</div>`; return; }
+  el.innerHTML = list.map((s, i) => `
+    <div class="soal-item">
+      <div class="meta">
+        <span class="badge b-subject">${esc(s.mapel)}</span>
+        <span class="badge b-${s.tingkat.toLowerCase()}">${esc(s.tingkat)}</span>
+        <span style="color:var(--muted);font-size:12.5px;font-weight:700;">Soal #${s.id}</span>
+      </div>
+      <p class="q">${i+1}. ${esc(s.tanya)}</p>
+      <ol class="opts">${s.opsi.map((o, oi) => `<li class="${oi===s.kunci?"key":""}">${LETTERS[oi]}. ${esc(o)}${oi===s.kunci?" ✓":""}</li>`).join("")}</ol>
+      <p class="keyline">Kunci jawaban: <b>${LETTERS[s.kunci]}. ${esc(s.opsi[s.kunci])}</b></p>
+      <div class="row-actions">
+        <button class="btn btn-ghost btn-sm" onclick="formSoal(${s.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="hapusSoal(${s.id})">Hapus</button>
+      </div>
+    </div>`).join("");
+}
+$("#filterMapel").addEventListener("change", renderSoal);
+$("#cariSoal").addEventListener("input", renderSoal);
+$("#btnTambahSoal").addEventListener("click", () => formSoal(null));
+
+function formSoal(id){
+  const s = id ? soalById(id) : {mapel:"Matematika", tingkat:"Sedang", tanya:"", opsi:["","","",""], kunci:0};
+  openModal(id ? "Edit Soal" : "Tambah Soal Baru", "Isi pertanyaan, empat pilihan jawaban, lalu tandai kunci jawabannya.",
+  `
+    <div class="grid2">
+      <div class="field"><label for="fMapel">Mata Pelajaran</label>
+        <select id="fMapel">${MAPEL.map(m => `<option ${m===s.mapel?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+      <div class="field"><label for="fTingkat">Tingkat Kesulitan</label>
+        <select id="fTingkat">${TINGKAT.map(t => `<option ${t===s.tingkat?"selected":""}>${esc(t)}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="fTanya">Pertanyaan</label>
+      <textarea id="fTanya" rows="3" required placeholder="Tulis pertanyaan di sini…">${esc(s.tanya)}</textarea></div>
+    <div class="field"><label>Pilihan Jawaban &amp; Kunci</label>
+      <div class="optgrid">
+        ${s.opsi.map((o, oi) => `
+        <div class="optrow">
+          <span class="letter">${LETTERS[oi]}</span>
+          <input type="text" id="fOpsi${oi}" value="${esc(o)}" placeholder="Pilihan ${LETTERS[oi]}" required />
+          <label class="keypick"><input type="radio" name="fKunci" value="${oi}" ${oi===s.kunci?"checked":""} /> Kunci</label>
+        </div>`).join("")}
+      </div>
+      <p class="hint">Pilih tombol radio \u201cKunci\u201d di samping jawaban yang benar.</p>
+    </div>
+    <div class="modal-actions">${cancelBtn}
+      <button type="submit" class="btn btn-primary">Simpan Soal</button></div>
+  `);
+  modalForm.onsubmit = e => {
+    e.preventDefault();
+    const data = {
+      mapel: $("#fMapel").value, tingkat: $("#fTingkat").value,
+      tanya: $("#fTanya").value.trim(),
+      opsi: [0,1,2,3].map(i => $("#fOpsi"+i).value.trim()),
+      kunci: parseInt(modalForm.querySelector('input[name="fKunci"]:checked').value, 10)
+    };
+    if(!data.tanya || data.opsi.some(o => !o)){ toast("Lengkapi pertanyaan dan keempat pilihan jawaban."); return; }
+    if(id){ Object.assign(soalById(id), data); toast("Soal berhasil diperbarui."); }
+    else { bankSoal.push({id: nid(), ...data}); toast("Soal baru berhasil ditambahkan."); }
+    closeModal(); renderSoal(); renderLaporan();
+  };
+}
+function hapusSoal(id){
+  const s = soalById(id);
+  confirmBox(`Soal \u201c${s.tanya.slice(0,60)}…\u201d akan dihapus dari bank soal. Ujian yang sudah memakai soal ini tidak berubah selama sesi berjalan.`, () => {
+    bankSoal = bankSoal.filter(x => x.id !== id);
+    renderSoal(); renderLaporan(); toast("Soal dihapus.");
+  });
+}
+</script>
+
+<script>
+"use strict";
+/* ================= UJIAN ================= */
+function renderUjian(){
+  const el = $("#ujianList");
+  if(!daftarUjian.length){ el.innerHTML = `<div class="empty">Belum ada ujian. Klik <b>+ Buat Ujian Baru</b> untuk membuat ujian pertama.</div>`; return; }
+  el.innerHTML = daftarUjian.map(u => `
+    <div class="exam-card">
+      <div class="info">
+        <h3>${esc(u.nama)}</h3>
+        <p>${u.soalIds.length} soal • Durasi ${u.durasi} menit • KKM ${u.kkm}</p>
+        <div class="badges"><span class="badge b-subject">${esc(u.mapel)}</span></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary btn-sm" onclick="mulaiDariDaftar(${u.id})">Mulai Ujian</button>
+        <button class="btn btn-ghost btn-sm" onclick="formUjian(${u.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="hapusUjian(${u.id})">Hapus</button>
+      </div>
+    </div>`).join("");
+}
+$("#btnTambahUjian").addEventListener("click", () => formUjian(null));
+
+function pickListHtml(mapel, terpilih){
+  const soalMapel = bankSoal.filter(s => s.mapel === mapel);
+  if(!soalMapel.length) return `<div class="empty" style="padding:16px;">Belum ada soal ${esc(mapel)} di bank soal. Tambahkan dulu di tab Bank Soal.</div>`;
+  return soalMapel.map(s => `
+    <label><input type="checkbox" name="pickSoal" value="${s.id}" ${terpilih.includes(s.id)?"checked":""} />
+      <span><b>${esc(s.tanya)}</b><br><span style="color:var(--muted);font-size:12.5px;">${esc(s.tingkat)} • Kunci ${LETTERS[s.kunci]}</span></span></label>`).join("");
+}
+function formUjian(id){
+  const u = id ? ujianById(id) : {nama:"", mapel:"Matematika", soalIds:[], durasi:30, kkm:70};
+  openModal(id ? "Edit Ujian" : "Buat Ujian Baru", "Pilih mata pelajaran, centang soal yang dipakai, lalu atur durasi dan KKM.",
+  `
+    <div class="field"><label for="uNama">Nama Ujian</label>
+      <input type="text" id="uNama" value="${esc(u.nama)}" placeholder="cth. Ujian Tengah Semester Matematika" required /></div>
+    <div class="grid2">
+      <div class="field"><label for="uMapel">Mata Pelajaran</label>
+        <select id="uMapel">${MAPEL.map(m => `<option ${m===u.mapel?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+      <div class="field"><label for="uDurasi">Durasi (menit)</label>
+        <input type="number" id="uDurasi" value="${u.durasi}" min="1" max="300" required /></div>
+    </div>
+    <div class="field"><label for="uKkm">Nilai Minimum Lulus / KKM (0–100)</label>
+      <input type="number" id="uKkm" value="${u.kkm}" min="0" max="100" required /></div>
+    <div class="field"><label>Pilih Soal dari Bank Soal</label>
+      <div class="pick-list" id="uPickList">${pickListHtml(u.mapel, u.soalIds)}</div>
+      <p class="hint" id="uPickCount"></p>
+    </div>
+    <div class="modal-actions">${cancelBtn}
+      <button type="submit" class="btn btn-primary">Simpan Ujian</button></div>
+  `);
+  const updCount = () => {
+    const n = modalForm.querySelectorAll('input[name="pickSoal"]:checked').length;
+    $("#uPickCount").textContent = n + " soal dipilih.";
+  };
+  $("#uMapel").addEventListener("change", e => { $("#uPickList").innerHTML = pickListHtml(e.target.value, []); updCount(); });
+  modalForm.addEventListener("change", e => { if(e.target.name === "pickSoal") updCount(); });
+  updCount();
+  modalForm.onsubmit = e => {
+    e.preventDefault();
+    const ids = [...modalForm.querySelectorAll('input[name="pickSoal"]:checked')].map(c => parseInt(c.value,10));
+    const nama = $("#uNama").value.trim();
+    const durasi = parseInt($("#uDurasi").value,10), kkm = parseInt($("#uKkm").value,10);
+    if(!nama){ toast("Nama ujian belum diisi."); return; }
+    if(!ids.length){ toast("Pilih minimal satu soal untuk ujian ini."); return; }
+    if(!(durasi >= 1) || !(kkm >= 0 && kkm <= 100)){ toast("Periksa durasi dan KKM (KKM harus 0–100)."); return; }
+    const data = {nama, mapel: $("#uMapel").value, soalIds: ids, durasi, kkm};
+    if(id){ Object.assign(ujianById(id), data); toast("Ujian berhasil diperbarui."); }
+    else { daftarUjian.push({id: nid(), ...data}); toast("Ujian baru berhasil dibuat."); }
+    closeModal(); renderUjian(); renderHasilFilter(); renderLaporan();
+  };
+}
+function hapusUjian(id){
+  const u = ujianById(id);
+  confirmBox(`Ujian \u201c${u.nama}\u201d akan dihapus. Hasil peserta untuk ujian ini tetap tersimpan di tab Hasil.`, () => {
+    daftarUjian = daftarUjian.filter(x => x.id !== id);
+    renderUjian(); renderLaporan(); toast("Ujian dihapus.");
+  });
+}
+function mulaiDariDaftar(id){
+  pendingUjianId = id;
+  switchTab("nilai");
+}
+
+/* ================= JADWAL ================= */
+function renderJadwal(){
+  const el = $("#jadwalList");
+  if(!daftarJadwal.length){ el.innerHTML = `<div class="empty">Belum ada jadwal. Klik <b>+ Tambah Jadwal</b> untuk membuat jadwal pertama.</div>`; return; }
+  const sorted = [...daftarJadwal].sort((a,b) => (a.tanggal + a.jam).localeCompare(b.tanggal + b.jam));
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nama Ujian</th><th>Mata Pelajaran</th><th>Tanggal</th><th>Jam</th><th class="num">Durasi</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
+    <tbody>${sorted.map(j => { const st = statusJadwal(j.tanggal); return `
+      <tr>
+        <td data-label="Nama Ujian"><b>${esc(j.nama)}</b></td>
+        <td data-label="Mata Pelajaran"><span class="badge b-subject">${esc(j.mapel)}</span></td>
+        <td data-label="Tanggal">${fmtTanggal(j.tanggal)}</td>
+        <td data-label="Jam">${esc(j.jam)} WIB</td>
+        <td data-label="Durasi" class="num">${j.durasi} mnt</td>
+        <td data-label="Kelas">${esc(j.kelas)}</td>
+        <td data-label="Status"><span class="badge ${st.cls}">${st.label}</span></td>
+        <td data-label="Aksi"><div class="row-actions">
+          <button class="btn btn-ghost btn-sm" onclick="formJadwal(${j.id})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="hapusJadwal(${j.id})">Hapus</button>
+        </div></td>
+      </tr>`; }).join("")}
+    </tbody></table></div>`;
+}
+$("#btnTambahJadwal").addEventListener("click", () => formJadwal(null));
+function formJadwal(id){
+  const j = id ? daftarJadwal.find(x => x.id === id)
+    : {nama: daftarUjian.length ? daftarUjian[0].nama : "", mapel:"Matematika", tanggal: isoOffset(1), jam:"08:00", durasi:30, kelas:""};
+  openModal(id ? "Edit Jadwal" : "Tambah Jadwal Baru", "Tentukan tanggal, jam mulai, durasi, dan kelas peserta ujian.",
+  `
+    <div class="field"><label for="jNama">Nama Ujian</label>
+      <input type="text" id="jNama" value="${esc(j.nama)}" list="namaUjianList" placeholder="cth. Ujian Akhir Semester" required />
+      <datalist id="namaUjianList">${daftarUjian.map(u => `<option value="${esc(u.nama)}">`).join("")}</datalist></div>
+    <div class="grid2">
+      <div class="field"><label for="jMapel">Mata Pelajaran</label>
+        <select id="jMapel">${MAPEL.map(m => `<option ${m===j.mapel?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+      <div class="field"><label for="jKelas">Kelas Peserta</label>
+        <input type="text" id="jKelas" value="${esc(j.kelas)}" placeholder="cth. Kelas 8A" required /></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="jTanggal">Tanggal</label>
+        <input type="date" id="jTanggal" value="${j.tanggal}" required /></div>
+      <div class="field"><label for="jJam">Jam Mulai</label>
+        <input type="time" id="jJam" value="${esc(j.jam)}" required /></div>
+    </div>
+    <div class="field"><label for="jDurasi">Durasi (menit)</label>
+      <input type="number" id="jDurasi" value="${j.durasi}" min="1" max="300" required /></div>
+    <div class="modal-actions">${cancelBtn}
+      <button type="submit" class="btn btn-primary">Simpan Jadwal</button></div>
+  `);
+  modalForm.onsubmit = e => {
+    e.preventDefault();
+    const data = {
+      nama: $("#jNama").value.trim(), mapel: $("#jMapel").value, kelas: $("#jKelas").value.trim(),
+      tanggal: $("#jTanggal").value, jam: $("#jJam").value, durasi: parseInt($("#jDurasi").value,10)
+    };
+    if(!data.nama || !data.kelas || !data.tanggal || !data.jam || !(data.durasi >= 1)){ toast("Lengkapi semua isian jadwal."); return; }
+    if(id){ Object.assign(daftarJadwal.find(x => x.id === id), data); toast("Jadwal berhasil diperbarui."); }
+    else { daftarJadwal.push({id: nid(), ...data}); toast("Jadwal baru berhasil ditambahkan."); }
+    closeModal(); renderJadwal();
+  };
+}
+function hapusJadwal(id){
+  const j = daftarJadwal.find(x => x.id === id);
+  confirmBox(`Jadwal \u201c${j.nama}\u201d (${fmtTanggal(j.tanggal)}) akan dihapus.`, () => {
+    daftarJadwal = daftarJadwal.filter(x => x.id !== id);
+    renderJadwal(); toast("Jadwal dihapus.");
+  });
+}
+
+/* ================= PENILAIAN (PENGERJAAN UJIAN) ================= */
+let sesi = null;          // {ujian, nama, idx, jawaban:[], sisa, timerId}
+let pendingUjianId = null;
+let hasilTerakhir = null; // {rec, ujian, soalList}
+
+function fmtWaktu(dtk){
+  const m = Math.floor(dtk/60), s = dtk % 60;
+  return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+}
+function renderNilai(){
+  const root = $("#nilaiRoot");
+  if(sesi){ renderSesi(root); return; }
+  if(hasilTerakhir){ renderReview(root); return; }
+  if(!daftarUjian.length){
+    root.innerHTML = `<div class="card"><h2>Penilaian</h2><div class="empty">Belum ada ujian yang bisa dikerjakan. Buat ujian dulu di tab Ujian.</div></div>`;
+    return;
+  }
+  const selId = pendingUjianId && ujianById(pendingUjianId) ? pendingUjianId : daftarUjian[0].id;
+  root.innerHTML = `
+    <div class="card">
+      <h2>Mulai Mengerjakan Ujian</h2>
+      <p class="sub">Tulis nama peserta, pilih ujian, lalu klik <b>Mulai Mengerjakan</b>. Timer berjalan sesuai durasi ujian dan penilaian dilakukan otomatis saat selesai.</p>
+      <div class="field"><label for="namaPeserta">Nama Peserta</label>
+        <input type="text" id="namaPeserta" placeholder="cth. Salsabila Zahra" autocomplete="off" /></div>
+      <div class="field"><label for="pilihUjian">Pilih Ujian</label>
+        <select id="pilihUjian">${daftarUjian.map(u => `<option value="${u.id}" ${u.id===selId?"selected":""}>${esc(u.nama)} — ${u.soalIds.length} soal, ${u.durasi} menit, KKM ${u.kkm}</option>`).join("")}</select></div>
+      <button class="btn btn-primary" id="btnMulai">Mulai Mengerjakan</button>
+    </div>`;
+  $("#btnMulai").addEventListener("click", () => {
+    const nama = $("#namaPeserta").value.trim();
+    if(!nama){ toast("Isi nama peserta terlebih dahulu."); $("#namaPeserta").focus(); return; }
+    const u = ujianById(parseInt($("#pilihUjian").value,10));
+    if(!u || !u.soalIds.length){ toast("Ujian ini belum memiliki soal."); return; }
+    mulaiSesi(u, nama);
+  });
+}
+function mulaiSesi(u, nama){
+  clearInterval(sesi && sesi.timerId);
+  sesi = { ujian: u, nama, idx: 0, jawaban: new Array(u.soalIds.length).fill(null), sisa: u.durasi * 60, timerId: null };
+  hasilTerakhir = null; pendingUjianId = null;
+  sesi.timerId = setInterval(() => {
+    sesi.sisa--;
+    const t = $("#timerEl");
+    if(t){ t.textContent = fmtWaktu(Math.max(0, sesi.sisa)); t.classList.toggle("warn", sesi.sisa <= 60); }
+    if(sesi.sisa <= 0){ clearInterval(sesi.timerId); toast("Waktu habis! Ujian dinilai otomatis."); selesaiSesi(); }
+  }, 1000);
+  renderNilai();
+}
+function renderSesi(root){
+  const u = sesi.ujian;
+  const soalList = u.soalIds.map(soalById).filter(Boolean);
+  const i = Math.min(sesi.idx, soalList.length - 1); sesi.idx = i;
+  const s = soalList[i];
+  const terjawab = sesi.jawaban.filter(a => a !== null).length;
+  root.innerHTML = `
+    <div class="card qcard">
+      <div class="exam-head">
+        <div>
+          <h2 style="margin:0;">${esc(u.nama)}</h2>
+          <p class="sub" style="margin:2px 0 0;">Peserta: <b>${esc(sesi.nama)}</b> • KKM ${u.kkm} • Terjawab ${terjawab} dari ${soalList.length} soal</p>
+        </div>
+        <div class="timer ${sesi.sisa<=60?"warn":""}" id="timerEl" aria-label="Sisa waktu">${fmtWaktu(Math.max(0,sesi.sisa))}</div>
+      </div>
+      <div class="progress" role="progressbar" aria-valuenow="${terjawab}" aria-valuemax="${soalList.length}"><div style="width:${soalList.length ? (terjawab/soalList.length*100) : 0}%"></div></div>
+      <div class="navq" aria-label="Nomor soal">
+        ${soalList.map((_, n) => `<button type="button" class="${n===i?"current":(sesi.jawaban[n]!==null?"answered":"")}" onclick="lompatSoal(${n})" aria-label="Soal ${n+1}">${n+1}</button>`).join("")}
+      </div>
+      <p class="qnum">Soal ${i+1} dari ${soalList.length} • ${esc(s.mapel)} • ${esc(s.tingkat)}</p>
+      <p class="qtext">${esc(s.tanya)}</p>
+      <div class="choices">
+        ${s.opsi.map((o, oi) => `
+          <label class="${sesi.jawaban[i]===oi?"picked":""}">
+            <input type="radio" name="jawab" value="${oi}" ${sesi.jawaban[i]===oi?"checked":""} onchange="pilihJawaban(${oi})" />
+            <span class="cl">${LETTERS[oi]}.</span><span>${esc(o)}</span>
+          </label>`).join("")}
+      </div>
+      <div class="exam-nav">
+        <button class="btn btn-ghost" onclick="pindahSoal(-1)" ${i===0?"disabled":""}>← Sebelumnya</button>
+        <button class="btn btn-danger" onclick="konfirmasiSelesai()">Selesai &amp; Nilai</button>
+        <button class="btn btn-ghost" onclick="pindahSoal(1)" ${i===soalList.length-1?"disabled":""}>Berikutnya →</button>
+      </div>
+    </div>`;
+}
+function pilihJawaban(oi){ if(!sesi) return; sesi.jawaban[sesi.idx] = oi; renderNilai(); }
+function pindahSoal(d){ if(!sesi) return; const n = sesi.ujian.soalIds.length; sesi.idx = Math.max(0, Math.min(n-1, sesi.idx + d)); renderNilai(); }
+function lompatSoal(n){ if(!sesi) return; sesi.idx = n; renderNilai(); }
+function konfirmasiSelesai(){
+  if(!sesi) return;
+  const belum = sesi.jawaban.filter(a => a === null).length;
+  openModal("Selesaikan ujian sekarang?",
+    belum ? `Masih ada ${belum} soal yang belum dijawab. Soal kosong dihitung salah.`
+          : "Semua soal sudah dijawab. Jawaban akan langsung dinilai otomatis.",
+  `
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="mBack">Kembali Mengerjakan</button>
+      <button type="button" class="btn btn-primary" id="mDone">Ya, Selesai &amp; Nilai</button>
+    </div>`);
+  $("#mBack").onclick = closeModal;
+  $("#mDone").onclick = () => { closeModal(); selesaiSesi(); };
+}
+function selesaiSesi(){
+  if(!sesi) return;
+  clearInterval(sesi.timerId);
+  const u = sesi.ujian;
+  const soalList = u.soalIds.map(soalById).filter(Boolean);
+  let benar = 0;
+  soalList.forEach((s, i) => { if(sesi.jawaban[i] === s.kunci) benar++; });
+  const total = soalList.length;
+  const skor = total ? Math.round(benar / total * 100) : 0;
+  const rec = { id: nid(), nama: sesi.nama, ujianId: u.id, benar, total, skor, tanggal: isoOffset(0) };
+  daftarHasil.push(rec);
+  hasilTerakhir = { rec, ujian: u, soalList, jawaban: [...sesi.jawaban] };
+  sesi = null;
+  renderNilai(); renderHasil(); renderLaporan();
+  toast("Ujian selesai dinilai. Skor: " + skor);
+}
+function renderReview(root){
+  const { rec, ujian: u, soalList, jawaban } = hasilTerakhir;
+  const lulus = rec.skor >= u.kkm;
+  root.innerHTML = `
+    <div class="card">
+      <div class="score-hero">
+        <p class="sub" style="margin:0;">Hasil ujian <b>${esc(u.nama)}</b> — peserta <b>${esc(rec.nama)}</b></p>
+        <div class="big">${rec.skor}</div>
+        <p style="margin:6px 0 2px;">Jawaban benar: <b>${rec.benar} dari ${rec.total} soal</b> • KKM ${u.kkm}</p>
+        <p><span class="badge ${lulus?"b-lulus":"b-gagal"}" style="font-size:14px;padding:6px 16px;">${lulus?"✓ LULUS":"✕ TIDAK LULUS"}</span></p>
+      </div>
+      <h3 style="margin:18px 0 10px;">Rincian per Soal</h3>
+      ${soalList.map((s, i) => {
+        const ok = jawaban[i] === s.kunci;
+        return `<div class="review-item ${ok?"ok":"bad"}">
+          <p><b>${i+1}. ${esc(s.tanya)}</b> <span class="badge ${ok?"b-lulus":"b-gagal"}">${ok?"Benar":"Salah"}</span></p>
+          <p class="ans">Jawaban kamu: <b>${jawaban[i]===null?"(tidak dijawab)":LETTERS[jawaban[i]]+". "+esc(s.opsi[jawaban[i]])}</b></p>
+          ${ok ? "" : `<p class="ans">Kunci jawaban: <b>${LETTERS[s.kunci]}. ${esc(s.opsi[s.kunci])}</b></p>`}
+        </div>`;
+      }).join("")}
+      <div class="exam-nav" style="margin-top:16px;">
+        <button class="btn btn-ghost" onclick="kembaliNilai()">Kerjakan Ujian Lain</button>
+        <button class="btn btn-primary" onclick="switchTab('hasil')">Lihat Hasil &amp; Peringkat</button>
+      </div>
+    </div>`;
+}
+function kembaliNilai(){ hasilTerakhir = null; renderNilai(); }
+
+/* ================= HASIL ================= */
+function renderHasilFilter(){
+  const sel = $("#filterHasil");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">Semua Ujian</option>` + daftarUjian.map(u => `<option value="${u.id}" ${String(u.id)===cur?"selected":""}>${esc(u.nama)}</option>`).join("");
+}
+function peringkatMap(){
+  const map = {};
+  daftarUjian.forEach(u => {
+    const rows = daftarHasil.filter(h => h.ujianId === u.id).sort((a,b) => b.skor - a.skor || a.nama.localeCompare(b.nama));
+    rows.forEach((h, i) => { map[h.id] = i + 1; });
+  });
+  return map;
+}
+function renderHasil(){
+  renderHasilFilter();
+  const f = $("#filterHasil").value;
+  const rank = peringkatMap();
+  const rows = daftarHasil
+    .filter(h => !f || h.ujianId === parseInt(f,10))
+    .sort((a,b) => (ujianById(a.ujianId)?.nama || "").localeCompare(ujianById(b.ujianId)?.nama || "") || b.skor - a.skor || a.nama.localeCompare(b.nama));
+  const body = $("#hasilBody");
+  $("#hasilEmpty").style.display = rows.length ? "none" : "block";
+  $("#hasilTable").style.display = rows.length ? "" : "none";
+  const medal = r => r===1 ? "🥇 " : r===2 ? "🥈 " : r===3 ? "🥉 " : "";
+  body.innerHTML = rows.map(h => {
+    const u = ujianById(h.ujianId);
+    const lulus = u ? h.skor >= u.kkm : false;
+    const r = rank[h.id] || "—";
+    return `<tr>
+      <td data-label="Peringkat"><span class="${r===1?"rank-1":""}"><span class="medal">${medal(r)}</span>${r}</span></td>
+      <td data-label="Nama Peserta"><b>${esc(h.nama)}</b></td>
+      <td data-label="Ujian">${esc(u ? u.nama : "(ujian dihapus)")}</td>
+      <td data-label="Skor" class="num"><b>${h.skor}</b></td>
+      <td data-label="Benar" class="num">${h.benar}/${h.total}</td>
+      <td data-label="Status"><span class="badge ${lulus?"b-lulus":"b-gagal"}">${lulus?"Lulus":"Tidak Lulus"}</span></td>
+      <td data-label="Tanggal">${fmtTanggal(h.tanggal)}</td>
+    </tr>`;
+  }).join("");
+}
+$("#filterHasil").addEventListener("change", renderHasil);
+
+/* ================= LAPORAN ================= */
+function rekapPerUjian(){
+  return daftarUjian.map(u => {
+    const rows = daftarHasil.filter(h => h.ujianId === u.id);
+    const peserta = rows.length;
+    const rata = peserta ? Math.round(rows.reduce((a,h) => a + h.skor, 0) / peserta) : 0;
+    const lulus = rows.filter(h => h.skor >= u.kkm).length;
+    return { u, peserta, rata, lulus, gagal: peserta - lulus, persen: peserta ? Math.round(lulus/peserta*100) : 0 };
+  });
+}
+function renderLaporan(){
+  const totalPeserta = daftarHasil.length;
+  const rataSemua = totalPeserta ? Math.round(daftarHasil.reduce((a,h) => a + h.skor, 0) / totalPeserta) : 0;
+  const lulusSemua = daftarHasil.filter(h => { const u = ujianById(h.ujianId); return u && h.skor >= u.kkm; }).length;
+  const persenLulus = totalPeserta ? Math.round(lulusSemua/totalPeserta*100) : 0;
+  $("#laporanStats").innerHTML = `
+    <div class="stat"><div class="n">${daftarUjian.length}</div><div class="l">Jumlah Ujian</div></div>
+    <div class="stat"><div class="n">${bankSoal.length}</div><div class="l">Soal di Bank Soal</div></div>
+    <div class="stat"><div class="n">${totalPeserta}</div><div class="l">Peserta Sudah Mengerjakan</div></div>
+    <div class="stat"><div class="n">${totalPeserta ? rataSemua : "—"}</div><div class="l">Rata-rata Skor</div></div>
+    <div class="stat"><div class="n">${totalPeserta ? persenLulus + "%" : "—"}</div><div class="l">Tingkat Kelulusan (${lulusSemua}/${totalPeserta})</div></div>`;
+  $("#laporanBody").innerHTML = rekapPerUjian().map(r => `
+    <tr>
+      <td data-label="Ujian"><b>${esc(r.u.nama)}</b></td>
+      <td data-label="Mata Pelajaran"><span class="badge b-subject">${esc(r.u.mapel)}</span></td>
+      <td data-label="Peserta" class="num">${r.peserta}</td>
+      <td data-label="Rata-rata Skor" class="num">${r.peserta ? r.rata : "—"}</td>
+      <td data-label="Lulus" class="num">${r.lulus}</td>
+      <td data-label="Tidak Lulus" class="num">${r.gagal}</td>
+      <td data-label="Kelulusan" class="num">${r.peserta ? r.persen + "%" : "—"}</td>
+    </tr>`).join("");
+}
+function unduhCsv(){
+  const q = v => `"${String(v==null?"":v).replace(/"/g,'""')}"`;
+  const lines = [];
+  lines.push(["LAPORAN APLIKASI UJIAN ONLINE"].join(","));
+  lines.push(["Tanggal unduh", fmtTanggal(isoOffset(0))].map(q).join(","));
+  lines.push("");
+  lines.push(["RINGKASAN"].join(","));
+  const totalPeserta = daftarHasil.length;
+  const rataSemua = totalPeserta ? Math.round(daftarHasil.reduce((a,h) => a + h.skor, 0) / totalPeserta) : 0;
+  const lulusSemua = daftarHasil.filter(h => { const u = ujianById(h.ujianId); return u && h.skor >= u.kkm; }).length;
+  lines.push(["Jumlah Ujian", daftarUjian.length].map(q).join(","));
+  lines.push(["Jumlah Soal di Bank Soal", bankSoal.length].map(q).join(","));
+  lines.push(["Jumlah Peserta", totalPeserta].map(q).join(","));
+  lines.push(["Rata-rata Skor", totalPeserta ? rataSemua : "-"].map(q).join(","));
+  lines.push(["Tingkat Kelulusan (%)", totalPeserta ? Math.round(lulusSemua/totalPeserta*100) : "-"].map(q).join(","));
+  lines.push("");
+  lines.push(["REKAP PER UJIAN"].join(","));
+  lines.push(["Ujian","Mata Pelajaran","KKM","Peserta","Rata-rata Skor","Lulus","Tidak Lulus","Kelulusan (%)"].map(q).join(","));
+  rekapPerUjian().forEach(r => lines.push([r.u.nama, r.u.mapel, r.u.kkm, r.peserta, r.peserta ? r.rata : "-", r.lulus, r.gagal, r.peserta ? r.persen : "-"].map(q).join(",")));
+  lines.push("");
+  lines.push(["RINCIAN HASIL PESERTA"].join(","));
+  lines.push(["Peringkat","Nama Peserta","Ujian","Skor","Benar","Total Soal","Status","Tanggal"].map(q).join(","));
+  const rank = peringkatMap();
+  const rows = [...daftarHasil].sort((a,b) => (ujianById(a.ujianId)?.nama || "").localeCompare(ujianById(b.ujianId)?.nama || "") || b.skor - a.skor);
+  rows.forEach(h => {
+    const u = ujianById(h.ujianId);
+    lines.push([rank[h.id] || "-", h.nama, u ? u.nama : "(ujian dihapus)", h.skor, h.benar, h.total, u ? (h.skor >= u.kkm ? "Lulus" : "Tidak Lulus") : "-", fmtTanggal(h.tanggal)].map(q).join(","));
+  });
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "laporan-ujian-online.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("Laporan CSV berhasil diunduh.");
+}
+$("#btnCsv").addEventListener("click", unduhCsv);
+
+/* ================= INIT ================= */
+renderSoal();
+renderUjian();
+renderJadwal();
+renderNilai();
+renderHasil();
+renderLaporan();
+</script>
+</body>
+</html>
