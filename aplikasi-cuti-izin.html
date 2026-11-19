@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Cuti &amp; Izin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f2faf4;
+        --bg-soft: #e7f6ec;
+        --surface: #ffffff;
+        --surface-2: #f6fcf8;
+        --ink: #132419;
+        --muted: #4c6355;
+        --faint: #71887a;
+        --primary: #16a34a;
+        --primary-dark: #15803d;
+        --primary-deep: #14532d;
+        --primary-soft: #dcf5e3;
+        --primary-softer: #eefaf1;
+        --border: #cfe8d6;
+        --border-strong: #a9d8ba;
+        --danger: #b42318;
+        --danger-soft: #fdecea;
+        --wait: #52606d;
+        --wait-soft: #e8edf1;
+        --shadow: 0 1px 2px rgba(20, 83, 45, .06), 0 8px 24px -12px rgba(20, 83, 45, .18);
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a1710;
+          --bg-soft: #0e2015;
+          --surface: #11231a;
+          --surface-2: #0d1d14;
+          --ink: #e7f5ec;
+          --muted: #a3c2ae;
+          --faint: #7d9a89;
+          --primary: #22c55e;
+          --primary-dark: #4ade80;
+          --primary-deep: #bbf7d0;
+          --primary-soft: #173d24;
+          --primary-softer: #12291a;
+          --border: #23402e;
+          --border-strong: #2f5a3e;
+          --danger: #f97066;
+          --danger-soft: #3d1a16;
+          --wait: #a8b6c2;
+          --wait-soft: #22303c;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+        font-size: 15.5px;
+      }
+      button, select, input, textarea { font: inherit; color: inherit; }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      a { color: var(--primary-dark); }
+
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      /* ---------- Ringkasan atas ---------- */
+      .intro { margin: 6px 0 18px; }
+      .intro h1 { font-size: 1.55rem; line-height: 1.25; margin: 0 0 6px; font-weight: 800; letter-spacing: -.01em; }
+      .intro p { margin: 0; color: var(--muted); max-width: 62ch; }
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0 22px; }
+      .stat {
+        background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 14px 16px; box-shadow: var(--shadow);
+      }
+      .stat .num { font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: var(--primary-deep); }
+      .stat .lbl { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+      @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+      /* ---------- Tab ---------- */
+      .tabs {
+        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+        background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 8px; box-shadow: var(--shadow);
+      }
+      .tab-btn {
+        flex: 1 1 auto; min-height: 44px; padding: 8px 14px; border: 1px solid transparent;
+        background: transparent; border-radius: 10px; cursor: pointer; font-weight: 600;
+        color: var(--muted); white-space: nowrap;
+      }
+      .tab-btn:hover { background: var(--primary-softer); color: var(--ink); }
+      .tab-btn[aria-selected="true"] { background: var(--primary); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn[aria-selected="true"] { color: #08130c; } }
+      .tab-btn .badge {
+        display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px;
+        background: var(--primary-soft); color: var(--primary-dark); font-size: .75rem; font-weight: 700;
+        line-height: 20px; text-align: center; vertical-align: 1px;
+      }
+      .tab-btn[aria-selected="true"] .badge { background: rgba(255,255,255,.28); color: inherit; }
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      /* ---------- Kartu & formulir ---------- */
+      .card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+      }
+      .card h2 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 700; }
+      .card h3 { margin: 18px 0 8px; font-size: 1rem; font-weight: 700; }
+      .card .sub { color: var(--muted); margin: 0 0 14px; font-size: .92rem; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+      label.f { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 12px; }
+      label.f span { display: block; margin-bottom: 5px; }
+      label.f small { display: block; font-weight: 400; color: var(--faint); margin-top: 4px; }
+      input[type="text"], input[type="date"], select, textarea {
+        width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 10px;
+        background: var(--surface-2); min-height: 44px;
+      }
+      textarea { min-height: 76px; resize: vertical; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 44px; padding: 10px 20px; border-radius: 10px; border: 1px solid var(--primary);
+        background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; text-decoration: none;
+      }
+      @media (prefers-color-scheme: dark) { .btn { color: #08130c; } }
+      .btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+      .btn.ghost { background: transparent; color: var(--primary-dark); }
+      .btn.ghost:hover { background: var(--primary-softer); }
+      .btn.small { min-height: 38px; padding: 6px 14px; font-size: .9rem; }
+      .btn.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+      .btn.danger:hover { background: var(--danger-soft); }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .msg { border-radius: 10px; padding: 12px 14px; margin: 12px 0; font-size: .93rem; display: none; }
+      .msg.ok { display: block; background: var(--primary-soft); color: var(--primary-deep); border: 1px solid var(--border-strong); }
+      .msg.err { display: block; background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+      .durasi-info {
+        background: var(--primary-softer); border: 1px dashed var(--border-strong); border-radius: 10px;
+        padding: 10px 14px; font-size: .92rem; color: var(--muted); margin-bottom: 14px;
+      }
+      .durasi-info strong { color: var(--primary-deep); }
+
+      /* ---------- Tabel ---------- */
+      .tbl-wrap { overflow-x: auto; }
+      @media (max-width: 640px) {
+        .tbl-wrap { overflow-x: visible; }
+        .tbl-wrap table, .tbl-wrap thead, .tbl-wrap tbody, .tbl-wrap tr, .tbl-wrap td { display: block; width: 100%; }
+        .tbl-wrap thead { display: none; }
+        .tbl-wrap tr {
+          border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px;
+          padding: 8px 12px; background: var(--surface-2);
+        }
+        .tbl-wrap td { border-bottom: none; padding: 4px 0; }
+        .tbl-wrap td.num { text-align: left; }
+        .tbl-wrap td[data-label]::before {
+          content: attr(data-label); display: block; font-size: .72rem; font-weight: 700;
+          text-transform: uppercase; letter-spacing: .04em; color: var(--faint); margin-bottom: 1px;
+        }
+      }
+      table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+      th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--surface-2); }
+      tr:last-child td { border-bottom: none; }
+      td.num, th.num { text-align: right; }
+      .pill {
+        display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; white-space: nowrap;
+      }
+      .pill.setuju { background: var(--primary-soft); color: var(--primary-dark); }
+      .pill.tolak { background: var(--danger-soft); color: var(--danger); }
+      .pill.tunggu { background: var(--wait-soft); color: var(--wait); }
+      .bar-saldo { height: 8px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; min-width: 90px; }
+      .bar-saldo i { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+      .empty { text-align: center; color: var(--muted); padding: 26px 12px; }
+      .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+      .filter-row label.f { margin-bottom: 0; flex: 1 1 180px; }
+
+      /* ---------- Kalender ---------- */
+      .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+      .cal-head h3 { margin: 0; font-size: 1.05rem; }
+      .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+      .cal-dow { text-align: center; font-size: .78rem; font-weight: 700; color: var(--muted); padding: 4px 0; }
+      .cal-day {
+        min-height: 74px; border: 1px solid var(--border); border-radius: 10px; padding: 6px;
+        background: var(--surface-2); font-size: .8rem; overflow: hidden;
+      }
+      .cal-day.off { background: transparent; border-style: dashed; opacity: .45; }
+      .cal-day.weekend { background: var(--bg-soft); }
+      .cal-day.today { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+      .cal-day .d { font-weight: 700; font-size: .85rem; }
+      .cal-chip {
+        display: block; margin-top: 3px; padding: 1px 6px; border-radius: 6px; font-size: .7rem; font-weight: 600;
+        background: var(--primary-soft); color: var(--primary-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .cal-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-top: 12px; }
+      @media (max-width: 640px) { .cal-day { min-height: 58px; padding: 4px; } .cal-chip { font-size: .62rem; padding: 0 4px; } }
+
+      /* ---------- Laporan ---------- */
+      .chart-row { display: flex; align-items: end; gap: 18px; padding: 10px 4px 0; overflow-x: auto; }
+      .chart-col { flex: 1 1 0; min-width: 74px; text-align: center; }
+      .chart-bar { background: var(--primary); border-radius: 8px 8px 0 0; margin: 0 auto; width: min(56px, 80%); }
+      .chart-val { font-weight: 800; font-size: .95rem; }
+      .chart-lbl { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+
+      /* ---------- Panduan ---------- */
+      .guide h3 { margin: 22px 0 8px; }
+      .guide h3:first-child { margin-top: 0; }
+      .guide p, .guide li { color: var(--ink); }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 640px) { .price-grid { grid-template-columns: 1fr; } }
+      .price-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface-2); }
+      .price-box h4 { margin: 0 0 10px; font-size: .98rem; }
+      .price-box table { font-size: .92rem; }
+      .price-box th { background: transparent; }
+      .note-box {
+        background: var(--primary-softer); border: 1px solid var(--border); border-radius: 10px;
+        padding: 12px 14px; font-size: .92rem; margin: 12px 0;
+      }
+      .wa-btn {
+        display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 12px 22px;
+        background: var(--primary-dark); color: #fff; border-radius: 12px; font-weight: 700; text-decoration: none;
+      }
+      .wa-btn:hover { background: var(--primary-deep); }
+      @media (prefers-color-scheme: dark) { .wa-btn { color: #08130c; background: var(--primary); } }
+
+      footer {
+        margin-top: 28px; border-top: 1px solid var(--border); padding-top: 16px;
+        color: var(--muted); font-size: .86rem;
+      }
+      footer p { margin: 0 0 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <section class="intro">
+        <h1>Kelola cuti &amp; izin karyawan tanpa ribet</h1>
+        <p>Ajukan cuti atau izin, pantau sisa saldo tiap karyawan, setujui pengajuan, lihat kalender cuti tim, dan unduh laporan — semua dalam satu halaman. Coba langsung dengan data contoh di bawah ini.</p>
+      </section>
+
+      <section class="stats" aria-label="Ringkasan">
+        <div class="stat"><div class="num" id="statKaryawan">0</div><div class="lbl">Karyawan terdaftar</div></div>
+        <div class="stat"><div class="num" id="statMenunggu">0</div><div class="lbl">Pengajuan menunggu persetujuan</div></div>
+        <div class="stat"><div class="num" id="statBulanIni">0</div><div class="lbl">Hari cuti disetujui bulan ini</div></div>
+        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total pengajuan tercatat</div></div>
+      </section>
+
+      <nav class="tabs" role="tablist" aria-label="Modul aplikasi">
+        <button class="tab-btn" role="tab" aria-selected="true" data-tab="pengajuan">Pengajuan</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="saldo">Saldo Cuti</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="persetujuan">Persetujuan<span class="badge" id="badgePersetujuan" hidden>0</span></button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="riwayat">Riwayat</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="kalender">Kalender</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="laporan">Laporan</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="panduan">Panduan</button>
+      </nav>
+
+      <!-- ============ PENGAJUAN ============ -->
+      <section class="panel active" id="panel-pengajuan" role="tabpanel">
+        <div class="card">
+          <h2>Formulir Pengajuan Cuti / Izin</h2>
+          <p class="sub">Isi formulir, lalu pengajuan masuk ke daftar Persetujuan dengan status <strong>Menunggu</strong>. Durasi dihitung otomatis dalam hari kerja (Senin–Jumat).</p>
+          <form id="formPengajuan" novalidate>
+            <div class="grid2">
+              <label class="f"><span>Nama karyawan</span>
+                <select id="fKaryawan" required></select>
+                <small id="fSaldoInfo"></small>
+              </label>
+              <label class="f"><span>Jenis pengajuan</span>
+                <select id="fJenis" required>
+                  <option value="Cuti Tahunan">Cuti Tahunan (memotong saldo)</option>
+                  <option value="Cuti Sakit">Cuti Sakit</option>
+                  <option value="Izin">Izin (keperluan pribadi)</option>
+                  <option value="Cuti Melahirkan">Cuti Melahirkan</option>
+                  <option value="Cuti Penting">Cuti Penting (duka, menikah, dll.)</option>
+                </select>
+              </label>
+            </div>
+            <div class="grid2">
+              <label class="f"><span>Tanggal mulai</span>
+                <input type="date" id="fMulai" required />
+              </label>
+              <label class="f"><span>Tanggal selesai</span>
+                <input type="date" id="fSelesai" required />
+              </label>
+            </div>
+            <div class="durasi-info" id="durasiInfo">Pilih tanggal mulai dan selesai untuk melihat durasi pengajuan.</div>
+            <label class="f"><span>Alasan / keterangan</span>
+              <textarea id="fAlasan" placeholder="Contoh: Mudik ke kampung halaman bersama keluarga" required></textarea>
+            </label>
+            <div class="msg" id="msgPengajuan" role="status"></div>
+            <button type="submit" class="btn">Kirim Pengajuan</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Pengajuan Terakhir</h2>
+          <p class="sub">Lima pengajuan paling baru dari semua karyawan.</p>
+          <div id="pengajuanTerakhir"></div>
+        </div>
+      </section>
+
+      <!-- ============ SALDO ============ -->
+      <section class="panel" id="panel-saldo" role="tabpanel">
+        <div class="card">
+          <h2>Saldo Cuti per Karyawan</h2>
+          <p class="sub">Jatah cuti tahunan standar 12 hari per tahun. Saldo berkurang hanya oleh <strong>Cuti Tahunan</strong> yang sudah disetujui — cuti sakit dan izin tidak memotong saldo tahunan.</p>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>Karyawan</th><th>Jabatan</th><th class="num">Jatah</th><th class="num">Terpakai</th><th class="num">Sisa</th><th style="min-width:130px">Pemakaian</th></tr>
+              </thead>
+              <tbody id="tbodySaldo"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PERSETUJUAN ============ -->
+      <section class="panel" id="panel-persetujuan" role="tabpanel">
+        <div class="card">
+          <h2>Persetujuan Pengajuan</h2>
+          <p class="sub">Daftar pengajuan yang masih menunggu keputusan. Menyetujui Cuti Tahunan akan langsung memotong saldo karyawan yang bersangkutan.</p>
+          <div id="daftarPersetujuan"></div>
+          <div class="note-box"><strong>Catatan jujur:</strong> di demo ini persetujuan dilakukan satu tingkat dan langsung dari halaman yang sama. Persetujuan berjenjang sungguhan (karyawan → atasan → HRD, dengan akun dan hak akses berbeda) membutuhkan sistem multi-user — tersedia di versi pembeli.</div>
+        </div>
+      </section>
+
+      <!-- ============ RIWAYAT ============ -->
+      <section class="panel" id="panel-riwayat" role="tabpanel">
+        <div class="card">
+          <h2>Riwayat Pengajuan</h2>
+          <p class="sub">Semua pengajuan yang pernah tercatat, termasuk yang sudah disetujui dan ditolak.</p>
+          <div class="filter-row">
+            <label class="f"><span>Filter karyawan</span><select id="fltKaryawan"><option value="">Semua karyawan</option></select></label>
+            <label class="f"><span>Filter status</span>
+              <select id="fltStatus">
+                <option value="">Semua status</option>
+                <option value="Menunggu">Menunggu</option>
+                <option value="Disetujui">Disetujui</option>
+                <option value="Ditolak">Ditolak</option>
+              </select>
+            </label>
+            <label class="f"><span>Filter jenis</span>
+              <select id="fltJenis">
+                <option value="">Semua jenis</option>
+                <option value="Cuti Tahunan">Cuti Tahunan</option>
+                <option value="Cuti Sakit">Cuti Sakit</option>
+                <option value="Izin">Izin</option>
+                <option value="Cuti Melahirkan">Cuti Melahirkan</option>
+                <option value="Cuti Penting">Cuti Penting</option>
+              </select>
+            </label>
+          </div>
+          <div id="daftarRiwayat"></div>
+        </div>
+      </section>
+
+      <!-- ============ KALENDER ============ -->
+      <section class="panel" id="panel-kalender" role="tabpanel">
+        <div class="card">
+          <h2>Kalender Cuti Tim</h2>
+          <p class="sub">Menampilkan cuti dan izin yang <strong>sudah disetujui</strong>, supaya tim tahu siapa saja yang sedang tidak masuk pada tanggal tertentu.</p>
+          <div class="cal-head">
+            <button class="btn ghost small" id="calPrev" type="button">‹ Bulan sebelumnya</button>
+            <h3 id="calTitle">—</h3>
+            <button class="btn ghost small" id="calNext" type="button">Bulan berikutnya ›</button>
+          </div>
+          <div class="cal-grid" id="calDow"></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-legend">
+            <span>■ Kotak hijau muda = ada karyawan cuti/izin</span>
+            <span>■ Garis hijau = hari ini</span>
+            <span>Pengajuan yang masih menunggu belum tampil di sini</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ LAPORAN ============ -->
+      <section class="panel" id="panel-laporan" role="tabpanel">
+        <div class="card">
+          <h2>Laporan Cuti &amp; Izin</h2>
+          <p class="sub">Ringkasan seluruh pengajuan yang tercatat di aplikasi.</p>
+          <div class="stats" style="margin-top:6px">
+            <div class="stat"><div class="num" id="lapTotal">0</div><div class="lbl">Total pengajuan</div></div>
+            <div class="stat"><div class="num" id="lapSetuju">0</div><div class="lbl">Disetujui</div></div>
+            <div class="stat"><div class="num" id="lapTolak">0</div><div class="lbl">Ditolak</div></div>
+            <div class="stat"><div class="num" id="lapHari">0</div><div class="lbl">Total hari disetujui</div></div>
+          </div>
+          <h3>Hari disetujui per jenis pengajuan</h3>
+          <div class="chart-row" id="chartJenis"></div>
+          <h3 style="margin-top:22px">Rekap per karyawan</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Karyawan</th><th class="num">Pengajuan</th><th class="num">Disetujui</th><th class="num">Hari disetujui</th><th class="num">Sisa cuti tahunan</th></tr></thead>
+              <tbody id="tbodyLaporan"></tbody>
+            </table>
+          </div>
+          <p style="margin-top:16px">
+            <button class="btn" id="btnCsv" type="button">Unduh Laporan (CSV)</button>
+          </p>
+          <p class="sub" style="margin:0">File CSV berisi seluruh riwayat pengajuan dan bisa dibuka di Excel atau Google Sheets.</p>
+        </div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel">
+        <div class="card guide">
+          <h2>Panduan Penggunaan</h2>
+          <p class="sub">Aplikasi Cuti &amp; Izin — kelola pengajuan cuti/izin, saldo, persetujuan, kalender tim, dan laporan dalam satu tempat.</p>
+
+          <h3>1. Pengajuan</h3>
+          <ol>
+            <li>Buka tab <strong>Pengajuan</strong>, pilih nama karyawan dan jenis pengajuan.</li>
+            <li>Pilih tanggal mulai dan tanggal selesai — durasi otomatis dihitung dalam <strong>hari kerja</strong> (Senin–Jumat; Sabtu dan Minggu tidak dihitung).</li>
+            <li>Isi alasan, lalu ketuk <strong>Kirim Pengajuan</strong>. Pengajuan masuk ke tab Persetujuan dengan status Menunggu.</li>
+            <li>Untuk <strong>Cuti Tahunan</strong>, sistem memeriksa saldo: pengajuan yang melebihi sisa saldo akan ditolak otomatis oleh formulir.</li>
+          </ol>
+
+          <h3>2. Saldo Cuti</h3>
+          <ul>
+            <li>Tab <strong>Saldo</strong> menampilkan jatah (standar 12 hari/tahun), hari terpakai, dan sisa cuti tiap karyawan.</li>
+            <li>Saldo hanya berkurang oleh Cuti Tahunan yang <strong>sudah disetujui</strong>. Cuti sakit, izin, cuti melahirkan, dan cuti penting tidak memotong saldo tahunan.</li>
+          </ul>
+
+          <h3>3. Persetujuan</h3>
+          <ul>
+            <li>Tab <strong>Persetujuan</strong> berisi antrean pengajuan berstatus Menunggu. Ketuk <strong>Setujui</strong> atau <strong>Tolak</strong> untuk memutuskan.</li>
+            <li>Persetujuan Cuti Tahunan langsung memotong saldo. Penolakan tidak mengubah saldo.</li>
+            <li>Di demo ini persetujuan satu tingkat dari halaman yang sama. Persetujuan berjenjang sungguhan (karyawan → atasan → HRD dengan akun masing-masing) membutuhkan sistem multi-user — tersedia di versi pembeli.</li>
+          </ul>
+
+          <h3>4. Riwayat</h3>
+          <ul>
+            <li>Tab <strong>Riwayat</strong> menyimpan semua pengajuan beserta status akhirnya. Gunakan filter karyawan, status, dan jenis untuk mencari catatan tertentu.</li>
+          </ul>
+
+          <h3>5. Kalender</h3>
+          <ul>
+            <li>Tab <strong>Kalender</strong> menampilkan cuti/izin yang sudah disetujui dalam tampilan bulan, lengkap dengan nama karyawan di setiap tanggal. Gunakan tombol bulan sebelumnya/berikutnya untuk berpindah bulan.</li>
+            <li>Pengajuan yang masih menunggu atau ditolak tidak tampil di kalender.</li>
+          </ul>
+
+          <h3>6. Laporan</h3>
+          <ul>
+            <li>Tab <strong>Laporan</strong> merangkum total pengajuan, jumlah disetujui/ditolak, total hari, grafik hari per jenis pengajuan, dan rekap per karyawan.</li>
+            <li>Ketuk <strong>Unduh Laporan (CSV)</strong> untuk menyimpan seluruh riwayat sebagai file yang bisa dibuka di Excel atau Google Sheets.</li>
+          </ul>
+
+          <h3>Garansi Perbaikan Bug</h3>
+          <p>Setiap pembelian dilindungi garansi perbaikan bug/error:</p>
+          <ul>
+            <li><strong>Beli Sekali:</strong> Pemula 30 hari / Profesional 60 hari / Bisnis 90 hari sejak pembelian.</li>
+            <li><strong>Berlangganan:</strong> garansi dan dukungan berlaku selama langganan aktif.</li>
+            <li><strong>Cara klaim:</strong> kirim video atau screenshot bug/error-nya lewat WhatsApp — perbaikan bug tidak dikenakan biaya selama masa garansi.</li>
+          </ul>
+
+          <h3>Harga</h3>
+          <div class="price-grid">
+            <div class="price-box">
+              <h4>Beli Sekali (penawaran utama)</h4>
+              <table>
+                <tr><th>Paket</th><th style="text-align:right">Harga</th></tr>
+                <tr><td>Pemula — aplikasi standar siap pakai</td><td style="text-align:right"><strong>Rp499.000</strong></td></tr>
+                <tr><td>Profesional — + penyesuaian merek + APK Android</td><td style="text-align:right"><strong>Rp999.000</strong></td></tr>
+                <tr><td>Bisnis — + penyimpanan permanen, multi-user, dukungan penuh</td><td style="text-align:right"><strong>Rp1.999.000</strong></td></tr>
+              </table>
+            </div>
+            <div class="price-box">
+              <h4>Berlangganan (jalur upgrade)</h4>
+              <table>
+                <tr><th>Paket</th><th style="text-align:right">Harga / bulan</th></tr>
+                <tr><td>Pemula</td><td style="text-align:right"><strong>Rp49.000</strong></td></tr>
+                <tr><td>Profesional</td><td style="text-align:right"><strong>Rp99.000</strong></td></tr>
+                <tr><td>Bisnis</td><td style="text-align:right"><strong>Rp199.000</strong></td></tr>
+              </table>
+              <p style="margin:10px 0 0; font-size:.88rem; color:var(--muted)">Langganan tahunan cukup bayar 10 bulan. Berhenti membayar = akses berhenti. Pembayaran manual via WhatsApp.</p>
+            </div>
+          </div>
+
+          <h3>Pesan / Tanya-tanya</h3>
+          <p>Klik tombol di bawah untuk memesan aplikasi ini atau bertanya dulu lewat WhatsApp:</p>
+          <p><a class="wa-btn" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Cuti%20%26%20Izin" target="_blank" rel="noopener">Pesan via WhatsApp — 0812-4798-6994</a></p>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Batas jujur versi demo (v1):</strong> data demo hanya berlaku selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal, dan data tidak tersimpan permanen.</p>
+        <p>Persetujuan di demo ini satu tingkat dan dilakukan dari halaman yang sama; persetujuan berjenjang sungguhan dengan akun karyawan, atasan, dan HRD yang terpisah membutuhkan sistem multi-user dan penyimpanan permanen — keduanya tersedia di versi pembeli (paket Bisnis), termasuk pemakaian bersama dari banyak perangkat. Perhitungan hari libur nasional belum termasuk — durasi hanya mengecualikan Sabtu dan Minggu.</p>
+      </footer>
+    </div>
+
+    <script>
+      // ---------- Util tanggal ----------
+      function iso(d) {
+        var y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), t = String(d.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + t;
+      }
+      function dariIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+      function geser(hari) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + hari); return iso(d); }
+      function hariKerja(mulai, selesai) {
+        var a = dariIso(mulai), b = dariIso(selesai), n = 0, d = new Date(a);
+        while (d <= b) { var g = d.getDay(); if (g !== 0 && g !== 6) n++; d.setDate(d.getDate() + 1); }
+        return n;
+      }
+      var BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      function tglIndo(s) { var d = dariIso(s); return d.getDate() + " " + BULAN[d.getMonth()] + " " + d.getFullYear(); }
+
+      // ---------- Data contoh ----------
+      var karyawan = [
+        { id: 1, nama: "Andi Pratama",    jabatan: "Staff Produksi",     jatah: 12 },
+        { id: 2, nama: "Budi Santoso",    jabatan: "Staff Gudang",       jatah: 12 },
+        { id: 3, nama: "Citra Lestari",   jabatan: "Admin Kantor",       jatah: 12 },
+        { id: 4, nama: "Dewi Anggraini",  jabatan: "Kasir",              jatah: 12 },
+        { id: 5, nama: "Eko Wijaya",      jabatan: "Teknisi Lapangan",   jatah: 12 },
+        { id: 6, nama: "Fitri Rahmawati", jabatan: "Marketing",          jatah: 12 },
+        { id: 7, nama: "Gilang Ramadhan", jabatan: "Driver / Kurir",     jatah: 12 },
+        { id: 8, nama: "Hana Kusuma",     jabatan: "Customer Service",   jatah: 12 }
+      ];
+      var seq = 100;
+      function req(empId, jenis, mulaiOff, selesaiOff, alasan, status, ajukanOff) {
+        var a = dariIso(geser(mulaiOff)), b = dariIso(geser(selesaiOff));
+        // Geser tanggal mulai ke hari kerja terdekat agar contoh selalu masuk akal
+        while (a.getDay() === 0 || a.getDay() === 6) a.setDate(a.getDate() + 1);
+        if (b < a) b = new Date(a);
+        while (hariKerja(iso(a), iso(b)) === 0) b.setDate(b.getDate() + 1);
+        var mulai = iso(a), selesai = iso(b);
+        return { id: ++seq, empId: empId, jenis: jenis, mulai: mulai, selesai: selesai,
+                 hari: hariKerja(mulai, selesai), alasan: alasan, status: status,
+                 diajukan: geser(ajukanOff) };
+      }
+      var pengajuan = [
+        req(1, "Cuti Tahunan", -40, -36, "Liburan keluarga ke Yogyakarta", "Disetujui", -45),
+        req(3, "Cuti Tahunan", -20, -18, "Menghadiri pernikahan kakak di Semarang", "Disetujui", -25),
+        req(5, "Cuti Sakit",   -10, -9,  "Demam dan flu, istirahat sesuai anjuran dokter", "Disetujui", -10),
+        req(2, "Cuti Tahunan",  2, 4,    "Mudik ke kampung halaman", "Disetujui", -3),
+        req(6, "Izin",          1, 1,    "Mengurus perpanjangan SIM dan STNK", "Disetujui", -1),
+        req(4, "Cuti Tahunan",  6, 8,    "Liburan bersama keluarga", "Menunggu", -1),
+        req(7, "Izin",          3, 3,    "Mengantar orang tua kontrol ke rumah sakit", "Menunggu", 0),
+        req(8, "Cuti Sakit",   -2, -1,   "Sakit gigi, tindakan di dokter gigi", "Ditolak", -2),
+        req(5, "Cuti Tahunan", 12, 16,   "Rencana liburan akhir bulan", "Menunggu", 0)
+      ];
+
+      function cariKaryawan(id) { return karyawan.find(function(k){ return k.id === id; }); }
+      function terpakai(id) {
+        return pengajuan.filter(function(p){ return p.empId === id && p.jenis === "Cuti Tahunan" && p.status === "Disetujui"; })
+                        .reduce(function(s,p){ return s + p.hari; }, 0);
+      }
+      function sisa(id) { var k = cariKaryawan(id); return k.jatah - terpakai(id); }
+
+      // ---------- Tab ----------
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          tabBtns.forEach(function(b){ b.setAttribute("aria-selected", "false"); });
+          btn.setAttribute("aria-selected", "true");
+          document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+          document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+        });
+      });
+      function bukaTab(nama) {
+        tabBtns.forEach(function(b){ b.setAttribute("aria-selected", b.dataset.tab === nama ? "true" : "false"); });
+        document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+        document.getElementById("panel-" + nama).classList.add("active");
+      }
+
+      // ---------- Render umum ----------
+      function pillStatus(s) {
+        var cls = s === "Disetujui" ? "setuju" : (s === "Ditolak" ? "tolak" : "tunggu");
+        return '<span class="pill ' + cls + '">' + s + "</span>";
+      }
+      function barisPengajuan(p, denganAksi) {
+        var k = cariKaryawan(p.empId);
+        var aksi = "";
+        if (denganAksi && p.status === "Menunggu") {
+          aksi = '<div class="row-actions">' +
+            '<button class="btn small" data-setujui="' + p.id + '" type="button">Setujui</button>' +
+            '<button class="btn small danger" data-tolak="' + p.id + '" type="button">Tolak</button></div>';
+        }
+        return "<tr><td data-label=\"Karyawan\"><strong>" + k.nama + "</strong><br><small>" + k.jabatan + "</small></td>" +
+          "<td data-label=\"Jenis\">" + p.jenis + "</td>" +
+          "<td data-label=\"Tanggal\">" + tglIndo(p.mulai) + " s.d. " + tglIndo(p.selesai) + "<br><small>" + p.hari + " hari kerja</small></td>" +
+          "<td data-label=\"Alasan\">" + p.alasan + "</td>" +
+          "<td data-label=\"Status\">" + pillStatus(p.status) + aksi + "</td></tr>";
+      }
+      function tabelPengajuan(list, denganAksi) {
+        if (!list.length) return '<p class="empty">Belum ada data pada daftar ini.</p>';
+        return '<div class="tbl-wrap"><table><thead><tr><th>Karyawan</th><th>Jenis</th><th>Tanggal</th><th>Alasan</th><th>Status</th></tr></thead><tbody>' +
+          list.map(function(p){ return barisPengajuan(p, denganAksi); }).join("") + "</tbody></table></div>";
+      }
+
+      function renderSemua() {
+        // Statistik atas
+        var menunggu = pengajuan.filter(function(p){ return p.status === "Menunggu"; });
+        var now = new Date();
+        var hariBulanIni = 0;
+        pengajuan.forEach(function(p){
+          if (p.status !== "Disetujui") return;
+          var a = dariIso(p.mulai), b = dariIso(p.selesai), d = new Date(a);
+          while (d <= b) {
+            if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+              var g = d.getDay(); if (g !== 0 && g !== 6) hariBulanIni++;
+            }
+            d.setDate(d.getDate() + 1);
+          }
+        });
+        document.getElementById("statKaryawan").textContent = karyawan.length;
+        document.getElementById("statMenunggu").textContent = menunggu.length;
+        document.getElementById("statBulanIni").textContent = hariBulanIni;
+        document.getElementById("statTotal").textContent = pengajuan.length;
+        var badge = document.getElementById("badgePersetujuan");
+        badge.hidden = menunggu.length === 0;
+        badge.textContent = menunggu.length;
+
+        // Pengajuan terakhir
+        var terakhir = pengajuan.slice().sort(function(a,b){ return b.id - a.id; }).slice(0, 5);
+        document.getElementById("pengajuanTerakhir").innerHTML = tabelPengajuan(terakhir, false);
+
+        // Saldo
+        document.getElementById("tbodySaldo").innerHTML = karyawan.map(function(k){
+          var pakai = terpakai(k.id), s = k.jatah - pakai, persen = Math.round(pakai / k.jatah * 100);
+          return "<tr><td data-label=\"Karyawan\"><strong>" + k.nama + "</strong></td><td data-label=\"Jabatan\">" + k.jabatan + "</td>" +
+            '<td class="num" data-label="Jatah">' + k.jatah + ' hari</td><td class="num" data-label="Terpakai">' + pakai + ' hari</td>' +
+            '<td class="num" data-label="Sisa"><strong>' + s + " hari</strong></td>" +
+            '<td data-label="Pemakaian"><div class="bar-saldo"><i style="width:' + persen + '%"></i></div><small>' + persen + "% terpakai</small></td></tr>";
+        }).join("");
+
+        // Persetujuan
+        document.getElementById("daftarPersetujuan").innerHTML = menunggu.length
+          ? tabelPengajuan(menunggu.slice().sort(function(a,b){ return a.mulai < b.mulai ? -1 : 1; }), true)
+          : '<p class="empty">Tidak ada pengajuan yang menunggu. Semua sudah diputuskan.</p>';
+        document.querySelectorAll("[data-setujui]").forEach(function(b){
+          b.addEventListener("click", function(){ putuskan(+b.dataset.setujui, true); });
+        });
+        document.querySelectorAll("[data-tolak]").forEach(function(b){
+          b.addEventListener("click", function(){ putuskan(+b.dataset.tolak, false); });
+        });
+
+        renderRiwayat();
+        renderKalender();
+        renderLaporan();
+        perbaruiInfoSaldoForm();
+      }
+
+      function putuskan(id, setuju) {
+        var p = pengajuan.find(function(x){ return x.id === id; });
+        if (!p || p.status !== "Menunggu") return;
+        if (setuju && p.jenis === "Cuti Tahunan" && p.hari > sisa(p.empId)) {
+          p.status = "Ditolak";
+        } else {
+          p.status = setuju ? "Disetujui" : "Ditolak";
+        }
+        renderSemua();
+      }
+
+      // ---------- Riwayat ----------
+      function renderRiwayat() {
+        var fk = document.getElementById("fltKaryawan").value;
+        var fs = document.getElementById("fltStatus").value;
+        var fj = document.getElementById("fltJenis").value;
+        var list = pengajuan.filter(function(p){
+          return (!fk || p.empId === +fk) && (!fs || p.status === fs) && (!fj || p.jenis === fj);
+        }).sort(function(a,b){ return b.id - a.id; });
+        document.getElementById("daftarRiwayat").innerHTML = list.length
+          ? tabelPengajuan(list, false)
+          : '<p class="empty">Tidak ada pengajuan yang cocok dengan filter ini.</p>';
+      }
+      ["fltKaryawan","fltStatus","fltJenis"].forEach(function(id){
+        document.getElementById(id).addEventListener("change", renderRiwayat);
+      });
+
+      // ---------- Kalender ----------
+      var calCursor = new Date(); calCursor.setDate(1);
+      document.getElementById("calDow").innerHTML = ["Sen","Sel","Rab","Kam","Jum","Sab","Min"]
+        .map(function(h){ return '<div class="cal-dow">' + h + "</div>"; }).join("");
+      document.getElementById("calPrev").addEventListener("click", function(){ calCursor.setMonth(calCursor.getMonth() - 1); renderKalender(); });
+      document.getElementById("calNext").addEventListener("click", function(){ calCursor.setMonth(calCursor.getMonth() + 1); renderKalender(); });
+      function renderKalender() {
+        var y = calCursor.getFullYear(), m = calCursor.getMonth();
+        document.getElementById("calTitle").textContent = BULAN[m] + " " + y;
+        var first = new Date(y, m, 1);
+        var startOffset = (first.getDay() + 6) % 7; // Senin = 0
+        var daysInMonth = new Date(y, m + 1, 0).getDate();
+        var todayIso = iso(new Date());
+        var approved = pengajuan.filter(function(p){ return p.status === "Disetujui"; });
+        var cells = "";
+        for (var i = 0; i < startOffset; i++) cells += '<div class="cal-day off"></div>';
+        for (var d = 1; d <= daysInMonth; d++) {
+          var dt = new Date(y, m, d), s = iso(dt), g = dt.getDay();
+          var chips = approved.filter(function(p){ return p.mulai <= s && p.selesai >= s; })
+            .map(function(p){ return '<span class="cal-chip">' + cariKaryawan(p.empId).nama.split(" ")[0] + " — " + p.jenis.replace("Cuti ", "") + "</span>"; }).join("");
+          var cls = "cal-day" + ((g === 0 || g === 6) ? " weekend" : "") + (s === todayIso ? " today" : "");
+          cells += '<div class="' + cls + '"><span class="d">' + d + "</span>" + chips + "</div>";
+        }
+        document.getElementById("calGrid").innerHTML = cells;
+      }
+
+      // ---------- Laporan ----------
+      function renderLaporan() {
+        var setuju = pengajuan.filter(function(p){ return p.status === "Disetujui"; });
+        var tolak = pengajuan.filter(function(p){ return p.status === "Ditolak"; });
+        document.getElementById("lapTotal").textContent = pengajuan.length;
+        document.getElementById("lapSetuju").textContent = setuju.length;
+        document.getElementById("lapTolak").textContent = tolak.length;
+        document.getElementById("lapHari").textContent = setuju.reduce(function(s,p){ return s + p.hari; }, 0);
+        var jenisList = ["Cuti Tahunan","Cuti Sakit","Izin","Cuti Melahirkan","Cuti Penting"];
+        var perJenis = jenisList.map(function(j){
+          return { jenis: j, hari: setuju.filter(function(p){ return p.jenis === j; }).reduce(function(s,p){ return s + p.hari; }, 0) };
+        });
+        var maks = Math.max.apply(null, perJenis.map(function(x){ return x.hari; }).concat([1]));
+        document.getElementById("chartJenis").innerHTML = perJenis.map(function(x){
+          var h = Math.round(x.hari / maks * 120);
+          return '<div class="chart-col"><div class="chart-val">' + x.hari + ' hari</div>' +
+            '<div class="chart-bar" style="height:' + Math.max(h, x.hari ? 8 : 2) + 'px"></div>' +
+            '<div class="chart-lbl">' + x.jenis + "</div></div>";
+        }).join("");
+        document.getElementById("tbodyLaporan").innerHTML = karyawan.map(function(k){
+          var mine = pengajuan.filter(function(p){ return p.empId === k.id; });
+          var ok = mine.filter(function(p){ return p.status === "Disetujui"; });
+          return "<tr><td data-label=\"Karyawan\"><strong>" + k.nama + "</strong></td>" +
+            '<td class="num" data-label="Pengajuan">' + mine.length + '</td><td class="num" data-label="Disetujui">' + ok.length + '</td>' +
+            '<td class="num" data-label="Hari disetujui">' + ok.reduce(function(s,p){ return s + p.hari; }, 0) + ' hari</td>' +
+            '<td class="num" data-label="Sisa cuti tahunan">' + sisa(k.id) + " hari</td></tr>";
+        }).join("");
+      }
+      document.getElementById("btnCsv").addEventListener("click", function(){
+        var rows = [["Nama Karyawan","Jabatan","Jenis","Tanggal Mulai","Tanggal Selesai","Hari Kerja","Alasan","Status","Tanggal Diajukan"]];
+        pengajuan.slice().sort(function(a,b){ return a.id - b.id; }).forEach(function(p){
+          var k = cariKaryawan(p.empId);
+          rows.push([k.nama, k.jabatan, p.jenis, p.mulai, p.selesai, p.hari, p.alasan, p.status, p.diajukan]);
+        });
+        var csv = rows.map(function(r){
+          return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",");
+        }).join("\r\n");
+        var blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "laporan-cuti-izin.csv";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+      });
+
+      // ---------- Formulir pengajuan ----------
+      var selKaryawan = document.getElementById("fKaryawan");
+      selKaryawan.innerHTML = karyawan.map(function(k){ return '<option value="' + k.id + '">' + k.nama + " — " + k.jabatan + "</option>"; }).join("");
+      document.getElementById("fltKaryawan").innerHTML = '<option value="">Semua karyawan</option>' + selKaryawan.innerHTML;
+      var fMulai = document.getElementById("fMulai"), fSelesai = document.getElementById("fSelesai");
+      (function(){
+        var a = dariIso(geser(1));
+        while (a.getDay() === 0 || a.getDay() === 6) a.setDate(a.getDate() + 1);
+        var b = new Date(a); b.setDate(b.getDate() + 2);
+        fMulai.value = iso(a); fSelesai.value = iso(b);
+      })();
+
+      function perbaruiInfoSaldoForm() {
+        var id = +selKaryawan.value;
+        document.getElementById("fSaldoInfo").textContent = "Sisa cuti tahunan saat ini: " + sisa(id) + " hari (dari jatah " + cariKaryawan(id).jatah + " hari).";
+        perbaruiDurasi();
+      }
+      function perbaruiDurasi() {
+        var box = document.getElementById("durasiInfo");
+        if (!fMulai.value || !fSelesai.value) { box.innerHTML = "Pilih tanggal mulai dan selesai untuk melihat durasi pengajuan."; return; }
+        if (fSelesai.value < fMulai.value) { box.innerHTML = "<strong>Perhatian:</strong> tanggal selesai lebih awal dari tanggal mulai."; return; }
+        var n = hariKerja(fMulai.value, fSelesai.value);
+        var jenis = document.getElementById("fJenis").value;
+        var ekstra = jenis === "Cuti Tahunan" ? " Pengajuan ini memotong saldo — sisa setelah disetujui: <strong>" + (sisa(+selKaryawan.value) - n) + " hari</strong>." : " Jenis ini tidak memotong saldo cuti tahunan.";
+        box.innerHTML = "Durasi: <strong>" + n + " hari kerja</strong> (" + tglIndo(fMulai.value) + " s.d. " + tglIndo(fSelesai.value) + ")." + ekstra;
+      }
+      [selKaryawan, fMulai, fSelesai, document.getElementById("fJenis")].forEach(function(el){
+        el.addEventListener("change", perbaruiDurasi);
+      });
+      selKaryawan.addEventListener("change", perbaruiInfoSaldoForm);
+
+      document.getElementById("formPengajuan").addEventListener("submit", function(ev){
+        ev.preventDefault();
+        var msg = document.getElementById("msgPengajuan");
+        msg.className = "msg"; msg.textContent = "";
+        var empId = +selKaryawan.value;
+        var jenis = document.getElementById("fJenis").value;
+        var alasan = document.getElementById("fAlasan").value.trim();
+        function gagal(teks) { msg.className = "msg err"; msg.textContent = teks; }
+        if (!fMulai.value || !fSelesai.value) return gagal("Tanggal mulai dan tanggal selesai wajib diisi.");
+        if (fSelesai.value < fMulai.value) return gagal("Tanggal selesai tidak boleh lebih awal dari tanggal mulai.");
+        var n = hariKerja(fMulai.value, fSelesai.value);
+        if (n === 0) return gagal("Rentang tanggal tersebut hanya berisi Sabtu/Minggu — tidak ada hari kerja. Pilih tanggal lain.");
+        if (!alasan) return gagal("Alasan / keterangan wajib diisi.");
+        if (jenis === "Cuti Tahunan" && n > sisa(empId)) {
+          return gagal("Saldo cuti tahunan " + cariKaryawan(empId).nama + " tidak cukup: sisa " + sisa(empId) + " hari, pengajuan " + n + " hari. Kurangi durasi atau pilih jenis lain.");
+        }
+        pengajuan.push({ id: ++seq, empId: empId, jenis: jenis, mulai: fMulai.value, selesai: fSelesai.value,
+                         hari: n, alasan: alasan, status: "Menunggu", diajukan: iso(new Date()) });
+        document.getElementById("fAlasan").value = "";
+        msg.className = "msg ok";
+        msg.textContent = "Pengajuan terkirim untuk " + cariKaryawan(empId).nama + " (" + jenis + ", " + n + " hari kerja). Status: Menunggu — silakan putuskan di tab Persetujuan.";
+        renderSemua();
+      });
+
+      renderSemua();
+    </script>
+  </body>
+</html>
