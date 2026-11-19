@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Faktur &amp; Invoice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f1f7f2;
+        --bg-soft: #e7f2e9;
+        --card: #ffffff;
+        --card-2: #f6fbf7;
+        --ink: #152a1c;
+        --ink-2: #3c5546;
+        --muted: #6b8574;
+        --line: #d9eadd;
+        --green: #16a34a;
+        --green-dark: #15803d;
+        --green-deep: #14532d;
+        --green-soft: #dcf2e3;
+        --green-faint: #eef7f0;
+        --red: #dc2626;
+        --red-soft: #fdecec;
+        --blue: #2563eb;
+        --blue-soft: #e6eefc;
+        --amber: #b45309;
+        --amber-soft: #fdf1de;
+        --shadow: 0 1px 2px rgba(21, 83, 45, .05), 0 8px 24px -12px rgba(21, 83, 45, .18);
+        --shadow-lg: 0 2px 4px rgba(21, 83, 45, .06), 0 20px 44px -18px rgba(21, 83, 45, .28);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b1710;
+          --bg-soft: #10221a;
+          --card: #13251b;
+          --card-2: #16291f;
+          --ink: #e6f2e9;
+          --ink-2: #b9d2c1;
+          --muted: #86a391;
+          --line: #23402e;
+          --green: #22c55e;
+          --green-dark: #4ade80;
+          --green-deep: #bbf7d0;
+          --green-soft: #173d27;
+          --green-faint: #122a1c;
+          --red: #f87171;
+          --red-soft: #3d1d1d;
+          --blue: #7aa5f8;
+          --blue-soft: #1c2c4d;
+          --amber: #f0b35e;
+          --amber-soft: #3a2c14;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+          --shadow-lg: 0 2px 4px rgba(0,0,0,.35), 0 20px 44px -18px rgba(0,0,0,.6);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(900px 420px at 85% -80px, var(--green-soft) 0%, transparent 60%),
+          var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]), a.btn { min-height: 2.25rem; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 56px; }
+
+      /* ---------- Header ringkas ---------- */
+      .topbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+      .topbar h1 { font-size: 1.55rem; margin: 0; letter-spacing: -.02em; font-weight: 800; }
+      .topbar p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; max-width: 56ch; }
+      .topbar .date-chip {
+        background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+        padding: 8px 14px; font-size: .85rem; font-weight: 600; color: var(--ink-2);
+        box-shadow: var(--shadow); white-space: nowrap;
+      }
+
+      /* ---------- Statistik ---------- */
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+      .stat {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 16px; box-shadow: var(--shadow);
+      }
+      .stat .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+      .stat .value { font-size: 1.35rem; font-weight: 800; margin-top: 4px; letter-spacing: -.01em; }
+      .stat .sub { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+      .stat.green .value { color: var(--green-dark); }
+      .stat.red .value { color: var(--red); }
+      .stat.blue .value { color: var(--blue); }
+
+      /* ---------- Tab ---------- */
+      .tabs {
+        display: flex; flex-wrap: wrap; gap: 6px;
+        background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+        padding: 6px; box-shadow: var(--shadow); margin-bottom: 18px;
+      }
+      .tab-btn {
+        flex: 1 1 auto; border: 0; background: transparent; cursor: pointer;
+        font: inherit; font-weight: 700; font-size: .93rem; color: var(--ink-2);
+        padding: 9px 14px; border-radius: 10px; min-height: 2.75rem;
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      }
+      .tab-btn svg { width: 17px; height: 17px; flex: none; }
+      .tab-btn:hover { background: var(--green-faint); }
+      .tab-btn[aria-selected="true"] { background: var(--green); color: #fff; box-shadow: 0 6px 14px -6px rgba(22, 163, 74, .55); }
+      .tab-btn:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: 3px solid rgba(22, 163, 74, .45); outline-offset: 2px;
+      }
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      /* ---------- Kartu & umum ---------- */
+      .card {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+      }
+      .card h2 { margin: 0 0 4px; font-size: 1.12rem; font-weight: 800; letter-spacing: -.01em; }
+      .card h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; }
+      .card .hint { color: var(--muted); font-size: .88rem; margin: 0 0 14px; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+      .grid-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .field { display: flex; flex-direction: column; gap: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      label, .field > span { font-size: .83rem; font-weight: 700; color: var(--ink-2); }
+      input, select, textarea {
+        font: inherit; font-size: .95rem; color: var(--ink);
+        background: var(--card-2); border: 1px solid var(--line); border-radius: 10px;
+        padding: 9px 12px; width: 100%;
+      }
+      textarea { resize: vertical; min-height: 64px; }
+      input[type="number"] { text-align: right; }
+      .checkline {
+        display: flex; align-items: center; gap: 10px; cursor: pointer;
+        padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card-2);
+        font-size: .92rem; font-weight: 600; color: var(--ink);
+      }
+      .checkline input { width: 20px; height: 20px; accent-color: var(--green); flex: none; }
+
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        font: inherit; font-weight: 700; font-size: .93rem; cursor: pointer;
+        border-radius: 11px; padding: 10px 18px; border: 1px solid transparent;
+        text-decoration: none; min-height: 2.75rem;
+      }
+      .btn svg { width: 17px; height: 17px; flex: none; }
+      .btn-primary { background: var(--green); color: #fff; box-shadow: 0 8px 16px -8px rgba(22, 163, 74, .6); }
+      .btn-primary:hover { background: var(--green-dark); }
+      .btn-ghost { background: var(--card); border-color: var(--line); color: var(--ink); }
+      .btn-ghost:hover { border-color: var(--green); color: var(--green-dark); }
+      .btn-wa { background: #22c55e; color: #fff; }
+      .btn-wa:hover { background: #16a34a; }
+      .btn-sm { padding: 7px 12px; font-size: .85rem; min-height: 2.4rem; border-radius: 9px; }
+      .btn-danger-ghost { background: transparent; border-color: var(--line); color: var(--red); }
+      .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+      /* ---------- Tabel rincian ---------- */
+      .items-table { width: 100%; border-collapse: collapse; }
+      .items-table th { text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 6px 6px; border-bottom: 1px solid var(--line); }
+      .items-table td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+      .items-table .num { text-align: right; }
+      .items-table input { padding: 8px 10px; }
+      .icon-btn {
+        border: 1px solid var(--line); background: var(--card); color: var(--red);
+        width: 38px; height: 38px; border-radius: 9px; cursor: pointer; font-size: 1rem; line-height: 1;
+      }
+      .icon-btn:hover { border-color: var(--red); }
+
+      .totals { margin-top: 14px; border-top: 2px dashed var(--line); padding-top: 12px; }
+      .totals .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: .95rem; }
+      .totals .row.grand { font-size: 1.15rem; font-weight: 800; color: var(--green-deep); border-top: 1px solid var(--line); margin-top: 8px; padding-top: 10px; }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+      /* ---------- Lencana status ---------- */
+      .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+      .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+      .badge.lunas { background: var(--green-soft); color: var(--green-dark); }
+      .badge.belum { background: var(--blue-soft); color: var(--blue); }
+      .badge.jatuh { background: var(--red-soft); color: var(--red); }
+
+      /* ---------- Daftar invoice / pelanggan ---------- */
+      .inv-list { display: flex; flex-direction: column; gap: 12px; }
+      .inv-item {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 16px 18px;
+      }
+      .inv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+      .inv-head .no { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: .98rem; }
+      .inv-head .cust { font-weight: 700; }
+      .inv-head .total { margin-left: auto; font-weight: 800; font-size: 1.05rem; }
+      .inv-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: .86rem; margin-top: 6px; }
+      .inv-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+      .inv-actions select { width: auto; padding: 7px 10px; font-size: .88rem; }
+      .inv-detail { display: none; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+      .inv-detail.open { display: block; }
+      .inv-detail table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+      .inv-detail td, .inv-detail th { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+      .inv-detail .num { text-align: right; }
+      .due-late { color: var(--red); font-weight: 700; }
+
+      .cust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .cust-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+      .cust-card h3 { margin: 0; font-size: 1rem; }
+      .cust-card .meta { color: var(--muted); font-size: .86rem; margin-top: 4px; }
+      .cust-card .figures { display: flex; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
+      .cust-card .figures div span { display: block; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 700; }
+      .cust-card .figures div b { font-size: 1rem; }
+      .cust-card .figures .owe b { color: var(--red); }
+
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+      .toolbar .search { flex: 1 1 220px; position: relative; }
+      .toolbar select { width: auto; flex: 0 1 auto; }
+      .empty { text-align: center; color: var(--muted); padding: 28px 12px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--card-2); }
+
+      /* ---------- Laporan ---------- */
+      .report-table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+      .report-table th { text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px; border-bottom: 2px solid var(--line); }
+      .report-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); }
+      .report-table .num { text-align: right; }
+      .report-table tfoot td { font-weight: 800; border-top: 2px solid var(--line); border-bottom: 0; }
+      .bar-track { height: 8px; background: var(--green-faint); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+      .bar-fill { height: 100%; background: var(--green); border-radius: 99px; }
+
+      /* ---------- Panduan ---------- */
+      .guide h3 { margin-top: 22px; }
+      .guide h3:first-child { margin-top: 0; }
+      .guide ol, .guide ul { padding-left: 22px; margin: 8px 0; }
+      .guide li { margin: 5px 0; }
+      .guide p { margin: 6px 0; }
+      .warranty { background: var(--green-faint); border: 1px solid var(--green-soft); border-radius: var(--radius); padding: 18px; margin-top: 20px; }
+      .warranty h3 { margin-top: 0; color: var(--green-deep); }
+
+      /* ---------- Harga ---------- */
+      .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .price-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; position: relative; }
+      .price-card.featured { border: 2px solid var(--green); }
+      .price-card .tier { font-weight: 800; font-size: 1rem; }
+      .price-card .once { font-size: 1.3rem; font-weight: 800; color: var(--green-dark); margin-top: 6px; }
+      .price-card .once small { font-size: .78rem; color: var(--muted); font-weight: 600; display: block; }
+      .price-card .sub-price { margin-top: 10px; font-size: .9rem; color: var(--ink-2); border-top: 1px dashed var(--line); padding-top: 10px; }
+      .price-card .tag { position: absolute; top: -11px; right: 14px; background: var(--green); color: #fff; font-size: .72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+
+      footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: .85rem; }
+      footer .card { text-align: left; }
+      .toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+        background: var(--green-deep); color: #fff; padding: 12px 20px; border-radius: 12px;
+        font-weight: 700; font-size: .92rem; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
+        transition: opacity .25s, transform .25s; z-index: 50; max-width: calc(100vw - 32px); text-align: center;
+      }
+      @media (prefers-color-scheme: dark) { .toast { background: #16a34a; } }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      @media (max-width: 760px) {
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .grid-2, .cust-grid, .price-grid { grid-template-columns: 1fr; }
+        .grid-form { grid-template-columns: 1fr; }
+        .tab-btn { flex: 1 1 30%; font-size: .88rem; padding: 9px 8px; }
+        .topbar h1 { font-size: 1.35rem; }
+        .inv-head .total { margin-left: 0; width: 100%; }
+        .items-table th:nth-child(4), .items-table td:nth-child(4) { display: none; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .toast { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <div class="topbar">
+        <div>
+          <h1>Faktur &amp; Invoice</h1>
+          <p>Buat invoice, pantau status pembayaran, kirim tagihan lewat WhatsApp, dan lihat laporan piutang — untuk UMKM dan perusahaan.</p>
+        </div>
+        <div class="date-chip">Periode: November 2026</div>
+      </div>
+
+      <section class="stats" aria-label="Ringkasan invoice">
+        <div class="stat">
+          <div class="label">Total Invoice</div>
+          <div class="value" id="statTotal">0</div>
+          <div class="sub" id="statTotalSub">invoice diterbitkan</div>
+        </div>
+        <div class="stat blue">
+          <div class="label">Piutang Belum Lunas</div>
+          <div class="value" id="statPiutang">Rp0</div>
+          <div class="sub" id="statPiutangSub">0 invoice menunggu bayar</div>
+        </div>
+        <div class="stat red">
+          <div class="label">Sudah Jatuh Tempo</div>
+          <div class="value" id="statJatuh">Rp0</div>
+          <div class="sub" id="statJatuhSub">0 invoice lewat tanggal bayar</div>
+        </div>
+        <div class="stat green">
+          <div class="label">Sudah Diterima (Lunas)</div>
+          <div class="value" id="statLunas">Rp0</div>
+          <div class="sub" id="statLunasSub">0 invoice lunas</div>
+        </div>
+      </section>
+
+      <nav class="tabs" role="tablist" aria-label="Modul aplikasi">
+        <button class="tab-btn" role="tab" data-tab="faktur" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+          Faktur
+        </button>
+        <button class="tab-btn" role="tab" data-tab="pelanggan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Pelanggan
+        </button>
+        <button class="tab-btn" role="tab" data-tab="status" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+          Status
+        </button>
+        <button class="tab-btn" role="tab" data-tab="riwayat" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+          Riwayat
+        </button>
+        <button class="tab-btn" role="tab" data-tab="laporan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+          Laporan
+        </button>
+        <button class="tab-btn" role="tab" data-tab="panduan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Panduan
+        </button>
+      </nav>
+
+      <!-- ==================== TAB FAKTUR ==================== -->
+      <section class="panel active" id="panel-faktur" role="tabpanel">
+        <div class="card">
+          <h2>Buat Invoice Baru</h2>
+          <p class="hint">Nomor invoice dibuat otomatis mengikuti urutan terakhir. Isi pelanggan, tanggal, lalu rincian barang/jasa — total dihitung otomatis.</p>
+          <form id="formInvoice">
+            <div class="grid-form">
+              <div class="field">
+                <span>Nomor Invoice</span>
+                <input type="text" id="fNomor" class="mono" readonly aria-label="Nomor invoice otomatis" />
+              </div>
+              <div class="field">
+                <span>Pelanggan</span>
+                <select id="fPelanggan" required></select>
+              </div>
+              <div class="field">
+                <span>Tanggal Terbit</span>
+                <input type="date" id="fTanggal" required />
+              </div>
+              <div class="field">
+                <span>Tanggal Jatuh Tempo</span>
+                <input type="date" id="fJatuhTempo" required />
+              </div>
+            </div>
+
+            <h3 style="margin-top:20px;">Rincian Barang / Jasa</h3>
+            <table class="items-table" aria-label="Rincian barang atau jasa">
+              <thead>
+                <tr>
+                  <th style="width:44%;">Nama Barang / Jasa</th>
+                  <th style="width:13%;" class="num">Jumlah</th>
+                  <th style="width:20%;" class="num">Harga Satuan (Rp)</th>
+                  <th style="width:17%;" class="num">Subtotal</th>
+                  <th style="width:6%;"></th>
+                </tr>
+              </thead>
+              <tbody id="itemRows"></tbody>
+            </table>
+            <div class="btn-row" style="margin-top:10px;">
+              <button type="button" class="btn btn-ghost btn-sm" id="btnTambahBaris">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Tambah Baris
+              </button>
+            </div>
+
+            <div class="grid-form" style="margin-top:16px;">
+              <label class="checkline">
+                <input type="checkbox" id="fPpn" checked />
+                Tambahkan PPN 11% pada total invoice ini
+              </label>
+              <div class="field">
+                <span>Catatan (opsional)</span>
+                <input type="text" id="fCatatan" placeholder="cth. Pembayaran via transfer BCA" />
+              </div>
+            </div>
+
+            <div class="totals" aria-live="polite">
+              <div class="row"><span>Subtotal</span><span class="mono" id="tSubtotal">Rp0</span></div>
+              <div class="row" id="rowPpn"><span>PPN 11%</span><span class="mono" id="tPpn">Rp0</span></div>
+              <div class="row grand"><span>Total Tagihan</span><span class="mono" id="tTotal">Rp0</span></div>
+            </div>
+
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+                Simpan Invoice
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnResetForm">Bersihkan Formulir</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Invoice Terakhir Dibuat</h2>
+          <p class="hint">Invoice yang baru disimpan langsung muncul di sini, di tab Riwayat, dan di laporan piutang.</p>
+          <div class="inv-list" id="fakturTerbaru"></div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB PELANGGAN ==================== -->
+      <section class="panel" id="panel-pelanggan" role="tabpanel">
+        <div class="card">
+          <h2>Tambah Pelanggan Baru</h2>
+          <p class="hint">Pelanggan yang ditambahkan langsung bisa dipilih saat membuat invoice. Nomor WhatsApp dipakai untuk tombol kirim invoice.</p>
+          <form id="formPelanggan">
+            <div class="grid-form">
+              <div class="field">
+                <span>Nama Pelanggan / Perusahaan</span>
+                <input type="text" id="pNama" required placeholder="cth. PT Cahaya Timur" />
+              </div>
+              <div class="field">
+                <span>Nomor WhatsApp</span>
+                <input type="tel" id="pWa" required placeholder="cth. 0812-3456-7890" />
+              </div>
+              <div class="field">
+                <span>Email (opsional)</span>
+                <input type="email" id="pEmail" placeholder="cth. keuangan@perusahaan.co.id" />
+              </div>
+              <div class="field">
+                <span>Alamat (opsional)</span>
+                <input type="text" id="pAlamat" placeholder="cth. Jl. Sudirman No. 10, Jakarta" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">Simpan Pelanggan</button>
+            </div>
+          </form>
+        </div>
+        <div class="cust-grid" id="daftarPelanggan"></div>
+      </section>
+
+      <!-- ==================== TAB STATUS ==================== -->
+      <section class="panel" id="panel-status" role="tabpanel">
+        <div class="card">
+          <h2>Kelola Status Pembayaran</h2>
+          <p class="hint">Ubah status setiap invoice: <b>Lunas</b>, <b>Belum Lunas</b>, atau <b>Jatuh Tempo</b>. Gunakan tombol “Tandai Lunas” untuk pembayaran yang sudah diterima. Invoice yang tanggal jatuh temponya sudah lewat otomatis ditandai merah.</p>
+          <div class="toolbar">
+            <select id="filterStatusTab" aria-label="Saring status di tab Status">
+              <option value="semua">Semua Status</option>
+              <option value="Belum Lunas">Belum Lunas</option>
+              <option value="Jatuh Tempo">Jatuh Tempo</option>
+              <option value="Lunas">Lunas</option>
+            </select>
+          </div>
+          <div class="inv-list" id="daftarStatus"></div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB RIWAYAT ==================== -->
+      <section class="panel" id="panel-riwayat" role="tabpanel">
+        <div class="card">
+          <h2>Riwayat Semua Invoice</h2>
+          <p class="hint">Cari berdasarkan nomor invoice atau nama pelanggan, saring berdasarkan status, lihat rincian, dan kirim invoice ke pelanggan lewat WhatsApp.</p>
+          <div class="toolbar">
+            <div class="search">
+              <input type="search" id="cariRiwayat" placeholder="Cari nomor invoice atau nama pelanggan…" aria-label="Cari invoice" />
+            </div>
+            <select id="filterRiwayat" aria-label="Saring status riwayat">
+              <option value="semua">Semua Status</option>
+              <option value="Lunas">Lunas</option>
+              <option value="Belum Lunas">Belum Lunas</option>
+              <option value="Jatuh Tempo">Jatuh Tempo</option>
+            </select>
+          </div>
+          <div class="inv-list" id="daftarRiwayat"></div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB LAPORAN ==================== -->
+      <section class="panel" id="panel-laporan" role="tabpanel">
+        <div class="card">
+          <h2>Laporan Piutang</h2>
+          <p class="hint">Ringkasan tagihan yang belum dibayar pelanggan, dihitung langsung dari seluruh invoice yang tersimpan.</p>
+          <div class="grid-2">
+            <div>
+              <h3>Total Piutang Belum Lunas</h3>
+              <p style="font-size:1.5rem;font-weight:800;color:var(--blue);margin:4px 0;" id="lapPiutang">Rp0</p>
+              <p class="hint" id="lapPiutangSub" style="margin-bottom:0;">—</p>
+            </div>
+            <div>
+              <h3>Piutang Sudah Jatuh Tempo</h3>
+              <p style="font-size:1.5rem;font-weight:800;color:var(--red);margin:4px 0;" id="lapJatuh">Rp0</p>
+              <p class="hint" id="lapJatuhSub" style="margin-bottom:0;">—</p>
+            </div>
+          </div>
+          <div style="margin-top:18px;">
+            <h3>Komposisi Piutang</h3>
+            <div style="display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);"><span>Jatuh tempo</span><span id="barJatuhLabel">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barJatuh" style="width:0%;background:var(--red);"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);margin-top:10px;"><span>Belum lunas (belum jatuh tempo)</span><span id="barBelumLabel">0%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="barBelum" style="width:0%;background:var(--blue);"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Piutang per Pelanggan</h2>
+          <p class="hint">Diurutkan dari piutang terbesar. Kolom “Jatuh Tempo” menunjukkan bagian yang sudah lewat tanggal pembayaran.</p>
+          <div style="overflow-x:auto;">
+            <table class="report-table" id="tabelPerPelanggan">
+              <thead>
+                <tr>
+                  <th>Pelanggan</th>
+                  <th class="num">Invoice</th>
+                  <th class="num">Total Tagihan</th>
+                  <th class="num">Sudah Lunas</th>
+                  <th class="num">Piutang</th>
+                  <th class="num">Jatuh Tempo</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot><tr>
+                <td>Total</td>
+                <td class="num" id="ftInv">0</td>
+                <td class="num" id="ftTagihan">Rp0</td>
+                <td class="num" id="ftLunas">Rp0</td>
+                <td class="num" id="ftPiutang">Rp0</td>
+                <td class="num" id="ftJatuh">Rp0</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Invoice yang Perlu Ditagih</h2>
+          <p class="hint">Daftar invoice belum lunas, yang paling lama jatuh tempo tampil paling atas. Kirim pengingat langsung lewat WhatsApp.</p>
+          <div class="inv-list" id="daftarTagih"></div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB PANDUAN ==================== -->
+      <section class="panel" id="panel-panduan" role="tabpanel">
+        <div class="card guide">
+          <h2>Buku Panduan Penggunaan</h2>
+          <p class="hint">Panduan lengkap memakai Aplikasi Faktur &amp; Invoice, dari membuat invoice pertama sampai membaca laporan piutang.</p>
+
+          <h3>1. Membuat Invoice Baru (Tab Faktur)</h3>
+          <ol>
+            <li>Buka tab <b>Faktur</b>. Nomor invoice terisi otomatis dengan format <span class="mono">INV-2026-11-001</span>, <span class="mono">INV-2026-11-002</span>, dan seterusnya mengikuti urutan invoice yang sudah dibuat.</li>
+            <li>Pilih <b>Pelanggan</b> dari daftar. Bila pelanggan belum ada, tambahkan dulu lewat tab <b>Pelanggan</b>.</li>
+            <li>Isi <b>Tanggal Terbit</b> dan <b>Tanggal Jatuh Tempo</b> (batas akhir pembayaran).</li>
+            <li>Isi rincian barang/jasa: nama, jumlah, dan harga satuan. Subtotal tiap baris dan total keseluruhan dihitung otomatis. Klik <b>Tambah Baris</b> untuk menambah rincian, atau tombol × untuk menghapus baris.</li>
+            <li>Centang <b>PPN 11%</b> bila invoice dikenakan pajak; hilangkan centang bila tidak. Nilai PPN dan total tagihan menyesuaikan seketika.</li>
+            <li>Tambahkan catatan bila perlu (misalnya nomor rekening tujuan transfer), lalu klik <b>Simpan Invoice</b>. Invoice baru berstatus <b>Belum Lunas</b>.</li>
+          </ol>
+
+          <h3>2. Mengelola Pelanggan (Tab Pelanggan)</h3>
+          <ol>
+            <li>Isi nama pelanggan/perusahaan dan nomor WhatsApp (wajib, dipakai untuk kirim invoice), email dan alamat bila ada.</li>
+            <li>Klik <b>Simpan Pelanggan</b>. Kartu pelanggan menampilkan jumlah invoice, total tagihan, dan sisa piutangnya.</li>
+          </ol>
+
+          <h3>3. Mengubah Status Pembayaran (Tab Status)</h3>
+          <ol>
+            <li>Buka tab <b>Status</b> untuk melihat semua invoice beserta statusnya.</li>
+            <li>Pilih status baru pada menu di kartu invoice: <b>Lunas</b> (sudah dibayar penuh), <b>Belum Lunas</b> (menunggu pembayaran), atau <b>Jatuh Tempo</b> (lewat batas waktu dan belum dibayar).</li>
+            <li>Untuk pembayaran yang baru diterima, klik <b>Tandai Lunas</b> — status berubah dan angka piutang di laporan langsung berkurang.</li>
+            <li>Invoice belum lunas yang tanggal jatuh temponya sudah lewat ditandai merah sebagai pengingat penagihan.</li>
+          </ol>
+
+          <h3>4. Mengirim Invoice ke Pelanggan (WhatsApp)</h3>
+          <ol>
+            <li>Di tab <b>Riwayat</b> atau <b>Laporan</b>, klik tombol <b>Kirim via WhatsApp</b> pada invoice yang dimaksud.</li>
+            <li>Aplikasi membuka chat WhatsApp ke nomor pelanggan dengan isi pesan invoice yang sudah terisi otomatis: nomor invoice, rincian barang/jasa, PPN, total tagihan, dan tanggal jatuh tempo.</li>
+            <li>Periksa isi pesan, lalu tekan kirim di WhatsApp seperti biasa.</li>
+            <li>Catatan: pada versi ini pengiriman dilakukan lewat WhatsApp yang terbuka dari aplikasi. Pengiriman otomatis massal via email/WhatsApp adalah pengembangan lanjutan, bukan bagian dari versi ini.</li>
+          </ol>
+
+          <h3>5. Mencari Riwayat Invoice (Tab Riwayat)</h3>
+          <ol>
+            <li>Ketik nomor invoice (misalnya <span class="mono">INV-2026-11-003</span>) atau nama pelanggan di kotak pencarian.</li>
+            <li>Gunakan saringan status untuk menampilkan hanya invoice Lunas, Belum Lunas, atau Jatuh Tempo.</li>
+            <li>Klik <b>Lihat Rincian</b> untuk membuka daftar barang/jasa, PPN, dan catatan pada invoice tersebut.</li>
+          </ol>
+
+          <h3>6. Membaca Laporan Piutang (Tab Laporan)</h3>
+          <ol>
+            <li><b>Total Piutang Belum Lunas</b>: seluruh tagihan yang belum dibayar pelanggan (status Belum Lunas + Jatuh Tempo).</li>
+            <li><b>Piutang Sudah Jatuh Tempo</b>: bagian piutang yang sudah melewati tanggal pembayaran — ini yang paling mendesak untuk ditagih.</li>
+            <li><b>Tabel per pelanggan</b> menunjukkan siapa berutang berapa, berapa yang sudah lunas, dan berapa yang jatuh tempo, diurutkan dari piutang terbesar.</li>
+            <li><b>Daftar “Invoice yang Perlu Ditagih”</b> membantu tindak lanjut: klik Kirim via WhatsApp untuk mengingatkan pelanggan langsung dari laporan.</li>
+          </ol>
+
+          <div class="warranty">
+            <h3>Garansi Perbaikan Bug / Error</h3>
+            <p>Setiap pembelian mencakup garansi perbaikan bug/error <b>gratis</b> untuk fitur-fitur yang tercantum di panduan ini (pembuatan invoice, nomor otomatis, hitungan PPN, ubah status, kirim via WhatsApp, pencarian riwayat, dan laporan piutang):</p>
+            <ul>
+              <li><b>Paket Pemula:</b> garansi 30 hari</li>
+              <li><b>Paket Profesional:</b> garansi 60 hari</li>
+              <li><b>Paket Bisnis:</b> garansi 90 hari</li>
+              <li><b>Berlangganan:</b> garansi dan dukungan berlaku selama masa langganan aktif</li>
+            </ul>
+            <p>Cara klaim: kirim pesan WhatsApp ke nomor pemesanan di bawah, sertakan rekaman video atau tangkapan layar (screenshot) yang menunjukkan bug/error-nya. Perbaikan untuk fitur di luar panduan (fitur tambahan/custom) tidak termasuk garansi dan dikenakan biaya penyesuaian terpisah.</p>
+            <div class="btn-row">
+              <a class="btn btn-wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20klaim%20garansi%20Aplikasi%20Faktur%20%26%20Invoice.%20Berikut%20bukti%20bug%2Ferror-nya%3A" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.15-1.4.4-.67.4-1.25.28-1.37-.12-.12-.27-.2-.57-.35zM12.04 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.83 9.83 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 9.88 9.89c0 5.45-4.44 9.88-9.89 9.88zm8.42-18.3A11.82 11.82 0 0 0 12.04 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41z"/></svg>
+                Klaim Garansi via WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Harga Aplikasi</h2>
+          <p class="hint">Dua cara memiliki: beli sekali (milik selamanya) atau berlangganan bulanan. Semua paket mencakup seluruh fitur di panduan ini.</p>
+          <div class="price-grid">
+            <div class="price-card">
+              <div class="tier">Pemula</div>
+              <div class="once"><small>Beli Sekali</small>Rp499.000</div>
+              <div class="sub-price">Berlangganan: <b>Rp49.000</b>/bulan<br />Garansi perbaikan bug: 30 hari</div>
+            </div>
+            <div class="price-card featured">
+              <div class="tag">Paling Laris</div>
+              <div class="tier">Profesional</div>
+              <div class="once"><small>Beli Sekali</small>Rp999.000</div>
+              <div class="sub-price">Berlangganan: <b>Rp99.000</b>/bulan<br />Garansi perbaikan bug: 60 hari</div>
+            </div>
+            <div class="price-card">
+              <div class="tier">Bisnis</div>
+              <div class="once"><small>Beli Sekali</small>Rp1.999.000</div>
+              <div class="sub-price">Berlangganan: <b>Rp199.000</b>/bulan<br />Garansi perbaikan bug: 90 hari</div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Faktur%20%26%20Invoice.%20Boleh%20info%20paket%20Pemula%2FProfesional%2FBisnis%3F" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.15-1.4.4-.67.4-1.25.28-1.37-.12-.12-.27-.2-.57-.35zM12.04 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.83 9.83 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 9.88 9.89c0 5.45-4.44 9.88-9.89 9.88zm8.42-18.3A11.82 11.82 0 0 0 12.04 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41z"/></svg>
+              Pesan via WhatsApp — 0812-4798-6994
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><b>Aplikasi demo (v1).</b> Data contoh di halaman ini hanya berlaku selama aplikasi dibuka dan akan hilang saat aplikasi ditutup atau dimuat ulang. Versi pembeli menyimpan data secara permanen sesuai paket yang dipilih.</p>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      "use strict";
+      var HARI_INI = "2026-11-20";
+      var WA_ORDER = "6281247986994";
+
+      /* ---------------- Data contoh ---------------- */
+      var pelanggan = [
+        { id: 1, nama: "PT Sinar Jaya Abadi", wa: "0812-9001-2233", email: "keuangan@sinarjayaabadi.co.id", alamat: "Jl. Raya Cikarang No. 88, Bekasi" },
+        { id: 2, nama: "Toko Kelontong Berkah", wa: "0813-7712-4455", email: "", alamat: "Jl. Melati No. 12, Depok" },
+        { id: 3, nama: "CV Maju Bersama", wa: "0821-3345-6677", email: "admin@majubersama.id", alamat: "Jl. Gajah Mada No. 45, Jakarta Barat" },
+        { id: 4, nama: "Bengkel Motor Roda Dua", wa: "0857-2210-8899", email: "", alamat: "Jl. Ahmad Yani No. 210, Bandung" },
+        { id: 5, nama: "Katering Dapur Nusantara", wa: "0819-6654-3322", email: "order@dapurnusantara.co.id", alamat: "Jl. Kenanga No. 7, Tangerang" }
+      ];
+
+      var invoices = [
+        { nomor: "INV-2026-11-001", pelangganId: 1, tanggal: "2026-11-03", jatuhTempo: "2026-11-17", status: "Lunas", pakaiPpn: true, catatan: "Pembayaran via transfer BCA 882-010-2233",
+          items: [ { nama: "Kabel NYM 3x2,5 mm (roll 100 m)", jumlah: 4, harga: 685000 }, { nama: "Panel Listrik 3 Phase + Instalasi", jumlah: 1, harga: 3750000 }, { nama: "Lampu LED Highbay 100W", jumlah: 10, harga: 425000 } ] },
+        { nomor: "INV-2026-11-002", pelangganId: 2, tanggal: "2026-11-05", jatuhTempo: "2026-11-12", status: "Jatuh Tempo", pakaiPpn: false, catatan: "",
+          items: [ { nama: "Beras Premium 5 kg (karton isi 6)", jumlah: 8, harga: 468000 }, { nama: "Minyak Goreng 2 L (karton isi 6)", jumlah: 6, harga: 252000 }, { nama: "Gula Pasir 1 kg (bal 20 kg)", jumlah: 3, harga: 335000 } ] },
+        { nomor: "INV-2026-11-003", pelangganId: 3, tanggal: "2026-11-08", jatuhTempo: "2026-11-22", status: "Belum Lunas", pakaiPpn: true, catatan: "Pembayaran via transfer Mandiri 137-008-9911",
+          items: [ { nama: "Jasa Desain Kemasan Produk (per desain)", jumlah: 3, harga: 850000 }, { nama: "Cetak Stiker Label Vinyl (per 1.000 pcs)", jumlah: 5, harga: 390000 } ] },
+        { nomor: "INV-2026-11-004", pelangganId: 4, tanggal: "2026-11-10", jatuhTempo: "2026-11-15", status: "Jatuh Tempo", pakaiPpn: false, catatan: "",
+          items: [ { nama: "Oli Mesin Motor 0,8 L (karton isi 24)", jumlah: 4, harga: 984000 }, { nama: "Ban Luar Motor 80/90-14", jumlah: 12, harga: 215000 }, { nama: "Kampas Rem Depan (set)", jumlah: 20, harga: 38000 } ] },
+        { nomor: "INV-2026-11-005", pelangganId: 5, tanggal: "2026-11-14", jatuhTempo: "2026-11-28", status: "Belum Lunas", pakaiPpn: true, catatan: "DP 50% diterima, pelunasan saat acara",
+          items: [ { nama: "Paket Katering Prasmanan (per pax)", jumlah: 150, harga: 55000 }, { nama: "Sewa Peralatan Prasmanan (per acara)", jumlah: 1, harga: 1250000 } ] },
+        { nomor: "INV-2026-11-006", pelangganId: 1, tanggal: "2026-11-17", jatuhTempo: "2026-12-01", status: "Belum Lunas", pakaiPpn: true, catatan: "Pembayaran via transfer BCA 882-010-2233",
+          items: [ { nama: "Jasa Pemeliharaan AC Gedung (per bulan)", jumlah: 1, harga: 2400000 }, { nama: "Penggantian Filter & Freon AC", jumlah: 6, harga: 350000 } ] },
+        { nomor: "INV-2026-11-007", pelangganId: 3, tanggal: "2026-11-18", jatuhTempo: "2026-11-25", status: "Lunas", pakaiPpn: true, catatan: "",
+          items: [ { nama: "Jasa Pengiriman Barang Jabodetabek (per rit)", jumlah: 6, harga: 275000 } ] }
+      ];
+      var nomorBerikut = 8;
+      var idPelangganBerikut = 6;
+
+      /* ---------------- Utilitas ---------------- */
+      function rp(n) { return "Rp" + Math.round(n).toLocaleString("id-ID"); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function cariPelanggan(id) {
+        for (var i = 0; i < pelanggan.length; i++) if (pelanggan[i].id === id) return pelanggan[i];
+        return { nama: "(pelanggan terhapus)", wa: "", email: "", alamat: "" };
+      }
+      function hitung(inv) {
+        var sub = 0;
+        inv.items.forEach(function (it) { sub += (Number(it.jumlah) || 0) * (Number(it.harga) || 0); });
+        var ppn = inv.pakaiPpn ? Math.round(sub * 0.11) : 0;
+        return { subtotal: sub, ppn: ppn, total: sub + ppn };
+      }
+      function formatTanggal(iso) {
+        if (!iso) return "—";
+        var bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        var p = iso.split("-");
+        return Number(p[2]) + " " + bulan[Number(p[1]) - 1] + " " + p[0];
+      }
+      function kelasBadge(status) {
+        return status === "Lunas" ? "lunas" : status === "Jatuh Tempo" ? "jatuh" : "belum";
+      }
+      function lewatTempo(inv) { return inv.status !== "Lunas" && inv.jatuhTempo < HARI_INI; }
+      function digitWa(wa) { return String(wa || "").replace(/\D/g, "").replace(/^0/, "62"); }
+      var toastTimer = null;
+      function toast(pesan) {
+        var t = document.getElementById("toast");
+        t.textContent = pesan;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+      }
+
+      /* ---------------- Pesan WhatsApp invoice ---------------- */
+      function pesanInvoice(inv) {
+        var p = cariPelanggan(inv.pelangganId);
+        var h = hitung(inv);
+        var garis = ["Halo " + p.nama + ",", "", "Berikut tagihan dari kami:", "",
+          "No. Invoice: " + inv.nomor,
+          "Tanggal: " + formatTanggal(inv.tanggal),
+          "Jatuh Tempo: " + formatTanggal(inv.jatuhTempo), "", "Rincian:"];
+        inv.items.forEach(function (it) {
+          garis.push("- " + it.nama + " x" + it.jumlah + " = " + rp(it.jumlah * it.harga));
+        });
+        garis.push("", "Subtotal: " + rp(h.subtotal));
+        if (inv.pakaiPpn) garis.push("PPN 11%: " + rp(h.ppn));
+        garis.push("Total Tagihan: " + rp(h.total));
+        garis.push("Status: " + inv.status);
+        if (inv.catatan) garis.push("", "Catatan: " + inv.catatan);
+        garis.push("", "Mohon pembayaran sebelum tanggal jatuh tempo. Terima kasih.");
+        return garis.join("\n");
+      }
+      function linkWaInvoice(inv) {
+        var p = cariPelanggan(inv.pelangganId);
+        var no = digitWa(p.wa);
+        var teks = encodeURIComponent(pesanInvoice(inv));
+        return no ? "https://wa.me/" + no + "?text=" + teks : "https://wa.me/?text=" + teks;
+      }
+
+      /* ---------------- Kartu invoice ---------------- */
+      function kartuInvoice(inv, opsi) {
+        opsi = opsi || {};
+        var p = cariPelanggan(inv.pelangganId);
+        var h = hitung(inv);
+        var rows = inv.items.map(function (it) {
+          return "<tr><td>" + esc(it.nama) + "</td><td class='num'>" + it.jumlah + "</td><td class='num'>" + rp(it.harga) + "</td><td class='num'>" + rp(it.jumlah * it.harga) + "</td></tr>";
+        }).join("");
+        var detail = "<div class='inv-detail' id='detail-" + inv.nomor + "'>" +
+          "<table><thead><tr><th>Barang / Jasa</th><th class='num'>Jml</th><th class='num'>Harga</th><th class='num'>Subtotal</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+          "<div class='totals'><div class='row'><span>Subtotal</span><span class='mono'>" + rp(h.subtotal) + "</span></div>" +
+          (inv.pakaiPpn ? "<div class='row'><span>PPN 11%</span><span class='mono'>" + rp(h.ppn) + "</span></div>" : "<div class='row'><span>PPN</span><span>Tanpa PPN</span></div>") +
+          "<div class='row grand'><span>Total</span><span class='mono'>" + rp(h.total) + "</span></div></div>" +
+          (inv.catatan ? "<p style='margin:10px 0 0;color:var(--muted);font-size:.88rem;'>Catatan: " + esc(inv.catatan) + "</p>" : "") +
+          "</div>";
+
+        var aksiStatus = "";
+        if (opsi.aksiStatus) {
+          aksiStatus =
+            "<label style='font-size:.85rem;'>Status: <select data-ubah-status='" + inv.nomor + "' aria-label='Ubah status " + inv.nomor + "'>" +
+            ["Belum Lunas", "Jatuh Tempo", "Lunas"].map(function (s) {
+              return "<option value='" + s + "'" + (inv.status === s ? " selected" : "") + ">" + s + "</option>";
+            }).join("") + "</select></label>" +
+            (inv.status !== "Lunas" ? "<button type='button' class='btn btn-primary btn-sm' data-tandai-lunas='" + inv.nomor + "'>Tandai Lunas</button>" : "");
+        }
+
+        return "<article class='inv-item'>" +
+          "<div class='inv-head'><span class='no'>" + inv.nomor + "</span>" +
+          "<span class='cust'>" + esc(p.nama) + "</span>" +
+          "<span class='badge " + kelasBadge(inv.status) + "'>" + inv.status + "</span>" +
+          "<span class='total'>" + rp(h.total) + "</span></div>" +
+          "<div class='inv-meta'><span>Terbit: " + formatTanggal(inv.tanggal) + "</span>" +
+          "<span class='" + (lewatTempo(inv) ? "due-late" : "") + "'>Jatuh tempo: " + formatTanggal(inv.jatuhTempo) + (lewatTempo(inv) ? " (lewat)" : "") + "</span>" +
+          "<span>" + inv.items.length + " rincian" + (inv.pakaiPpn ? " · termasuk PPN 11%" : " · tanpa PPN") + "</span></div>" +
+          "<div class='inv-actions'>" +
+          "<button type='button' class='btn btn-ghost btn-sm' data-lihat='" + inv.nomor + "'>Lihat Rincian</button>" +
+          "<a class='btn btn-wa btn-sm' target='_blank' rel='noopener' href='" + linkWaInvoice(inv) + "'>Kirim via WhatsApp</a>" +
+          aksiStatus +
+          "</div>" + detail + "</article>";
+      }
+      function kosong(pesan) { return "<div class='empty'>" + pesan + "</div>"; }
+
+      /* ---------------- Render ---------------- */
+      function renderStatistik() {
+        var piutang = 0, jatuh = 0, lunas = 0, nP = 0, nJ = 0, nL = 0;
+        invoices.forEach(function (inv) {
+          var t = hitung(inv).total;
+          if (inv.status === "Lunas") { lunas += t; nL++; }
+          else { piutang += t; nP++; if (inv.status === "Jatuh Tempo") { jatuh += t; nJ++; } }
+        });
+        document.getElementById("statTotal").textContent = invoices.length;
+        document.getElementById("statPiutang").textContent = rp(piutang);
+        document.getElementById("statPiutangSub").textContent = nP + " invoice menunggu bayar";
+        document.getElementById("statJatuh").textContent = rp(jatuh);
+        document.getElementById("statJatuhSub").textContent = nJ + " invoice lewat tanggal bayar";
+        document.getElementById("statLunas").textContent = rp(lunas);
+        document.getElementById("statLunasSub").textContent = nL + " invoice lunas";
+      }
+
+      function renderPilihanPelanggan() {
+        var sel = document.getElementById("fPelanggan");
+        var nilai = sel.value;
+        sel.innerHTML = pelanggan.map(function (p) {
+          return "<option value='" + p.id + "'>" + esc(p.nama) + "</option>";
+        }).join("");
+        if (nilai) sel.value = nilai;
+      }
+
+      function renderFakturTerbaru() {
+        var el = document.getElementById("fakturTerbaru");
+        var terakhir = invoices.slice(-3).reverse();
+        el.innerHTML = terakhir.length ? terakhir.map(function (inv) { return kartuInvoice(inv, {}); }).join("") : kosong("Belum ada invoice. Buat invoice pertama Anda lewat formulir di atas.");
+      }
+
+      function renderPelanggan() {
+        var el = document.getElementById("daftarPelanggan");
+        el.innerHTML = pelanggan.map(function (p) {
+          var invs = invoices.filter(function (i) { return i.pelangganId === p.id; });
+          var tagihan = 0, utang = 0;
+          invs.forEach(function (i) {
+            var t = hitung(i).total; tagihan += t;
+            if (i.status !== "Lunas") utang += t;
+          });
+          return "<div class='cust-card'><h3>" + esc(p.nama) + "</h3>" +
+            "<div class='meta'>WA: " + esc(p.wa) + (p.email ? "<br />" + esc(p.email) : "") + (p.alamat ? "<br />" + esc(p.alamat) : "") + "</div>" +
+            "<div class='figures'><div><span>Invoice</span><b>" + invs.length + "</b></div>" +
+            "<div><span>Total Tagihan</span><b>" + rp(tagihan) + "</b></div>" +
+            "<div class='owe'><span>Piutang</span><b>" + rp(utang) + "</b></div></div></div>";
+        }).join("");
+      }
+
+      function renderStatus() {
+        var f = document.getElementById("filterStatusTab").value;
+        var el = document.getElementById("daftarStatus");
+        var list = invoices.filter(function (i) { return f === "semua" || i.status === f; }).slice().reverse();
+        el.innerHTML = list.length ? list.map(function (inv) { return kartuInvoice(inv, { aksiStatus: true }); }).join("") : kosong("Tidak ada invoice dengan status ini.");
+      }
+
+      function renderRiwayat() {
+        var q = document.getElementById("cariRiwayat").value.trim().toLowerCase();
+        var f = document.getElementById("filterRiwayat").value;
+        var el = document.getElementById("daftarRiwayat");
+        var list = invoices.filter(function (inv) {
+          var p = cariPelanggan(inv.pelangganId);
+          var cocokCari = !q || inv.nomor.toLowerCase().indexOf(q) >= 0 || p.nama.toLowerCase().indexOf(q) >= 0;
+          var cocokStatus = f === "semua" || inv.status === f;
+          return cocokCari && cocokStatus;
+        }).slice().reverse();
+        el.innerHTML = list.length ? list.map(function (inv) { return kartuInvoice(inv, {}); }).join("") : kosong("Tidak ada invoice yang cocok dengan pencarian / saringan ini.");
+      }
+
+      function renderLaporan() {
+        var piutang = 0, jatuh = 0, belum = 0, nJatuh = 0, nBelum = 0;
+        invoices.forEach(function (inv) {
+          if (inv.status === "Lunas") return;
+          var t = hitung(inv).total; piutang += t;
+          if (inv.status === "Jatuh Tempo") { jatuh += t; nJatuh++; } else { belum += t; nBelum++; }
+        });
+        document.getElementById("lapPiutang").textContent = rp(piutang);
+        document.getElementById("lapPiutangSub").textContent = (nJatuh + nBelum) + " invoice belum dibayar dari " + invoices.length + " invoice";
+        document.getElementById("lapJatuh").textContent = rp(jatuh);
+        document.getElementById("lapJatuhSub").textContent = nJatuh + " invoice sudah melewati tanggal jatuh tempo";
+        var pj = piutang ? Math.round(jatuh / piutang * 100) : 0;
+        var pb = piutang ? 100 - pj : 0;
+        document.getElementById("barJatuh").style.width = pj + "%";
+        document.getElementById("barJatuhLabel").textContent = pj + "% dari piutang";
+        document.getElementById("barBelum").style.width = pb + "%";
+        document.getElementById("barBelumLabel").textContent = pb + "% dari piutang";
+
+        var per = pelanggan.map(function (p) {
+          var invs = invoices.filter(function (i) { return i.pelangganId === p.id; });
+          var tagihan = 0, lunas = 0, utang = 0, jt = 0;
+          invs.forEach(function (i) {
+            var t = hitung(i).total; tagihan += t;
+            if (i.status === "Lunas") lunas += t;
+            else { utang += t; if (i.status === "Jatuh Tempo") jt += t; }
+          });
+          return { nama: p.nama, jumlah: invs.length, tagihan: tagihan, lunas: lunas, utang: utang, jt: jt };
+        }).sort(function (a, b) { return b.utang - a.utang; });
+
+        var tbody = document.querySelector("#tabelPerPelanggan tbody");
+        tbody.innerHTML = per.map(function (r) {
+          return "<tr><td><b>" + esc(r.nama) + "</b></td><td class='num'>" + r.jumlah + "</td><td class='num'>" + rp(r.tagihan) + "</td><td class='num'>" + rp(r.lunas) + "</td><td class='num'><b>" + rp(r.utang) + "</b></td><td class='num' style='color:var(--red);font-weight:700;'>" + rp(r.jt) + "</td></tr>";
+        }).join("");
+        var T = per.reduce(function (a, r) { return { jumlah: a.jumlah + r.jumlah, tagihan: a.tagihan + r.tagihan, lunas: a.lunas + r.lunas, utang: a.utang + r.utang, jt: a.jt + r.jt }; }, { jumlah: 0, tagihan: 0, lunas: 0, utang: 0, jt: 0 });
+        document.getElementById("ftInv").textContent = T.jumlah;
+        document.getElementById("ftTagihan").textContent = rp(T.tagihan);
+        document.getElementById("ftLunas").textContent = rp(T.lunas);
+        document.getElementById("ftPiutang").textContent = rp(T.utang);
+        document.getElementById("ftJatuh").textContent = rp(T.jt);
+
+        var tagih = invoices.filter(function (i) { return i.status !== "Lunas"; })
+          .sort(function (a, b) { return a.jatuhTempo < b.jatuhTempo ? -1 : 1; });
+        document.getElementById("daftarTagih").innerHTML = tagih.length
+          ? tagih.map(function (inv) { return kartuInvoice(inv, {}); }).join("")
+          : kosong("Semua invoice sudah lunas. Tidak ada yang perlu ditagih.");
+      }
+
+      function renderSemua() {
+        renderStatistik(); renderPilihanPelanggan(); renderFakturTerbaru();
+        renderPelanggan(); renderStatus(); renderRiwayat(); renderLaporan();
+      }
+
+      /* ---------------- Formulir invoice ---------------- */
+      var itemRows = document.getElementById("itemRows");
+      function barisItem(nama, jumlah, harga) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td><input type='text' class='it-nama' placeholder='cth. Jasa servis / nama barang' value='" + esc(nama || "") + "' aria-label='Nama barang atau jasa' /></td>" +
+          "<td><input type='number' class='it-jumlah num' min='0' step='1' value='" + (jumlah == null ? 1 : jumlah) + "' aria-label='Jumlah' /></td>" +
+          "<td><input type='number' class='it-harga num' min='0' step='500' value='" + (harga == null ? "" : harga) + "' placeholder='0' aria-label='Harga satuan' /></td>" +
+          "<td class='num it-sub' style='font-weight:700;'>Rp0</td>" +
+          "<td><button type='button' class='icon-btn' aria-label='Hapus baris'>&times;</button></td>";
+        tr.querySelector(".icon-btn").addEventListener("click", function () {
+          if (itemRows.children.length <= 1) { toast("Invoice minimal punya satu rincian."); return; }
+          tr.remove(); hitungForm();
+        });
+        tr.querySelectorAll("input").forEach(function (inp) { inp.addEventListener("input", hitungForm); });
+        itemRows.appendChild(tr);
+      }
+      function bacaItemForm() {
+        var hasil = [];
+        itemRows.querySelectorAll("tr").forEach(function (tr) {
+          hasil.push({
+            nama: tr.querySelector(".it-nama").value.trim(),
+            jumlah: Number(tr.querySelector(".it-jumlah").value) || 0,
+            harga: Number(tr.querySelector(".it-harga").value) || 0
+          });
+        });
+        return hasil;
+      }
+      function hitungForm() {
+        var items = bacaItemForm(), sub = 0;
+        itemRows.querySelectorAll("tr").forEach(function (tr, i) {
+          var s = items[i].jumlah * items[i].harga; sub += s;
+          tr.querySelector(".it-sub").textContent = rp(s);
+        });
+        var pakaiPpn = document.getElementById("fPpn").checked;
+        var ppn = pakaiPpn ? Math.round(sub * 0.11) : 0;
+        document.getElementById("tSubtotal").textContent = rp(sub);
+        document.getElementById("tPpn").textContent = rp(ppn);
+        document.getElementById("tTotal").textContent = rp(sub + ppn);
+        document.getElementById("rowPpn").style.opacity = pakaiPpn ? "1" : ".45";
+      }
+      function nomorOtomatis() { return "INV-2026-11-" + String(nomorBerikut).padStart(3, "0"); }
+      function resetForm() {
+        document.getElementById("formInvoice").reset();
+        document.getElementById("fNomor").value = nomorOtomatis();
+        document.getElementById("fTanggal").value = HARI_INI;
+        document.getElementById("fJatuhTempo").value = "2026-12-04";
+        document.getElementById("fPpn").checked = true;
+        itemRows.innerHTML = "";
+        barisItem("", 1, "");
+        barisItem("", 1, "");
+        hitungForm();
+      }
+
+      document.getElementById("btnTambahBaris").addEventListener("click", function () { barisItem("", 1, ""); });
+      document.getElementById("fPpn").addEventListener("change", hitungForm);
+      document.getElementById("btnResetForm").addEventListener("click", resetForm);
+
+      document.getElementById("formInvoice").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var items = bacaItemForm().filter(function (it) { return it.nama && it.jumlah > 0; });
+        if (!items.length) { toast("Isi minimal satu rincian barang/jasa dengan nama dan jumlah."); return; }
+        var inv = {
+          nomor: nomorOtomatis(),
+          pelangganId: Number(document.getElementById("fPelanggan").value),
+          tanggal: document.getElementById("fTanggal").value || HARI_INI,
+          jatuhTempo: document.getElementById("fJatuhTempo").value || HARI_INI,
+          status: "Belum Lunas",
+          pakaiPpn: document.getElementById("fPpn").checked,
+          catatan: document.getElementById("fCatatan").value.trim(),
+          items: items
+        };
+        invoices.push(inv);
+        nomorBerikut++;
+        renderSemua();
+        resetForm();
+        toast("Invoice " + inv.nomor + " tersimpan — status Belum Lunas.");
+      });
+
+      /* ---------------- Formulir pelanggan ---------------- */
+      document.getElementById("formPelanggan").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var p = {
+          id: idPelangganBerikut++,
+          nama: document.getElementById("pNama").value.trim(),
+          wa: document.getElementById("pWa").value.trim(),
+          email: document.getElementById("pEmail").value.trim(),
+          alamat: document.getElementById("pAlamat").value.trim()
+        };
+        if (!p.nama || !p.wa) { toast("Nama dan nomor WhatsApp pelanggan wajib diisi."); return; }
+        pelanggan.push(p);
+        e.target.reset();
+        renderSemua();
+        toast("Pelanggan " + p.nama + " ditambahkan.");
+      });
+
+      /* ---------------- Aksi pada kartu (delegasi) ---------------- */
+      document.addEventListener("click", function (e) {
+        var lihat = e.target.closest("[data-lihat]");
+        if (lihat) {
+          var d = document.getElementById("detail-" + lihat.getAttribute("data-lihat"));
+          if (d) { d.classList.toggle("open"); lihat.textContent = d.classList.contains("open") ? "Tutup Rincian" : "Lihat Rincian"; }
+          return;
+        }
+        var lunas = e.target.closest("[data-tandai-lunas]");
+        if (lunas) {
+          var no = lunas.getAttribute("data-tandai-lunas");
+          invoices.forEach(function (i) { if (i.nomor === no) i.status = "Lunas"; });
+          renderSemua();
+          toast("Invoice " + no + " ditandai LUNAS.");
+        }
+      });
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest("[data-ubah-status]");
+        if (!sel) return;
+        var no = sel.getAttribute("data-ubah-status");
+        invoices.forEach(function (i) { if (i.nomor === no) i.status = sel.value; });
+        renderSemua();
+        toast("Status " + no + " diubah menjadi " + sel.value + ".");
+      });
+
+      /* ---------------- Pencarian & saringan ---------------- */
+      document.getElementById("cariRiwayat").addEventListener("input", renderRiwayat);
+      document.getElementById("filterRiwayat").addEventListener("change", renderRiwayat);
+      document.getElementById("filterStatusTab").addEventListener("change", renderStatus);
+
+      /* ---------------- Tab ---------------- */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.setAttribute("aria-selected", b === btn ? "true" : "false"); });
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          document.getElementById("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      /* ---------------- Mulai ---------------- */
+      resetForm();
+      renderSemua();
+    </script>
+  </body>
+</html>

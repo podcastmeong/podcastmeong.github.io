@@ -1,0 +1,1127 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Gudang (Mandiri)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f2f8f3;
+        --bg-soft: #e7f3ea;
+        --card: #ffffff;
+        --ink: #14261a;
+        --ink-2: #43584a;
+        --ink-3: #718578;
+        --line: #dcebe0;
+        --green: #16a34a;
+        --green-dark: #15803d;
+        --green-deep: #166534;
+        --green-tint: #dcf2e3;
+        --green-tint-2: #eef8f1;
+        --amber: #4d7c0f;
+        --amber-bg: #ecfccb;
+        --red: #b91c1c;
+        --red-bg: #fee2e2;
+        --blue: #1d4ed8;
+        --blue-bg: #dbeafe;
+        --shadow: 0 1px 2px rgba(20, 60, 35, .05), 0 8px 24px -12px rgba(20, 60, 35, .14);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1710;
+          --bg-soft: #12241a;
+          --card: #15251b;
+          --ink: #e7f3ea;
+          --ink-2: #b7cabb;
+          --ink-3: #8ba593;
+          --line: #274434;
+          --green: #22c55e;
+          --green-dark: #4ade80;
+          --green-deep: #86efac;
+          --green-tint: #1d3a28;
+          --green-tint-2: #182b1f;
+          --amber: #a3e635;
+          --amber-bg: #2c3a12;
+          --red: #f87171;
+          --red-bg: #3d1a1a;
+          --blue: #93c5fd;
+          --blue-bg: #1c2f52;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+        }
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      /* ---------- Header ringkas ---------- */
+      .page-head { margin: 4px 0 18px; }
+      .page-head h1 { font-size: clamp(1.45rem, 4.5vw, 2rem); margin: 0 0 4px; font-weight: 800; letter-spacing: -.02em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; max-width: 62ch; }
+
+      /* ---------- Statistik ---------- */
+      .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 18px; }
+      @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+      .stat {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 14px 16px; box-shadow: var(--shadow);
+      }
+      .stat .num { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; color: var(--green-deep); line-height: 1.1; }
+      .stat .lbl { font-size: .8rem; color: var(--ink-2); font-weight: 600; margin-top: 2px; }
+      .stat.warn .num { color: var(--green-dark); }
+
+      /* ---------- Tab ---------- */
+      .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .tab-btn {
+        appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+        font: inherit; font-weight: 700; font-size: .88rem; padding: 9px 15px; border-radius: 999px;
+        cursor: pointer; box-shadow: var(--shadow); display: inline-flex; align-items: center; gap: 7px;
+      }
+      .tab-btn svg { width: 16px; height: 16px; flex: none; }
+      .tab-btn:hover { border-color: var(--green); color: var(--green-dark); }
+      .tab-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1710; } }
+      .tab-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+        outline: 3px solid var(--green); outline-offset: 2px;
+      }
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      /* ---------- Kartu & form ---------- */
+      .card {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+      }
+      .card h2 { margin: 0 0 4px; font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
+      .card h3 { margin: 0 0 8px; font-size: 1rem; font-weight: 800; }
+      .card .sub { color: var(--ink-2); font-size: .88rem; margin: 0 0 14px; }
+      .grid-2 { display: grid; gap: 16px; }
+      .grid-2 > *, .row-2 > *, .stats > * { min-width: 0; }
+      input, select, textarea { min-width: 0; max-width: 100%; }
+      @media (min-width: 860px) { .grid-2 { grid-template-columns: 380px 1fr; align-items: start; } }
+      form .field { margin-bottom: 12px; }
+      label.flabel { display: block; font-size: .82rem; font-weight: 700; color: var(--ink-2); margin-bottom: 5px; }
+      input[type="text"], input[type="number"], input[type="date"], select, textarea {
+        width: 100%; font: inherit; font-size: .95rem; color: var(--ink);
+        background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px;
+      }
+      textarea { resize: vertical; min-height: 64px; }
+      input:focus, select:focus, textarea:focus { border-color: var(--green); background: var(--card); }
+      .row-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      @media (min-width: 480px) { .row-2 { grid-template-columns: 1fr 1fr; } }
+
+      .btn {
+        appearance: none; border: 1px solid transparent; font: inherit; font-weight: 700; font-size: .9rem;
+        padding: 9px 16px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+        background: var(--green); color: #fff; min-height: 2.5rem;
+      }
+      @media (prefers-color-scheme: dark) { .btn { color: #0c1710; } }
+      .btn:hover { background: var(--green-dark); }
+      @media (prefers-color-scheme: dark) { .btn:hover { background: var(--green); filter: brightness(1.1); } }
+      .btn.ghost { background: var(--card); color: var(--green-dark); border-color: var(--green); }
+      .btn.ghost:hover { background: var(--green-tint-2); }
+      .btn.small { padding: 5px 11px; font-size: .82rem; min-height: 2.25rem; border-radius: 8px; }
+      .btn.danger { background: var(--card); color: var(--red); border-color: var(--red); }
+      .btn.danger:hover { background: var(--red-bg); }
+      .btn.danger.armed { background: var(--red); color: #fff; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      /* ---------- Tabel ---------- */
+      .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+      table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 560px; }
+      th, td { padding: 10px 12px; text-align: left; vertical-align: middle; }
+      thead th { background: var(--green-tint-2); color: var(--green-deep); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 800; white-space: nowrap; }
+      tbody tr { border-top: 1px solid var(--line); }
+      tbody tr:hover { background: var(--green-tint-2); }
+      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .85em; font-weight: 700; }
+      .empty { padding: 22px 16px; text-align: center; color: var(--ink-3); font-size: .9rem; }
+
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .75rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+      .badge.green { background: var(--green-tint); color: var(--green-deep); }
+      .badge.amber { background: var(--amber-bg); color: var(--amber); }
+      .badge.red { background: var(--red-bg); color: var(--red); }
+      .badge.blue { background: var(--blue-bg); color: var(--blue); }
+      .badge.gray { background: var(--bg-soft); color: var(--ink-2); }
+
+      .searchbar { display: flex; gap: 8px; margin-bottom: 14px; }
+      .searchbar input { flex: 1; }
+      .hint { font-size: .82rem; color: var(--ink-3); margin-top: 8px; }
+      .pos { color: var(--green-dark); font-weight: 700; }
+      .neg { color: var(--red); font-weight: 700; }
+      .zero { color: var(--ink-3); }
+
+      /* ---------- Picking ---------- */
+      .order { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; background: var(--card); }
+      .order-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+      .order-head .t { font-weight: 800; }
+      .order-head .t span { color: var(--ink-3); font-weight: 600; font-size: .85rem; }
+      .pick-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px dashed var(--line); }
+      .pick-line .nm { flex: 1 1 180px; font-weight: 600; font-size: .92rem; }
+      .pick-line .nm small { display: block; color: var(--ink-3); font-weight: 500; }
+      .check-btn {
+        appearance: none; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer;
+        border: 1px solid var(--line); background: var(--bg); color: var(--ink-2);
+        border-radius: 999px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; min-height: 2.25rem;
+      }
+      .check-btn .box { width: 15px; height: 15px; border-radius: 4px; border: 2px solid var(--ink-3); display: inline-block; flex: none; }
+      .check-btn.done { background: var(--green-tint); border-color: var(--green); color: var(--green-deep); }
+      .check-btn.done .box { background: var(--green); border-color: var(--green); position: relative; }
+      .check-btn.done .box::after { content: "✓"; color: #fff; font-size: 11px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; line-height: 1; }
+      @media (prefers-color-scheme: dark) { .check-btn.done .box::after { color: #0c1710; } }
+
+      /* ---------- Label ---------- */
+      .label-preview { display: flex; justify-content: center; padding: 10px 0 4px; }
+      .sku-label {
+        background: #fff; color: #111; border: 2px solid #111; border-radius: 8px;
+        width: 340px; max-width: 100%; padding: 16px 18px 12px; text-align: center;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .sku-label .shop { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #15803d; }
+      .sku-label .nm { font-size: 1.12rem; font-weight: 800; margin: 4px 0 2px; line-height: 1.25; }
+      .sku-label .meta { font-size: .8rem; color: #444; margin-bottom: 8px; }
+      .barcode { display: flex; align-items: stretch; justify-content: center; height: 58px; margin: 4px auto 4px; }
+      .barcode i { display: block; background: #111; }
+      .barcode i.sp { background: transparent; }
+      .sku-label .code { font-family: "JetBrains Mono", monospace; font-weight: 700; letter-spacing: .28em; font-size: .95rem; }
+
+      /* ---------- Panduan ---------- */
+      .guide-item { border-top: 1px solid var(--line); padding: 14px 0; }
+      .guide-item:first-of-type { border-top: none; padding-top: 2px; }
+      .guide-item h3 { display: flex; align-items: center; gap: 9px; }
+      .guide-item h3 .n {
+        width: 26px; height: 26px; border-radius: 8px; background: var(--green); color: #fff; flex: none;
+        display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 800;
+      }
+      @media (prefers-color-scheme: dark) { .guide-item h3 .n { color: #0c1710; } }
+      .guide-item p { margin: 0 0 0 35px; color: var(--ink-2); font-size: .92rem; }
+      .price-grid { display: grid; gap: 12px; }
+      @media (min-width: 720px) { .price-grid { grid-template-columns: 1fr 1fr; } }
+      .price-box { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--green-tint-2); }
+      .price-box h4 { margin: 0 0 8px; font-size: .95rem; font-weight: 800; color: var(--green-deep); }
+      .price-box ul { margin: 0; padding: 0; list-style: none; }
+      .price-box li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); font-size: .92rem; }
+      .price-box li:first-child { border-top: none; }
+      .price-box li b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .wa-btn {
+        display: inline-flex; align-items: center; gap: 8px; background: #16a34a; color: #fff; text-decoration: none;
+        font-weight: 800; padding: 11px 18px; border-radius: 10px; min-height: 2.75rem;
+      }
+      .wa-btn:hover { background: #15803d; }
+
+      footer.note {
+        margin-top: 26px; border: 1px dashed var(--green); background: var(--green-tint-2);
+        border-radius: var(--radius); padding: 14px 16px; font-size: .87rem; color: var(--ink-2);
+      }
+      footer.note b { color: var(--green-deep); }
+
+      /* ---------- Toast ---------- */
+      #toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 80px); z-index: 50;
+        background: var(--green-deep); color: #fff; font-weight: 700; font-size: .9rem;
+        padding: 11px 18px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+        opacity: 0; transition: transform .25s ease, opacity .25s ease; pointer-events: none; max-width: 92vw; text-align: center;
+      }
+      @media (prefers-color-scheme: dark) { #toast { color: #0c1710; background: var(--green); } }
+      #toast.show { transform: translate(-50%, 0); opacity: 1; }
+      @media (prefers-reduced-motion: reduce) { #toast { transition: none; } html { scroll-behavior: auto; } }
+
+      /* ---------- Cetak label ---------- */
+      @media print {
+        body { background: #fff; }
+        body * { visibility: hidden; }
+        #label-box, #label-box * { visibility: visible; }
+        #label-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Gudang (Mandiri)</h1>
+        <p>Kelola penerimaan, penyimpanan, picking &amp; packing, stok opname, barang rusak &amp; retur, sampai label barcode — semua dalam satu aplikasi gudang.</p>
+      </header>
+
+      <section class="stats" aria-label="Ringkasan gudang">
+        <div class="stat"><div class="num" id="stat-sku">0</div><div class="lbl">Jenis barang (SKU)</div></div>
+        <div class="stat"><div class="num" id="stat-stok">0</div><div class="lbl">Total stok (unit)</div></div>
+        <div class="stat"><div class="num" id="stat-order">0</div><div class="lbl">Pesanan belum selesai</div></div>
+        <div class="stat warn"><div class="num" id="stat-rusak">0</div><div class="lbl">Barang rusak &amp; retur (unit)</div></div>
+      </section>
+
+      <nav class="tabs" role="tablist" aria-label="Modul gudang">
+        <button class="tab-btn active" role="tab" data-tab="penerimaan" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+          Penerimaan</button>
+        <button class="tab-btn" role="tab" data-tab="penyimpanan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
+          Penyimpanan</button>
+        <button class="tab-btn" role="tab" data-tab="picking" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+          Picking &amp; Packing</button>
+        <button class="tab-btn" role="tab" data-tab="opname" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4a3 3 0 0 1 6 0"/><path d="M9 12h6M9 16h4"/></svg>
+          Opname</button>
+        <button class="tab-btn" role="tab" data-tab="rusak" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+          Rusak &amp; Retur</button>
+        <button class="tab-btn" role="tab" data-tab="label" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M7 8v8M11 8v8M14 8v8M18 8v8"/></svg>
+          Label</button>
+        <button class="tab-btn" role="tab" data-tab="laporan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 6v12"/></svg>
+          Laporan</button>
+        <button class="tab-btn" role="tab" data-tab="panduan" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+          Panduan</button>
+      </nav>
+
+      <!-- ============ 1. PENERIMAAN ============ -->
+      <section class="panel active" id="panel-penerimaan" role="tabpanel">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Terima Barang Masuk</h2>
+            <p class="sub">Catat barang yang baru tiba dari supplier. Stok barang otomatis bertambah; SKU baru akan dibuatkan kartu stok baru.</p>
+            <form id="form-penerimaan">
+              <div class="field">
+                <label class="flabel" for="in-nama">Nama barang</label>
+                <input type="text" id="in-nama" list="list-barang" placeholder="mis. Beras Premium Ramos 5 kg" required />
+                <datalist id="list-barang"></datalist>
+              </div>
+              <div class="row-2">
+                <div class="field">
+                  <label class="flabel" for="in-sku">Kode SKU</label>
+                  <input type="text" id="in-sku" class="mono" placeholder="mis. BR-001" required />
+                </div>
+                <div class="field">
+                  <label class="flabel" for="in-jumlah">Jumlah</label>
+                  <input type="number" id="in-jumlah" min="1" step="1" placeholder="0" required />
+                </div>
+              </div>
+              <div class="row-2">
+                <div class="field">
+                  <label class="flabel" for="in-satuan">Satuan</label>
+                  <select id="in-satuan">
+                    <option>karton</option><option>dus</option><option>sak</option>
+                    <option>pcs</option><option>pak</option><option>liter</option><option>kg</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="flabel" for="in-rak">Lokasi rak (barang baru)</label>
+                  <input type="text" id="in-rak" placeholder="mis. Rak A1" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="flabel" for="in-supplier">Supplier</label>
+                <input type="text" id="in-supplier" list="list-supplier" placeholder="mis. PT Sumber Pangan Nusantara" required />
+                <datalist id="list-supplier">
+                  <option value="PT Sumber Pangan Nusantara"></option>
+                  <option value="CV Berkah Distribusi"></option>
+                  <option value="PT Indofood Distribusi"></option>
+                  <option value="UD Makmur Jaya"></option>
+                  <option value="PT Wings Surya Pratama"></option>
+                </datalist>
+              </div>
+              <div class="field">
+                <label class="flabel" for="in-tanggal">Tanggal diterima</label>
+                <input type="date" id="in-tanggal" required />
+              </div>
+              <button type="submit" class="btn" style="width:100%; justify-content:center;">Simpan &amp; Tambah Stok</button>
+              <p class="hint">Mengisi nama barang yang sudah ada akan mengisi SKU-nya otomatis.</p>
+            </form>
+          </div>
+          <div class="card">
+            <h2>Daftar Penerimaan</h2>
+            <p class="sub">Riwayat barang masuk terakhir. Menghapus catatan penerimaan akan mengurangi stok kembali.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Barang</th><th>Supplier</th><th class="num">Jumlah</th><th></th></tr></thead>
+                <tbody id="tbody-penerimaan"></tbody>
+              </table>
+            </div>
+            <p class="hint" id="total-penerimaan"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 2. PENYIMPANAN ============ -->
+      <section class="panel" id="panel-penyimpanan" role="tabpanel">
+        <div class="card">
+          <h2>Daftar Barang &amp; Lokasi Rak</h2>
+          <p class="sub">Semua barang di gudang beserta stok dan lokasi raknya. Gunakan pencarian untuk menemukan barang, lalu pindahkan lokasi rak bila perlu.</p>
+          <div class="searchbar">
+            <input type="text" id="cari-barang" placeholder="Cari nama barang, SKU, atau rak… mis. beras / BR-001 / Rak A" aria-label="Cari barang" />
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Barang</th><th>SKU</th><th class="num">Stok</th><th>Lokasi rak saat ini</th><th>Pindah ke rak</th><th></th></tr></thead>
+              <tbody id="tbody-penyimpanan"></tbody>
+            </table>
+          </div>
+          <p class="hint">Stok di bawah 100 unit ditandai “Stok Menipis” agar segera dipesan ulang ke supplier.</p>
+        </div>
+      </section>
+
+      <!-- ============ 3. PICKING & PACKING ============ -->
+      <section class="panel" id="panel-picking" role="tabpanel">
+        <div class="card">
+          <h2>Pesanan untuk Diambil &amp; Di-packing</h2>
+          <p class="sub">Tandai setiap barang yang sudah diambil dari rak, lalu tandai sudah di-packing. Setelah semua baris selesai, selesaikan pesanan — stok akan berkurang otomatis.</p>
+          <div id="daftar-pesanan"></div>
+        </div>
+        <div class="card">
+          <h2>Buat Pesanan Baru</h2>
+          <p class="sub">Tambah daftar picking baru untuk pelanggan atau toko tujuan.</p>
+          <form id="form-pesanan">
+            <div class="row-2">
+              <div class="field">
+                <label class="flabel" for="ord-tujuan">Tujuan / pelanggan</label>
+                <input type="text" id="ord-tujuan" placeholder="mis. Toko Berkah Jaya" required />
+              </div>
+              <div class="field">
+                <label class="flabel" for="ord-barang">Barang</label>
+                <select id="ord-barang"></select>
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label class="flabel" for="ord-jumlah">Jumlah diambil</label>
+                <input type="number" id="ord-jumlah" min="1" step="1" value="5" required />
+              </div>
+              <div class="field" style="display:flex; align-items:flex-end;">
+                <button type="submit" class="btn" style="width:100%; justify-content:center;">Tambah Pesanan</button>
+              </div>
+            </div>
+            <p class="hint">Pesanan baru berisi satu jenis barang. Untuk pesanan banyak barang, selesaikan pesanan contoh atau buat beberapa pesanan — versi pembeli mendukung banyak baris per pesanan.</p>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ 4. OPNAME ============ -->
+      <section class="panel" id="panel-opname" role="tabpanel">
+        <div class="card">
+          <h2>Stok Opname</h2>
+          <p class="sub">Hitung stok fisik di rak, isi kolom “Stok Fisik”, lalu simpan penyesuaian. Stok sistem akan disamakan dengan hasil hitungan fisik dan selisihnya tercatat.</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Barang</th><th>SKU</th><th>Lokasi</th><th class="num">Stok sistem</th><th class="num">Stok fisik</th><th class="num">Selisih</th><th></th></tr></thead>
+              <tbody id="tbody-opname"></tbody>
+            </table>
+          </div>
+          <div class="btn-row" style="margin-top:14px;">
+            <button class="btn" id="btn-opname-semua" type="button">Simpan Semua Penyesuaian</button>
+          </div>
+          <p class="hint">Selisih plus berarti stok fisik lebih banyak dari catatan; selisih minus berarti ada barang hilang, rusak, atau salah catat.</p>
+        </div>
+        <div class="card">
+          <h2>Riwayat Penyesuaian Opname</h2>
+          <p class="sub">Catatan hasil opname yang sudah disimpan.</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Tanggal</th><th>Barang</th><th class="num">Sistem</th><th class="num">Fisik</th><th class="num">Selisih</th></tr></thead>
+              <tbody id="tbody-opname-log"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5. RUSAK & RETUR ============ -->
+      <section class="panel" id="panel-rusak" role="tabpanel">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Catat Barang Rusak / Retur</h2>
+            <p class="sub">Barang rusak dibuang dari stok; barang retur dikirim kembali ke supplier. Keduanya mengurangi stok gudang.</p>
+            <form id="form-rusak">
+              <div class="field">
+                <label class="flabel" for="rk-barang">Barang</label>
+                <select id="rk-barang"></select>
+              </div>
+              <div class="row-2">
+                <div class="field">
+                  <label class="flabel" for="rk-jenis">Jenis</label>
+                  <select id="rk-jenis">
+                    <option value="Rusak">Rusak</option>
+                    <option value="Retur ke Supplier">Retur ke Supplier</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="flabel" for="rk-jumlah">Jumlah</label>
+                  <input type="number" id="rk-jumlah" min="1" step="1" value="1" required />
+                </div>
+              </div>
+              <div class="field">
+                <label class="flabel" for="rk-supplier">Supplier tujuan retur</label>
+                <input type="text" id="rk-supplier" list="list-supplier" placeholder="Diisi bila retur" />
+              </div>
+              <div class="field">
+                <label class="flabel" for="rk-ket">Keterangan</label>
+                <textarea id="rk-ket" placeholder="mis. Kemasan sobek saat bongkar muat"></textarea>
+              </div>
+              <div class="field">
+                <label class="flabel" for="rk-tanggal">Tanggal</label>
+                <input type="date" id="rk-tanggal" required />
+              </div>
+              <button type="submit" class="btn" style="width:100%; justify-content:center;">Simpan &amp; Kurangi Stok</button>
+            </form>
+          </div>
+          <div class="card">
+            <h2>Daftar Rusak &amp; Retur</h2>
+            <p class="sub">Semua catatan barang rusak dan retur ke supplier.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Barang</th><th>Jenis</th><th class="num">Jumlah</th><th>Keterangan</th><th></th></tr></thead>
+                <tbody id="tbody-rusak"></tbody>
+              </table>
+            </div>
+            <p class="hint" id="total-rusak"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 6. LABEL ============ -->
+      <section class="panel" id="panel-label" role="tabpanel">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Buat Label Barcode SKU</h2>
+            <p class="sub">Pilih barang dari daftar atau ketik kode SKU secara manual, lalu cetak labelnya untuk ditempel di rak atau kemasan.</p>
+            <form id="form-label">
+              <div class="field">
+                <label class="flabel" for="lb-barang">Pilih barang</label>
+                <select id="lb-barang"></select>
+              </div>
+              <div class="field">
+                <label class="flabel" for="lb-sku">Atau ketik kode SKU manual</label>
+                <input type="text" id="lb-sku" class="mono" placeholder="mis. BR-001" />
+              </div>
+              <button type="submit" class="btn" style="width:100%; justify-content:center;">Tampilkan Label</button>
+            </form>
+            <p class="hint">Demo ini memakai input kode manual. Scanner barcode sungguhan (kamera / alat scan USB) adalah fitur versi pembeli.</p>
+          </div>
+          <div class="card">
+            <h2>Pratinjau Label</h2>
+            <p class="sub">Label siap cetak ukuran rak standar.</p>
+            <div class="label-preview">
+              <div class="sku-label" id="label-box">
+                <div class="shop">Gudang Mandiri</div>
+                <div class="nm" id="label-nama">—</div>
+                <div class="meta" id="label-meta">—</div>
+                <div class="barcode" id="label-barcode" aria-hidden="true"></div>
+                <div class="code" id="label-kode">—</div>
+              </div>
+            </div>
+            <div class="btn-row" style="justify-content:center; margin-top:12px;">
+              <button class="btn" id="btn-cetak" type="button">Cetak Label</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 7. LAPORAN ============ -->
+      <section class="panel" id="panel-laporan" role="tabpanel">
+        <div class="card">
+          <h2>Ringkasan Stok per Lokasi Rak</h2>
+          <p class="sub">Total unit barang yang tersimpan di setiap rak.</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Lokasi rak</th><th class="num">Jenis barang</th><th class="num">Total unit</th></tr></thead>
+              <tbody id="tbody-lap-rak"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Penerimaan per Supplier</h2>
+          <p class="sub">Total barang masuk dari setiap supplier berdasarkan catatan penerimaan.</p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Supplier</th><th class="num">Kali terima</th><th class="num">Total unit masuk</th></tr></thead>
+              <tbody id="tbody-lap-supplier"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="grid-2" style="grid-template-columns:1fr;">
+          <div class="card">
+            <h2>Ringkasan Opname &amp; Kerusakan</h2>
+            <p class="sub">Total selisih opname yang pernah disesuaikan dan total barang keluar karena rusak / retur.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Kategori</th><th class="num">Jumlah catatan</th><th class="num">Total unit</th></tr></thead>
+                <tbody id="tbody-lap-ringkasan"></tbody>
+              </table>
+            </div>
+            <p class="hint" id="lap-stok-menipis"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 8. PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel">
+        <div class="card">
+          <h2>Panduan Penggunaan</h2>
+          <p class="sub">Cara memakai setiap tab di Aplikasi Gudang (Mandiri).</p>
+          <div class="guide-item"><h3><span class="n">1</span>Penerimaan</h3>
+            <p>Setiap ada kiriman dari supplier, isi form terima barang: nama barang, SKU, jumlah, satuan, supplier, dan tanggal. Klik “Simpan &amp; Tambah Stok” — stok barang langsung bertambah. Barang dengan SKU baru otomatis dibuatkan kartu stok dengan lokasi rak yang Anda isi. Salah catat? Hapus catatan penerimaan dan stok akan dikurangi kembali.</p></div>
+          <div class="guide-item"><h3><span class="n">2</span>Penyimpanan</h3>
+            <p>Lihat semua barang beserta stok dan lokasi raknya. Ketik nama barang, SKU, atau nama rak di kolom pencarian untuk menemukan barang dengan cepat. Untuk memindahkan barang, pilih rak tujuan pada baris barang lalu klik “Pindah”. Barang dengan stok di bawah 100 unit diberi tanda “Stok Menipis”.</p></div>
+          <div class="guide-item"><h3><span class="n">3</span>Picking &amp; Packing</h3>
+            <p>Daftar pesanan yang harus disiapkan. Ambil barang dari rak sesuai lokasi yang tertera, klik tombol “Diambil”, lalu setelah dibungkus klik “Di-packing”. Bila semua baris selesai, klik “Selesaikan Pesanan” — stok berkurang otomatis dan pesanan pindah ke status Selesai.</p></div>
+          <div class="guide-item"><h3><span class="n">4</span>Opname</h3>
+            <p>Lakukan hitung fisik berkala. Isi kolom “Stok Fisik” sesuai jumlah nyata di rak; selisih terhadap stok sistem tampil otomatis. Klik “Simpan” per barang atau “Simpan Semua Penyesuaian” — stok sistem disamakan dengan fisik dan selisihnya masuk riwayat opname serta laporan.</p></div>
+          <div class="guide-item"><h3><span class="n">5</span>Rusak &amp; Retur</h3>
+            <p>Barang pecah, sobek, atau kedaluwarsa dicatat di sini. Pilih barang, jenis (Rusak atau Retur ke Supplier), jumlah, dan keterangan. Stok berkurang saat catatan disimpan. Untuk retur, isi supplier tujuan agar mudah ditagihkan penggantinya.</p></div>
+          <div class="guide-item"><h3><span class="n">6</span>Label</h3>
+            <p>Buat label barcode untuk rak dan kemasan: pilih barang atau ketik SKU manual, klik “Tampilkan Label”, lalu “Cetak Label”. Demo ini memakai input kode manual; scanner barcode sungguhan tersedia di versi pembeli.</p></div>
+          <div class="guide-item"><h3><span class="n">7</span>Laporan</h3>
+            <p>Ringkasan otomatis: stok per lokasi rak, total penerimaan per supplier, hasil opname, dan total barang rusak/retur. Laporan selalu mengikuti data terbaru dari semua tab.</p></div>
+        </div>
+
+        <div class="card">
+          <h2>Garansi</h2>
+          <p class="sub">Setiap pembelian dilindungi garansi perbaikan bug/error gratis:</p>
+          <div class="price-box" style="margin-bottom:12px;">
+            <ul>
+              <li><span>Beli Sekali — Paket Pemula</span><b>Garansi 30 hari</b></li>
+              <li><span>Beli Sekali — Paket Profesional</span><b>Garansi 60 hari</b></li>
+              <li><span>Beli Sekali — Paket Bisnis</span><b>Garansi 90 hari</b></li>
+              <li><span>Berlangganan</span><b>Garansi + dukungan selama langganan aktif</b></li>
+            </ul>
+          </div>
+          <p style="margin:0; color:var(--ink-2); font-size:.92rem;">Cara klaim: kirim video atau screenshot bug/error lewat WhatsApp ke nomor pemesanan di bawah. Perbaikan bug dan error yang berasal dari aplikasi ditangani gratis selama masa garansi.</p>
+        </div>
+
+        <div class="card">
+          <h2>Harga &amp; Pemesanan</h2>
+          <p class="sub">Dua cara memiliki aplikasi: beli sekali (penawaran utama) atau berlangganan bulanan.</p>
+          <div class="price-grid">
+            <div class="price-box">
+              <h4>Beli Sekali</h4>
+              <ul>
+                <li><span>Pemula — standar siap pakai</span><b>Rp499.000</b></li>
+                <li><span>Profesional — + penyesuaian merek + APK Android</span><b>Rp999.000</b></li>
+                <li><span>Bisnis — + penyimpanan permanen, multi-user, dukungan penuh</span><b>Rp1.999.000</b></li>
+              </ul>
+            </div>
+            <div class="price-box">
+              <h4>Berlangganan</h4>
+              <ul>
+                <li><span>Pemula</span><b>Rp49.000 / bulan</b></li>
+                <li><span>Profesional</span><b>Rp99.000 / bulan</b></li>
+                <li><span>Bisnis</span><b>Rp199.000 / bulan</b></li>
+              </ul>
+            </div>
+          </div>
+          <p style="color:var(--ink-2); font-size:.92rem;">Versi pembeli adalah sistem gudang online multi-user dengan penyimpanan permanen, scanner barcode, dan banyak baris barang per pesanan. Pemesanan dan pembayaran manual lewat WhatsApp:</p>
+          <a class="wa-btn" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Gudang%20(Mandiri)." target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.2-.8l.5-.6c.1-.2.1-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.5-.3z"/></svg>
+            Pesan via WhatsApp — 0812-4798-6994</a>
+        </div>
+      </section>
+
+      <footer class="note">
+        <b>Catatan versi demo (v1):</b> data contoh di aplikasi ini hanya berlaku selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal, dan tidak ada data yang dikirim ke server. Aplikasi ini bukan sistem gudang online multi-user; versi multi-user dengan penyimpanan permanen adalah versi pembeli.
+      </footer>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      "use strict";
+      /* ================= DATA CONTOH ================= */
+      var today = new Date();
+      function fmtDate(d) {
+        var y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + dd;
+      }
+      function daysAgo(n) { var d = new Date(today); d.setDate(d.getDate() - n); return fmtDate(d); }
+      function tampilTanggal(iso) {
+        var p = iso.split("-"); if (p.length !== 3) return iso;
+        var bln = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+        return parseInt(p[2], 10) + " " + bln[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function fmtNum(n) { return n.toLocaleString("id-ID"); }
+
+      var items = [
+        { sku: "BR-001", nama: "Beras Premium Ramos 5 kg", stok: 240, satuan: "sak", rak: "Rak A1" },
+        { sku: "MG-002", nama: "Minyak Goreng Bimoli 2 L", stok: 180, satuan: "karton", rak: "Rak A2" },
+        { sku: "GL-003", nama: "Gula Pasir Gulaku 1 kg", stok: 320, satuan: "karton", rak: "Rak A3" },
+        { sku: "MI-004", nama: "Mie Instan Indomie Goreng (dus)", stok: 500, satuan: "dus", rak: "Rak B1" },
+        { sku: "TH-005", nama: "Teh Celup Sariwangi isi 25", stok: 150, satuan: "karton", rak: "Rak B2" },
+        { sku: "KP-006", nama: "Kopi Kapal Api Special Mix 165 g", stok: 210, satuan: "karton", rak: "Rak B2" },
+        { sku: "SB-007", nama: "Sabun Cuci Rinso Anti Noda 800 g", stok: 95, satuan: "karton", rak: "Rak C1" },
+        { sku: "SS-008", nama: "Susu Kental Manis Frisian Flag", stok: 140, satuan: "karton", rak: "Rak C2" },
+        { sku: "TP-009", nama: "Tepung Terigu Segitiga Biru 1 kg", stok: 175, satuan: "sak", rak: "Rak A3" },
+        { sku: "KC-010", nama: "Kecap Manis Bango 520 ml", stok: 130, satuan: "karton", rak: "Rak B3" },
+        { sku: "AM-011", nama: "Air Mineral Aqua 600 ml (dus)", stok: 400, satuan: "dus", rak: "Rak D1" },
+        { sku: "SM-012", nama: "Sabun Mandi Lifebuoy 100 g", stok: 260, satuan: "karton", rak: "Rak C1" }
+      ];
+      var receipts = [
+        { id: 1, sku: "BR-001", nama: "Beras Premium Ramos 5 kg", jumlah: 100, satuan: "sak", supplier: "PT Sumber Pangan Nusantara", tanggal: daysAgo(2) },
+        { id: 2, sku: "MI-004", nama: "Mie Instan Indomie Goreng (dus)", jumlah: 200, satuan: "dus", supplier: "PT Indofood Distribusi", tanggal: daysAgo(1) },
+        { id: 3, sku: "SB-007", nama: "Sabun Cuci Rinso Anti Noda 800 g", jumlah: 60, satuan: "karton", supplier: "PT Wings Surya Pratama", tanggal: daysAgo(0) }
+      ];
+      var orders = [
+        { id: 1, kode: "PSN-001", tujuan: "Toko Berkah Jaya", selesai: false, lines: [
+          { sku: "MI-004", jumlah: 20, picked: true, packed: false },
+          { sku: "MG-002", jumlah: 10, picked: false, packed: false }
+        ]},
+        { id: 2, kode: "PSN-002", tujuan: "Warung Bu Tini", selesai: false, lines: [
+          { sku: "BR-001", jumlah: 15, picked: false, packed: false },
+          { sku: "GL-003", jumlah: 10, picked: false, packed: false }
+        ]},
+        { id: 3, kode: "PSN-003", tujuan: "Minimarket Segar Mart", selesai: false, lines: [
+          { sku: "AM-011", jumlah: 25, picked: false, packed: false },
+          { sku: "TH-005", jumlah: 8, picked: false, packed: false },
+          { sku: "KP-006", jumlah: 6, picked: false, packed: false }
+        ]}
+      ];
+      var opnameLog = [
+        { id: 1, sku: "KC-010", nama: "Kecap Manis Bango 520 ml", sistem: 128, fisik: 130, selisih: 2, tanggal: daysAgo(3) }
+      ];
+      var damages = [
+        { id: 1, sku: "MG-002", nama: "Minyak Goreng Bimoli 2 L", jenis: "Rusak", jumlah: 3, supplier: "", keterangan: "Botol bocor saat bongkar muat", tanggal: daysAgo(1) },
+        { id: 2, sku: "BR-001", nama: "Beras Premium Ramos 5 kg", jenis: "Retur ke Supplier", jumlah: 5, supplier: "PT Sumber Pangan Nusantara", keterangan: "Kemasan sobek dari supplier", tanggal: daysAgo(2) }
+      ];
+      var nextReceipt = 4, nextOrder = 4, nextOpname = 2, nextDamage = 3;
+      var fisikDraft = {}; /* sku -> nilai input opname yang belum disimpan */
+
+      /* ================= UTIL ================= */
+      function $(id) { return document.getElementById(id); }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+      function findItem(sku) { for (var i = 0; i < items.length; i++) if (items[i].sku === sku) return items[i]; return null; }
+      var toastTimer = null;
+      function toast(msg) {
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+      }
+      /* tombol hapus dua langkah: klik pertama mempersenjatai, klik kedua menghapus */
+      function armDelete(btn, fn) {
+        if (btn.dataset.armed === "1") { fn(); return; }
+        btn.dataset.armed = "1"; var old = btn.textContent; btn.textContent = "Klik lagi untuk hapus"; btn.classList.add("armed");
+        setTimeout(function () { btn.dataset.armed = ""; btn.textContent = old; btn.classList.remove("armed"); }, 3000);
+      }
+
+      /* ================= TAB ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (b) {
+        b.addEventListener("click", function () {
+          tabBtns.forEach(function (x) { x.classList.remove("active"); x.setAttribute("aria-selected", "false"); });
+          b.classList.add("active"); b.setAttribute("aria-selected", "true");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + b.dataset.tab).classList.add("active");
+          if (b.dataset.tab === "laporan") renderLaporan();
+        });
+      });
+
+      /* ================= RENDER: STATISTIK ================= */
+      function renderStats() {
+        var totalStok = items.reduce(function (a, i) { return a + i.stok; }, 0);
+        var orderAktif = orders.filter(function (o) { return !o.selesai; }).length;
+        var rusakTotal = damages.reduce(function (a, d) { return a + d.jumlah; }, 0);
+        $("stat-sku").textContent = fmtNum(items.length);
+        $("stat-stok").textContent = fmtNum(totalStok);
+        $("stat-order").textContent = fmtNum(orderAktif);
+        $("stat-rusak").textContent = fmtNum(rusakTotal);
+      }
+
+      function fillItemSelects() {
+        var opts = items.map(function (i) { return '<option value="' + esc(i.sku) + '">' + esc(i.nama) + " — stok " + fmtNum(i.stok) + " " + esc(i.satuan) + "</option>"; }).join("");
+        ["ord-barang", "rk-barang", "lb-barang"].forEach(function (id) {
+          var sel = $(id); var cur = sel.value; sel.innerHTML = opts;
+          if (cur && findItem(cur)) sel.value = cur;
+        });
+        $("list-barang").innerHTML = items.map(function (i) { return '<option value="' + esc(i.nama) + '" data-sku="' + esc(i.sku) + '"></option>'; }).join("");
+      }
+
+      /* ================= PENERIMAAN ================= */
+      function renderPenerimaan() {
+        var tb = $("tbody-penerimaan");
+        if (!receipts.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty">Belum ada catatan penerimaan.</div></td></tr>'; }
+        else {
+          tb.innerHTML = receipts.slice().reverse().map(function (r) {
+            return "<tr><td>" + esc(tampilTanggal(r.tanggal)) + '</td><td><b>' + esc(r.nama) + '</b><br><span class="mono">' + esc(r.sku) + "</span></td><td>" + esc(r.supplier) + '</td><td class="num"><b>' + fmtNum(r.jumlah) + "</b> " + esc(r.satuan) + '</td><td><button type="button" class="btn small danger" data-del-receipt="' + r.id + '">Hapus</button></td></tr>';
+          }).join("");
+        }
+        var tot = receipts.reduce(function (a, r) { return a + r.jumlah; }, 0);
+        $("total-penerimaan").textContent = "Total semua penerimaan tercatat: " + fmtNum(tot) + " unit dari " + receipts.length + " kali terima.";
+        tb.querySelectorAll("[data-del-receipt]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            armDelete(btn, function () {
+              var id = parseInt(btn.dataset.delReceipt, 10);
+              var r = receipts.filter(function (x) { return x.id === id; })[0];
+              if (r) {
+                var it = findItem(r.sku);
+                if (it) it.stok = Math.max(0, it.stok - r.jumlah);
+                receipts = receipts.filter(function (x) { return x.id !== id; });
+                toast("Catatan penerimaan dihapus, stok dikurangi kembali.");
+                renderAll();
+              }
+            });
+          });
+        });
+      }
+
+      $("in-nama").addEventListener("change", function () {
+        var v = this.value.trim().toLowerCase();
+        var found = items.filter(function (i) { return i.nama.toLowerCase() === v; })[0];
+        if (found) { $("in-sku").value = found.sku; $("in-satuan").value = found.satuan; $("in-rak").value = found.rak; }
+      });
+
+      $("form-penerimaan").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var nama = $("in-nama").value.trim();
+        var sku = $("in-sku").value.trim().toUpperCase();
+        var jumlah = parseInt($("in-jumlah").value, 10);
+        var satuan = $("in-satuan").value;
+        var rak = $("in-rak").value.trim() || "Rak A1";
+        var supplier = $("in-supplier").value.trim();
+        var tanggal = $("in-tanggal").value;
+        if (!nama || !sku || !jumlah || jumlah < 1 || !supplier || !tanggal) { toast("Mohon lengkapi semua kolom penerimaan."); return; }
+        var it = findItem(sku);
+        if (it) { it.stok += jumlah; it.satuan = satuan; }
+        else { items.push({ sku: sku, nama: nama, stok: jumlah, satuan: satuan, rak: rak }); }
+        receipts.push({ id: nextReceipt++, sku: sku, nama: it ? it.nama : nama, jumlah: jumlah, satuan: satuan, supplier: supplier, tanggal: tanggal });
+        toast("Penerimaan tersimpan. Stok " + sku + " bertambah " + fmtNum(jumlah) + " " + satuan + ".");
+        this.reset(); $("in-tanggal").value = fmtDate(today);
+        renderAll();
+      });
+
+      /* ================= PENYIMPANAN ================= */
+      function renderPenyimpanan() {
+        var q = $("cari-barang").value.trim().toLowerCase();
+        var list = items.filter(function (i) {
+          return !q || i.nama.toLowerCase().indexOf(q) >= 0 || i.sku.toLowerCase().indexOf(q) >= 0 || i.rak.toLowerCase().indexOf(q) >= 0;
+        });
+        var tb = $("tbody-penyimpanan");
+        if (!list.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty">Tidak ada barang yang cocok dengan pencarian.</div></td></tr>'; return; }
+        tb.innerHTML = list.map(function (i) {
+          var low = i.stok < 100 ? ' <span class="badge amber">Stok Menipis</span>' : "";
+          return "<tr><td><b>" + esc(i.nama) + "</b>" + low + '</td><td><span class="mono">' + esc(i.sku) + '</span></td><td class="num"><b>' + fmtNum(i.stok) + "</b> " + esc(i.satuan) + '</td><td><span class="badge green">' + esc(i.rak) + '</span></td>' +
+            '<td><input type="text" value="' + esc(i.rak) + '" data-rak-input="' + esc(i.sku) + '" aria-label="Rak tujuan untuk ' + esc(i.nama) + '" style="min-width:110px;" /></td>' +
+            '<td><div class="btn-row"><button type="button" class="btn small" data-move="' + esc(i.sku) + '">Pindah</button><button type="button" class="btn small danger" data-del-item="' + esc(i.sku) + '">Hapus</button></div></td></tr>';
+        }).join("");
+        tb.querySelectorAll("[data-move]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var sku = btn.dataset.move;
+            var inp = tb.querySelector('[data-rak-input="' + sku + '"]');
+            var rakBaru = inp.value.trim();
+            if (!rakBaru) { toast("Isi dulu nama rak tujuan."); return; }
+            var it = findItem(sku); var lama = it.rak; it.rak = rakBaru;
+            toast(it.nama + " dipindah dari " + lama + " ke " + rakBaru + ".");
+            renderAll();
+          });
+        });
+        tb.querySelectorAll("[data-del-item]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            armDelete(btn, function () {
+              var sku = btn.dataset.delItem;
+              items = items.filter(function (i) { return i.sku !== sku; });
+              delete fisikDraft[sku];
+              toast("Barang " + sku + " dihapus dari daftar gudang.");
+              renderAll();
+            });
+          });
+        });
+      }
+      $("cari-barang").addEventListener("input", renderPenyimpanan);
+
+      /* ================= PICKING & PACKING ================= */
+      function orderStatus(o) {
+        if (o.selesai) return '<span class="badge green">Selesai — stok sudah berkurang</span>';
+        var allPicked = o.lines.every(function (l) { return l.picked; });
+        var allPacked = o.lines.every(function (l) { return l.packed; });
+        if (allPicked && allPacked) return '<span class="badge blue">Siap diselesaikan</span>';
+        if (o.lines.some(function (l) { return l.picked || l.packed; })) return '<span class="badge amber">Sedang diproses</span>';
+        return '<span class="badge gray">Menunggu diambil</span>';
+      }
+      function renderPicking() {
+        var box = $("daftar-pesanan");
+        if (!orders.length) { box.innerHTML = '<div class="empty">Belum ada pesanan. Buat pesanan baru pada form di bawah.</div>'; return; }
+        box.innerHTML = orders.map(function (o) {
+          var lines = o.lines.map(function (l, idx) {
+            var it = findItem(l.sku);
+            var nm = it ? it.nama : l.sku, rak = it ? it.rak : "—", stok = it ? it.stok : 0;
+            var dis = o.selesai ? " disabled" : "";
+            return '<div class="pick-line"><div class="nm">' + esc(nm) + " — <b>" + fmtNum(l.jumlah) + "</b> " + (it ? esc(it.satuan) : "") +
+              "<small>SKU " + esc(l.sku) + " · " + esc(rak) + " · stok tersedia " + fmtNum(stok) + "</small></div>" +
+              '<button type="button" class="check-btn' + (l.picked ? " done" : "") + '" data-pick="' + o.id + ":" + idx + '"' + dis + '><span class="box"></span>Diambil</button>' +
+              '<button type="button" class="check-btn' + (l.packed ? " done" : "") + '" data-pack="' + o.id + ":" + idx + '"' + dis + '><span class="box"></span>Di-packing</button></div>';
+          }).join("");
+          var allDone = o.lines.every(function (l) { return l.picked && l.packed; });
+          var foot = o.selesai ? "" :
+            '<div style="margin-top:10px;"><button type="button" class="btn small" data-finish="' + o.id + '"' + (allDone ? "" : " disabled") + ">Selesaikan Pesanan &amp; Kurangi Stok</button> " +
+            '<button type="button" class="btn small danger" data-del-order="' + o.id + '">Hapus Pesanan</button></div>';
+          return '<div class="order"><div class="order-head"><div class="t">' + esc(o.kode) + " · " + esc(o.tujuan) + "</div>" + orderStatus(o) + "</div>" + lines + foot + "</div>";
+        }).join("");
+        box.querySelectorAll("[data-pick]").forEach(function (b) { b.addEventListener("click", function () { toggleLine(b.dataset.pick, "picked"); }); });
+        box.querySelectorAll("[data-pack]").forEach(function (b) { b.addEventListener("click", function () { toggleLine(b.dataset.pack, "packed"); }); });
+        box.querySelectorAll("[data-finish]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var o = orders.filter(function (x) { return x.id === parseInt(b.dataset.finish, 10); })[0];
+            if (!o) return;
+            for (var i = 0; i < o.lines.length; i++) {
+              var it = findItem(o.lines[i].sku);
+              if (it && it.stok < o.lines[i].jumlah) { toast("Stok " + o.lines[i].sku + " tidak cukup untuk pesanan ini."); return; }
+            }
+            o.lines.forEach(function (l) { var it = findItem(l.sku); if (it) it.stok -= l.jumlah; });
+            o.selesai = true;
+            toast("Pesanan " + o.kode + " selesai. Stok sudah dikurangi.");
+            renderAll();
+          });
+        });
+        box.querySelectorAll("[data-del-order]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            armDelete(b, function () {
+              orders = orders.filter(function (x) { return x.id !== parseInt(b.dataset.delOrder, 10); });
+              toast("Pesanan dihapus.");
+              renderAll();
+            });
+          });
+        });
+      }
+      function toggleLine(key, field) {
+        var parts = key.split(":"); var oid = parseInt(parts[0], 10), idx = parseInt(parts[1], 10);
+        var o = orders.filter(function (x) { return x.id === oid; })[0];
+        if (!o || o.selesai) return;
+        var l = o.lines[idx];
+        if (field === "packed" && !l.picked && !l.packed) { toast("Tandai “Diambil” dulu sebelum packing."); return; }
+        l[field] = !l[field];
+        if (field === "picked" && !l.picked) l.packed = false;
+        renderPicking(); renderStats();
+      }
+      $("form-pesanan").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var tujuan = $("ord-tujuan").value.trim();
+        var sku = $("ord-barang").value;
+        var jumlah = parseInt($("ord-jumlah").value, 10);
+        if (!tujuan || !sku || !jumlah || jumlah < 1) { toast("Mohon lengkapi form pesanan."); return; }
+        var kode = "PSN-" + String(nextOrder).padStart(3, "0");
+        orders.push({ id: nextOrder++, kode: kode, tujuan: tujuan, selesai: false, lines: [{ sku: sku, jumlah: jumlah, picked: false, packed: false }] });
+        toast("Pesanan " + kode + " untuk " + tujuan + " dibuat.");
+        this.reset(); $("ord-jumlah").value = 5;
+        renderAll();
+      });
+
+      /* ================= OPNAME ================= */
+      function renderOpname() {
+        var tb = $("tbody-opname");
+        tb.innerHTML = items.map(function (i) {
+          var draft = fisikDraft[i.sku];
+          var val = draft === undefined ? "" : draft;
+          var selisih = "";
+          if (draft !== undefined && draft !== "") {
+            var s = parseInt(draft, 10) - i.stok;
+            selisih = s === 0 ? '<span class="zero">0 (pas)</span>' : (s > 0 ? '<span class="pos">+' + fmtNum(s) + "</span>" : '<span class="neg">' + fmtNum(s) + "</span>");
+          } else selisih = '<span class="zero">—</span>';
+          return "<tr><td><b>" + esc(i.nama) + '</b></td><td><span class="mono">' + esc(i.sku) + "</span></td><td>" + esc(i.rak) + '</td><td class="num"><b>' + fmtNum(i.stok) + '</b></td>' +
+            '<td class="num"><input type="number" min="0" step="1" value="' + esc(val) + '" data-fisik="' + esc(i.sku) + '" aria-label="Stok fisik ' + esc(i.nama) + '" style="width:100px; text-align:right;" placeholder="hitung…" /></td>' +
+            '<td class="num">' + selisih + '</td><td><button type="button" class="btn small" data-save-opname="' + esc(i.sku) + '">Simpan</button></td></tr>';
+        }).join("");
+        tb.querySelectorAll("[data-fisik]").forEach(function (inp) {
+          inp.addEventListener("input", function () { fisikDraft[inp.dataset.fisik] = inp.value; renderSelisih(inp); });
+        });
+        tb.querySelectorAll("[data-save-opname]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            if (simpanOpname(b.dataset.saveOpname)) {
+              toast("Penyesuaian opname tersimpan untuk " + b.dataset.saveOpname + ". Stok sistem diperbarui.");
+              renderAll();
+            }
+          });
+        });
+        var lb = $("tbody-opname-log");
+        if (!opnameLog.length) { lb.innerHTML = '<tr><td colspan="5"><div class="empty">Belum ada penyesuaian opname tersimpan.</div></td></tr>'; }
+        else {
+          lb.innerHTML = opnameLog.slice().reverse().map(function (o) {
+            var s = o.selisih === 0 ? '<span class="zero">0</span>' : (o.selisih > 0 ? '<span class="pos">+' + fmtNum(o.selisih) + '</span>' : '<span class="neg">' + fmtNum(o.selisih) + "</span>");
+            return "<tr><td>" + esc(tampilTanggal(o.tanggal)) + "</td><td><b>" + esc(o.nama) + '</b> <span class="mono">' + esc(o.sku) + '</span></td><td class="num">' + fmtNum(o.sistem) + '</td><td class="num">' + fmtNum(o.fisik) + '</td><td class="num">' + s + "</td></tr>";
+          }).join("");
+        }
+      }
+      function renderSelisih(inp) {
+        /* perbarui selisih baris ini saja tanpa menggambar ulang tabel */
+        var sku = inp.dataset.fisik; var it = findItem(sku); if (!it) return;
+        var row = inp.closest("tr"); var cell = row.children[5];
+        if (inp.value === "") { cell.innerHTML = '<span class="zero">—</span>'; return; }
+        var s = parseInt(inp.value, 10) - it.stok;
+        cell.innerHTML = s === 0 ? '<span class="zero">0 (pas)</span>' : (s > 0 ? '<span class="pos">+' + fmtNum(s) + "</span>" : '<span class="neg">' + fmtNum(s) + "</span>");
+      }
+      function simpanOpname(sku) {
+        var it = findItem(sku); if (!it) return false;
+        var v = fisikDraft[sku];
+        if (v === undefined || v === "") { toast("Isi dulu stok fisik untuk " + it.nama + "."); return false; }
+        var fisik = parseInt(v, 10);
+        if (isNaN(fisik) || fisik < 0) { toast("Stok fisik harus angka 0 atau lebih."); return false; }
+        var selisih = fisik - it.stok;
+        opnameLog.push({ id: nextOpname++, sku: sku, nama: it.nama, sistem: it.stok, fisik: fisik, selisih: selisih, tanggal: fmtDate(today) });
+        it.stok = fisik;
+        delete fisikDraft[sku];
+        return true;
+      }
+      $("btn-opname-semua").addEventListener("click", function () {
+        var n = 0;
+        Object.keys(fisikDraft).forEach(function (sku) { if (fisikDraft[sku] !== "" && simpanOpname(sku)) n++; });
+        if (n === 0) { toast("Belum ada stok fisik yang diisi."); return; }
+        toast(n + " penyesuaian opname disimpan. Stok sistem sudah diperbarui.");
+        renderAll();
+      });
+
+      /* ================= RUSAK & RETUR ================= */
+      function renderRusak() {
+        var tb = $("tbody-rusak");
+        if (!damages.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty">Belum ada catatan barang rusak atau retur.</div></td></tr>'; }
+        else {
+          tb.innerHTML = damages.slice().reverse().map(function (d) {
+            var badge = d.jenis === "Rusak" ? '<span class="badge red">Rusak</span>' : '<span class="badge amber">Retur ke Supplier</span>';
+            var ket = esc(d.keterangan || "—") + (d.supplier ? "<br><small>Supplier: " + esc(d.supplier) + "</small>" : "");
+            return "<tr><td>" + esc(tampilTanggal(d.tanggal)) + "</td><td><b>" + esc(d.nama) + '</b><br><span class="mono">' + esc(d.sku) + "</span></td><td>" + badge + '</td><td class="num"><b>' + fmtNum(d.jumlah) + '</b></td><td>' + ket + '</td><td><button type="button" class="btn small danger" data-del-damage="' + d.id + '">Hapus</button></td></tr>';
+          }).join("");
+        }
+        var tot = damages.reduce(function (a, d) { return a + d.jumlah; }, 0);
+        $("total-rusak").textContent = "Total barang rusak & retur: " + fmtNum(tot) + " unit dari " + damages.length + " catatan. Menghapus catatan akan mengembalikan stok.";
+        tb.querySelectorAll("[data-del-damage]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            armDelete(btn, function () {
+              var id = parseInt(btn.dataset.delDamage, 10);
+              var d = damages.filter(function (x) { return x.id === id; })[0];
+              if (d) {
+                var it = findItem(d.sku); if (it) it.stok += d.jumlah;
+                damages = damages.filter(function (x) { return x.id !== id; });
+                toast("Catatan dihapus, stok dikembalikan.");
+                renderAll();
+              }
+            });
+          });
+        });
+      }
+      $("form-rusak").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var sku = $("rk-barang").value;
+        var it = findItem(sku);
+        var jumlah = parseInt($("rk-jumlah").value, 10);
+        var tanggal = $("rk-tanggal").value;
+        if (!it || !jumlah || jumlah < 1 || !tanggal) { toast("Mohon lengkapi form rusak / retur."); return; }
+        if (jumlah > it.stok) { toast("Jumlah melebihi stok " + it.nama + " (" + fmtNum(it.stok) + ")."); return; }
+        it.stok -= jumlah;
+        damages.push({ id: nextDamage++, sku: sku, nama: it.nama, jenis: $("rk-jenis").value, jumlah: jumlah, supplier: $("rk-supplier").value.trim(), keterangan: $("rk-ket").value.trim(), tanggal: tanggal });
+        toast("Tercatat: " + fmtNum(jumlah) + " " + it.satuan + " " + it.nama + " (" + $("rk-jenis").value + "). Stok berkurang.");
+        this.reset(); $("rk-jumlah").value = 1; $("rk-tanggal").value = fmtDate(today);
+        renderAll();
+      });
+
+      /* ================= LABEL ================= */
+      function drawBarcode(code) {
+        var box = $("label-barcode"); box.innerHTML = "";
+        var seed = 7;
+        var s = String(code);
+        for (var k = 0; k < s.length; k++) seed = (seed * 31 + s.charCodeAt(k)) % 9973;
+        function rnd() { seed = (seed * 137 + 89) % 9973; return seed / 9973; }
+        /* pola awal */
+        [3, 1, 2, 1].forEach(function (w, i) { addBar(w, i % 2 === 0); });
+        for (var c = 0; c < s.length; c++) {
+          var v = s.charCodeAt(c);
+          for (var b = 0; b < 4; b++) {
+            var w = ((v >> (b * 2)) % 3) + 1 + Math.floor(rnd() * 1.6);
+            addBar(Math.min(w, 4), b % 2 === 0);
+          }
+        }
+        [2, 1, 3].forEach(function (w, i) { addBar(w, i % 2 === 0); });
+        function addBar(w, black) {
+          var el = document.createElement("i");
+          if (!black) el.className = "sp";
+          el.style.width = (w * 2) + "px";
+          box.appendChild(el);
+        }
+      }
+      function showLabel(sku) {
+        var it = findItem(sku);
+        if (it) {
+          $("label-nama").textContent = it.nama;
+          $("label-meta").textContent = it.rak + " · Satuan: " + it.satuan;
+          $("label-kode").textContent = it.sku;
+          drawBarcode(it.sku);
+        } else {
+          $("label-nama").textContent = "Barang tidak terdaftar";
+          $("label-meta").textContent = "Kode manual — belum ada di daftar penyimpanan";
+          $("label-kode").textContent = sku;
+          drawBarcode(sku);
+        }
+      }
+      $("form-label").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var manual = $("lb-sku").value.trim().toUpperCase();
+        var sku = manual || $("lb-barang").value;
+        if (!sku) { toast("Pilih barang atau ketik kode SKU dulu."); return; }
+        showLabel(sku);
+        toast("Label untuk " + sku + " ditampilkan.");
+      });
+      $("lb-barang").addEventListener("change", function () { $("lb-sku").value = ""; showLabel(this.value); });
+      $("btn-cetak").addEventListener("click", function () {
+        toast("Label " + $("label-kode").textContent + " siap dicetak.");
+        try { window.print(); }
+        catch (err) { /* dialog cetak tidak tersedia di tampilan ini */ }
+      });
+
+      /* ================= LAPORAN ================= */
+      function renderLaporan() {
+        /* stok per rak */
+        var perRak = {};
+        items.forEach(function (i) {
+          if (!perRak[i.rak]) perRak[i.rak] = { jenis: 0, unit: 0 };
+          perRak[i.rak].jenis++; perRak[i.rak].unit += i.stok;
+        });
+        var rakKeys = Object.keys(perRak).sort();
+        var totUnit = items.reduce(function (a, i) { return a + i.stok; }, 0);
+        $("tbody-lap-rak").innerHTML = rakKeys.map(function (r) {
+          return "<tr><td><b>" + esc(r) + '</b></td><td class="num">' + fmtNum(perRak[r].jenis) + '</td><td class="num"><b>' + fmtNum(perRak[r].unit) + "</b></td></tr>";
+        }).join("") + '<tr style="background:var(--green-tint-2);"><td><b>Total gudang</b></td><td class="num"><b>' + fmtNum(items.length) + ' SKU</b></td><td class="num"><b>' + fmtNum(totUnit) + " unit</b></td></tr>";
+        /* penerimaan per supplier */
+        var perSup = {};
+        receipts.forEach(function (r) {
+          if (!perSup[r.supplier]) perSup[r.supplier] = { kali: 0, unit: 0 };
+          perSup[r.supplier].kali++; perSup[r.supplier].unit += r.jumlah;
+        });
+        var supKeys = Object.keys(perSup).sort();
+        $("tbody-lap-supplier").innerHTML = supKeys.length ? supKeys.map(function (s) {
+          return "<tr><td><b>" + esc(s) + '</b></td><td class="num">' + fmtNum(perSup[s].kali) + ' kali</td><td class="num"><b>' + fmtNum(perSup[s].unit) + "</b> unit</td></tr>";
+        }).join("") : '<tr><td colspan="3"><div class="empty">Belum ada penerimaan tercatat.</div></td></tr>';
+        /* ringkasan opname & rusak */
+        var opSelisih = opnameLog.reduce(function (a, o) { return a + Math.abs(o.selisih); }, 0);
+        var opNet = opnameLog.reduce(function (a, o) { return a + o.selisih; }, 0);
+        var rkRusak = damages.filter(function (d) { return d.jenis === "Rusak"; }).reduce(function (a, d) { return a + d.jumlah; }, 0);
+        var rkRetur = damages.filter(function (d) { return d.jenis !== "Rusak"; }).reduce(function (a, d) { return a + d.jumlah; }, 0);
+        $("tbody-lap-ringkasan").innerHTML =
+          "<tr><td>Penyesuaian opname (total selisih mutlak)</td><td class=\"num\">" + fmtNum(opnameLog.length) + " catatan</td><td class=\"num\"><b>" + fmtNum(opSelisih) + "</b> unit (bersih " + (opNet > 0 ? "+" : "") + fmtNum(opNet) + ")</td></tr>" +
+          "<tr><td>Barang rusak</td><td class=\"num\">" + fmtNum(damages.filter(function (d) { return d.jenis === "Rusak"; }).length) + " catatan</td><td class=\"num\"><b>" + fmtNum(rkRusak) + "</b> unit</td></tr>" +
+          "<tr><td>Retur ke supplier</td><td class=\"num\">" + fmtNum(damages.filter(function (d) { return d.jenis !== "Rusak"; }).length) + " catatan</td><td class=\"num\"><b>" + fmtNum(rkRetur) + "</b> unit</td></tr>" +
+          "<tr><td>Pesanan selesai (stok keluar)</td><td class=\"num\">" + fmtNum(orders.filter(function (o) { return o.selesai; }).length) + " pesanan</td><td class=\"num\"><b>" + fmtNum(orders.filter(function (o) { return o.selesai; }).reduce(function (a, o) { return a + o.lines.reduce(function (x, l) { return x + l.jumlah; }, 0); }, 0)) + "</b> unit</td></tr>";
+        var menipis = items.filter(function (i) { return i.stok < 100; });
+        $("lap-stok-menipis").textContent = menipis.length ?
+          "Perhatian: " + menipis.length + " barang stoknya di bawah 100 unit — " + menipis.map(function (i) { return i.nama + " (" + fmtNum(i.stok) + " " + i.satuan + ")"; }).join(", ") + "." :
+          "Semua stok berada di level aman (100 unit atau lebih).";
+      }
+
+      /* ================= INIT ================= */
+      function renderAll() {
+        renderStats(); fillItemSelects(); renderPenerimaan(); renderPenyimpanan();
+        renderPicking(); renderOpname(); renderRusak(); renderLaporan();
+      }
+      $("in-tanggal").value = fmtDate(today);
+      $("rk-tanggal").value = fmtDate(today);
+      renderAll();
+      if (items.length) showLabel(items[0].sku);
+    </script>
+  </body>
+</html>

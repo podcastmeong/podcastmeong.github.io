@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Laporan Keuangan &amp; Laba Rugi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#f1f7f2;
+        --bg-grad:#e7f3ea;
+        --surface:#ffffff;
+        --surface-2:#eaf4ec;
+        --surface-3:#f6faf6;
+        --ink:#132a1b;
+        --ink-soft:#33513e;
+        --muted:#5c7565;
+        --line:#d3e6d8;
+        --line-strong:#b9d6c0;
+        --green:#16a34a;
+        --green-dark:#15803d;
+        --green-deep:#14532d;
+        --green-soft:#dcf2e2;
+        --green-tint:#eef8f0;
+        --red:#c62f3b;
+        --red-soft:#fbe9ea;
+        --shadow:0 10px 30px rgba(20,83,45,.08);
+        --radius:14px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0b1610;
+          --bg-grad:#0e1d13;
+          --surface:#12241a;
+          --surface-2:#183324;
+          --surface-3:#0f2016;
+          --ink:#e8f4ec;
+          --ink-soft:#c2dcc9;
+          --muted:#93b29d;
+          --line:#23402e;
+          --line-strong:#2f5a3e;
+          --green:#4ade80;
+          --green-dark:#22c55e;
+          --green-deep:#86efac;
+          --green-soft:#173a24;
+          --green-tint:#122a1a;
+          --red:#f87171;
+          --red-soft:#3a1d20;
+          --shadow:0 10px 30px rgba(0,0,0,.35);
+        }
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;
+        font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        background:linear-gradient(180deg,var(--bg-grad),var(--bg) 260px);
+        color:var(--ink);
+        line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      .wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+      h1,h2,h3{line-height:1.25;margin:0}
+      .serif{font-family:"Fraunces",Georgia,serif}
+
+      /* ---------- Header ---------- */
+      .masthead{padding:14px 0 6px}
+      .masthead .kicker{
+        display:inline-flex;align-items:center;gap:8px;
+        font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--green-dark);
+      }
+      .masthead .kicker::before{content:"";width:26px;height:2px;background:var(--green);border-radius:2px}
+      .masthead h1{font-size:clamp(27px,4.6vw,40px);font-weight:700;margin-top:8px;color:var(--green-deep)}
+      .masthead p{margin:8px 0 0;color:var(--muted);max-width:640px;font-size:15px}
+
+      .toolbar{
+        margin-top:18px;background:var(--surface);border:1px solid var(--line);
+        border-radius:var(--radius);box-shadow:var(--shadow);
+        padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;
+      }
+      .field{display:flex;flex-direction:column;gap:5px;flex:1 1 180px;min-width:150px}
+      .field label{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+      .field input,.field select{
+        font:inherit;font-size:15px;color:var(--ink);
+        background:var(--surface-3);border:1px solid var(--line-strong);border-radius:9px;
+        padding:9px 11px;min-height:42px;width:100%;
+      }
+      .field input:focus,.field select:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)}
+
+      /* ---------- Tabs ---------- */
+      .tabs{
+        margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        padding:8px;box-shadow:var(--shadow);
+      }
+      .tab-btn{
+        font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;
+        border:1px solid transparent;background:transparent;color:var(--ink-soft);
+        border-radius:9px;padding:10px 16px;min-height:44px;
+        display:inline-flex;align-items:center;gap:8px;
+      }
+      .tab-btn svg{width:17px;height:17px;flex:none}
+      .tab-btn:hover{background:var(--green-tint)}
+      .tab-btn[aria-selected="true"]{background:var(--green);color:#fff;border-color:var(--green-dark)}
+      @media (prefers-color-scheme: dark){.tab-btn[aria-selected="true"]{color:#0b1610}}
+      .tab-btn:focus-visible{outline:2px solid var(--green-dark);outline-offset:2px}
+
+      .panel{margin-top:18px;display:none}
+      .panel.active{display:block}
+      .panel-head{margin-bottom:14px}
+      .panel-head h2{font-size:22px;font-weight:700;color:var(--green-deep)}
+      .panel-head p{margin:4px 0 0;color:var(--muted);font-size:14.5px;max-width:680px}
+
+      /* ---------- Cards & KPI ---------- */
+      .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+      .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
+      .kpi .lbl{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+      .kpi .val{font-size:clamp(19px,2.6vw,24px);font-weight:800;margin-top:3px;color:var(--ink)}
+      .kpi .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+      .kpi.hl{background:var(--green);border-color:var(--green-dark)}
+      .kpi.hl .lbl,.kpi.hl .sub{color:rgba(255,255,255,.85)}
+      .kpi.hl .val{color:#fff}
+      @media (prefers-color-scheme: dark){.kpi.hl .val{color:#0b1610}.kpi.hl .lbl,.kpi.hl .sub{color:rgba(6,30,15,.75)}}
+
+      .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+      .card h3{font-size:16.5px;font-weight:800;color:var(--green-deep);margin-bottom:4px}
+      .card .hint{font-size:13px;color:var(--muted);margin:0 0 12px}
+
+      .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+      @media (max-width:860px){.split{grid-template-columns:1fr}}
+
+      /* ---------- Forms ---------- */
+      .form-group{margin-bottom:16px}
+      .form-group:last-child{margin-bottom:0}
+      .form-group>h4{
+        font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--green-dark);margin:0 0 9px;padding-bottom:6px;border-bottom:1px solid var(--line);
+      }
+      .inrow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+      .inrow label{flex:1;font-size:14px;color:var(--ink-soft)}
+      .inrow .rp{
+        display:flex;align-items:center;gap:6px;flex:0 0 168px;
+        background:var(--surface-3);border:1px solid var(--line-strong);border-radius:9px;padding:0 10px;
+      }
+      .inrow .rp span{font-size:13px;color:var(--muted);font-weight:600}
+      .inrow .rp input{
+        font:inherit;font-size:14.5px;text-align:right;width:100%;border:0;background:transparent;
+        color:var(--ink);padding:9px 0;min-height:40px;
+      }
+      .inrow .rp input:focus{outline:none}
+      .inrow .rp:focus-within{outline:2px solid var(--green);outline-offset:1px}
+      @media (max-width:480px){.inrow .rp{flex-basis:138px}}
+
+      /* ---------- Statement tables ---------- */
+      table.stmt{width:100%;border-collapse:collapse;font-size:14.5px}
+      table.stmt td,table.stmt th{padding:7px 4px;vertical-align:top}
+      table.stmt .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;width:42%}
+      table.stmt .sec td{
+        font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green-dark);
+        padding-top:15px;padding-bottom:5px;
+      }
+      table.stmt tr:first-child.sec td{padding-top:2px}
+      table.stmt .sub td{padding-left:18px;color:var(--ink-soft)}
+      table.stmt .total td{font-weight:800;border-top:1.5px solid var(--line-strong);padding-top:9px}
+      table.stmt .grand td{
+        font-weight:800;font-size:16px;color:var(--green-deep);
+        background:var(--green-tint);border-top:2px solid var(--green);border-bottom:2px solid var(--green);
+        padding:11px 6px;
+      }
+      table.stmt .neg{color:var(--red)}
+      .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+      /* ---------- Balance badge & bars ---------- */
+      .badge{
+        display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;
+        border-radius:999px;padding:7px 14px;min-height:36px;
+      }
+      .badge.ok{background:var(--green-soft);color:var(--green-deep)}
+      .badge.bad{background:var(--red-soft);color:var(--red)}
+      .mixbar{display:flex;height:16px;border-radius:8px;overflow:hidden;border:1px solid var(--line-strong);margin:8px 0 6px}
+      .mixbar>div{height:100%}
+      .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+      .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+      /* ---------- Compare ---------- */
+      table.cmp{width:100%;border-collapse:collapse;font-size:14px}
+      table.cmp th,table.cmp td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+      table.cmp th:first-child,table.cmp td:first-child{text-align:left}
+      table.cmp thead th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:1.5px solid var(--line-strong)}
+      table.cmp tr.hl td{font-weight:800;background:var(--green-tint)}
+      .up{color:var(--green-dark);font-weight:700}
+      .down{color:var(--red);font-weight:700}
+      .cmp-selects{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+      .cmp-selects .field{max-width:260px}
+      @media (max-width:560px){
+        table.cmp{font-size:12.5px}
+        table.cmp th,table.cmp td{padding:7px 4px}
+      }
+
+      /* ---------- Chart ---------- */
+      .chart-wrap{width:100%;overflow:hidden}
+      .chart-wrap svg{width:100%;height:auto;display:block}
+      .chart-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+      .chart-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+
+      /* ---------- Buttons ---------- */
+      .btn{
+        font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;text-decoration:none;
+        display:inline-flex;align-items:center;justify-content:center;gap:8px;
+        border-radius:10px;padding:11px 18px;min-height:46px;border:1px solid var(--green-dark);
+        background:var(--green);color:#fff;
+      }
+      .btn:hover{background:var(--green-dark)}
+      .btn.ghost{background:var(--surface);color:var(--green-dark);border-color:var(--line-strong)}
+      .btn.ghost:hover{background:var(--green-tint)}
+      .btn svg{width:17px;height:17px}
+      .btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+      @media (prefers-color-scheme: dark){.btn{color:#0b1610}.btn.ghost{color:var(--green)}}
+
+      /* ---------- Ratios ---------- */
+      .ratios{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+      .ratio{background:var(--surface-3);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+      .ratio .rl{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+      .ratio .rv{font-size:22px;font-weight:800;margin-top:2px}
+      .ratio .rd{font-size:12.5px;color:var(--muted)}
+
+      /* ---------- Guide ---------- */
+      .guide h3{font-size:18px;margin:22px 0 6px;color:var(--green-deep)}
+      .guide h3:first-child{margin-top:0}
+      .guide p,.guide li{font-size:14.5px;color:var(--ink-soft)}
+      .guide ol,.guide ul{padding-left:22px;margin:6px 0}
+      .guide li{margin-bottom:4px}
+      .guide .tip{
+        background:var(--green-tint);border:1px solid var(--line-strong);border-radius:11px;
+        padding:12px 14px;font-size:14px;color:var(--ink-soft);margin:10px 0;
+      }
+      .guide details{border:1px solid var(--line);border-radius:11px;padding:4px 14px;margin-bottom:8px;background:var(--surface-3)}
+      .guide summary{font-weight:700;cursor:pointer;padding:10px 0;min-height:44px;display:flex;align-items:center;color:var(--ink)}
+      .guide details p{margin:0 0 12px}
+
+      /* ---------- Pricing ---------- */
+      .price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}
+      .price-card{border:1px solid var(--line-strong);border-radius:var(--radius);padding:18px;background:var(--surface)}
+      .price-card.featured{border:2px solid var(--green);background:var(--green-tint)}
+      .price-card .tier{font-weight:800;font-size:15px;color:var(--green-deep)}
+      .price-card .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--green);color:#fff;border-radius:999px;padding:3px 9px;margin-left:8px;vertical-align:2px}
+      @media (prefers-color-scheme: dark){.price-card .tag{color:#0b1610}}
+      .price-card .amount{font-size:25px;font-weight:800;margin:8px 0 2px}
+      .price-card .per{font-size:13px;color:var(--muted)}
+      .price-card ul{list-style:none;padding:0;margin:12px 0 14px;font-size:13.5px;color:var(--ink-soft)}
+      .price-card li{padding:4px 0 4px 22px;position:relative}
+      .price-card li::before{content:"";position:absolute;left:2px;top:10px;width:9px;height:5px;border-left:2.5px solid var(--green);border-bottom:2.5px solid var(--green);transform:rotate(-45deg)}
+      .price-card .btn{width:100%}
+
+      footer{
+        margin-top:34px;border-top:1px solid var(--line);padding-top:16px;
+        font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:space-between;
+      }
+      footer a{color:var(--green-dark);font-weight:700;text-decoration:none;padding:6px 0;display:inline-block}
+      .toast{
+        position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+        background:var(--green-deep);color:#fff;font-weight:700;font-size:14px;
+        padding:12px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s ease;
+        box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:50;max-width:92vw;text-align:center;
+      }
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+      @media (prefers-reduced-motion: reduce){
+        html{scroll-behavior:auto}
+        .toast{transition:none}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <header class="masthead">
+        <span class="kicker">Aplikasi Keuangan UMKM</span>
+        <h1 class="serif">Laporan Keuangan &amp; Laba Rugi</h1>
+        <p>Susun laporan laba rugi dan neraca sederhana, bandingkan antar periode, dan lihat grafik pendapatan vs biaya — semua terhitung otomatis dari angka yang Anda masukkan.</p>
+      </header>
+
+      <div class="toolbar" role="group" aria-label="Pengaturan laporan">
+        <div class="field">
+          <label for="usaha">Nama Usaha</label>
+          <input id="usaha" type="text" value="UD Berkah Makmur" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="periode">Periode Laporan</label>
+          <select id="periode"></select>
+        </div>
+        <div class="field">
+          <label for="jenis">Jenis Usaha</label>
+          <input id="jenis" type="text" value="Distributor bahan pokok &amp; toko kelontong" autocomplete="off" />
+        </div>
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="Modul laporan">
+        <button class="tab-btn" role="tab" id="tabbtn-labarugi" aria-controls="panel-labarugi" aria-selected="true" data-tab="labarugi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+          Laba Rugi
+        </button>
+        <button class="tab-btn" role="tab" id="tabbtn-neraca" aria-controls="panel-neraca" aria-selected="false" data-tab="neraca">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7l7-4 7 4"/><path d="M3 13l2-6 2 6a3.5 3.5 0 0 1-4 0z"/><path d="M17 13l2-6 2 6a3.5 3.5 0 0 1-4 0z"/><path d="M8 21h8"/></svg>
+          Neraca
+        </button>
+        <button class="tab-btn" role="tab" id="tabbtn-banding" aria-controls="panel-banding" aria-selected="false" data-tab="banding">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+          Perbandingan
+        </button>
+        <button class="tab-btn" role="tab" id="tabbtn-grafik" aria-controls="panel-grafik" aria-selected="false" data-tab="grafik">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+          Grafik
+        </button>
+        <button class="tab-btn" role="tab" id="tabbtn-laporan" aria-controls="panel-laporan" aria-selected="false" data-tab="laporan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+          Laporan
+        </button>
+        <button class="tab-btn" role="tab" id="tabbtn-panduan" aria-controls="panel-panduan" aria-selected="false" data-tab="panduan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Panduan
+        </button>
+      </nav>
+
+      <!-- ============ TAB: LABA RUGI ============ -->
+      <section class="panel active" id="panel-labarugi" role="tabpanel" aria-labelledby="tabbtn-labarugi">
+        <div class="panel-head">
+          <h2>Laporan Laba Rugi</h2>
+          <p>Isi angka pada formulir di sebelah kiri — laporan di sebelah kanan terhitung otomatis. Pajak dihitung sebagai pajak final UMKM 0,5% dari pendapatan bruto.</p>
+        </div>
+
+        <div class="kpis" id="lr-kpis"></div>
+
+        <div class="split">
+          <div class="card">
+            <h3>Formulir Isian</h3>
+            <p class="hint">Semua angka dalam Rupiah penuh, contoh: 1500000 untuk Rp1.500.000.</p>
+            <div class="form-group">
+              <h4>Pendapatan &amp; Harga Pokok</h4>
+              <div class="inrow"><label for="in-pendapatan">Pendapatan / Penjualan</label><div class="rp"><span>Rp</span><input id="in-pendapatan" type="number" min="0" inputmode="numeric" data-field="pendapatan"></div></div>
+              <div class="inrow"><label for="in-hpp">Harga Pokok Penjualan (HPP)</label><div class="rp"><span>Rp</span><input id="in-hpp" type="number" min="0" inputmode="numeric" data-field="hpp"></div></div>
+            </div>
+            <div class="form-group">
+              <h4>Biaya Operasional</h4>
+              <div class="inrow"><label for="in-gaji">Gaji &amp; Upah Karyawan</label><div class="rp"><span>Rp</span><input id="in-gaji" type="number" min="0" inputmode="numeric" data-field="gaji"></div></div>
+              <div class="inrow"><label for="in-sewa">Sewa Tempat / Gudang</label><div class="rp"><span>Rp</span><input id="in-sewa" type="number" min="0" inputmode="numeric" data-field="sewa"></div></div>
+              <div class="inrow"><label for="in-utilitas">Listrik, Air &amp; Internet</label><div class="rp"><span>Rp</span><input id="in-utilitas" type="number" min="0" inputmode="numeric" data-field="utilitas"></div></div>
+              <div class="inrow"><label for="in-pemasaran">Pemasaran &amp; Promosi</label><div class="rp"><span>Rp</span><input id="in-pemasaran" type="number" min="0" inputmode="numeric" data-field="pemasaran"></div></div>
+              <div class="inrow"><label for="in-transportasi">Transportasi &amp; Pengiriman</label><div class="rp"><span>Rp</span><input id="in-transportasi" type="number" min="0" inputmode="numeric" data-field="transportasi"></div></div>
+              <div class="inrow"><label for="in-administrasi">Administrasi &amp; ATK</label><div class="rp"><span>Rp</span><input id="in-administrasi" type="number" min="0" inputmode="numeric" data-field="administrasi"></div></div>
+              <div class="inrow"><label for="in-lain">Biaya Lain-lain</label><div class="rp"><span>Rp</span><input id="in-lain" type="number" min="0" inputmode="numeric" data-field="lain"></div></div>
+            </div>
+            <div class="form-group">
+              <h4>Pendapatan &amp; Beban Lainnya</h4>
+              <div class="inrow"><label for="in-pendapatanLain">Pendapatan Lain-lain</label><div class="rp"><span>Rp</span><input id="in-pendapatanLain" type="number" min="0" inputmode="numeric" data-field="pendapatanLain"></div></div>
+              <div class="inrow"><label for="in-bunga">Beban Bunga Pinjaman</label><div class="rp"><span>Rp</span><input id="in-bunga" type="number" min="0" inputmode="numeric" data-field="bunga"></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 id="lr-title">Laporan Laba Rugi</h3>
+            <p class="hint" id="lr-sub"></p>
+            <div id="lr-statement"></div>
+            <p class="note">Pajak final UMKM 0,5% dihitung dari pendapatan bruto sesuai ketentuan pajak penghasilan final bagi UMKM. Angka pada laporan ini mengikuti isian formulir secara langsung.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: NERACA ============ -->
+      <section class="panel" id="panel-neraca" role="tabpanel" aria-labelledby="tabbtn-neraca">
+        <div class="panel-head">
+          <h2>Neraca Sederhana</h2>
+          <p>Gambaran posisi keuangan usaha pada akhir periode terpilih: apa yang dimiliki (aset), apa yang wajib dibayar (kewajiban), dan modal pemilik. Baris “Laba Periode Berjalan” terisi otomatis dari laporan laba rugi.</p>
+        </div>
+
+        <div style="margin-bottom:14px"><span class="badge ok" id="neraca-badge">Seimbang</span></div>
+
+        <div class="split">
+          <div class="card">
+            <h3>Formulir Isian Neraca</h3>
+            <p class="hint">Isi nilai per akhir periode, dalam Rupiah penuh.</p>
+            <div class="form-group">
+              <h4>Aset Lancar</h4>
+              <div class="inrow"><label for="n-kas">Kas &amp; Bank</label><div class="rp"><span>Rp</span><input id="n-kas" type="number" min="0" inputmode="numeric" data-nfield="kas"></div></div>
+              <div class="inrow"><label for="n-piutang">Piutang Usaha</label><div class="rp"><span>Rp</span><input id="n-piutang" type="number" min="0" inputmode="numeric" data-nfield="piutang"></div></div>
+              <div class="inrow"><label for="n-persediaan">Persediaan Barang</label><div class="rp"><span>Rp</span><input id="n-persediaan" type="number" min="0" inputmode="numeric" data-nfield="persediaan"></div></div>
+            </div>
+            <div class="form-group">
+              <h4>Aset Tetap</h4>
+              <div class="inrow"><label for="n-peralatan">Peralatan &amp; Rak Toko</label><div class="rp"><span>Rp</span><input id="n-peralatan" type="number" min="0" inputmode="numeric" data-nfield="peralatan"></div></div>
+              <div class="inrow"><label for="n-kendaraan">Kendaraan Operasional</label><div class="rp"><span>Rp</span><input id="n-kendaraan" type="number" min="0" inputmode="numeric" data-nfield="kendaraan"></div></div>
+              <div class="inrow"><label for="n-penyusutan">Akumulasi Penyusutan</label><div class="rp"><span>Rp</span><input id="n-penyusutan" type="number" min="0" inputmode="numeric" data-nfield="penyusutan"></div></div>
+            </div>
+            <div class="form-group">
+              <h4>Kewajiban</h4>
+              <div class="inrow"><label for="n-utangUsaha">Utang Usaha ke Pemasok</label><div class="rp"><span>Rp</span><input id="n-utangUsaha" type="number" min="0" inputmode="numeric" data-nfield="utangUsaha"></div></div>
+              <div class="inrow"><label for="n-utangPajak">Utang Pajak</label><div class="rp"><span>Rp</span><input id="n-utangPajak" type="number" min="0" inputmode="numeric" data-nfield="utangPajak"></div></div>
+              <div class="inrow"><label for="n-utangBank">Utang Bank / Pinjaman</label><div class="rp"><span>Rp</span><input id="n-utangBank" type="number" min="0" inputmode="numeric" data-nfield="utangBank"></div></div>
+            </div>
+            <div class="form-group">
+              <h4>Modal</h4>
+              <div class="inrow"><label for="n-modalPemilik">Modal Pemilik</label><div class="rp"><span>Rp</span><input id="n-modalPemilik" type="number" min="0" inputmode="numeric" data-nfield="modalPemilik"></div></div>
+              <div class="inrow"><label for="n-labaDitahan">Laba Ditahan</label><div class="rp"><span>Rp</span><input id="n-labaDitahan" type="number" min="0" inputmode="numeric" data-nfield="labaDitahan"></div></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <h3 id="neraca-title">Neraca</h3>
+              <p class="hint" id="neraca-sub"></p>
+              <div id="neraca-statement"></div>
+            </div>
+            <div class="card">
+              <h3>Komposisi Keuangan</h3>
+              <p class="hint">Perbandingan porsi aset lancar vs aset tetap, dan kewajiban vs modal.</p>
+              <div style="font-size:13px;font-weight:700;margin-top:6px">Aset</div>
+              <div class="mixbar"><div id="mix-aset-lancar" style="background:var(--green)"></div><div id="mix-aset-tetap" style="background:var(--green-soft)"></div></div>
+              <div class="legend"><span><i style="background:var(--green)"></i><span id="mix-aset-lancar-lbl">Aset Lancar</span></span><span><i style="background:var(--green-soft)"></i><span id="mix-aset-tetap-lbl">Aset Tetap</span></span></div>
+              <div style="font-size:13px;font-weight:700;margin-top:14px">Sumber Dana</div>
+              <div class="mixbar"><div id="mix-kewajiban" style="background:var(--green-deep)"></div><div id="mix-modal" style="background:var(--green)"></div></div>
+              <div class="legend"><span><i style="background:var(--green-deep)"></i><span id="mix-kewajiban-lbl">Kewajiban</span></span><span><i style="background:var(--green)"></i><span id="mix-modal-lbl">Modal</span></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: PERBANDINGAN ============ -->
+      <section class="panel" id="panel-banding" role="tabpanel" aria-labelledby="tabbtn-banding">
+        <div class="panel-head">
+          <h2>Perbandingan Antar Periode</h2>
+          <p>Bandingkan dua periode untuk melihat pertumbuhan pendapatan, biaya, dan laba. Warna hijau berarti perubahan yang menguntungkan, merah berarti perlu perhatian.</p>
+        </div>
+        <div class="card">
+          <div class="cmp-selects">
+            <div class="field">
+              <label for="cmp-a">Periode Pembanding (A)</label>
+              <select id="cmp-a"></select>
+            </div>
+            <div class="field">
+              <label for="cmp-b">Periode Utama (B)</label>
+              <select id="cmp-b"></select>
+            </div>
+          </div>
+          <div id="cmp-summary" style="margin-bottom:12px"></div>
+          <div style="overflow-x:auto">
+            <table class="cmp" id="cmp-table">
+              <thead><tr><th>Komponen</th><th id="cmp-th-a">Periode A</th><th id="cmp-th-b">Periode B</th><th>Selisih (Rp)</th><th>Selisih (%)</th></tr></thead>
+              <tbody id="cmp-body"></tbody>
+            </table>
+          </div>
+          <p class="note">Selisih dihitung B − A. Untuk baris biaya, kenaikan ditandai merah karena mengurangi laba; untuk baris pendapatan dan laba, kenaikan ditandai hijau.</p>
+        </div>
+      </section>
+
+      <!-- ============ TAB: GRAFIK ============ -->
+      <section class="panel" id="panel-grafik" role="tabpanel" aria-labelledby="tabbtn-grafik">
+        <div class="panel-head">
+          <h2>Grafik Pendapatan vs Biaya</h2>
+          <p>Perkembangan enam bulan terakhir. “Total Biaya” mencakup HPP, seluruh biaya operasional, beban bunga, dan pajak. Garis putus-putus menunjukkan laba bersih.</p>
+        </div>
+        <div class="kpis" id="chart-kpis"></div>
+        <div class="card">
+          <div class="chart-legend">
+            <span><i style="background:var(--green)"></i>Pendapatan</span>
+            <span><i style="background:#9cc7a9"></i>Total Biaya</span>
+            <span><i style="background:transparent;border-top:3px dashed var(--green-deep);height:0;width:16px;border-radius:0"></i>Laba Bersih</span>
+          </div>
+          <div class="chart-wrap" id="chart"></div>
+          <p class="note">Sumbu kiri dalam juta Rupiah (Rp jt). Arahkan kursor atau sentuh titik garis untuk melihat nilai laba bersih tiap bulan.</p>
+        </div>
+      </section>
+
+      <!-- ============ TAB: LAPORAN ============ -->
+      <section class="panel" id="panel-laporan" role="tabpanel" aria-labelledby="tabbtn-laporan">
+        <div class="panel-head">
+          <h2>Ringkasan Laporan Keuangan</h2>
+          <p>Ringkasan eksekutif periode terpilih, lengkap dengan rasio keuangan utama. Unduh sebagai berkas laporan atau salin ringkasannya untuk dibagikan.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <h3 id="lap-title">Ringkasan Eksekutif</h3>
+          <p id="lap-narrative" style="font-size:15px;color:var(--ink-soft);margin:6px 0 0"></p>
+          <div class="btn-row">
+            <button class="btn" id="btn-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+              Unduh Laporan (HTML)
+            </button>
+            <button class="btn ghost" id="btn-csv">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              Unduh CSV Laba Rugi
+            </button>
+            <button class="btn ghost" id="btn-copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Salin Ringkasan
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <h3>Rasio Keuangan Utama</h3>
+          <p class="hint">Indikator kesehatan keuangan usaha pada periode terpilih.</p>
+          <div class="ratios" id="lap-ratios"></div>
+        </div>
+
+        <div class="split">
+          <div class="card">
+            <h3>Laba Rugi Ringkas</h3>
+            <p class="hint" id="lap-lr-sub"></p>
+            <div id="lap-lr"></div>
+          </div>
+          <div class="card">
+            <h3>Neraca Ringkas</h3>
+            <p class="hint" id="lap-neraca-sub"></p>
+            <div id="lap-neraca"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel" aria-labelledby="tabbtn-panduan">
+        <div class="panel-head">
+          <h2>Panduan Penggunaan</h2>
+          <p>Buku panduan lengkap aplikasi Laporan Keuangan &amp; Laba Rugi, termasuk cara membaca laporan, garansi, dan harga pemesanan.</p>
+        </div>
+
+        <div class="card guide">
+          <h3>1. Memulai</h3>
+          <ol>
+            <li>Isi <strong>Nama Usaha</strong> dan <strong>Jenis Usaha</strong> di bagian atas halaman — keduanya tercantum otomatis pada laporan yang diunduh.</li>
+            <li>Pilih <strong>Periode Laporan</strong> (bulan yang ingin dilihat atau diubah).</li>
+            <li>Buka tab yang dibutuhkan: <strong>Laba Rugi</strong>, <strong>Neraca</strong>, <strong>Perbandingan</strong>, <strong>Grafik</strong>, atau <strong>Laporan</strong>.</li>
+            <li>Ubah angka pada formulir isian; semua total, grafik, dan ringkasan berubah mengikuti secara langsung.</li>
+          </ol>
+          <div class="tip"><strong>Perlu diketahui:</strong> ini versi demo (v1). Angka yang Anda masukkan hanya berlaku selama aplikasi dibuka — setelah halaman ditutup atau dimuat ulang, isian kembali ke data contoh. Versi pembeli menyimpan data secara permanen sesuai paket yang dipilih.</div>
+
+          <h3>2. Tab Laba Rugi</h3>
+          <p>Tab ini menyusun laporan laba rugi satu periode. Isi kelompok angka berikut:</p>
+          <ul>
+            <li><strong>Pendapatan / Penjualan</strong> — total penjualan bruto periode tersebut.</li>
+            <li><strong>Harga Pokok Penjualan (HPP)</strong> — biaya langsung barang yang terjual (harga beli barang dagangan, bahan baku, dan ongkos terkait).</li>
+            <li><strong>Biaya Operasional</strong> — gaji, sewa, listrik/air/internet, pemasaran, transportasi, administrasi, dan biaya lain-lain.</li>
+            <li><strong>Pendapatan Lain-lain &amp; Beban Bunga</strong> — pendapatan di luar penjualan utama dan bunga pinjaman bila ada.</li>
+          </ul>
+          <p>Cara membaca hasilnya: <strong>Laba Kotor</strong> = Pendapatan − HPP. <strong>Laba Operasional</strong> = Laba Kotor − Total Biaya Operasional. <strong>Laba Bersih</strong> adalah hasil akhir setelah pendapatan lain, bunga, dan pajak. Pajak dihitung otomatis sebagai pajak final UMKM sebesar 0,5% dari pendapatan bruto. Kartu ringkasan di bagian atas menampilkan margin kotor dan margin bersih — margin bersih di atas 10% umumnya tergolong sehat untuk usaha dagang.</p>
+
+          <h3>3. Tab Neraca</h3>
+          <p>Neraca menunjukkan posisi keuangan pada akhir periode: <strong>Aset</strong> (kas, piutang, persediaan, peralatan, kendaraan dikurangi penyusutan), <strong>Kewajiban</strong> (utang usaha, utang pajak, utang bank), dan <strong>Modal</strong> (modal pemilik, laba ditahan, dan laba periode berjalan yang terisi otomatis dari tab Laba Rugi).</p>
+          <p>Neraca yang benar selalu <strong>seimbang</strong>: Total Aset = Total Kewajiban + Modal. Lencana di atas formulir menunjukkan statusnya. Bila muncul selisih, periksa kembali isian aset, utang, dan modal — selisih biasanya berasal dari laba ditahan atau kas yang belum diperbarui. Grafik komposisi membantu melihat porsi aset lancar vs tetap dan porsi utang vs modal.</p>
+
+          <h3>4. Tab Perbandingan</h3>
+          <p>Pilih dua periode (A sebagai pembanding, B sebagai periode utama) untuk melihat selisih dalam Rupiah dan persen pada setiap komponen. Gunakan tab ini untuk menjawab pertanyaan seperti “naik berapa persen penjualan bulan ini dibanding bulan lalu?” atau “biaya apa yang paling membengkak?”. Untuk baris biaya, kenaikan ditandai merah karena menekan laba.</p>
+
+          <h3>5. Tab Grafik</h3>
+          <p>Grafik batang membandingkan <strong>Pendapatan</strong> dan <strong>Total Biaya</strong> selama enam bulan, dengan garis laba bersih di atasnya. Total biaya mencakup HPP, biaya operasional, beban bunga, dan pajak. Bila batang biaya makin mendekati batang pendapatan, margin menipis — periksa komponen biaya terbesar di tab Perbandingan.</p>
+
+          <h3>6. Tab Laporan &amp; Unduh</h3>
+          <ul>
+            <li><strong>Ringkasan Eksekutif</strong> — narasi otomatis berisi pendapatan, laba bersih, margin, dan pertumbuhan dibanding bulan sebelumnya.</li>
+            <li><strong>Rasio Keuangan</strong> — margin kotor, margin bersih, rasio lancar (aset lancar ÷ kewajiban lancar; sehat bila di atas 1,5), porsi utang terhadap aset, dan imbal hasil aset (ROA).</li>
+            <li><strong>Unduh Laporan (HTML)</strong> — mengunduh satu berkas laporan lengkap (laba rugi + neraca + rasio) yang dapat dibuka di browser dan dicetak dari perangkat Anda.</li>
+            <li><strong>Unduh CSV Laba Rugi</strong> — berkas data yang dapat dibuka di Excel atau Google Sheets.</li>
+            <li><strong>Salin Ringkasan</strong> — menyalin ringkasan teks untuk ditempel ke WhatsApp, email, atau dokumen lain.</li>
+          </ul>
+
+          <h3>7. Tanya Jawab Singkat</h3>
+          <details>
+            <summary>Apakah angka saya tersimpan?</summary>
+            <p>Pada versi demo ini, tidak. Isian hanya berlaku selama aplikasi dibuka. Pada versi pembeli, penyimpanan mengikuti paket: paket Bisnis mencakup penyimpanan permanen dan multi-pengguna.</p>
+          </details>
+          <details>
+            <summary>Kenapa neraca saya tidak seimbang?</summary>
+            <p>Karena total aset tidak sama dengan kewajiban + modal. Penyebab tersering: kas belum disesuaikan dengan laba bulan berjalan, persediaan belum diperbarui, atau ada utang yang belum dicatat. Lencana selisih menunjukkan besar kekurangannya.</p>
+          </details>
+          <details>
+            <summary>Bagaimana pajak dihitung?</summary>
+            <p>Otomatis 0,5% dari pendapatan bruto, mengikuti skema pajak penghasilan final untuk UMKM. Bila usaha Anda memakai skema pajak lain (misalnya PKP dengan PPN), gunakan laporan ini sebagai gambaran operasional dan konsultasikan perhitungan pajak resmi dengan konsultan pajak.</p>
+          </details>
+          <details>
+            <summary>Bisakah menambah periode bulan sendiri?</summary>
+            <p>Versi demo menyediakan enam bulan data contoh yang semuanya dapat diubah angkanya. Penambahan periode tanpa batas tersedia pada versi pembeli.</p>
+          </details>
+          <details>
+            <summary>Apakah bisa dipakai di HP dan laptop?</summary>
+            <p>Bisa. Aplikasi berjalan di browser HP maupun laptop, dan dapat dipasang ke layar utama. Paket Profesional dan Bisnis juga mencakup berkas APK Android.</p>
+          </details>
+
+          <h3>8. Garansi</h3>
+          <p>Setiap pembelian dilengkapi garansi perbaikan bug dan error secara gratis, agar aplikasi yang Anda terima benar-benar siap dipakai:</p>
+          <ul>
+            <li><strong>Paket Pemula</strong> — garansi 30 hari sejak aplikasi diterima.</li>
+            <li><strong>Paket Profesional</strong> — garansi 60 hari sejak aplikasi diterima.</li>
+            <li><strong>Paket Bisnis</strong> — garansi 90 hari sejak aplikasi diterima.</li>
+            <li><strong>Berlangganan</strong> — garansi dan dukungan berlaku selama masa langganan aktif.</li>
+          </ul>
+          <p>Cara klaim: kirim pesan WhatsApp ke <strong>0812-4798-6994</strong> berisi nama paket, penjelasan bug-nya, serta screenshot atau video layar saat error terjadi. Perbaikan bug dan error yang berasal dari aplikasi ditangani gratis selama masa garansi; permintaan fitur baru di luar kesepakatan awal dihitung sebagai penyesuaian terpisah.</p>
+          <div class="btn-row">
+            <a class="btn" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20klaim%20garansi%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi." target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              Klaim Garansi via WhatsApp
+            </a>
+          </div>
+
+          <h3>9. Harga &amp; Pemesanan</h3>
+          <p>Tersedia dua cara memiliki aplikasi ini: <strong>beli sekali</strong> (bayar satu kali, pakai selamanya) atau <strong>berlangganan</strong> (per bulan, berhenti kapan saja — akses berhenti bila langganan tidak diperpanjang). Pemesanan dan pembayaran manual melalui WhatsApp <strong>0812-4798-6994</strong>.</p>
+
+          <h4 style="margin:18px 0 0;font-size:15px;color:var(--green-deep)">Beli Sekali</h4>
+          <div class="price-grid">
+            <div class="price-card">
+              <div class="tier">Pemula</div>
+              <div class="amount">Rp499.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Aplikasi standar siap pakai</li>
+                <li>Laba rugi, neraca &amp; grafik</li>
+                <li>Garansi perbaikan bug 30 hari</li>
+              </ul>
+              <a class="btn ghost" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20memesan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Pemula%20(Beli%20Sekali%20Rp499.000)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+            <div class="price-card featured">
+              <div class="tier">Profesional<span class="tag">Terlaris</span></div>
+              <div class="amount">Rp999.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Semua fitur Pemula</li>
+                <li>Penyesuaian nama &amp; merek usaha</li>
+                <li>Termasuk APK Android</li>
+                <li>Garansi perbaikan bug 60 hari</li>
+              </ul>
+              <a class="btn" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20memesan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Profesional%20(Beli%20Sekali%20Rp999.000)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+            <div class="price-card">
+              <div class="tier">Bisnis</div>
+              <div class="amount">Rp1.999.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Semua fitur Profesional</li>
+                <li>Penyimpanan data permanen</li>
+                <li>Multi-pengguna &amp; dukungan penuh</li>
+                <li>Garansi perbaikan bug 90 hari</li>
+              </ul>
+              <a class="btn ghost" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20memesan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Bisnis%20(Beli%20Sekali%20Rp1.999.000)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+          </div>
+
+          <h4 style="margin:20px 0 0;font-size:15px;color:var(--green-deep)">Berlangganan</h4>
+          <div class="price-grid">
+            <div class="price-card">
+              <div class="tier">Pemula</div>
+              <div class="amount">Rp49.000</div>
+              <div class="per">per bulan</div>
+              <ul>
+                <li>Aplikasi standar siap pakai</li>
+                <li>Garansi &amp; dukungan selama langganan aktif</li>
+              </ul>
+              <a class="btn ghost" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20berlangganan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Pemula%20(Rp49.000%2Fbulan)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+            <div class="price-card">
+              <div class="tier">Profesional</div>
+              <div class="amount">Rp99.000</div>
+              <div class="per">per bulan</div>
+              <ul>
+                <li>Penyesuaian nama &amp; merek usaha</li>
+                <li>Termasuk APK Android</li>
+                <li>Garansi &amp; dukungan selama langganan aktif</li>
+              </ul>
+              <a class="btn ghost" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20berlangganan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Profesional%20(Rp99.000%2Fbulan)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+            <div class="price-card">
+              <div class="tier">Bisnis</div>
+              <div class="amount">Rp199.000</div>
+              <div class="per">per bulan</div>
+              <ul>
+                <li>Penyimpanan data permanen</li>
+                <li>Multi-pengguna &amp; dukungan penuh</li>
+                <li>Garansi &amp; dukungan selama langganan aktif</li>
+              </ul>
+              <a class="btn ghost" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20ingin%20berlangganan%20aplikasi%20Laporan%20Keuangan%20%26%20Laba%20Rugi%20paket%20Bisnis%20(Rp199.000%2Fbulan)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+            </div>
+          </div>
+          <p class="note" style="margin-top:14px">Langganan tahunan cukup bayar 10 bulan. Pembayaran dilakukan manual via WhatsApp setelah pesanan dikonfirmasi.</p>
+        </div>
+      </section>
+
+      <footer>
+        <span>Laporan Keuangan &amp; Laba Rugi — versi demo v1. Data yang dimasukkan hanya berlaku selama aplikasi dibuka dan tidak tersimpan setelah halaman ditutup.</span>
+        <span>Pemesanan &amp; dukungan: <a href="https://wa.me/6281247986994" target="_blank" rel="noopener">WhatsApp 0812-4798-6994</a></span>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      "use strict";
+
+      /* ================= DATA CONTOH ================= */
+      var periods = [
+        { label: "Juni 2026",      short: "Jun", pendapatan: 78500000,  hpp: 52340000, gaji: 9600000,  sewa: 3500000, utilitas: 1720000, pemasaran: 950000,  transportasi: 2150000, administrasi: 680000, lain: 420000, pendapatanLain: 250000, bunga: 450000 },
+        { label: "Juli 2026",      short: "Jul", pendapatan: 82300000,  hpp: 54610000, gaji: 9600000,  sewa: 3500000, utilitas: 1790000, pemasaran: 1100000, transportasi: 2280000, administrasi: 705000, lain: 460000, pendapatanLain: 300000, bunga: 450000 },
+        { label: "Agustus 2026",   short: "Agu", pendapatan: 79800000,  hpp: 53420000, gaji: 9850000,  sewa: 3500000, utilitas: 1830000, pemasaran: 1050000, transportasi: 2210000, administrasi: 690000, lain: 510000, pendapatanLain: 275000, bunga: 430000 },
+        { label: "September 2026", short: "Sep", pendapatan: 88600000,  hpp: 58240000, gaji: 10200000, sewa: 3500000, utilitas: 1910000, pemasaran: 1350000, transportasi: 2460000, administrasi: 740000, lain: 480000, pendapatanLain: 320000, bunga: 430000 },
+        { label: "Oktober 2026",   short: "Okt", pendapatan: 94200000,  hpp: 61530000, gaji: 10500000, sewa: 3750000, utilitas: 1980000, pemasaran: 1500000, transportasi: 2590000, administrasi: 760000, lain: 540000, pendapatanLain: 410000, bunga: 410000 },
+        { label: "November 2026",  short: "Nov", pendapatan: 102750000, hpp: 66480000, gaji: 10800000, sewa: 3750000, utilitas: 2060000, pemasaran: 1720000, transportasi: 2740000, administrasi: 795000, lain: 565000, pendapatanLain: 460000, bunga: 390000 }
+      ];
+
+      var neraca = {
+        kas: 48650000, piutang: 21300000, persediaan: 56800000,
+        peralatan: 38500000, kendaraan: 85000000, penyusutan: 18750000,
+        utangUsaha: 32400000, utangPajak: 1850000, utangBank: 45000000,
+        modalPemilik: 120000000, labaDitahan: 18853750
+      };
+
+      var state = { period: 5, cmpA: 4, cmpB: 5 };
+
+      /* ================= FORMAT ================= */
+      var nf = new Intl.NumberFormat("id-ID");
+      function rp(n){ return "Rp" + nf.format(Math.round(n)); }
+      function num(n){ return nf.format(Math.round(n)); }
+      function pct(n, d){ return d === 0 ? "—" : (n / d * 100).toFixed(1).replace(".", ",") + "%"; }
+      function pctVal(v){ return (v >= 0 ? "+" : "") + v.toFixed(1).replace(".", ",") + "%"; }
+      function jt(n){ return (n / 1000000).toFixed(1).replace(".", ","); }
+
+      function usaha(){
+        var v = document.getElementById("usaha").value.trim();
+        return v || "Usaha Anda";
+      }
+      function jenisUsaha(){
+        var v = document.getElementById("jenis").value.trim();
+        return v || "";
+      }
+
+      /* ================= HITUNG LABA RUGI ================= */
+      function calcLR(p){
+        var biayaOp = p.gaji + p.sewa + p.utilitas + p.pemasaran + p.transportasi + p.administrasi + p.lain;
+        var labaKotor = p.pendapatan - p.hpp;
+        var labaOperasi = labaKotor - biayaOp;
+        var labaSebelumPajak = labaOperasi + p.pendapatanLain - p.bunga;
+        var pajak = Math.round(p.pendapatan * 0.005);
+        var labaBersih = labaSebelumPajak - pajak;
+        return {
+          pendapatan: p.pendapatan, hpp: p.hpp, labaKotor: labaKotor,
+          gaji: p.gaji, sewa: p.sewa, utilitas: p.utilitas, pemasaran: p.pemasaran,
+          transportasi: p.transportasi, administrasi: p.administrasi, lain: p.lain,
+          biayaOp: biayaOp, labaOperasi: labaOperasi,
+          pendapatanLain: p.pendapatanLain, bunga: p.bunga,
+          labaSebelumPajak: labaSebelumPajak, pajak: pajak, labaBersih: labaBersih,
+          totalBiaya: p.hpp + biayaOp + p.bunga + pajak,
+          marginKotor: p.pendapatan ? labaKotor / p.pendapatan * 100 : 0,
+          marginBersih: p.pendapatan ? labaBersih / p.pendapatan * 100 : 0
+        };
+      }
+
+      /* ================= HITUNG NERACA ================= */
+      function calcNeraca(labaBerjalan){
+        var asetLancar = neraca.kas + neraca.piutang + neraca.persediaan;
+        var asetTetap = neraca.peralatan + neraca.kendaraan - neraca.penyusutan;
+        var totalAset = asetLancar + asetTetap;
+        var kewajibanLancar = neraca.utangUsaha + neraca.utangPajak;
+        var totalKewajiban = kewajibanLancar + neraca.utangBank;
+        var totalModal = neraca.modalPemilik + neraca.labaDitahan + labaBerjalan;
+        var totalPasiva = totalKewajiban + totalModal;
+        return {
+          asetLancar: asetLancar, asetTetap: asetTetap, totalAset: totalAset,
+          kewajibanLancar: kewajibanLancar, totalKewajiban: totalKewajiban,
+          labaBerjalan: labaBerjalan, totalModal: totalModal, totalPasiva: totalPasiva,
+          selisih: totalAset - totalPasiva
+        };
+      }
+
+      /* ================= RENDER: LABA RUGI ================= */
+      function row(label, value, cls){
+        return '<tr class="' + (cls || "") + '"><td>' + label + '</td><td class="num">' + num(value) + "</td></tr>";
+      }
+      function rowNeg(label, value, cls){
+        return '<tr class="' + (cls || "") + '"><td>' + label + '</td><td class="num neg">(' + num(value) + ")</td></tr>";
+      }
+      function secRow(label){ return '<tr class="sec"><td colspan="2">' + label + "</td></tr>"; }
+
+      function statementHTML(c){
+        var h = '<table class="stmt">';
+        h += secRow("Pendapatan");
+        h += row("Pendapatan / Penjualan", c.pendapatan);
+        h += rowNeg("Harga Pokok Penjualan (HPP)", c.hpp);
+        h += row("Laba Kotor", c.labaKotor, "total");
+        h += secRow("Biaya Operasional");
+        h += row("Gaji &amp; Upah Karyawan", c.gaji, "sub");
+        h += row("Sewa Tempat / Gudang", c.sewa, "sub");
+        h += row("Listrik, Air &amp; Internet", c.utilitas, "sub");
+        h += row("Pemasaran &amp; Promosi", c.pemasaran, "sub");
+        h += row("Transportasi &amp; Pengiriman", c.transportasi, "sub");
+        h += row("Administrasi &amp; ATK", c.administrasi, "sub");
+        h += row("Biaya Lain-lain", c.lain, "sub");
+        h += rowNeg("Total Biaya Operasional", c.biayaOp);
+        h += row("Laba Operasional", c.labaOperasi, "total");
+        h += secRow("Pendapatan &amp; Beban Lainnya");
+        h += row("Pendapatan Lain-lain", c.pendapatanLain);
+        h += rowNeg("Beban Bunga Pinjaman", c.bunga);
+        h += row("Laba Sebelum Pajak", c.labaSebelumPajak, "total");
+        h += rowNeg("Pajak Final UMKM (0,5% dari pendapatan)", c.pajak);
+        h += '<tr class="grand"><td>Laba Bersih</td><td class="num">' + num(c.labaBersih) + "</td></tr>";
+        h += "</table>";
+        return h;
+      }
+
+      function renderLR(){
+        var p = periods[state.period];
+        var c = calcLR(p);
+        document.getElementById("lr-title").textContent = "Laporan Laba Rugi — " + p.label;
+        document.getElementById("lr-sub").textContent = usaha() + (jenisUsaha() ? " · " + jenisUsaha() : "");
+        document.getElementById("lr-statement").innerHTML = statementHTML(c);
+
+        var prev = state.period > 0 ? calcLR(periods[state.period - 1]) : null;
+        var growthTxt = "—", growthSub = "bulan pertama data";
+        if (prev && prev.labaBersih !== 0){
+          var g = (c.labaBersih - prev.labaBersih) / Math.abs(prev.labaBersih) * 100;
+          growthTxt = pctVal(g);
+          growthSub = "vs " + periods[state.period - 1].label;
+        }
+        document.getElementById("lr-kpis").innerHTML =
+          kpi("Pendapatan", rp(c.pendapatan), p.label) +
+          kpi("Laba Kotor", rp(c.labaKotor), "Margin kotor " + pct(c.labaKotor, c.pendapatan)) +
+          kpi("Total Biaya Operasional", rp(c.biayaOp), pct(c.biayaOp, c.pendapatan) + " dari pendapatan") +
+          kpi("Laba Bersih", rp(c.labaBersih), "Margin bersih " + pct(c.labaBersih, c.pendapatan), true) +
+          kpi("Pertumbuhan Laba", growthTxt, growthSub);
+      }
+      function kpi(lbl, val, sub, hl){
+        return '<div class="kpi' + (hl ? " hl" : "") + '"><div class="lbl">' + lbl + '</div><div class="val">' + val + '</div><div class="sub">' + sub + "</div></div>";
+      }
+
+      /* ================= RENDER: NERACA ================= */
+      function neracaHTML(n){
+        var h = '<table class="stmt">';
+        h += secRow("Aset");
+        h += row("Kas &amp; Bank", neraca.kas, "sub");
+        h += row("Piutang Usaha", neraca.piutang, "sub");
+        h += row("Persediaan Barang", neraca.persediaan, "sub");
+        h += row("Total Aset Lancar", n.asetLancar, "total");
+        h += row("Peralatan &amp; Rak Toko", neraca.peralatan, "sub");
+        h += row("Kendaraan Operasional", neraca.kendaraan, "sub");
+        h += rowNeg("Akumulasi Penyusutan", neraca.penyusutan, "sub");
+        h += row("Total Aset Tetap", n.asetTetap, "total");
+        h += '<tr class="grand"><td>Total Aset</td><td class="num">' + num(n.totalAset) + "</td></tr>";
+        h += secRow("Kewajiban");
+        h += row("Utang Usaha ke Pemasok", neraca.utangUsaha, "sub");
+        h += row("Utang Pajak", neraca.utangPajak, "sub");
+        h += row("Total Kewajiban Lancar", n.kewajibanLancar, "total");
+        h += row("Utang Bank / Pinjaman", neraca.utangBank, "sub");
+        h += row("Total Kewajiban", n.totalKewajiban, "total");
+        h += secRow("Modal");
+        h += row("Modal Pemilik", neraca.modalPemilik, "sub");
+        h += row("Laba Ditahan", neraca.labaDitahan, "sub");
+        h += row("Laba Periode Berjalan (dari Laba Rugi)", n.labaBerjalan, "sub");
+        h += row("Total Modal", n.totalModal, "total");
+        h += '<tr class="grand"><td>Total Kewajiban + Modal</td><td class="num">' + num(n.totalPasiva) + "</td></tr>";
+        h += "</table>";
+        return h;
+      }
+
+      function renderNeraca(){
+        var p = periods[state.period];
+        var laba = calcLR(p).labaBersih;
+        var n = calcNeraca(laba);
+        document.getElementById("neraca-title").textContent = "Neraca — per akhir " + p.label;
+        document.getElementById("neraca-sub").textContent = usaha();
+        document.getElementById("neraca-statement").innerHTML = neracaHTML(n);
+
+        var badge = document.getElementById("neraca-badge");
+        if (Math.abs(n.selisih) < 1){
+          badge.className = "badge ok";
+          badge.textContent = "Neraca Seimbang — Total Aset = Kewajiban + Modal (" + rp(n.totalAset) + ")";
+        } else {
+          badge.className = "badge bad";
+          badge.textContent = "Belum Seimbang — Selisih " + rp(Math.abs(n.selisih)) + (n.selisih > 0 ? " (aset lebih besar)" : " (kewajiban + modal lebih besar)");
+        }
+
+        var pa = n.totalAset ? n.asetLancar / n.totalAset * 100 : 0;
+        document.getElementById("mix-aset-lancar").style.width = pa + "%";
+        document.getElementById("mix-aset-tetap").style.width = (100 - pa) + "%";
+        document.getElementById("mix-aset-lancar-lbl").textContent = "Aset Lancar " + rp(n.asetLancar) + " (" + pa.toFixed(1).replace(".", ",") + "%)";
+        document.getElementById("mix-aset-tetap-lbl").textContent = "Aset Tetap " + rp(n.asetTetap) + " (" + (100 - pa).toFixed(1).replace(".", ",") + "%)";
+        var pk = n.totalPasiva ? n.totalKewajiban / n.totalPasiva * 100 : 0;
+        document.getElementById("mix-kewajiban").style.width = pk + "%";
+        document.getElementById("mix-modal").style.width = (100 - pk) + "%";
+        document.getElementById("mix-kewajiban-lbl").textContent = "Kewajiban " + rp(n.totalKewajiban) + " (" + pk.toFixed(1).replace(".", ",") + "%)";
+        document.getElementById("mix-modal-lbl").textContent = "Modal " + rp(n.totalModal) + " (" + (100 - pk).toFixed(1).replace(".", ",") + "%)";
+      }
+
+      /* ================= RENDER: PERBANDINGAN ================= */
+      var cmpRows = [
+        { key: "pendapatan", label: "Pendapatan / Penjualan", cost: false, hl: false },
+        { key: "hpp", label: "Harga Pokok Penjualan (HPP)", cost: true, hl: false },
+        { key: "labaKotor", label: "Laba Kotor", cost: false, hl: true },
+        { key: "biayaOp", label: "Total Biaya Operasional", cost: true, hl: false },
+        { key: "labaOperasi", label: "Laba Operasional", cost: false, hl: false },
+        { key: "pendapatanLain", label: "Pendapatan Lain-lain", cost: false, hl: false },
+        { key: "bunga", label: "Beban Bunga Pinjaman", cost: true, hl: false },
+        { key: "pajak", label: "Pajak Final UMKM", cost: true, hl: false },
+        { key: "labaBersih", label: "Laba Bersih", cost: false, hl: true }
+      ];
+
+      function renderCompare(){
+        var a = calcLR(periods[state.cmpA]);
+        var b = calcLR(periods[state.cmpB]);
+        document.getElementById("cmp-th-a").textContent = periods[state.cmpA].label;
+        document.getElementById("cmp-th-b").textContent = periods[state.cmpB].label;
+        var h = "";
+        cmpRows.forEach(function(r){
+          var va = a[r.key], vb = b[r.key], d = vb - va;
+          var dp = va !== 0 ? d / Math.abs(va) * 100 : 0;
+          var good = r.cost ? d < 0 : d > 0;
+          var cls = d === 0 ? "" : (good ? "up" : "down");
+          var arrow = d === 0 ? "" : (d > 0 ? "▲ " : "▼ ");
+          h += '<tr' + (r.hl ? ' class="hl"' : "") + "><td>" + r.label + "</td><td>" + num(va) + "</td><td>" + num(vb) +
+               '</td><td class="' + cls + '">' + (d > 0 ? "+" : "") + num(d) + '</td><td class="' + cls + '">' + arrow + pctVal(dp) + "</td></tr>";
+        });
+        document.getElementById("cmp-body").innerHTML = h;
+
+        var gP = a.pendapatan ? (b.pendapatan - a.pendapatan) / a.pendapatan * 100 : 0;
+        var gL = a.labaBersih ? (b.labaBersih - a.labaBersih) / Math.abs(a.labaBersih) * 100 : 0;
+        document.getElementById("cmp-summary").innerHTML =
+          '<span class="badge ' + (gL >= 0 ? "ok" : "bad") + '">Laba bersih ' + periods[state.cmpB].label + " " + pctVal(gL) + " dibanding " + periods[state.cmpA].label + '</span> ' +
+          '<span class="badge ' + (gP >= 0 ? "ok" : "bad") + '">Pendapatan ' + pctVal(gP) + "</span>";
+      }
+
+      /* ================= RENDER: GRAFIK ================= */
+      function renderChart(){
+        var W = 760, H = 340, padL = 52, padR = 14, padT = 18, padB = 40;
+        var plotW = W - padL - padR, plotH = H - padT - padB;
+        var data = periods.map(function(p){ return calcLR(p); });
+        var maxV = 0;
+        data.forEach(function(c){ maxV = Math.max(maxV, c.pendapatan, c.totalBiaya); });
+        maxV = Math.ceil(maxV / 20000000) * 20000000;
+        if (maxV === 0) maxV = 20000000;
+        function Y(v){ return padT + plotH - (v / maxV) * plotH; }
+
+        var s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Grafik batang pendapatan vs total biaya dan garis laba bersih enam bulan">';
+        var steps = 5;
+        for (var i = 0; i <= steps; i++){
+          var v = maxV / steps * i, y = Y(v);
+          s += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="var(--line)" stroke-width="1"/>';
+          s += '<text x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' + Math.round(v / 1000000) + "</text>";
+        }
+        s += '<text x="14" y="' + (padT + plotH / 2) + '" font-size="11.5" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 14 ' + (padT + plotH / 2) + ')">Rp juta</text>';
+
+        var groupW = plotW / data.length;
+        var barW = Math.min(30, groupW * 0.3);
+        var centers = [];
+        data.forEach(function(c, i){
+          var cx = padL + groupW * i + groupW / 2;
+          centers.push(cx);
+          var x1 = cx - barW - 3, x2 = cx + 3;
+          s += '<rect x="' + x1 + '" y="' + Y(c.pendapatan) + '" width="' + barW + '" height="' + (Y(0) - Y(c.pendapatan)) + '" rx="3" fill="var(--green)"><title>Pendapatan ' + periods[i].label + ": " + rp(c.pendapatan) + "</title></rect>";
+          s += '<rect x="' + x2 + '" y="' + Y(c.totalBiaya) + '" width="' + barW + '" height="' + (Y(0) - Y(c.totalBiaya)) + '" rx="3" fill="#9cc7a9"><title>Total Biaya ' + periods[i].label + ": " + rp(c.totalBiaya) + "</title></rect>";
+          s += '<text x="' + cx + '" y="' + (Y(0) + 18) + '" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">' + periods[i].short + "</text>";
+          s += '<text x="' + x1 + '" y="' + (Y(0) + 34) + '" font-size="10" fill="var(--muted)"></text>';
+        });
+
+        var pts = data.map(function(c, i){ return centers[i] + "," + Y(c.labaBersih); }).join(" ");
+        s += '<polyline points="' + pts + '" fill="none" stroke="var(--green-deep)" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round"/>';
+        data.forEach(function(c, i){
+          s += '<circle cx="' + centers[i] + '" cy="' + Y(c.labaBersih) + '" r="4.5" fill="var(--surface)" stroke="var(--green-deep)" stroke-width="2.5"><title>Laba Bersih ' + periods[i].label + ": " + rp(c.labaBersih) + "</title></circle>";
+        });
+        s += '<line x1="' + padL + '" y1="' + Y(0) + '" x2="' + (W - padR) + '" y2="' + Y(0) + '" stroke="var(--line-strong)" stroke-width="1.5"/>';
+        s += "</svg>";
+        document.getElementById("chart").innerHTML = s;
+
+        var totalP = 0, totalL = 0;
+        data.forEach(function(c){ totalP += c.pendapatan; totalL += c.labaBersih; });
+        var best = data.reduce(function(bi, c, i){ return c.labaBersih > data[bi].labaBersih ? i : bi; }, 0);
+        document.getElementById("chart-kpis").innerHTML =
+          kpi("Total Pendapatan 6 Bulan", rp(totalP), "Juni – November 2026") +
+          kpi("Total Laba Bersih 6 Bulan", rp(totalL), "Margin rata-rata " + pct(totalL, totalP)) +
+          kpi("Rata-rata Pendapatan / Bulan", rp(totalP / 6), "") +
+          kpi("Bulan Terbaik", periods[best].label, "Laba bersih " + rp(data[best].labaBersih), true);
+      }
+
+      /* ================= RENDER: LAPORAN ================= */
+      function renderReport(){
+        var p = periods[state.period];
+        var c = calcLR(p);
+        var n = calcNeraca(c.labaBersih);
+        var prev = state.period > 0 ? calcLR(periods[state.period - 1]) : null;
+
+        document.getElementById("lap-title").textContent = "Ringkasan Eksekutif — " + p.label;
+        var nar = "Pada " + p.label + ", " + usaha() + " mencatat pendapatan sebesar " + rp(c.pendapatan) +
+          " dengan laba bersih " + rp(c.labaBersih) + " (margin bersih " + pct(c.labaBersih, c.pendapatan) + "). " +
+          "Laba kotor tercatat " + rp(c.labaKotor) + " setelah HPP " + rp(c.hpp) +
+          ", dan total biaya operasional " + rp(c.biayaOp) + ". ";
+        if (prev){
+          var g = prev.labaBersih !== 0 ? (c.labaBersih - prev.labaBersih) / Math.abs(prev.labaBersih) * 100 : 0;
+          nar += "Dibanding " + periods[state.period - 1].label + ", laba bersih " + (g >= 0 ? "naik " : "turun ") + Math.abs(g).toFixed(1).replace(".", ",") + "%. ";
+        }
+        nar += "Dari sisi neraca, total aset mencapai " + rp(n.totalAset) + " dengan kewajiban " + rp(n.totalKewajiban) +
+          " dan modal " + rp(n.totalModal) + (Math.abs(n.selisih) < 1 ? " — neraca dalam keadaan seimbang." : " — neraca belum seimbang, selisih " + rp(Math.abs(n.selisih)) + ".");
+        document.getElementById("lap-narrative").textContent = nar;
+
+        var rasioLancar = n.kewajibanLancar ? n.asetLancar / n.kewajibanLancar : 0;
+        var utangAset = n.totalAset ? n.totalKewajiban / n.totalAset * 100 : 0;
+        var roa = n.totalAset ? c.labaBersih / n.totalAset * 100 : 0;
+        document.getElementById("lap-ratios").innerHTML =
+          ratio("Margin Kotor", pct(c.labaKotor, c.pendapatan), "Laba kotor ÷ pendapatan") +
+          ratio("Margin Bersih", pct(c.labaBersih, c.pendapatan), "Laba bersih ÷ pendapatan") +
+          ratio("Rasio Lancar", rasioLancar.toFixed(2).replace(".", ",") + "×", "Aset lancar ÷ kewajiban lancar (sehat ≥ 1,5×)") +
+          ratio("Utang thd. Aset", utangAset.toFixed(1).replace(".", ",") + "%", "Total kewajiban ÷ total aset (sehat < 50%)") +
+          ratio("ROA (per bulan)", roa.toFixed(1).replace(".", ",") + "%", "Laba bersih ÷ total aset");
+        function ratio(l, v, d){ return '<div class="ratio"><div class="rl">' + l + '</div><div class="rv">' + v + '</div><div class="rd">' + d + "</div></div>"; }
+
+        document.getElementById("lap-lr-sub").textContent = usaha() + " — " + p.label;
+        document.getElementById("lap-lr").innerHTML = statementHTML(c);
+        document.getElementById("lap-neraca-sub").textContent = usaha() + " — per akhir " + p.label;
+        document.getElementById("lap-neraca").innerHTML = neracaHTML(n);
+      }
+
+      /* ================= UNDUH & SALIN ================= */
+      function downloadFile(name, content, type){
+        var blob = new Blob([content], { type: type });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 800);
+      }
+
+      function reportHTML(){
+        var p = periods[state.period];
+        var c = calcLR(p);
+        var n = calcNeraca(c.labaBersih);
+        var style = "body{font-family:Arial,Helvetica,sans-serif;color:#132a1b;margin:32px;line-height:1.5}" +
+          "h1{color:#14532d;font-size:24px;margin-bottom:2px}h2{color:#15803d;font-size:17px;margin-top:28px;border-bottom:2px solid #16a34a;padding-bottom:4px}" +
+          "table{border-collapse:collapse;width:100%;max-width:640px}td{padding:5px 4px;font-size:14px}" +
+          ".num{text-align:right;font-variant-numeric:tabular-nums}.tot td{font-weight:bold;border-top:1.5px solid #999}" +
+          ".grand td{font-weight:bold;background:#eef8f0;border-top:2px solid #16a34a;border-bottom:2px solid #16a34a}" +
+          ".muted{color:#5c7565;font-size:13px}";
+        function rows(items){
+          return items.map(function(it){
+            return '<tr' + (it[2] ? ' class="' + it[2] + '"' : "") + "><td>" + it[0] + '</td><td class="num">' + num(it[1]) + "</td></tr>";
+          }).join("");
+        }
+        var lr = rows([
+          ["Pendapatan / Penjualan", c.pendapatan], ["Harga Pokok Penjualan (HPP)", -c.hpp],
+          ["Laba Kotor", c.labaKotor, "tot"],
+          ["Gaji & Upah Karyawan", -c.gaji], ["Sewa Tempat / Gudang", -c.sewa], ["Listrik, Air & Internet", -c.utilitas],
+          ["Pemasaran & Promosi", -c.pemasaran], ["Transportasi & Pengiriman", -c.transportasi],
+          ["Administrasi & ATK", -c.administrasi], ["Biaya Lain-lain", -c.lain],
+          ["Total Biaya Operasional", -c.biayaOp, "tot"], ["Laba Operasional", c.labaOperasi, "tot"],
+          ["Pendapatan Lain-lain", c.pendapatanLain], ["Beban Bunga Pinjaman", -c.bunga],
+          ["Laba Sebelum Pajak", c.labaSebelumPajak, "tot"], ["Pajak Final UMKM (0,5%)", -c.pajak],
+          ["Laba Bersih", c.labaBersih, "grand"]
+        ]);
+        var nr = rows([
+          ["Kas & Bank", neraca.kas], ["Piutang Usaha", neraca.piutang], ["Persediaan Barang", neraca.persediaan],
+          ["Total Aset Lancar", n.asetLancar, "tot"],
+          ["Peralatan & Rak Toko", neraca.peralatan], ["Kendaraan Operasional", neraca.kendaraan], ["Akumulasi Penyusutan", -neraca.penyusutan],
+          ["Total Aset Tetap", n.asetTetap, "tot"], ["Total Aset", n.totalAset, "grand"],
+          ["Utang Usaha ke Pemasok", neraca.utangUsaha], ["Utang Pajak", neraca.utangPajak],
+          ["Total Kewajiban Lancar", n.kewajibanLancar, "tot"], ["Utang Bank / Pinjaman", neraca.utangBank],
+          ["Total Kewajiban", n.totalKewajiban, "tot"],
+          ["Modal Pemilik", neraca.modalPemilik], ["Laba Ditahan", neraca.labaDitahan], ["Laba Periode Berjalan", n.labaBerjalan],
+          ["Total Modal", n.totalModal, "tot"], ["Total Kewajiban + Modal", n.totalPasiva, "grand"]
+        ]);
+        return '<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Laporan Keuangan ' + usaha() + " — " + p.label + "</title><style>" + style + "</style></head><body>" +
+          "<h1>Laporan Keuangan — " + usaha() + "</h1>" +
+          '<p class="muted">' + (jenisUsaha() ? jenisUsaha() + " · " : "") + "Periode " + p.label + "</p>" +
+          "<h2>Laporan Laba Rugi</h2><table>" + lr + "</table>" +
+          "<h2>Neraca (per akhir " + p.label + ")</h2><table>" + nr + "</table>" +
+          "<h2>Rasio Utama</h2><table>" +
+          '<tr><td>Margin Kotor</td><td class="num">' + pct(c.labaKotor, c.pendapatan) + "</td></tr>" +
+          '<tr><td>Margin Bersih</td><td class="num">' + pct(c.labaBersih, c.pendapatan) + "</td></tr>" +
+          '<tr><td>Rasio Lancar</td><td class="num">' + (n.kewajibanLancar ? (n.asetLancar / n.kewajibanLancar).toFixed(2).replace(".", ",") : "—") + "</td></tr>" +
+          "</table>" +
+          '<p class="muted" style="margin-top:28px">Dihasilkan dari aplikasi Laporan Keuangan &amp; Laba Rugi. Pajak dihitung sebagai pajak final UMKM 0,5% dari pendapatan bruto.</p>' +
+          "</body></html>";
+      }
+
+      function reportCSV(){
+        var p = periods[state.period];
+        var c = calcLR(p);
+        var lines = [
+          ["Laporan Laba Rugi", usaha(), p.label],
+          ["Komponen", "Nilai (Rp)"],
+          ["Pendapatan / Penjualan", c.pendapatan],
+          ["Harga Pokok Penjualan (HPP)", -c.hpp],
+          ["Laba Kotor", c.labaKotor],
+          ["Gaji & Upah Karyawan", -c.gaji],
+          ["Sewa Tempat / Gudang", -c.sewa],
+          ["Listrik Air & Internet", -c.utilitas],
+          ["Pemasaran & Promosi", -c.pemasaran],
+          ["Transportasi & Pengiriman", -c.transportasi],
+          ["Administrasi & ATK", -c.administrasi],
+          ["Biaya Lain-lain", -c.lain],
+          ["Total Biaya Operasional", -c.biayaOp],
+          ["Laba Operasional", c.labaOperasi],
+          ["Pendapatan Lain-lain", c.pendapatanLain],
+          ["Beban Bunga Pinjaman", -c.bunga],
+          ["Laba Sebelum Pajak", c.labaSebelumPajak],
+          ["Pajak Final UMKM (0,5%)", -c.pajak],
+          ["Laba Bersih", c.labaBersih]
+        ];
+        return lines.map(function(l){ return l.join(";"); }).join("\n");
+      }
+
+      function summaryText(){
+        var p = periods[state.period];
+        var c = calcLR(p);
+        var n = calcNeraca(c.labaBersih);
+        return "Ringkasan Laporan Keuangan " + usaha() + " — " + p.label + "\n" +
+          "Pendapatan: " + rp(c.pendapatan) + "\n" +
+          "Laba Kotor: " + rp(c.labaKotor) + " (margin " + pct(c.labaKotor, c.pendapatan) + ")\n" +
+          "Total Biaya Operasional: " + rp(c.biayaOp) + "\n" +
+          "Laba Bersih: " + rp(c.labaBersih) + " (margin " + pct(c.labaBersih, c.pendapatan) + ")\n" +
+          "Total Aset: " + rp(n.totalAset) + " | Kewajiban: " + rp(n.totalKewajiban) + " | Modal: " + rp(n.totalModal);
+      }
+
+      /* ================= TOAST ================= */
+      var toastTimer = null;
+      function toast(msg){
+        var t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+      }
+
+      /* ================= RENDER SEMUA ================= */
+      function renderAll(){
+        renderLR(); renderNeraca(); renderCompare(); renderChart(); renderReport();
+      }
+
+      /* ================= ISIAN FORMULIR ================= */
+      function fillLRInputs(){
+        var p = periods[state.period];
+        document.querySelectorAll("[data-field]").forEach(function(inp){
+          inp.value = p[inp.getAttribute("data-field")];
+        });
+      }
+      function fillNeracaInputs(){
+        document.querySelectorAll("[data-nfield]").forEach(function(inp){
+          inp.value = neraca[inp.getAttribute("data-nfield")];
+        });
+      }
+
+      /* ================= INISIALISASI ================= */
+      (function init(){
+        var selPeriode = document.getElementById("periode");
+        var selA = document.getElementById("cmp-a");
+        var selB = document.getElementById("cmp-b");
+        periods.forEach(function(p, i){
+          selPeriode.add(new Option(p.label, i));
+          selA.add(new Option(p.label, i));
+          selB.add(new Option(p.label, i));
+        });
+        selPeriode.value = state.period;
+        selA.value = state.cmpA;
+        selB.value = state.cmpB;
+
+        fillLRInputs();
+        fillNeracaInputs();
+        renderAll();
+
+        selPeriode.addEventListener("change", function(){
+          state.period = parseInt(this.value, 10);
+          fillLRInputs();
+          renderAll();
+        });
+        selA.addEventListener("change", function(){ state.cmpA = parseInt(this.value, 10); renderCompare(); });
+        selB.addEventListener("change", function(){ state.cmpB = parseInt(this.value, 10); renderCompare(); });
+
+        document.getElementById("usaha").addEventListener("input", renderAll);
+        document.getElementById("jenis").addEventListener("input", renderAll);
+
+        document.querySelectorAll("[data-field]").forEach(function(inp){
+          inp.addEventListener("input", function(){
+            var v = parseFloat(this.value);
+            periods[state.period][this.getAttribute("data-field")] = isNaN(v) || v < 0 ? 0 : v;
+            renderAll();
+          });
+        });
+        document.querySelectorAll("[data-nfield]").forEach(function(inp){
+          inp.addEventListener("input", function(){
+            var v = parseFloat(this.value);
+            neraca[this.getAttribute("data-nfield")] = isNaN(v) || v < 0 ? 0 : v;
+            renderAll();
+          });
+        });
+
+        /* Tabs */
+        document.querySelectorAll(".tab-btn").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            document.querySelectorAll(".tab-btn").forEach(function(b){ b.setAttribute("aria-selected", "false"); });
+            document.querySelectorAll(".panel").forEach(function(pn){ pn.classList.remove("active"); });
+            btn.setAttribute("aria-selected", "true");
+            document.getElementById("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+          });
+        });
+
+        /* Unduh & salin */
+        document.getElementById("btn-download").addEventListener("click", function(){
+          var p = periods[state.period];
+          downloadFile("laporan-keuangan-" + p.label.toLowerCase().replace(/\s+/g, "-") + ".html", reportHTML(), "text/html");
+          toast("Laporan " + p.label + " berhasil diunduh.");
+        });
+        document.getElementById("btn-csv").addEventListener("click", function(){
+          var p = periods[state.period];
+          downloadFile("laba-rugi-" + p.label.toLowerCase().replace(/\s+/g, "-") + ".csv", reportCSV(), "text/csv");
+          toast("CSV laba rugi " + p.label + " berhasil diunduh.");
+        });
+        document.getElementById("btn-copy").addEventListener("click", function(){
+          var txt = summaryText();
+          function done(){ toast("Ringkasan tersalin — siap ditempel ke WhatsApp atau dokumen."); }
+          if (navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt); done(); });
+          } else { fallbackCopy(txt); done(); }
+        });
+        function fallbackCopy(txt){
+          var ta = document.createElement("textarea");
+          ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(ta);
+        }
+      })();
+    </script>
+  </body>
+</html>
