@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>Manajemen Stok Barang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4EF; --bg2:#EFECE4; --card:#FFFFFF; --card2:#FBFAF7;
+  --text:#2E2E2A; --muted:#6F6F68; --line:#E7E2D6;
+  --sage:#5F7D5A; --sage-dark:#476345; --sage-soft:#EAF0E6;
+  --gold:#B9975B; --gold-soft:#F7EED8;
+  --red:#C0392B; --red-soft:#FDECEA; --amber:#9A6B12; --amber-soft:#FFF3D6;
+  --blue:#2F5D8A; --blue-soft:#E8EFF7;
+  --shadow:0 6px 24px rgba(60,55,40,.07), 0 1px 3px rgba(60,55,40,.06);
+  --radius:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1C1E1A; --bg2:#23261F; --card:#292C26; --card2:#2F332B;
+    --text:#ECEAE2; --muted:#B6B3A8; --line:#3A3E35;
+    --sage:#9AB894; --sage-dark:#B9D1B2; --sage-soft:#2E3B2C;
+    --gold:#D3B578; --gold-soft:#3D3524;
+    --red:#F0958A; --red-soft:#442A28; --amber:#E8C87A; --amber-soft:#3E3520;
+    --blue:#9DBEDD; --blue-soft:#263747;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--sage-dark)}
+button,input,select,textarea{font:inherit}
+button,[role="button"],select,input,textarea{ min-height:44px }
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;line-height:1.15;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 40px}
+.hero{padding:28px 0 8px}
+.hero p.lead{color:var(--muted);max-width:680px;margin:10px 0 0;font-size:1.02rem}
+.hero h1{font-size:clamp(1.9rem,4vw,2.7rem);letter-spacing:-.02em}
+.hero h1 em{color:var(--sage);font-style:normal}
+.kicker{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800}
+/* Tabs */
+.tabs{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(10px);padding:12px 0;margin-top:18px;border-bottom:1px solid var(--line)}
+.tabs-inner{display:flex;gap:8px;flex-wrap:wrap}
+.tab-btn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 16px;border-radius:999px;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tab-btn.active{background:var(--sage);border-color:var(--sage);color:#fff}
+@media (prefers-color-scheme: dark){.tab-btn.active{color:#162014}}
+.tab-btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.panel{display:none;padding-top:22px}
+.panel.active{display:block}
+/* Cards & stats */
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.stat .num{font-family:"Fraunces",serif;font-size:1.9rem;font-weight:700;line-height:1;margin:6px 0 4px}
+.stat .label{font-size:.85rem;color:var(--muted);font-weight:600}
+.stat .sub{font-size:.82rem;color:var(--muted)}
+.icon-box{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;background:var(--sage-soft)}
+.icon-box.gold{background:var(--gold-soft)} .icon-box.red{background:var(--red-soft)} .icon-box.blue{background:var(--blue-soft)}
+.alert-card{border:1px solid #EBCFCB;background:var(--red-soft)}
+.alert-card h3{color:var(--red)}
+.two{grid-template-columns:1.6fr 1fr}
+.three{grid-template-columns:repeat(3,1fr)}
+/* Toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar .grow{flex:1;min-width:180px}
+input[type="text"],input[type="number"],input[type="date"],input[type="email"],input[type="tel"],select,textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text)}
+textarea{resize:vertical;min-height:80px}
+label{font-weight:700;font-size:.88rem;display:block;margin-bottom:6px}
+.field{margin-bottom:14px}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-decoration:none}
+.btn-primary{background:var(--sage);color:#fff}
+@media (prefers-color-scheme: dark){.btn-primary{color:#162014}}
+.btn-primary:hover{background:var(--sage-dark)}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-ghost{background:var(--card);border:1px solid var(--line);color:var(--text)}
+.btn-danger{background:var(--red-soft);color:var(--red);border:1px solid color-mix(in srgb, var(--red) 25%, transparent)}
+.btn-sm{padding:8px 12px;min-height:38px;font-size:.88rem;border-radius:10px}
+.btn-block{width:100%}
+/* Table */
+.table-wrap{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+thead th{text-align:left;padding:13px 14px;background:var(--card2);color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:800;white-space:nowrap}
+.badge-ok{background:var(--sage-soft);color:var(--sage-dark)}
+.badge-low{background:var(--amber-soft);color:var(--amber)}
+.badge-out{background:var(--red-soft);color:var(--red)}
+.badge-in{background:var(--sage-soft);color:var(--sage-dark)}
+.badge-out2{background:var(--blue-soft);color:var(--blue)}
+.badge-op{background:var(--gold-soft);color:var(--amber)}
+.muted{color:var(--muted)} .small{font-size:.86rem}
+.price{font-weight:700;white-space:nowrap}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+/* Supplier cards */
+.sup-grid{grid-template-columns:repeat(3,1fr)}
+.sup-card h3{font-size:1.1rem;margin-bottom:4px}
+.sup-meta{font-size:.9rem;color:var(--muted);margin:6px 0}
+/* Forms layout */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.form-grid .full{grid-column:1/-1}
+.hint{background:var(--sage-soft);border-radius:12px;padding:12px 14px;font-size:.9rem;margin-bottom:16px}
+.warn-hint{background:var(--amber-soft)}
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(20,20,15,.55);display:none;place-items:center;z-index:50;padding:16px}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--card);border-radius:20px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h2{font-size:1.35rem;margin-bottom:6px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+/* Toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:22px;background:#2E2E2A;color:#fff;padding:13px 18px;border-radius:999px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-color-scheme: dark){.toast{background:#ECEAE2;color:#1C1E1A}}
+/* Panduan */
+.guide h3{margin:22px 0 8px;font-size:1.2rem}
+.guide h3:first-child{margin-top:0}
+.guide ol,.guide ul{padding-left:22px;margin:8px 0}
+.guide li{margin:5px 0}
+.guide-section{border-top:1px solid var(--line);padding-top:18px;margin-top:22px}
+.guide-section:first-child{border-top:0;padding-top:0;margin-top:0}
+.price-table td:first-child{font-weight:700}
+footer{margin-top:36px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.88rem}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.section-head h2{font-size:1.45rem}
+.section-head p{color:var(--muted);margin:4px 0 0;max-width:640px}
+.diff-plus{color:var(--sage-dark);font-weight:800} .diff-minus{color:var(--red);font-weight:800}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three,.sup-grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  table,thead,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  tbody tr{border-bottom:1px solid var(--line);padding:10px 6px}
+  tbody td{border:0;padding:6px 12px;display:flex;justify-content:space-between;gap:16px;text-align:right}
+  tbody td::before{content:attr(data-label);font-weight:700;color:var(--muted);text-align:left;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+  tbody td.cell-main{display:block;text-align:left}
+  tbody td.cell-main::before{display:block;margin-bottom:2px}
+  .tabs-inner{flex-wrap:wrap}
+  .tab-btn{white-space:normal;font-size:.88rem;padding:9px 12px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Toko &amp; Gudang • Kontrol Stok Rapi</div>
+    <h1>Manajemen <em>Stok Barang</em></h1>
+    <p class="lead">Catat barang masuk dan keluar, pantau stok yang menipis, lakukan stok opname, dan unduh laporan — semua dalam satu tempat yang tenang dan mudah dibaca.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Modul aplikasi">
+    <div class="tabs-inner" id="tabs">
+      <button class="tab-btn active" data-tab="dashboard">📦 Dashboard Stok</button>
+      <button class="tab-btn" data-tab="masuk">⬇️ Barang Masuk</button>
+      <button class="tab-btn" data-tab="keluar">⬆️ Barang Keluar</button>
+      <button class="tab-btn" data-tab="opname">🧮 Stok Opname</button>
+      <button class="tab-btn" data-tab="supplier">🤝 Supplier</button>
+      <button class="tab-btn" data-tab="laporan">📊 Laporan</button>
+      <button class="tab-btn" data-tab="panduan">📖 Panduan</button>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="panel active" id="panel-dashboard">
+    <div class="grid stats" id="statsGrid"></div>
+
+    <div id="lowAlert" style="margin-top:16px"></div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-head">
+        <div>
+          <h2>Daftar Barang</h2>
+          <p>Stok tersedia diperbarui otomatis setiap ada barang masuk, keluar, atau hasil opname. Barang dengan stok di bawah minimum ditandai jelas.</p>
+        </div>
+        <button class="btn btn-primary" id="btnAddItem">+ Tambah Barang</button>
+      </div>
+      <div class="toolbar">
+        <div class="grow"><input type="text" id="searchItem" placeholder="Cari nama barang, SKU, atau supplier…"></div>
+        <select id="filterCategory" aria-label="Filter kategori" style="max-width:220px"></select>
+        <select id="filterStatus" aria-label="Filter status stok" style="max-width:200px">
+          <option value="">Semua status</option>
+          <option value="aman">Stok aman</option>
+          <option value="menipis">Hampir habis</option>
+          <option value="habis">Habis</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Barang</th><th>Kategori</th><th>Supplier</th><th>Harga Beli</th><th>Harga Jual</th><th>Stok</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="itemTableBody"></tbody>
+      </table><div class="empty" id="itemEmpty" style="display:none">Tidak ada barang yang cocok dengan pencarian / filter.</div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-head"><div><h2>Mutasi Terakhir</h2><p>5 pergerakan stok paling baru dari semua modul.</p></div>
+      <button class="btn btn-ghost btn-sm" data-goto="laporan">Lihat Laporan →</button></div>
+      <div id="recentMutations"></div>
+    </div>
+  </section>
+
+  <!-- MASUK -->
+  <section class="panel" id="panel-masuk">
+    <div class="grid two">
+      <div class="card">
+        <h2 style="font-size:1.35rem;margin-bottom:6px">Catat Barang Masuk</h2>
+        <p class="muted small" style="margin-top:0">Stok barang akan bertambah otomatis setelah disimpan.</p>
+        <form id="formMasuk">
+          <div class="field"><label for="masukItem">Barang</label><select id="masukItem" required></select></div>
+          <div class="form-grid">
+            <div class="field"><label for="masukQty">Jumlah masuk</label><input type="number" id="masukQty" min="1" step="1" required placeholder="cth. 20"></div>
+            <div class="field"><label for="masukDate">Tanggal</label><input type="date" id="masukDate" required></div>
+          </div>
+          <div class="field"><label for="masukSupplier">Supplier (opsional)</label><select id="masukSupplier"></select></div>
+          <div class="field"><label for="masukNote">Keterangan</label><input type="text" id="masukNote" placeholder="cth. Restok mingguan / PO-012"></div>
+          <button class="btn btn-primary btn-block" type="submit">Simpan Barang Masuk</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.1rem">Yang terjadi setelah disimpan</h3>
+        <ol style="padding-left:20px;margin:10px 0">
+          <li>Stok barang bertambah sesuai jumlah masuk.</li>
+          <li>Mutasi tercatat di riwayat dengan tanggal &amp; keterangan.</li>
+          <li>Jika stok sebelumnya menipis, tanda peringatan hilang otomatis bila sudah di atas minimum.</li>
+        </ol>
+        <div class="hint" style="margin:0">💡 Barang belum ada di daftar? Tambahkan dulu lewat tombol <b>+ Tambah Barang</b> di Dashboard Stok.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="section-head"><div><h2>Riwayat Barang Masuk</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody id="masukHistory"></tbody></table><div class="empty" id="masukEmpty" style="display:none">Belum ada catatan barang masuk.</div></div>
+    </div>
+  </section>
+
+  <!-- KELUAR -->
+  <section class="panel" id="panel-keluar">
+    <div class="grid two">
+      <div class="card">
+        <h2 style="font-size:1.35rem;margin-bottom:6px">Catat Barang Keluar</h2>
+        <p class="muted small" style="margin-top:0">Stok berkurang otomatis. Sistem menolak jumlah yang melebihi stok tersedia.</p>
+        <form id="formKeluar">
+          <div class="field"><label for="keluarItem">Barang</label><select id="keluarItem" required></select></div>
+          <div id="keluarStockInfo" class="hint" style="display:none"></div>
+          <div class="form-grid">
+            <div class="field"><label for="keluarQty">Jumlah keluar</label><input type="number" id="keluarQty" min="1" step="1" required placeholder="cth. 5"></div>
+            <div class="field"><label for="keluarDate">Tanggal</label><input type="date" id="keluarDate" required></div>
+          </div>
+          <div class="field"><label for="keluarNote">Keterangan</label><input type="text" id="keluarNote" placeholder="cth. Penjualan toko / kirim ke cabang"></div>
+          <button class="btn btn-primary btn-block" type="submit">Simpan Barang Keluar</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.1rem">Perhatian stok minimum</h3>
+        <p class="small muted">Bila setelah barang keluar stok berada di atau di bawah stok minimum, barang tersebut langsung muncul di peringatan <b>“Hampir Habis”</b> pada Dashboard agar Anda bisa segera memesan ulang ke supplier.</p>
+        <div class="hint warn-hint" style="margin:0">⚠️ Jumlah keluar tidak boleh melebihi stok tersedia. Jika kurang, catat dulu barang masuk atau lakukan stok opname.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="section-head"><div><h2>Riwayat Barang Keluar</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody id="keluarHistory"></tbody></table><div class="empty" id="keluarEmpty" style="display:none">Belum ada catatan barang keluar.</div></div>
+    </div>
+  </section>
+
+  <!-- OPNAME -->
+  <section class="panel" id="panel-opname">
+    <div class="grid two">
+      <div class="card">
+        <h2 style="font-size:1.35rem;margin-bottom:6px">Stok Opname Baru</h2>
+        <p class="muted small" style="margin-top:0">Hitung fisik barang di rak/gudang, lalu masukkan hasilnya. Selisih dihitung otomatis dan stok sistem disesuaikan ke stok fisik.</p>
+        <form id="formOpname">
+          <div class="field"><label for="opItem">Barang</label><select id="opItem" required></select></div>
+          <div id="opSystemInfo" class="hint" style="display:none"></div>
+          <div class="form-grid">
+            <div class="field"><label for="opPhysical">Stok fisik (hasil hitung)</label><input type="number" id="opPhysical" min="0" step="1" required placeholder="cth. 18"></div>
+            <div class="field"><label for="opDate">Tanggal opname</label><input type="date" id="opDate" required></div>
+          </div>
+          <div id="opDiffPreview" class="hint" style="display:none"></div>
+          <div class="field"><label for="opNote">Keterangan selisih</label><input type="text" id="opNote" placeholder="cth. 2 rusak / salah catat minggu lalu"></div>
+          <button class="btn btn-primary btn-block" type="submit">Simpan &amp; Sesuaikan Stok</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.1rem">Cara opname yang rapi</h3>
+        <ol style="padding-left:20px;margin:10px 0">
+          <li>Hentikan dulu penjualan barang yang sedang dihitung.</li>
+          <li>Hitung fisik per barang, jangan mengandalkan ingatan.</li>
+          <li>Masukkan stok fisik — selisih positif berarti fisik lebih banyak dari sistem, selisih negatif berarti ada kekurangan.</li>
+          <li>Tulis penyebab selisih di keterangan agar mudah ditelusuri.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="section-head"><div><h2>Riwayat Stok Opname</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Stok Sistem</th><th>Stok Fisik</th><th>Selisih</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody id="opnameHistory"></tbody></table><div class="empty" id="opnameEmpty" style="display:none">Belum ada catatan opname.</div></div>
+    </div>
+  </section>
+
+  <!-- SUPPLIER -->
+  <section class="panel" id="panel-supplier">
+    <div class="section-head">
+      <div><h2>Data Supplier</h2><p>Supplier terhubung ke barang, sehingga saat restok Anda tahu harus memesan ke siapa.</p></div>
+      <button class="btn btn-primary" id="btnAddSupplier">+ Tambah Supplier</button>
+    </div>
+    <div class="toolbar"><div class="grow"><input type="text" id="searchSupplier" placeholder="Cari supplier, kontak, atau kota…"></div></div>
+    <div class="grid sup-grid" id="supplierGrid"></div>
+    <div class="empty card" id="supplierEmpty" style="display:none">Tidak ada supplier yang cocok.</div>
+  </section>
+
+  <!-- LAPORAN -->
+  <section class="panel" id="panel-laporan">
+    <div class="grid stats" id="reportStats"></div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-head"><div><h2>Mutasi per Periode</h2><p>Pilih rentang tanggal untuk melihat ringkasan barang masuk, keluar, dan penyesuaian opname.</p></div></div>
+      <div class="toolbar">
+        <div><label for="repFrom">Dari tanggal</label><input type="date" id="repFrom"></div>
+        <div><label for="repTo">Sampai tanggal</label><input type="date" id="repTo"></div>
+        <div style="align-self:flex-end"><button class="btn btn-ghost" id="btnResetPeriod">Semua Periode</button></div>
+      </div>
+      <div id="periodSummary" class="hint"></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Keterangan</th></tr></thead><tbody id="reportMutations"></tbody></table><div class="empty" id="reportEmpty" style="display:none">Tidak ada mutasi pada periode ini.</div></div>
+    </div>
+
+    <div class="grid two" style="margin-top:16px">
+      <div class="card">
+        <h3 style="font-size:1.15rem;margin-bottom:8px">⚠️ Barang Menipis &amp; Habis</h3>
+        <div id="reportLowList"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.15rem;margin-bottom:8px">⬇️ Unduh Laporan (CSV)</h3>
+        <p class="small muted">File CSV bisa dibuka di Excel / Google Sheets untuk dibagikan atau diarsipkan.</p>
+        <div style="display:grid;gap:10px">
+          <button class="btn btn-primary btn-block" id="btnCsvStock">Unduh Laporan Stok (CSV)</button>
+          <button class="btn btn-gold btn-block" id="btnCsvMutation">Unduh Riwayat Mutasi (CSV)</button>
+          <button class="btn btn-ghost btn-block" id="btnCsvOpname">Unduh Riwayat Opname (CSV)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANDUAN -->
+  <section class="panel" id="panel-panduan">
+    <div class="card guide">
+      <h2 style="font-size:1.6rem">Buku Panduan Penggunaan</h2>
+      <p class="muted">Ikuti panduan ini dari atas ke bawah saat pertama kali memakai aplikasi. Setelah terbiasa, Anda cukup memakai modul yang dibutuhkan setiap hari.</p>
+
+      <div class="guide-section">
+        <h3>1. Memulai — Mengenal Dashboard Stok</h3>
+        <ol>
+          <li>Buka tab <b>Dashboard Stok</b>. Di bagian atas Anda melihat 4 ringkasan: total jenis barang, total unit stok, nilai stok (stok × harga beli), dan jumlah barang yang hampir habis.</li>
+          <li>Di bawahnya ada <b>Daftar Barang</b> — inilah stok tersedia saat ini (<i>real-time</i>), selalu berubah otomatis mengikuti mutasi.</li>
+          <li>Gunakan kolom <b>pencarian</b> untuk mencari nama, SKU, atau supplier; gunakan <b>filter kategori</b> dan <b>filter status</b> untuk menyaring daftar.</li>
+          <li>Badge <span class="badge badge-ok">Aman</span> berarti stok di atas minimum, <span class="badge badge-low">Hampir Habis</span> berarti stok ≤ stok minimum, dan <span class="badge badge-out">Habis</span> berarti stok 0.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>2. Menambah, Mengubah &amp; Menghapus Barang</h3>
+        <ol>
+          <li>Klik <b>+ Tambah Barang</b> di Dashboard.</li>
+          <li>Isi nama barang, SKU/kode (harus unik), kategori, satuan (pcs, dus, kg, liter, dll.), harga beli, harga jual, stok awal, stok minimum, dan supplier.</li>
+          <li>Klik <b>Simpan Barang</b>. Barang langsung muncul di daftar.</li>
+          <li>Untuk mengubah, klik <b>Ubah</b> pada baris barang — ubah yang perlu, lalu simpan. Mengubah stok langsung di sini sebaiknya hanya untuk koreksi awal; untuk pergerakan harian gunakan Barang Masuk/Keluar agar tercatat di riwayat.</li>
+          <li>Untuk menghapus, klik <b>Hapus</b> lalu konfirmasi. Riwayat mutasi lama barang tersebut tetap tersimpan di laporan.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>3. Mencatat Barang Masuk</h3>
+        <ol>
+          <li>Buka tab <b>Barang Masuk</b>.</li>
+          <li>Pilih barang, isi jumlah masuk, tanggal, supplier (opsional), dan keterangan seperti nomor PO.</li>
+          <li>Klik <b>Simpan Barang Masuk</b> — stok bertambah otomatis dan catatan masuk ke riwayat di bawah formulir serta ke Laporan.</li>
+          <li>Untuk membatalkan catatan yang salah, klik <b>Batalkan</b> pada riwayat — stok akan dikembalikan seperti sebelum catatan itu dibuat.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>4. Mencatat Barang Keluar</h3>
+        <ol>
+          <li>Buka tab <b>Barang Keluar</b>, pilih barang — stok tersedia saat ini ditampilkan sebagai panduan.</li>
+          <li>Isi jumlah keluar, tanggal, dan keterangan (penjualan, pengiriman, pemakaian, dll.).</li>
+          <li>Klik <b>Simpan Barang Keluar</b>. Jika jumlah melebihi stok, sistem menolak dan memberi tahu stok yang tersedia.</li>
+          <li>Bila setelah keluar stok menyentuh batas minimum, barang otomatis masuk daftar peringatan di Dashboard.</li>
+          <li>Catatan yang salah bisa dibatalkan lewat tombol <b>Batalkan</b> di riwayat — stok kembali bertambah.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>5. Melakukan Stok Opname</h3>
+        <ol>
+          <li>Buka tab <b>Stok Opname</b> dan pilih barang — stok menurut sistem ditampilkan.</li>
+          <li>Hitung barang secara fisik di rak/gudang, lalu masukkan hasilnya di kolom <b>Stok fisik</b>. Selisih tampil otomatis sebelum disimpan.</li>
+          <li>Isi tanggal dan keterangan penyebab selisih (rusak, hilang, salah catat, dll.).</li>
+          <li>Klik <b>Simpan &amp; Sesuaikan Stok</b> — stok sistem berubah menjadi stok fisik dan opname tercatat di riwayat opname serta riwayat mutasi.</li>
+          <li>Opname yang salah bisa dibatalkan; stok dikembalikan ke angka sebelum opname tersebut.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>6. Mengelola Supplier</h3>
+        <ol>
+          <li>Buka tab <b>Supplier</b>, klik <b>+ Tambah Supplier</b> untuk menambah (nama perusahaan, nama kontak, telepon, email, alamat/kota).</li>
+          <li>Klik <b>Ubah</b> pada kartu supplier untuk memperbarui data, atau <b>Hapus</b> untuk menghapusnya. Supplier yang dihapus tidak menghapus barangnya — kolom supplier barang tersebut menjadi kosong dan bisa diganti lewat Ubah Barang.</li>
+          <li>Setiap kartu supplier menampilkan jumlah barang yang terhubung, memudahkan Anda tahu harus memesan ulang ke siapa.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>7. Membaca &amp; Mengunduh Laporan</h3>
+        <ol>
+          <li>Buka tab <b>Laporan</b> untuk melihat nilai stok, total masuk/keluar, dan daftar barang menipis.</li>
+          <li>Pada <b>Mutasi per Periode</b>, pilih tanggal awal dan akhir untuk menyaring riwayat; klik <b>Semua Periode</b> untuk mengembalikan.</li>
+          <li>Klik <b>Unduh Laporan Stok (CSV)</b>, <b>Unduh Riwayat Mutasi (CSV)</b>, atau <b>Unduh Riwayat Opname (CSV)</b> untuk menyimpan laporan — file dapat dibuka di Excel atau Google Sheets.</li>
+        </ol>
+      </div>
+
+      <div class="guide-section">
+        <h3>8. Tips Agar Stok Selalu Akurat</h3>
+        <ul>
+          <li>Catat mutasi di hari yang sama dengan pergerakan barangnya — jangan ditumpuk.</li>
+          <li>Tetapkan stok minimum realistis: cukup untuk penjualan selama menunggu kiriman supplier berikutnya.</li>
+          <li>Lakukan opname rutin (mis. tiap akhir pekan untuk barang cepat habis, tiap akhir bulan untuk semua barang).</li>
+          <li>Selalu tulis keterangan yang jelas pada setiap mutasi agar mudah ditelusuri.</li>
+        </ul>
+      </div>
+
+      <div class="guide-section">
+        <h3>Harga Aplikasi</h3>
+        <p class="muted small">Dua cara memiliki aplikasi ini — pilih yang paling sesuai dengan kebutuhan toko/gudang Anda.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan / bulan</th><th>Garansi Perbaikan Bug</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Paket">Pemula</td><td data-label="Beli Sekali" class="price">Rp499.000</td><td data-label="Berlangganan" class="price">Rp49.000</td><td data-label="Garansi">30 hari</td></tr>
+            <tr><td data-label="Paket">Profesional</td><td data-label="Beli Sekali" class="price">Rp999.000</td><td data-label="Berlangganan" class="price">Rp99.000</td><td data-label="Garansi">60 hari</td></tr>
+            <tr><td data-label="Paket">Bisnis</td><td data-label="Beli Sekali" class="price">Rp1.999.000</td><td data-label="Berlangganan" class="price">Rp199.000</td><td data-label="Garansi">90 hari</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small muted">Berlangganan tahunan cukup bayar 10 bulan. Berhenti berlangganan = akses berhenti. Pembayaran dan aktivasi dibantu lewat WhatsApp penjual.</p>
+        <h3 style="margin-top:18px">Request Khusus</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Ukuran Request</th><th>Biaya Tambahan</th><th>Contoh</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Ukuran">Kecil</td><td data-label="Biaya" class="price">+Rp100.000</td><td data-label="Contoh">Ganti logo/warna, tambah satu kolom laporan</td></tr>
+            <tr><td data-label="Ukuran">Sedang</td><td data-label="Biaya" class="price">+Rp250.000</td><td data-label="Contoh">Tambah kategori khusus, format laporan baru</td></tr>
+            <tr><td data-label="Ukuran">Besar</td><td data-label="Biaya" class="price">+Rp500.000</td><td data-label="Contoh">Alur gudang khusus, integrasi format data sendiri</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small muted">Waktu produksi request khusus: <b>7 hari kalender</b> sejak request disetujui.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>Garansi</h3>
+        <p>Setiap pembelian dilindungi <b>garansi perbaikan bug/error gratis</b> — jika fitur yang seharusnya berjalan ternyata error, perbaikan tidak dikenakan biaya selama masa garansi aktif:</p>
+        <ul>
+          <li><b>Beli sekali — Pemula:</b> garansi 30 hari sejak aplikasi diterima.</li>
+          <li><b>Beli sekali — Profesional:</b> garansi 60 hari sejak aplikasi diterima.</li>
+          <li><b>Beli sekali — Bisnis:</b> garansi 90 hari sejak aplikasi diterima.</li>
+          <li><b>Berlangganan (semua paket):</b> garansi + dukungan berlaku selama langganan aktif.</li>
+        </ul>
+        <p><b>Cara klaim:</b> kirim pesan WhatsApp ke penjual berisi nama paket, tanggal pembelian, dan video atau screenshot bug/error yang ditemukan. Bug yang terkonfirmasi akan diperbaiki tanpa biaya; penambahan fitur baru di luar paket dihitung sebagai request khusus (lihat tabel di atas).</p>
+        <p class="small muted">Garansi mencakup perbaikan bug/error pada fitur aplikasi. Garansi tidak mencakup kerusakan akibat perubahan file oleh pihak lain, kehilangan data karena perangkat, atau permintaan fitur baru.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Catatan versi demo (v1):</b> Data contoh dan semua perubahan yang Anda buat hanya berlaku <b>selama aplikasi ini dibuka</b> — data akan hilang / kembali ke data contoh saat aplikasi ditutup atau dimuat ulang, karena versi ini belum memakai penyimpanan permanen. Fitur <b>barcode scanner</b> (pindai SKU dengan kamera) adalah fitur <b>versi pembeli</b> dan belum tersedia di versi demo ini. Pada versi pembeli, data tersimpan permanen dan dapat dipakai multi-pengguna sesuai paket yang dipilih.</p>
+    <p>Manajemen Stok Barang — untuk toko &amp; gudang yang ingin stoknya selalu rapi dan terkendali.</p>
+  </footer>
+</div>
+
+<!-- Modal Barang -->
+<div class="modal-backdrop" id="modalItem">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
+    <h2 id="itemModalTitle">Tambah Barang</h2>
+    <p class="muted small">SKU harus unik — dipakai sebagai kode barang di gudang.</p>
+    <form id="formItem">
+      <input type="hidden" id="itemId">
+      <div class="field"><label for="itemName">Nama barang</label><input type="text" id="itemName" required placeholder="cth. Beras Premium 5 kg"></div>
+      <div class="form-grid">
+        <div class="field"><label for="itemSku">SKU / Kode</label><input type="text" id="itemSku" required placeholder="cth. SMB-001"></div>
+        <div class="field"><label for="itemCategory">Kategori</label>
+          <select id="itemCategory">
+            <option>Sembako</option><option>Minuman</option><option>Makanan</option><option>Elektronik</option>
+            <option>Rumah Tangga</option><option>Kesehatan &amp; Kecantikan</option><option>Alat Tulis &amp; Kantor</option><option>Lainnya</option>
+          </select>
+        </div>
+        <div class="field"><label for="itemUnit">Satuan</label>
+          <select id="itemUnit"><option>pcs</option><option>dus</option><option>pack</option><option>kg</option><option>liter</option><option>botol</option><option>set</option><option>lusin</option></select>
+        </div>
+        <div class="field"><label for="itemSupplier">Supplier</label><select id="itemSupplier"></select></div>
+        <div class="field"><label for="itemBuy">Harga beli (Rp)</label><input type="number" id="itemBuy" min="0" step="100" required></div>
+        <div class="field"><label for="itemSell">Harga jual (Rp)</label><input type="number" id="itemSell" min="0" step="100" required></div>
+        <div class="field"><label for="itemStock">Stok saat ini</label><input type="number" id="itemStock" min="0" step="1" required></div>
+        <div class="field"><label for="itemMin">Stok minimum</label><input type="number" id="itemMin" min="0" step="1" required></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close="modalItem">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Barang</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Supplier -->
+<div class="modal-backdrop" id="modalSupplier">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="supModalTitle">
+    <h2 id="supModalTitle">Tambah Supplier</h2>
+    <form id="formSupplier">
+      <input type="hidden" id="supId">
+      <div class="field"><label for="supName">Nama perusahaan</label><input type="text" id="supName" required placeholder="cth. PT Sumber Makmur Abadi"></div>
+      <div class="form-grid">
+        <div class="field"><label for="supContact">Nama kontak</label><input type="text" id="supContact" placeholder="cth. Ibu Ratna"></div>
+        <div class="field"><label for="supPhone">Telepon / WA</label><input type="tel" id="supPhone" placeholder="cth. 0812-3456-7890"></div>
+        <div class="field full"><label for="supEmail">Email</label><input type="email" id="supEmail" placeholder="cth. order@supplier.co.id"></div>
+        <div class="field full"><label for="supAddress">Alamat / Kota</label><input type="text" id="supAddress" placeholder="cth. Jakarta Timur"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close="modalSupplier">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Supplier</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi -->
+<div class="modal-backdrop" id="modalConfirm">
+  <div class="modal" role="alertdialog" aria-modal="true">
+    <h2 id="confirmTitle">Hapus data?</h2>
+    <p class="muted" id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close="modalConfirm">Batal</button>
+      <button class="btn btn-danger" id="confirmYes">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var TODAY = "2026-11-20";
+var uid = 100;
+function nextId(){ return ++uid; }
+function rp(n){ return "Rp" + Number(n||0).toLocaleString("id-ID"); }
+function fmtDate(d){ if(!d) return "-"; var p=d.split("-"); if(p.length!==3) return d; return p[2]+"/"+p[1]+"/"+p[0]; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+
+/* ---------- DATA CONTOH ---------- */
+var suppliers = [
+  {id:1, name:"PT Sumber Makmur Abadi", contact:"Ibu Ratna Wijaya", phone:"0812-8400-1122", email:"order@sumbermakmur.co.id", address:"Jl. Raya Bekasi KM 21, Jakarta Timur"},
+  {id:2, name:"CV Berkah Jaya Distribusi", contact:"Bapak Andi Prasetyo", phone:"0813-2210-7788", email:"sales@berkahjaya.id", address:"Kawasan Industri MM2100, Cikarang"},
+  {id:3, name:"UD Cahaya Niaga", contact:"Ibu Sari Dewi", phone:"0857-9012-3345", email:"cahayaniaga@gmail.com", address:"Jl. Gajah Mada No. 88, Semarang"},
+  {id:4, name:"PT Nusantara Logistik Sentosa", contact:"Bapak Budi Hartono", phone:"0821-5566-9012", email:"gudang@nusantaralogistik.co.id", address:"Jl. Soekarno-Hatta No. 402, Bandung"}
+];
+var items = [
+  {id:1, name:"Beras Premium Pandan Wangi 5 kg", sku:"SMB-001", category:"Sembako", unit:"pack", buy:62000, sell:74000, stock:48, min:15, supplierId:1},
+  {id:2, name:"Minyak Goreng Sawit 2 Liter", sku:"SMB-002", category:"Sembako", unit:"botol", buy:34000, sell:42000, stock:12, min:20, supplierId:1},
+  {id:3, name:"Gula Pasir Kristal 1 kg", sku:"SMB-003", category:"Sembako", unit:"pack", buy:15500, sell:18500, stock:86, min:25, supplierId:1},
+  {id:4, name:"Kopi Bubuk Robusta 200 g", sku:"MIN-001", category:"Minuman", unit:"pack", buy:21000, sell:29000, stock:34, min:10, supplierId:3},
+  {id:5, name:"Teh Melati Celup Isi 25", sku:"MIN-002", category:"Minuman", unit:"dus", buy:8500, sell:12500, stock:57, min:15, supplierId:3},
+  {id:6, name:"Air Mineral Galon 19 Liter", sku:"MIN-003", category:"Minuman", unit:"botol", buy:18000, sell:24000, stock:9, min:10, supplierId:2},
+  {id:7, name:"Mie Instan Goreng (Dus Isi 40)", sku:"MKN-001", category:"Makanan", unit:"dus", buy:108000, sell:128000, stock:22, min:8, supplierId:2},
+  {id:8, name:"Biskuit Cokelat Kaleng 350 g", sku:"MKN-002", category:"Makanan", unit:"pcs", buy:28500, sell:36000, stock:0, min:6, supplierId:2},
+  {id:9, name:"Kipas Angin Meja 12 Inci", sku:"ELK-001", category:"Elektronik", unit:"pcs", buy:185000, sell:249000, stock:14, min:4, supplierId:4},
+  {id:10, name:"Lampu LED 12 Watt", sku:"ELK-002", category:"Elektronik", unit:"pcs", buy:22000, sell:35000, stock:73, min:20, supplierId:4},
+  {id:11, name:"Baterai AA Isi 4", sku:"ELK-003", category:"Elektronik", unit:"pack", buy:24000, sell:34000, stock:41, min:12, supplierId:4},
+  {id:12, name:"Sabun Cuci Piring 800 ml", sku:"RTG-001", category:"Rumah Tangga", unit:"botol", buy:14500, sell:19500, stock:18, min:18, supplierId:2},
+  {id:13, name:"Deterjen Bubuk 900 g", sku:"RTG-002", category:"Rumah Tangga", unit:"pack", buy:26000, sell:34000, stock:39, min:12, supplierId:2},
+  {id:14, name:"Sabun Mandi Cair 450 ml", sku:"KSK-001", category:"Kesehatan & Kecantikan", unit:"botol", buy:23000, sell:32000, stock:26, min:10, supplierId:3},
+  {id:15, name:"Kertas HVS A4 80 gsm (Rim)", sku:"ATK-001", category:"Alat Tulis & Kantor", unit:"pack", buy:42000, sell:54000, stock:31, min:10, supplierId:4}
+];
+var mutations = [
+  {id:1, date:"2026-11-14", itemId:1, type:"masuk", qty:30, note:"Restok mingguan — PO-1041 dari PT Sumber Makmur Abadi"},
+  {id:2, date:"2026-11-15", itemId:7, type:"masuk", qty:15, note:"Kiriman CV Berkah Jaya Distribusi"},
+  {id:3, date:"2026-11-16", itemId:1, type:"keluar", qty:12, note:"Penjualan toko — nota harian"},
+  {id:4, date:"2026-11-16", itemId:2, type:"keluar", qty:18, note:"Pesanan warung mitra Bu Tini"},
+  {id:5, date:"2026-11-17", itemId:10, type:"masuk", qty:50, note:"Restok lampu — PT Nusantara Logistik Sentosa"},
+  {id:6, date:"2026-11-18", itemId:8, type:"keluar", qty:9, note:"Penjualan toko — stok habis setelah transaksi ini"},
+  {id:7, date:"2026-11-18", itemId:3, type:"keluar", qty:20, note:"Pesanan katering Dapur Laras"},
+  {id:8, date:"2026-11-19", itemId:12, type:"opname", qty:-3, note:"Opname: 3 botol pecah di gudang belakang", systemBefore:21, physical:18},
+  {id:9, date:"2026-11-19", itemId:5, type:"masuk", qty:25, note:"Restok teh — UD Cahaya Niaga"},
+  {id:10, date:"2026-11-20", itemId:9, type:"keluar", qty:2, note:"Penjualan toko pagi ini"}
+];
+var opnames = [
+  {id:1, date:"2026-11-19", itemId:12, systemStock:21, physicalStock:18, note:"3 botol pecah di gudang belakang", mutationId:8}
+];
+uid = 200;
+
+/* ---------- HELPERS ---------- */
+function byId(arr,id){ for(var i=0;i<arr.length;i++) if(arr[i].id===id) return arr[i]; return null; }
+function itemName(id){ var it=byId(items,id); return it? it.name : "(barang sudah dihapus)"; }
+function itemSku(id){ var it=byId(items,id); return it? it.sku : "-"; }
+function supplierName(id){ var s=byId(suppliers,id); return s? s.name : "—"; }
+function statusOf(it){ if(it.stock<=0) return "habis"; if(it.stock<=it.min) return "menipis"; return "aman"; }
+function statusBadge(it){
+  var st=statusOf(it);
+  if(st==="habis") return '<span class="badge badge-out">● Habis</span>';
+  if(st==="menipis") return '<span class="badge badge-low">⚠ Hampir Habis</span>';
+  return '<span class="badge badge-ok">✓ Aman</span>';
+}
+function toast(msg){
+  var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove("show"); },2600);
+}
+var confirmCb=null;
+function askConfirm(title,text,cb){
+  document.getElementById("confirmTitle").textContent=title;
+  document.getElementById("confirmText").textContent=text;
+  confirmCb=cb;
+  document.getElementById("modalConfirm").classList.add("open");
+}
+document.getElementById("confirmYes").addEventListener("click",function(){
+  document.getElementById("modalConfirm").classList.remove("open");
+  if(confirmCb) confirmCb(); confirmCb=null;
+});
+document.querySelectorAll("[data-close]").forEach(function(b){
+  b.addEventListener("click",function(){ document.getElementById(b.getAttribute("data-close")).classList.remove("open"); });
+});
+document.querySelectorAll(".modal-backdrop").forEach(function(m){
+  m.addEventListener("click",function(e){ if(e.target===m) m.classList.remove("open"); });
+});
+
+/* ---------- TABS ---------- */
+function goTab(name){
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-tab")===name); });
+  document.querySelectorAll(".panel").forEach(function(p){ p.classList.toggle("active", p.id==="panel-"+name); });
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.getElementById("tabs").addEventListener("click",function(e){
+  var b=e.target.closest(".tab-btn"); if(b) goTab(b.getAttribute("data-tab"));
+});
+document.querySelectorAll("[data-goto]").forEach(function(b){
+  b.addEventListener("click",function(){ goTab(b.getAttribute("data-goto")); });
+});
+
+/* ---------- RENDER: SELECTS ---------- */
+function fillItemSelect(sel, includeStock){
+  var cur=sel.value;
+  sel.innerHTML = items.slice().sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(it){
+    return '<option value="'+it.id+'">'+esc(it.name)+' ('+esc(it.sku)+')'+(includeStock? ' — stok '+it.stock+' '+esc(it.unit):'')+'</option>';
+  }).join("");
+  if(cur && byId(items, parseInt(cur,10))) sel.value=cur;
+}
+function fillSupplierSelect(sel, allowEmpty, emptyLabel){
+  var cur=sel.value;
+  var html = allowEmpty? '<option value="">'+esc(emptyLabel||"— Tanpa supplier —")+'</option>' : "";
+  html += suppliers.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+'</option>'; }).join("");
+  sel.innerHTML=html;
+  if(cur) sel.value=cur;
+}
+function fillCategoryFilter(){
+  var sel=document.getElementById("filterCategory");
+  var cats=[]; items.forEach(function(it){ if(cats.indexOf(it.category)<0) cats.push(it.category); });
+  cats.sort();
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Semua kategori</option>'+cats.map(function(c){return '<option>'+esc(c)+'</option>';}).join("");
+  if(cats.indexOf(cur)>=0) sel.value=cur;
+}
+function refreshSelects(){
+  fillItemSelect(document.getElementById("masukItem"));
+  fillItemSelect(document.getElementById("keluarItem"), true);
+  fillItemSelect(document.getElementById("opItem"));
+  fillSupplierSelect(document.getElementById("masukSupplier"), true, "— Gunakan supplier barang —");
+  fillSupplierSelect(document.getElementById("itemSupplier"), true);
+  fillCategoryFilter();
+  updateKeluarInfo(); updateOpInfo();
+}
+
+/* ---------- RENDER: DASHBOARD ---------- */
+function totalStockValue(){ return items.reduce(function(s,it){ return s + it.stock*it.buy; },0); }
+function lowItems(){ return items.filter(function(it){ return statusOf(it)!=="aman"; }); }
+
+function renderStats(){
+  var totalUnits = items.reduce(function(s,it){return s+it.stock;},0);
+  var low = lowItems().length;
+  document.getElementById("statsGrid").innerHTML =
+    statCard("📦","Total Jenis Barang", items.length, "SKU aktif di daftar barang") +
+    statCard("🧺","Total Unit Stok", totalUnits.toLocaleString("id-ID"), "semua satuan digabung") +
+    statCard("💰","Nilai Stok (Harga Beli)", rp(totalStockValue()), "modal yang tertanam di gudang", "gold") +
+    statCard("⚠️","Barang Hampir Habis", low, low? "perlu segera dipesan ulang" : "semua stok aman", "red");
+  document.getElementById("reportStats").innerHTML =
+    statCard("💰","Nilai Stok Saat Ini", rp(totalStockValue()), items.length+" jenis barang") +
+    statCard("⬇️","Total Masuk (semua catatan)", "+"+mutations.filter(function(m){return m.type==="masuk";}).reduce(function(s,m){return s+m.qty;},0)+" unit", "dari riwayat mutasi") +
+    statCard("⬆️","Total Keluar (semua catatan)", "-"+mutations.filter(function(m){return m.type==="keluar";}).reduce(function(s,m){return s+m.qty;},0)+" unit", "dari riwayat mutasi", "blue") +
+    statCard("⚠️","Barang Menipis / Habis", lowItems().length, "lihat daftar di bawah", "red");
+}
+function statCard(icon,label,num,sub,cls){
+  return '<div class="card stat"><div class="icon-box '+(cls||"")+'">'+icon+'</div><div class="num">'+num+'</div><div class="label">'+esc(label)+'</div><div class="sub">'+esc(sub)+'</div></div>';
+}
+function renderLowAlert(){
+  var low = lowItems().slice().sort(function(a,b){return a.stock-b.stock;});
+  var box=document.getElementById("lowAlert");
+  if(!low.length){ box.innerHTML=""; }
+  else{
+    box.innerHTML='<div class="card alert-card"><h3 style="font-size:1.15rem">⚠️ Peringatan Stok — '+low.length+' barang hampir habis / habis</h3>'+
+      '<p class="small" style="margin:6px 0 10px">Segera pesan ulang ke supplier terkait agar penjualan tidak terganggu.</p>'+
+      low.map(function(it){
+        return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-top:1px solid rgba(0,0,0,.06)"><span><b>'+esc(it.name)+'</b> <span class="muted small">('+esc(it.sku)+') — supplier: '+esc(supplierName(it.supplierId))+'</span></span><span>'+statusBadge(it)+' <b>'+it.stock+' '+esc(it.unit)+'</b> <span class="muted small">/ min '+it.min+'</span></span></div>';
+      }).join("")+'</div>';
+  }
+  document.getElementById("reportLowList").innerHTML = low.length? low.map(function(it){
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>'+esc(it.name)+'</b> '+statusBadge(it)+'<br><span class="small muted">Stok '+it.stock+' '+esc(it.unit)+' • minimum '+it.min+' • '+esc(supplierName(it.supplierId))+'</span></div>';
+  }).join("") : '<p class="muted small">Tidak ada barang menipis. Semua stok di atas batas minimum. 🎉</p>';
+}
+function renderItems(){
+  var q=(document.getElementById("searchItem").value||"").toLowerCase();
+  var cat=document.getElementById("filterCategory").value;
+  var st=document.getElementById("filterStatus").value;
+  var rows=items.filter(function(it){
+    if(cat && it.category!==cat) return false;
+    if(st && statusOf(it)!==st) return false;
+    if(q){
+      var hay=(it.name+" "+it.sku+" "+it.category+" "+supplierName(it.supplierId)).toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  }).sort(function(a,b){
+    var rank={habis:0,menipis:1,aman:2};
+    var d=rank[statusOf(a)]-rank[statusOf(b)];
+    return d!==0? d : a.name.localeCompare(b.name);
+  });
+  document.getElementById("itemTableBody").innerHTML=rows.map(function(it){
+    return '<tr>'+
+      '<td class="cell-main" data-label="Barang"><b>'+esc(it.name)+'</b><br><span class="muted small">'+esc(it.sku)+' • satuan: '+esc(it.unit)+'</span></td>'+
+      '<td data-label="Kategori">'+esc(it.category)+'</td>'+
+      '<td data-label="Supplier">'+esc(supplierName(it.supplierId))+'</td>'+
+      '<td data-label="Harga Beli"><span class="price">'+rp(it.buy)+'</span></td>'+
+      '<td data-label="Harga Jual"><span class="price">'+rp(it.sell)+'</span></td>'+
+      '<td data-label="Stok"><b>'+it.stock+'</b> '+esc(it.unit)+'<br><span class="muted small">min '+it.min+'</span></td>'+
+      '<td data-label="Status">'+statusBadge(it)+'</td>'+
+      '<td data-label="Aksi"><div class="actions"><button class="btn btn-ghost btn-sm" data-act="in" data-id="'+it.id+'">+ Masuk</button><button class="btn btn-ghost btn-sm" data-act="out" data-id="'+it.id+'">− Keluar</button><button class="btn btn-ghost btn-sm" data-act="edit" data-id="'+it.id+'">Ubah</button><button class="btn btn-danger btn-sm" data-act="del" data-id="'+it.id+'">Hapus</button></div></td>'+
+    '</tr>';
+  }).join("");
+  document.getElementById("itemEmpty").style.display=rows.length? "none":"block";
+}
+function mutationRow(m, withAction){
+  var typeBadge = m.type==="masuk"? '<span class="badge badge-in">⬇ Masuk</span>' : m.type==="keluar"? '<span class="badge badge-out2">⬆ Keluar</span>' : '<span class="badge badge-op">🧮 Opname</span>';
+  var qtyTxt = m.type==="masuk"? "+"+m.qty : m.type==="keluar"? "−"+m.qty : (m.qty>0? "+"+m.qty : ""+m.qty);
+  var html='<tr><td data-label="Tanggal">'+fmtDate(m.date)+'</td><td class="cell-main" data-label="Barang"><b>'+esc(itemName(m.itemId))+'</b><br><span class="muted small">'+esc(itemSku(m.itemId))+'</span></td>';
+  if(withAction==="history"){
+    html+='<td data-label="Jumlah"><b>'+qtyTxt+'</b></td><td data-label="Keterangan">'+esc(m.note||"-")+'</td><td data-label="Aksi"><button class="btn btn-danger btn-sm" data-cancel-mut="'+m.id+'">Batalkan</button></td></tr>';
+  } else if(withAction==="report"){
+    html='<td data-label="Jenis">'+typeBadge+'</td><td data-label="Jumlah"><b>'+qtyTxt+'</b></td><td data-label="Keterangan">'+esc(m.note||"-")+'</td></tr>';
+  }
+  return html;
+}
+function renderHistories(){
+  var sorted=mutations.slice().sort(function(a,b){ return b.date.localeCompare(a.date) || b.id-a.id; });
+  var masuk=sorted.filter(function(m){return m.type==="masuk";});
+  var keluar=sorted.filter(function(m){return m.type==="keluar";});
+  document.getElementById("masukHistory").innerHTML=masuk.map(function(m){return mutationRow(m,"history");}).join("");
+  document.getElementById("masukEmpty").style.display=masuk.length? "none":"block";
+  document.getElementById("keluarHistory").innerHTML=keluar.map(function(m){return mutationRow(m,"history");}).join("");
+  document.getElementById("keluarEmpty").style.display=keluar.length? "none":"block";
+  document.getElementById("recentMutations").innerHTML= sorted.slice(0,5).map(function(m){
+    var typeBadge = m.type==="masuk"? '<span class="badge badge-in">⬇ Masuk</span>' : m.type==="keluar"? '<span class="badge badge-out2">⬆ Keluar</span>' : '<span class="badge badge-op">🧮 Opname</span>';
+    var qtySigned = m.type==="masuk"? "+"+m.qty : m.type==="keluar"? "−"+m.qty : (m.qty>0? "+"+m.qty : ""+m.qty);
+    return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line)"><span>'+typeBadge+' <b>'+esc(itemName(m.itemId))+'</b> <span class="muted small">• '+qtySigned+' • '+esc(m.note||"")+'</span></span><span class="muted small">'+fmtDate(m.date)+'</span></div>';
+  }).join("") || '<p class="muted small">Belum ada mutasi.</p>';
+  /* Opname */
+  var ops=opnames.slice().sort(function(a,b){ return b.date.localeCompare(a.date) || b.id-a.id; });
+  document.getElementById("opnameHistory").innerHTML=ops.map(function(o){
+    var diff=o.physicalStock-o.systemStock;
+    var diffHtml= diff===0? '<b>0 (sesuai)</b>' : diff>0? '<span class="diff-plus">+'+diff+'</span>' : '<span class="diff-minus">'+diff+'</span>';
+    return '<tr><td data-label="Tanggal">'+fmtDate(o.date)+'</td><td class="cell-main" data-label="Barang"><b>'+esc(itemName(o.itemId))+'</b><br><span class="muted small">'+esc(itemSku(o.itemId))+'</span></td><td data-label="Stok Sistem">'+o.systemStock+'</td><td data-label="Stok Fisik">'+o.physicalStock+'</td><td data-label="Selisih">'+diffHtml+'</td><td data-label="Keterangan">'+esc(o.note||"-")+'</td><td data-label="Aksi"><button class="btn btn-danger btn-sm" data-cancel-op="'+o.id+'">Batalkan</button></td></tr>';
+  }).join("");
+  document.getElementById("opnameEmpty").style.display=ops.length? "none":"block";
+}
+function renderReport(){
+  var from=document.getElementById("repFrom").value, to=document.getElementById("repTo").value;
+  var list=mutations.filter(function(m){
+    if(from && m.date<from) return false;
+    if(to && m.date>to) return false;
+    return true;
+  }).sort(function(a,b){ return b.date.localeCompare(a.date) || b.id-a.id; });
+  var inQty=list.filter(function(m){return m.type==="masuk";}).reduce(function(s,m){return s+m.qty;},0);
+  var outQty=list.filter(function(m){return m.type==="keluar";}).reduce(function(s,m){return s+m.qty;},0);
+  var opCount=list.filter(function(m){return m.type==="opname";}).length;
+  document.getElementById("periodSummary").innerHTML="Periode <b>"+(from? fmtDate(from):"awal")+" s/d "+(to? fmtDate(to):"sekarang")+"</b> — Total masuk: <b>+"+inQty+" unit</b> • Total keluar: <b>−"+outQty+" unit</b> • Penyesuaian opname: <b>"+opCount+" catatan</b> • Total mutasi: <b>"+list.length+"</b>";
+  document.getElementById("reportMutations").innerHTML=list.map(function(m){return mutationRow(m,"report");}).join("");
+  document.getElementById("reportEmpty").style.display=list.length? "none":"block";
+}
+function renderSuppliers(){
+  var q=(document.getElementById("searchSupplier").value||"").toLowerCase();
+  var list=suppliers.filter(function(s){
+    if(!q) return true;
+    return (s.name+" "+(s.contact||"")+" "+(s.address||"")).toLowerCase().indexOf(q)>=0;
+  });
+  document.getElementById("supplierGrid").innerHTML=list.map(function(s){
+    var count=items.filter(function(it){return it.supplierId===s.id;}).length;
+    return '<div class="card sup-card"><h3>'+esc(s.name)+'</h3><span class="badge badge-ok">'+count+' barang terhubung</span>'+
+      '<div class="sup-meta">👤 '+(esc(s.contact||"-"))+'<br>📞 '+(esc(s.phone||"-"))+'<br>✉️ '+(esc(s.email||"-"))+'<br>📍 '+(esc(s.address||"-"))+'</div>'+
+      '<div class="actions"><button class="btn btn-ghost btn-sm" data-edit-sup="'+s.id+'">Ubah</button><button class="btn btn-danger btn-sm" data-del-sup="'+s.id+'">Hapus</button></div></div>';
+  }).join("");
+  document.getElementById("supplierEmpty").style.display=list.length? "none":"block";
+}
+function renderAll(){
+  refreshSelects(); renderStats(); renderLowAlert(); renderItems(); renderHistories(); renderReport(); renderSuppliers();
+}
+
+/* ---------- BARANG CRUD ---------- */
+function openItemModal(it){
+  document.getElementById("itemModalTitle").textContent= it? "Ubah Barang" : "Tambah Barang";
+  document.getElementById("itemId").value= it? it.id : "";
+  document.getElementById("itemName").value= it? it.name : "";
+  document.getElementById("itemSku").value= it? it.sku : "";
+  if(it) document.getElementById("itemCategory").value=it.category;
+  if(it) document.getElementById("itemUnit").value=it.unit;
+  fillSupplierSelect(document.getElementById("itemSupplier"), true);
+  if(it) document.getElementById("itemSupplier").value= it.supplierId||"";
+  document.getElementById("itemBuy").value= it? it.buy : "";
+  document.getElementById("itemSell").value= it? it.sell : "";
+  document.getElementById("itemStock").value= it? it.stock : "";
+  document.getElementById("itemMin").value= it? it.min : "";
+  document.getElementById("modalItem").classList.add("open");
+}
+document.getElementById("btnAddItem").addEventListener("click",function(){ openItemModal(null); });
+document.getElementById("formItem").addEventListener("submit",function(e){
+  e.preventDefault();
+  var id=document.getElementById("itemId").value;
+  var sku=document.getElementById("itemSku").value.trim();
+  var dup=items.filter(function(it){ return it.sku.toLowerCase()===sku.toLowerCase() && String(it.id)!==String(id); })[0];
+  if(dup){ toast("SKU "+sku+" sudah dipakai oleh "+dup.name+". Gunakan SKU lain."); return; }
+  var data={
+    name:document.getElementById("itemName").value.trim(),
+    sku:sku,
+    category:document.getElementById("itemCategory").value,
+    unit:document.getElementById("itemUnit").value,
+    supplierId: document.getElementById("itemSupplier").value? parseInt(document.getElementById("itemSupplier").value,10): null,
+    buy: Math.max(0, parseInt(document.getElementById("itemBuy").value,10)||0),
+    sell: Math.max(0, parseInt(document.getElementById("itemSell").value,10)||0),
+    stock: Math.max(0, parseInt(document.getElementById("itemStock").value,10)||0),
+    min: Math.max(0, parseInt(document.getElementById("itemMin").value,10)||0)
+  };
+  if(!data.name){ toast("Nama barang wajib diisi."); return; }
+  if(id){
+    var it=byId(items, parseInt(id,10)); Object.assign(it, data);
+    toast("Barang “"+data.name+"” berhasil diperbarui.");
+  } else {
+    data.id=nextId(); items.push(data);
+    toast("Barang “"+data.name+"” berhasil ditambahkan.");
+  }
+  document.getElementById("modalItem").classList.remove("open");
+  renderAll();
+});
+document.getElementById("itemTableBody").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-act]"); if(!b) return;
+  var id=parseInt(b.getAttribute("data-id"),10); var it=byId(items,id); if(!it) return;
+  var act=b.getAttribute("data-act");
+  if(act==="edit") openItemModal(it);
+  if(act==="in"){ goTab("masuk"); document.getElementById("masukItem").value=id; }
+  if(act==="out"){ goTab("keluar"); document.getElementById("keluarItem").value=id; updateKeluarInfo(); }
+  if(act==="del"){
+    askConfirm("Hapus barang ini?", "“"+it.name+"” ("+it.sku+") akan dihapus dari daftar barang. Riwayat mutasi lamanya tetap tersimpan di laporan.", function(){
+      items=items.filter(function(x){return x.id!==id;});
+      toast("Barang berhasil dihapus."); renderAll();
+    });
+  }
+});
+document.getElementById("searchItem").addEventListener("input", renderItems);
+document.getElementById("filterCategory").addEventListener("change", renderItems);
+document.getElementById("filterStatus").addEventListener("change", renderItems);
+
+/* ---------- MUTASI MASUK / KELUAR ---------- */
+["masukDate","keluarDate","opDate"].forEach(function(id){ document.getElementById(id).value=TODAY; });
+
+document.getElementById("formMasuk").addEventListener("submit",function(e){
+  e.preventDefault();
+  var itemId=parseInt(document.getElementById("masukItem").value,10);
+  var qty=parseInt(document.getElementById("masukQty").value,10);
+  var date=document.getElementById("masukDate").value||TODAY;
+  var note=document.getElementById("masukNote").value.trim();
+  var supSel=document.getElementById("masukSupplier").value;
+  var it=byId(items,itemId);
+  if(!it){ toast("Pilih barang terlebih dahulu."); return; }
+  if(!qty||qty<1){ toast("Jumlah masuk harus minimal 1."); return; }
+  if(!note && supSel) note="Restok dari "+supplierName(parseInt(supSel,10));
+  it.stock+=qty;
+  mutations.push({id:nextId(), date:date, itemId:itemId, type:"masuk", qty:qty, note:note||"Barang masuk"});
+  toast("✓ "+qty+" "+it.unit+" "+it.name+" masuk. Stok sekarang "+it.stock+".");
+  e.target.reset(); document.getElementById("masukDate").value=TODAY; refreshSelects();
+  renderAll();
+});
+function updateKeluarInfo(){
+  var sel=document.getElementById("keluarItem"); var box=document.getElementById("keluarStockInfo");
+  var it=byId(items, parseInt(sel.value,10));
+  if(!it){ box.style.display="none"; return; }
+  box.style.display="block";
+  box.innerHTML="Stok tersedia saat ini: <b>"+it.stock+" "+esc(it.unit)+"</b> • stok minimum "+it.min+" "+statusBadge(it);
+}
+document.getElementById("keluarItem").addEventListener("change", updateKeluarInfo);
+document.getElementById("formKeluar").addEventListener("submit",function(e){
+  e.preventDefault();
+  var itemId=parseInt(document.getElementById("keluarItem").value,10);
+  var qty=parseInt(document.getElementById("keluarQty").value,10);
+  var date=document.getElementById("keluarDate").value||TODAY;
+  var note=document.getElementById("keluarNote").value.trim();
+  var it=byId(items,itemId);
+  if(!it){ toast("Pilih barang terlebih dahulu."); return; }
+  if(!qty||qty<1){ toast("Jumlah keluar harus minimal 1."); return; }
+  if(qty>it.stock){ toast("Stok tidak cukup — tersedia "+it.stock+" "+it.unit+", diminta "+qty+"."); return; }
+  it.stock-=qty;
+  mutations.push({id:nextId(), date:date, itemId:itemId, type:"keluar", qty:qty, note:note||"Barang keluar"});
+  toast("✓ "+qty+" "+it.unit+" "+it.name+" keluar. Sisa stok "+it.stock+(it.stock<=it.min? " — sudah di batas minimum, segera restok!":""));
+  e.target.reset(); document.getElementById("keluarDate").value=TODAY;
+  renderAll();
+});
+
+/* Batalkan mutasi masuk/keluar/opname */
+document.addEventListener("click",function(e){
+  var cm=e.target.closest("[data-cancel-mut]");
+  if(cm){
+    var m=byId(mutations, parseInt(cm.getAttribute("data-cancel-mut"),10)); if(!m) return;
+    askConfirm("Batalkan catatan mutasi ini?", "Mutasi "+m.type+" "+Math.abs(m.qty)+" unit untuk “"+itemName(m.itemId)+"” ("+fmtDate(m.date)+") akan dihapus dan stok dikembalikan seperti sebelumnya.", function(){
+      var it=byId(items, m.itemId);
+      if(it){
+        if(m.type==="masuk") it.stock=Math.max(0, it.stock-m.qty);
+        if(m.type==="keluar") it.stock+=m.qty;
+        if(m.type==="opname" && typeof m.systemBefore==="number") it.stock=m.systemBefore;
+      }
+      if(m.type==="opname"){ opnames=opnames.filter(function(o){return o.mutationId!==m.id;}); }
+      mutations=mutations.filter(function(x){return x.id!==m.id;});
+      toast("Catatan mutasi dibatalkan, stok disesuaikan."); renderAll();
+    });
+    return;
+  }
+  var co=e.target.closest("[data-cancel-op]");
+  if(co){
+    var o=byId(opnames, parseInt(co.getAttribute("data-cancel-op"),10)); if(!o) return;
+    askConfirm("Batalkan opname ini?", "Opname “"+itemName(o.itemId)+"” ("+fmtDate(o.date)+") akan dihapus dan stok dikembalikan ke "+o.systemStock+".", function(){
+      var it=byId(items,o.itemId); if(it) it.stock=o.systemStock;
+      mutations=mutations.filter(function(x){return x.id!==o.mutationId;});
+      opnames=opnames.filter(function(x){return x.id!==o.id;});
+      toast("Opname dibatalkan, stok dikembalikan."); renderAll();
+    });
+    return;
+  }
+  var es=e.target.closest("[data-edit-sup]");
+  if(es){ openSupplierModal(byId(suppliers, parseInt(es.getAttribute("data-edit-sup"),10))); return; }
+  var ds=e.target.closest("[data-del-sup]");
+  if(ds){
+    var s=byId(suppliers, parseInt(ds.getAttribute("data-del-sup"),10)); if(!s) return;
+    askConfirm("Hapus supplier ini?", "“"+s.name+"” akan dihapus. Barang yang terhubung tidak ikut terhapus — kolom supplier-nya menjadi kosong.", function(){
+      items.forEach(function(it){ if(it.supplierId===s.id) it.supplierId=null; });
+      suppliers=suppliers.filter(function(x){return x.id!==s.id;});
+      toast("Supplier berhasil dihapus."); renderAll();
+    });
+  }
+});
+
+/* ---------- OPNAME ---------- */
+function updateOpInfo(){
+  var sel=document.getElementById("opItem"); var box=document.getElementById("opSystemInfo");
+  var it=byId(items, parseInt(sel.value,10));
+  if(!it){ box.style.display="none"; return; }
+  box.style.display="block";
+  box.innerHTML="Stok menurut sistem: <b>"+it.stock+" "+esc(it.unit)+"</b> — hitung fisik barang ini, lalu masukkan hasilnya di bawah.";
+  updateOpPreview();
+}
+function updateOpPreview(){
+  var sel=document.getElementById("opItem"); var it=byId(items, parseInt(sel.value,10));
+  var v=document.getElementById("opPhysical").value; var box=document.getElementById("opDiffPreview");
+  if(!it || v===""){ box.style.display="none"; return; }
+  var phys=parseInt(v,10); if(isNaN(phys)){ box.style.display="none"; return; }
+  var diff=phys-it.stock;
+  box.style.display="block";
+  box.className="hint"+(diff!==0? " warn-hint":"");
+  box.innerHTML= diff===0? "Selisih: <b>0</b> — stok fisik sesuai dengan sistem. 👍" :
+    "Selisih: <b>"+(diff>0? "+":"")+diff+" "+esc(it.unit)+"</b> — setelah disimpan, stok sistem menjadi <b>"+phys+" "+esc(it.unit)+"</b>.";
+}
+document.getElementById("opItem").addEventListener("change", updateOpInfo);
+document.getElementById("opPhysical").addEventListener("input", updateOpPreview);
+document.getElementById("formOpname").addEventListener("submit",function(e){
+  e.preventDefault();
+  var itemId=parseInt(document.getElementById("opItem").value,10);
+  var phys=parseInt(document.getElementById("opPhysical").value,10);
+  var date=document.getElementById("opDate").value||TODAY;
+  var note=document.getElementById("opNote").value.trim();
+  var it=byId(items,itemId);
+  if(!it){ toast("Pilih barang terlebih dahulu."); return; }
+  if(isNaN(phys)||phys<0){ toast("Stok fisik harus angka 0 atau lebih."); return; }
+  var before=it.stock; var diff=phys-before;
+  var mid=nextId();
+  it.stock=phys;
+  mutations.push({id:mid, date:date, itemId:itemId, type:"opname", qty:diff, note:"Opname: sistem "+before+" → fisik "+phys+(note? " — "+note:""), systemBefore:before, physical:phys});
+  opnames.push({id:nextId(), date:date, itemId:itemId, systemStock:before, physicalStock:phys, note:note||"-", mutationId:mid});
+  toast("✓ Opname "+it.name+" disimpan. Selisih "+(diff>0?"+":"")+diff+", stok sekarang "+phys+".");
+  e.target.reset(); document.getElementById("opDate").value=TODAY;
+  renderAll();
+});
+
+/* ---------- SUPPLIER CRUD ---------- */
+function openSupplierModal(s){
+  document.getElementById("supModalTitle").textContent= s? "Ubah Supplier" : "Tambah Supplier";
+  document.getElementById("supId").value= s? s.id : "";
+  document.getElementById("supName").value= s? s.name : "";
+  document.getElementById("supContact").value= s? (s.contact||"") : "";
+  document.getElementById("supPhone").value= s? (s.phone||"") : "";
+  document.getElementById("supEmail").value= s? (s.email||"") : "";
+  document.getElementById("supAddress").value= s? (s.address||"") : "";
+  document.getElementById("modalSupplier").classList.add("open");
+}
+document.getElementById("btnAddSupplier").addEventListener("click",function(){ openSupplierModal(null); });
+document.getElementById("formSupplier").addEventListener("submit",function(e){
+  e.preventDefault();
+  var id=document.getElementById("supId").value;
+  var data={
+    name:document.getElementById("supName").value.trim(),
+    contact:document.getElementById("supContact").value.trim(),
+    phone:document.getElementById("supPhone").value.trim(),
+    email:document.getElementById("supEmail").value.trim(),
+    address:document.getElementById("supAddress").value.trim()
+  };
+  if(!data.name){ toast("Nama supplier wajib diisi."); return; }
+  if(id){ Object.assign(byId(suppliers, parseInt(id,10)), data); toast("Supplier “"+data.name+"” diperbarui."); }
+  else { data.id=nextId(); suppliers.push(data); toast("Supplier “"+data.name+"” ditambahkan."); }
+  document.getElementById("modalSupplier").classList.remove("open");
+  renderAll();
+});
+document.getElementById("searchSupplier").addEventListener("input", renderSuppliers);
+
+/* ---------- LAPORAN & CSV ---------- */
+document.getElementById("repFrom").addEventListener("change", renderReport);
+document.getElementById("repTo").addEventListener("change", renderReport);
+document.getElementById("btnResetPeriod").addEventListener("click",function(){
+  document.getElementById("repFrom").value=""; document.getElementById("repTo").value=""; renderReport();
+});
+function downloadCsv(filename, rows){
+  var csv=rows.map(function(r){ return r.map(function(c){ var s=String(c==null?"":c); return '"'+s.replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
+  var blob=new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },300);
+  toast("File "+filename+" diunduh.");
+}
+document.getElementById("btnCsvStock").addEventListener("click",function(){
+  var rows=[["SKU","Nama Barang","Kategori","Satuan","Supplier","Harga Beli (Rp)","Harga Jual (Rp)","Stok","Stok Minimum","Status","Nilai Stok (Rp)"]];
+  items.slice().sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(it){
+    rows.push([it.sku,it.name,it.category,it.unit,supplierName(it.supplierId),it.buy,it.sell,it.stock,it.min, statusOf(it)==="aman"?"Aman":statusOf(it)==="menipis"?"Hampir Habis":"Habis", it.stock*it.buy]);
+  });
+  rows.push(["","","","","","TOTAL NILAI STOK","","","","", totalStockValue()]);
+  downloadCsv("laporan-stok-"+TODAY+".csv", rows);
+});
+document.getElementById("btnCsvMutation").addEventListener("click",function(){
+  var from=document.getElementById("repFrom").value, to=document.getElementById("repTo").value;
+  var rows=[["Tanggal","SKU","Nama Barang","Jenis","Jumlah","Keterangan"]];
+  mutations.filter(function(m){ if(from&&m.date<from) return false; if(to&&m.date>to) return false; return true; })
+    .sort(function(a,b){return a.date.localeCompare(b.date)||a.id-b.id;})
+    .forEach(function(m){ rows.push([m.date, itemSku(m.itemId), itemName(m.itemId), m.type==="masuk"?"Masuk":m.type==="keluar"?"Keluar":"Opname", m.qty, m.note||""]); });
+  downloadCsv("riwayat-mutasi-"+TODAY+".csv", rows);
+});
+document.getElementById("btnCsvOpname").addEventListener("click",function(){
+  var rows=[["Tanggal","SKU","Nama Barang","Stok Sistem","Stok Fisik","Selisih","Keterangan"]];
+  opnames.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).forEach(function(o){
+    rows.push([o.date, itemSku(o.itemId), itemName(o.itemId), o.systemStock, o.physicalStock, o.physicalStock-o.systemStock, o.note||""]);
+  });
+  downloadCsv("riwayat-opname-"+TODAY+".csv", rows);
+});
+
+/* ---------- INIT ---------- */
+renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Barcode Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#F7F6F2;
+        --surface:#FFFFFF;
+        --surface-soft:#FBFAF7;
+        --ink:#2C332E;
+        --ink-soft:#57615A;
+        --muted:#8A9189;
+        --line:#E6E3DA;
+        --accent:#3E7A5E;
+        --accent-dark:#2F5F49;
+        --accent-soft:#E9F2EC;
+        --gold:#A98A4B;
+        --warn-bg:#FBF3E2;
+        --warn-ink:#8A6414;
+        --danger-bg:#FAECEA;
+        --danger-ink:#A03A32;
+        --ok-bg:#E9F2EC;
+        --ok-ink:#2F5F49;
+        --radius:16px;
+        --radius-sm:10px;
+        --shadow:0 1px 2px rgba(44,51,46,.05),0 8px 24px rgba(44,51,46,.06);
+        --shadow-lg:0 2px 4px rgba(44,51,46,.06),0 16px 40px rgba(44,51,46,.10);
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;
+      }
+      .mono{font-family:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em}
+      button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2.75rem}
+      button{font-family:inherit;cursor:pointer}
+      input,select,textarea{font-family:inherit;font-size:1rem;color:var(--ink)}
+      :focus-visible{outline:3px solid rgba(62,122,94,.35);outline-offset:2px;border-radius:6px}
+
+      .wrap{max-width:1080px;margin:0 auto;padding:0 18px 40px}
+
+      /* ---------- Header ---------- */
+      header.app-head{padding:30px 0 6px}
+      .head-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+      h1{font-size:clamp(1.55rem,4.5vw,2.1rem);font-weight:800;margin:0;letter-spacing:-.01em}
+      .head-sub{color:var(--ink-soft);margin:6px 0 0;max-width:560px}
+      .head-stats{display:flex;gap:10px;flex-wrap:wrap}
+      .head-chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.85rem;color:var(--ink-soft);box-shadow:var(--shadow)}
+      .head-chip strong{color:var(--ink);font-weight:700}
+
+      /* ---------- Tabs ---------- */
+      nav.tabs{
+        position:sticky;top:0;z-index:30;background:rgba(247,246,242,.92);
+        backdrop-filter:blur(8px);padding:14px 0 10px;margin-top:14px;
+      }
+      .tab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+      @media(min-width:760px){.tab-grid{grid-template-columns:repeat(6,1fr)}}
+      .tab-btn{
+        border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+        border-radius:12px;padding:10px 6px;font-size:.92rem;font-weight:600;
+        display:flex;align-items:center;justify-content:center;gap:7px;min-height:3rem;
+        transition:background .15s,color .15s,border-color .15s;
+      }
+      .tab-btn svg{width:17px;height:17px;flex:none}
+      .tab-btn:hover{border-color:#CFC9B8}
+      .tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+      section.tab-panel{display:none;padding-top:20px}
+      section.tab-panel.active{display:block}
+
+      /* ---------- Cards & generic ---------- */
+      .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+      .card + .card{margin-top:18px}
+      .card h2{font-size:1.15rem;font-weight:700;margin:0 0 4px}
+      .card h3{font-size:1rem;font-weight:700;margin:0 0 6px}
+      .card .desc{color:var(--ink-soft);margin:0 0 16px;font-size:.94rem}
+      .btn{
+        border:1px solid var(--line);background:var(--surface);color:var(--ink);
+        border-radius:12px;padding:10px 18px;font-size:.95rem;font-weight:600;
+        display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:2.9rem;
+        transition:background .15s,border-color .15s;text-decoration:none;
+      }
+      .btn:hover{border-color:#CFC9B8;background:var(--surface-soft)}
+      .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+      .btn.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+      .btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+      .btn.gold:hover{filter:brightness(.94)}
+      .btn.danger-ghost{color:var(--danger-ink);border-color:#EBCFCB}
+      .btn.danger-ghost:hover{background:var(--danger-bg)}
+      .btn.small{min-height:2.5rem;padding:7px 13px;font-size:.88rem;border-radius:10px}
+      .btn:disabled{opacity:.55;cursor:not-allowed}
+      .field label{display:block;font-size:.86rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+      .field input,.field select,.field textarea{
+        width:100%;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+        padding:10px 13px;min-height:2.9rem;
+      }
+      .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:3px solid rgba(62,122,94,.18)}
+      .badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 11px;font-size:.78rem;font-weight:700;white-space:nowrap}
+      .badge.ok{background:var(--ok-bg);color:var(--ok-ink)}
+      .badge.warn{background:var(--warn-bg);color:var(--warn-ink)}
+      .badge.danger{background:var(--danger-bg);color:var(--danger-ink)}
+      .badge.neutral{background:#F0EEE7;color:var(--ink-soft)}
+      .empty{
+        border:1.5px dashed var(--line);border-radius:var(--radius);padding:30px 20px;text-align:center;
+        color:var(--muted);background:var(--surface-soft);font-size:.95rem;
+      }
+      .toast{
+        position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+        background:#2C332E;color:#fff;padding:12px 20px;border-radius:12px;font-size:.93rem;font-weight:600;
+        box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:90;max-width:92vw;text-align:center;
+      }
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+      /* ---------- Pindai ---------- */
+      .scan-input-row{display:flex;gap:10px;flex-wrap:wrap}
+      .scan-input-row input{
+        flex:1 1 260px;font-size:1.3rem;font-weight:600;padding:14px 16px;min-height:3.6rem;
+        border:1.5px solid var(--line);border-radius:14px;letter-spacing:.04em;
+      }
+      .scan-input-row input:focus{border-color:var(--accent);outline:3px solid rgba(62,122,94,.18)}
+      .scan-input-row .btn{font-size:1.05rem;padding:12px 26px;min-height:3.6rem;border-radius:14px}
+      .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+      .chip-row span{font-size:.85rem;color:var(--muted)}
+      .code-chip{
+        border:1px solid var(--line);background:var(--surface-soft);border-radius:999px;
+        padding:6px 13px;font-size:.85rem;min-height:2.4rem;color:var(--ink-soft);
+      }
+      .code-chip:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--accent-soft)}
+      .scan-result{margin-top:20px}
+      .result-found{border:1px solid #CBDED2;background:linear-gradient(180deg,#F4F9F5,#FFFFFF);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+      .result-miss{border:1px solid #EBCFCB;background:var(--danger-bg);border-radius:var(--radius);padding:22px}
+      .result-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+      .result-name{font-size:1.3rem;font-weight:800;margin:0}
+      .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}
+      @media(min-width:640px){.detail-grid{grid-template-columns:repeat(4,1fr)}}
+      .detail-cell{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+      .detail-cell .k{font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+      .detail-cell .v{font-size:1.05rem;font-weight:700;margin-top:3px}
+      .detail-cell .v.price{color:var(--accent-dark)}
+      .barcode-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+      .barcode-box svg{max-width:100%;height:auto}
+      .barcode-box .code-num{font-size:.95rem;margin-top:6px;color:var(--ink)}
+      .action-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+
+      /* ---------- Data Barang ---------- */
+      .toolbar{display:grid;gap:10px;margin-bottom:16px}
+      @media(min-width:760px){.toolbar{grid-template-columns:1.6fr 1fr 1fr}}
+      .toolbar input,.toolbar select{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:var(--surface);min-height:2.9rem}
+      .toolbar input:focus,.toolbar select:focus{border-color:var(--accent);outline:3px solid rgba(62,122,94,.18)}
+      .count-note{color:var(--muted);font-size:.88rem;margin:0 0 12px}
+      .item-grid{display:grid;gap:14px}
+      @media(min-width:640px){.item-grid{grid-template-columns:repeat(2,1fr)}}
+      @media(min-width:980px){.item-grid{grid-template-columns:repeat(3,1fr)}}
+      .item-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:8px}
+      .item-card .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+      .item-card h3{font-size:1.02rem;margin:0;line-height:1.35}
+      .item-card .meta{font-size:.86rem;color:var(--ink-soft)}
+      .item-card .price-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+      .item-card .price{font-size:1.08rem;font-weight:800;color:var(--accent-dark)}
+      .item-card .stock{font-size:.9rem;color:var(--ink-soft)}
+      .item-card .stock strong{color:var(--ink)}
+      .item-card .actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+      .form-grid{display:grid;gap:13px}
+      @media(min-width:640px){.form-grid{grid-template-columns:1fr 1fr}.form-grid .wide{grid-column:1/-1}}
+      .form-error{display:none;background:var(--danger-bg);color:var(--danger-ink);border-radius:10px;padding:10px 14px;font-size:.9rem;font-weight:600;margin-bottom:13px}
+      .form-error.show{display:block}
+
+      /* ---------- Label ---------- */
+      .label-controls{display:grid;gap:13px;margin-bottom:18px}
+      @media(min-width:640px){.label-controls{grid-template-columns:1.6fr .7fr}}
+      .label-sheet{display:flex;flex-wrap:wrap;gap:14px;background:var(--surface-soft);border:1px dashed var(--line);border-radius:var(--radius);padding:18px;justify-content:center}
+      .label-tag{
+        background:#fff;border:1px solid #D8D4C8;border-radius:8px;width:300px;max-width:100%;
+        padding:14px 16px 12px;text-align:center;color:#222;
+      }
+      .label-tag .shop{font-size:.68rem;font-weight:700;letter-spacing:.18em;color:#8A9189;text-transform:uppercase}
+      .label-tag .lname{font-size:.98rem;font-weight:700;margin:4px 0 2px;line-height:1.3}
+      .label-tag .lsku{font-size:.8rem;color:#57615A}
+      .label-tag svg{margin:8px auto 2px;display:block;max-width:100%}
+      .label-tag .lcode{font-size:.85rem;letter-spacing:.14em}
+      .label-tag .lprice{font-size:1.05rem;font-weight:800;margin-top:5px}
+
+      /* ---------- Riwayat ---------- */
+      .history-list{display:flex;flex-direction:column;gap:10px}
+      .history-item{
+        display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);
+        border-radius:12px;padding:13px 15px;box-shadow:var(--shadow);
+      }
+      .history-item .dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex:none}
+      .history-item .dot.found{background:var(--accent)}
+      .history-item .dot.miss{background:#C4554D}
+      .history-item .main{flex:1;min-width:0}
+      .history-item .name{font-weight:700}
+      .history-item .sub{font-size:.86rem;color:var(--ink-soft)}
+      .history-item time{font-size:.82rem;color:var(--muted);white-space:nowrap}
+      @media(max-width:560px){
+        .history-item time{flex-basis:100%;padding-left:22px;margin-top:-4px}
+      }
+
+      /* ---------- Laporan ---------- */
+      .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+      @media(min-width:860px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+      .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+      .stat-card .k{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+      .stat-card .v{font-size:1.5rem;font-weight:800;margin-top:5px;line-height:1.2}
+      .stat-card .s{font-size:.85rem;color:var(--ink-soft);margin-top:2px}
+      .rank-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+      .rank-list li{display:flex;align-items:center;gap:11px;background:var(--surface-soft);border:1px solid var(--line);border-radius:11px;padding:10px 13px}
+      .rank-num{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex:none}
+      .rank-list .grow{flex:1;min-width:0}
+      .rank-list .nm{font-weight:700;font-size:.95rem}
+      .rank-list .sb{font-size:.82rem;color:var(--ink-soft)}
+      .two-col{display:grid;gap:18px}
+      @media(min-width:860px){.two-col{grid-template-columns:1fr 1fr}.two-col .card + .card{margin-top:0}}
+
+      /* ---------- Panduan ---------- */
+      details.guide{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);margin-bottom:13px;overflow:hidden;
+      }
+      details.guide summary{
+        cursor:pointer;padding:17px 20px;font-weight:700;font-size:1.02rem;list-style:none;
+        display:flex;align-items:center;gap:11px;min-height:3.4rem;
+      }
+      details.guide summary::-webkit-details-marker{display:none}
+      details.guide summary .n{
+        width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;flex:none;
+        display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;
+      }
+      details.guide summary::after{content:"＋";margin-left:auto;color:var(--muted);font-weight:400}
+      details.guide[open ] summary::after{content:"−"}
+      details.guide .body{padding:0 20px 19px 59px;color:var(--ink-soft)}
+      @media(max-width:560px){details.guide .body{padding-left:20px}}
+      details.guide .body ol,details.guide .body ul{margin:6px 0;padding-left:20px}
+      details.guide .body li{margin:5px 0}
+      details.guide .body strong{color:var(--ink)}
+      .price-grid{display:grid;gap:13px;margin-top:6px}
+      @media(min-width:760px){.price-grid{grid-template-columns:repeat(3,1fr)}}
+      .price-card{border:1px solid var(--line);border-radius:14px;padding:17px;background:var(--surface-soft)}
+      .price-card.featured{border-color:var(--accent);background:var(--accent-soft)}
+      .price-card .tier{font-weight:800;font-size:1rem}
+      .price-card .amount{font-size:1.35rem;font-weight:800;color:var(--accent-dark);margin:5px 0 2px}
+      .price-card .per{font-size:.85rem;color:var(--ink-soft)}
+      .price-card ul{margin:10px 0 0;padding-left:18px;color:var(--ink-soft);font-size:.9rem}
+      .price-card ul li{margin:4px 0}
+      table.plain{width:100%;border-collapse:collapse;font-size:.93rem;margin-top:6px}
+      table.plain th,table.plain td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
+      table.plain th{color:var(--ink-soft);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+      table.plain td:last-child,table.plain th:last-child{text-align:right;font-weight:700}
+      .note-box{background:var(--warn-bg);border-radius:12px;padding:14px 16px;font-size:.92rem;color:#6d5516;margin-top:14px}
+
+      /* ---------- Footer ---------- */
+      footer.app-footer{margin-top:34px;border-top:1px solid var(--line);padding:20px 2px 6px;color:var(--ink-soft);font-size:.88rem}
+      footer.app-footer p{margin:5px 0}
+
+      /* ---------- Modal ---------- */
+      .modal-back{
+        position:fixed;inset:0;background:rgba(44,51,46,.45);display:none;align-items:center;justify-content:center;
+        z-index:80;padding:18px;
+      }
+      .modal-back.show{display:flex}
+      .modal{background:#fff;border-radius:18px;max-width:420px;width:100%;padding:24px;box-shadow:var(--shadow-lg)}
+      .modal h3{margin:0 0 8px;font-size:1.1rem}
+      .modal p{color:var(--ink-soft);margin:0 0 18px}
+      .modal .row{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+
+      /* ---------- Tampilan khusus cetak label ---------- */
+      #printSheet{display:none}
+      body.printing #appRoot{display:none}
+      body.printing #printSheet{display:block;max-width:1080px;margin:0 auto;padding:22px 18px 40px}
+      .sheet-bar{
+        display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:16px 18px;margin-bottom:18px;
+      }
+      .sheet-bar p{margin:0;color:var(--ink-soft);font-size:.94rem;max-width:560px}
+      .sheet-labels{display:flex;flex-wrap:wrap;gap:14px}
+      @media print{
+        body{background:#fff}
+        #appRoot,footer.app-footer,.toast,.modal-back,.sheet-bar{display:none !important}
+        body #printSheet{display:block !important;padding:10px}
+        #printSheet .label-tag{border:1px solid #bbb;break-inside:avoid;margin:0 8px 12px 0;display:inline-block;vertical-align:top}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="appRoot">
+      <header class="app-head">
+        <div class="head-row">
+          <div>
+            <h1>Aplikasi Barcode Scanner</h1>
+            <p class="head-sub">Pindai barcode untuk mencari barang, mengecek stok, dan mencetak label — dirancang untuk kebutuhan toko dan gudang sehari-hari.</p>
+          </div>
+          <div class="head-stats">
+            <span class="head-chip"><strong id="headItemCount">0</strong> barang</span>
+            <span class="head-chip"><strong id="headScanCount">0</strong> kali dipindai</span>
+          </div>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Modul aplikasi">
+        <div class="tab-grid" role="tablist">
+          <button class="tab-btn active" data-tab="pindai" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 8v8M11 8v8M14.5 8v8M18 8v8"/></svg>
+            Pindai
+          </button>
+          <button class="tab-btn" data-tab="data" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+            Data Barang
+          </button>
+          <button class="tab-btn" data-tab="label" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>
+            Label Barcode
+          </button>
+          <button class="tab-btn" data-tab="riwayat" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5M12 7v5l3.5 2"/></svg>
+            Riwayat
+          </button>
+          <button class="tab-btn" data-tab="laporan" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+            Laporan
+          </button>
+          <button class="tab-btn" data-tab="panduan" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+            Panduan
+          </button>
+        </div>
+      </nav>
+
+      <!-- ============ TAB: PINDAI ============ -->
+      <section class="tab-panel active" id="panel-pindai" role="tabpanel">
+        <div class="card">
+          <h2>Pindai Barcode</h2>
+          <p class="desc">Ketik atau tempel kode barcode barang, lalu tekan <strong>Pindai</strong>. Hasilnya langsung menampilkan detail barang dan stok yang tersedia, dan setiap pemindaian tercatat di tab Riwayat.</p>
+          <form id="scanForm" class="scan-input-row">
+            <input id="scanInput" class="mono" type="text" inputmode="numeric" autocomplete="off"
+              placeholder="Contoh: 899123456001" aria-label="Kode barcode" />
+            <button type="submit" class="btn primary">Pindai</button>
+          </form>
+          <div class="chip-row">
+            <span>Coba kode contoh:</span>
+            <button type="button" class="code-chip mono" data-code="899123456001">899123456001</button>
+            <button type="button" class="code-chip mono" data-code="899123456007">899123456007</button>
+            <button type="button" class="code-chip mono" data-code="899123456012">899123456012</button>
+            <button type="button" class="code-chip mono" data-code="899123456013">899123456013</button>
+            <button type="button" class="code-chip mono" data-code="899999999999">899999999999</button>
+          </div>
+          <div class="scan-result" id="scanResult">
+            <div class="empty">Belum ada hasil pindai. Masukkan kode barcode di atas untuk melihat detail barang dan stoknya.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: DATA BARANG ============ -->
+      <section class="tab-panel" id="panel-data" role="tabpanel">
+        <div class="card">
+          <h2>Data Barang</h2>
+          <p class="desc">Seluruh barang yang terdaftar beserta kode barcode, SKU, harga, dan stoknya. Gunakan pencarian dan filter untuk menemukan barang dengan cepat.</p>
+          <div class="toolbar">
+            <input id="searchInput" type="search" placeholder="Cari nama, SKU, atau kode barcode…" aria-label="Cari barang" />
+            <select id="categoryFilter" aria-label="Filter kategori">
+              <option value="">Semua Kategori</option>
+            </select>
+            <select id="stockFilter" aria-label="Filter stok">
+              <option value="">Semua Status Stok</option>
+              <option value="tersedia">Tersedia</option>
+              <option value="menipis">Stok Menipis</option>
+              <option value="habis">Stok Habis</option>
+            </select>
+          </div>
+          <p class="count-note" id="itemCountNote"></p>
+          <div class="item-grid" id="itemGrid"></div>
+          <div class="empty" id="itemEmpty" style="display:none">Tidak ada barang yang cocok dengan pencarian atau filter. Coba kata kunci lain, atau tambahkan barang baru lewat formulir di bawah.</div>
+        </div>
+
+        <div class="card" id="itemFormCard">
+          <h2 id="formTitle">Tambah Barang via Barcode</h2>
+          <p class="desc">Daftarkan barang baru lengkap dengan kode barcode-nya. Setelah tersimpan, barang langsung bisa dipindai dan dibuatkan label.</p>
+          <div class="form-error" id="formError"></div>
+          <form id="itemForm">
+            <div class="form-grid">
+              <div class="field wide">
+                <label for="fNama">Nama Barang *</label>
+                <input id="fNama" type="text" placeholder="Mis. Kopi Bubuk Robusta 200 g" required />
+              </div>
+              <div class="field">
+                <label for="fBarcode">Kode Barcode *</label>
+                <input id="fBarcode" class="mono" type="text" inputmode="numeric" placeholder="Mis. 899123456016" required />
+              </div>
+              <div class="field">
+                <label for="fSku">SKU</label>
+                <input id="fSku" class="mono" type="text" placeholder="Otomatis bila kosong" />
+              </div>
+              <div class="field">
+                <label for="fKategori">Kategori *</label>
+                <select id="fKategori">
+                  <option value="Sembako">Sembako</option>
+                  <option value="Makanan">Makanan</option>
+                  <option value="Minuman">Minuman</option>
+                  <option value="Perawatan">Perawatan</option>
+                  <option value="Rumah Tangga">Rumah Tangga</option>
+                  <option value="Elektronik">Elektronik</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fHarga">Harga (Rp) *</label>
+                <input id="fHarga" type="number" min="0" step="500" placeholder="Mis. 25000" required />
+              </div>
+              <div class="field">
+                <label for="fStok">Stok Awal *</label>
+                <input id="fStok" type="number" min="0" step="1" placeholder="Mis. 50" required />
+              </div>
+            </div>
+            <div class="action-row">
+              <button type="submit" class="btn primary" id="formSubmitBtn">Simpan Barang</button>
+              <button type="button" class="btn" id="formCancelBtn" style="display:none">Batal Ubah</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ TAB: LABEL BARCODE ============ -->
+      <section class="tab-panel" id="panel-label" role="tabpanel">
+        <div class="card">
+          <h2>Cetak Label Barcode</h2>
+          <p class="desc">Pilih barang dan jumlah label, periksa pratinjaunya, lalu cetak. Label berisi nama barang, SKU, harga, dan barcode yang siap ditempel di rak atau kemasan.</p>
+          <div class="label-controls">
+            <div class="field">
+              <label for="labelSelect">Pilih Barang</label>
+              <select id="labelSelect"></select>
+            </div>
+            <div class="field">
+              <label for="labelQty">Jumlah Label</label>
+              <input id="labelQty" type="number" min="1" max="24" value="4" />
+            </div>
+          </div>
+          <div class="label-sheet" id="labelSheet"></div>
+          <div class="action-row">
+            <button type="button" class="btn primary" id="printBtn">Cetak Label</button>
+          </div>
+          <div class="note-box">Tombol <strong>Cetak Label</strong> membuka tampilan khusus yang hanya berisi label. Dari tampilan itu, gunakan perintah <strong>Cetak</strong> pada peramban Anda (Ctrl+P / Cmd+P) untuk mencetak — bagian lain aplikasi tidak ikut tercetak.</div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: RIWAYAT ============ -->
+      <section class="tab-panel" id="panel-riwayat" role="tabpanel">
+        <div class="card">
+          <div class="result-head">
+            <div>
+              <h2>Riwayat Pemindaian</h2>
+              <p class="desc" style="margin-bottom:0">Setiap pemindaian dari tab Pindai tercatat di sini — termasuk kode yang tidak ditemukan.</p>
+            </div>
+            <button type="button" class="btn danger-ghost small" id="clearHistoryBtn">Bersihkan Riwayat</button>
+          </div>
+          <div style="height:16px"></div>
+          <div class="history-list" id="historyList"></div>
+          <div class="empty" id="historyEmpty">Belum ada riwayat pemindaian. Lakukan pemindaian pertama Anda di tab Pindai.</div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: LAPORAN ============ -->
+      <section class="tab-panel" id="panel-laporan" role="tabpanel">
+        <div class="stat-grid" id="statGrid"></div>
+        <div style="height:18px"></div>
+        <div class="two-col">
+          <div class="card">
+            <h3>Barang Paling Sering Dipindai</h3>
+            <p class="desc">Berdasarkan pemindaian yang tercatat selama aplikasi dibuka.</p>
+            <ul class="rank-list" id="topScannedList"></ul>
+            <div class="empty" id="topScannedEmpty">Belum ada barang yang dipindai. Pindai beberapa barcode di tab Pindai untuk melihat peringkatnya di sini.</div>
+          </div>
+          <div class="card">
+            <h3>Stok Perlu Perhatian</h3>
+            <p class="desc">Barang dengan stok menipis (≤ 10) atau sudah habis, urut dari stok terkecil.</p>
+            <ul class="rank-list" id="lowStockList"></ul>
+            <div class="empty" id="lowStockEmpty" style="display:none">Semua stok dalam kondisi aman.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Unduh Laporan (CSV)</h3>
+          <p class="desc">Unduh data dalam format CSV yang bisa dibuka di Excel, Google Sheets, atau aplikasi kasir lain.</p>
+          <div class="action-row" style="margin-top:0">
+            <button type="button" class="btn primary" id="csvItemsBtn">Unduh CSV Data Barang</button>
+            <button type="button" class="btn" id="csvHistoryBtn">Unduh CSV Riwayat Pindai</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: PANDUAN ============ -->
+      <section class="tab-panel" id="panel-panduan" role="tabpanel">
+        <details class="guide" open>
+          <summary><span class="n">1</span> Memulai &amp; Gambaran Umum</summary>
+          <div class="body">
+            <p>Aplikasi Barcode Scanner membantu toko dan gudang bekerja dengan barcode: mencari barang dalam hitungan detik, mengecek stok tanpa membuka daftar panjang, mencetak label harga, dan melihat laporan persediaan.</p>
+            <ol>
+              <li>Buka aplikasi — data contoh berisi <strong>15 barang</strong> sudah tersedia untuk langsung dicoba.</li>
+              <li>Pindah antar modul lewat enam tab di bagian atas: <strong>Pindai, Data Barang, Label Barcode, Riwayat, Laporan,</strong> dan <strong>Panduan</strong>.</li>
+              <li>Semua perubahan (barang baru, perubahan stok, riwayat pindai) langsung berlaku di semua tab selama aplikasi dibuka.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">2</span> Tab Pindai — Cari Barang &amp; Cek Stok</summary>
+          <div class="body">
+            <ol>
+              <li>Ketik atau tempel <strong>kode barcode</strong> pada kotak input besar (contoh: <span class="mono">899123456001</span>), atau ketuk salah satu chip kode contoh.</li>
+              <li>Tekan tombol <strong>Pindai</strong> atau tombol Enter.</li>
+              <li>Bila kode cocok, tampil kartu detail barang: <strong>nama, SKU, kategori, harga, dan stok tersedia</strong> beserta gambar barcode-nya.</li>
+              <li>Untuk mencatat pergerakan stok, gunakan tombol <strong>Stok Masuk (+1)</strong> saat barang datang dan <strong>Terjual (−1)</strong> saat barang keluar — angka stok berubah seketika.</li>
+              <li>Bila kode tidak ditemukan, aplikasi memberi tahu dan menawarkan tombol <strong>Tambah Barang dengan Kode Ini</strong> untuk langsung mendaftarkannya.</li>
+              <li>Setiap pemindaian — berhasil maupun tidak — otomatis tercatat di tab <strong>Riwayat</strong>.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">3</span> Tab Data Barang — Kelola &amp; Tambah Barang</summary>
+          <div class="body">
+            <ol>
+              <li><strong>Pencarian:</strong> ketik nama barang, SKU, atau kode barcode pada kotak cari — daftar menyaring secara langsung.</li>
+              <li><strong>Filter:</strong> saring berdasarkan kategori dan status stok (Tersedia / Menipis / Habis).</li>
+              <li><strong>Tambah barang:</strong> isi formulir <em>Tambah Barang via Barcode</em> — nama, kode barcode, kategori, harga, dan stok awal wajib diisi; SKU boleh dikosongkan dan akan dibuat otomatis. Kode barcode tidak boleh sama dengan barang lain.</li>
+              <li><strong>Ubah:</strong> ketuk tombol <em>Ubah</em> pada kartu barang, sesuaikan isian formulir, lalu simpan.</li>
+              <li><strong>Hapus:</strong> ketuk tombol <em>Hapus</em> dan konfirmasikan — barang terhapus dari daftar, label, dan laporan.</li>
+              <li>Tombol <em>Pindai</em> pada kartu barang membawa Anda ke tab Pindai dengan kode barang tersebut; tombol <em>Label</em> membuka tab Label Barcode untuk barang yang sama.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">4</span> Tab Label Barcode — Cetak Label SKU</summary>
+          <div class="body">
+            <ol>
+              <li>Pilih barang dari daftar <strong>Pilih Barang</strong>.</li>
+              <li>Atur <strong>Jumlah Label</strong> (1–24 lembar) sesuai kebutuhan rak atau kemasan.</li>
+              <li>Periksa pratinjau: setiap label memuat nama barang, SKU, harga, dan barcode beserta nomor kodenya.</li>
+              <li>Tekan <strong>Cetak Label</strong> untuk membuka tampilan khusus label, lalu cetak lewat perintah <strong>Cetak</strong> pada peramban (Ctrl+P / Cmd+P). Yang tercetak hanya labelnya saja — bagian lain aplikasi tidak ikut tercetak.</li>
+              <li>Untuk hasil terbaik gunakan kertas label/stiker dan pastikan skala cetak 100%.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">5</span> Tab Riwayat — Jejak Pemindaian</summary>
+          <div class="body">
+            <ol>
+              <li>Setiap entri menampilkan <strong>waktu pemindaian, kode barcode, nama barang,</strong> dan status <strong>Ditemukan / Tidak Ditemukan</strong>.</li>
+              <li>Entri terbaru selalu berada paling atas, sehingga aktivitas terakhir mudah diawasi.</li>
+              <li>Gunakan tombol <strong>Bersihkan Riwayat</strong> untuk mengosongkan catatan (misalnya di awal hari). Peringkat “paling sering dipindai” di Laporan ikut tereset.</li>
+              <li>Riwayat juga bisa diunduh sebagai CSV dari tab Laporan.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">6</span> Tab Laporan — Ringkasan &amp; Unduh CSV</summary>
+          <div class="body">
+            <ol>
+              <li><strong>Jumlah Barang</strong> — banyaknya jenis barang (SKU) yang terdaftar.</li>
+              <li><strong>Total Stok</strong> — jumlah seluruh unit dari semua barang.</li>
+              <li><strong>Nilai Stok</strong> — perkiraan nilai persediaan (harga × stok seluruh barang).</li>
+              <li><strong>Total Pemindaian</strong> — berapa kali pemindaian dilakukan, beserta tingkat keberhasilan pencarian.</li>
+              <li><strong>Barang Paling Sering Dipindai</strong> — berguna untuk mengenali barang yang paling sering dicari pelanggan atau petugas.</li>
+              <li><strong>Stok Perlu Perhatian</strong> — daftar stok menipis dan habis agar tidak kehabisan barang laris.</li>
+              <li>Tekan <strong>Unduh CSV Data Barang</strong> atau <strong>Unduh CSV Riwayat Pindai</strong> untuk menyimpan laporan ke perangkat Anda.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">7</span> Harga &amp; Paket Aplikasi</summary>
+          <div class="body">
+            <p><strong>Pilihan Beli Sekali</strong> (bayar satu kali, aplikasi menjadi milik Anda):</p>
+            <div class="price-grid">
+              <div class="price-card">
+                <div class="tier">Pemula</div>
+                <div class="amount">Rp499.000</div>
+                <div class="per">beli sekali</div>
+                <ul>
+                  <li>Aplikasi standar siap pakai</li>
+                  <li>Garansi perbaikan bug 30 hari</li>
+                </ul>
+              </div>
+              <div class="price-card featured">
+                <div class="tier">Profesional</div>
+                <div class="amount">Rp999.000</div>
+                <div class="per">beli sekali</div>
+                <ul>
+                  <li>Penyesuaian merek (nama &amp; logo toko)</li>
+                  <li>Termasuk APK Android</li>
+                  <li>Garansi perbaikan bug 60 hari</li>
+                </ul>
+              </div>
+              <div class="price-card">
+                <div class="tier">Bisnis</div>
+                <div class="amount">Rp1.999.000</div>
+                <div class="per">beli sekali</div>
+                <ul>
+                  <li>Penyimpanan permanen &amp; multi-pengguna</li>
+                  <li>Dukungan penuh</li>
+                  <li>Garansi perbaikan bug 90 hari</li>
+                </ul>
+              </div>
+            </div>
+            <p style="margin-top:18px"><strong>Pilihan Berlangganan</strong> (per bulan; berhenti berlangganan = akses berhenti):</p>
+            <table class="plain">
+              <thead><tr><th>Paket</th><th>Garansi Bug</th><th style="text-align:right">Harga / Bulan</th></tr></thead>
+              <tbody>
+                <tr><td>Pemula</td><td>Selama langganan aktif</td><td>Rp49.000</td></tr>
+                <tr><td>Profesional</td><td>Selama langganan aktif</td><td>Rp99.000</td></tr>
+                <tr><td>Bisnis</td><td>Selama langganan aktif</td><td>Rp199.000</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:18px"><strong>Request Khusus</strong> (penyesuaian fitur di luar paket, waktu produksi 7 hari kalender):</p>
+            <table class="plain">
+              <thead><tr><th>Ukuran Request</th><th style="text-align:right">Biaya Tambahan</th></tr></thead>
+              <tbody>
+                <tr><td>Kecil</td><td>+Rp100.000</td></tr>
+                <tr><td>Sedang</td><td>+Rp250.000</td></tr>
+                <tr><td>Besar</td><td>+Rp500.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="guide">
+          <summary><span class="n">8</span> Garansi</summary>
+          <div class="body">
+            <p>Setiap pembelian dilindungi <strong>garansi perbaikan bug/error secara gratis</strong> — bila aplikasi tidak berjalan sebagaimana mestinya, perbaikan tidak dikenakan biaya selama masa garansi berlaku.</p>
+            <table class="plain">
+              <thead><tr><th>Paket Beli Sekali</th><th style="text-align:right">Masa Garansi</th></tr></thead>
+              <tbody>
+                <tr><td>Pemula</td><td>30 hari</td></tr>
+                <tr><td>Profesional</td><td>60 hari</td></tr>
+                <tr><td>Bisnis</td><td>90 hari</td></tr>
+              </tbody>
+            </table>
+            <ul>
+              <li><strong>Berlangganan:</strong> garansi dan dukungan berlaku selama masa langganan aktif.</li>
+              <li><strong>Cara klaim:</strong> hubungi kami melalui WhatsApp dan sertakan video atau tangkapan layar (screenshot) yang menunjukkan bug/error-nya — tim kami akan memeriksa dan memperbaikinya.</li>
+              <li>Garansi mencakup perbaikan bug/error pada fitur yang ada; penambahan fitur baru termasuk request khusus (lihat bagian Harga &amp; Paket).</li>
+            </ul>
+            <div class="note-box"><strong>Catatan versi demo (v1):</strong> pemindaian pada versi ini menggunakan input kode barcode manual. Pemindai barcode sungguhan — lewat kamera HP maupun alat scanner USB/Bluetooth — tersedia pada versi pembeli.</div>
+          </div>
+        </details>
+      </section>
+
+      <footer class="app-footer">
+        <p><strong>Catatan versi demo (v1):</strong> data contoh dan semua perubahan Anda hanya berlaku selama aplikasi ini dibuka — data akan hilang dan kembali ke data contoh awal saat aplikasi ditutup atau dimuat ulang.</p>
+        <p>Pemindai barcode sungguhan (kamera maupun alat scanner) adalah fitur versi pembeli; demo v1 ini menggunakan input kode barcode manual. Batang barcode pada label adalah representasi visual dari kode barang.</p>
+      </footer>
+    </div>
+
+    <!-- Area cetak: hanya label -->
+    <div id="printSheet" aria-hidden="true"></div>
+
+    <!-- Modal konfirmasi hapus -->
+    <div class="modal-back" id="deleteModal">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+        <h3 id="deleteModalTitle">Hapus Barang?</h3>
+        <p id="deleteModalText">Barang ini akan dihapus dari daftar.</p>
+        <div class="row">
+          <button type="button" class="btn" id="deleteCancelBtn">Batal</button>
+          <button type="button" class="btn primary" id="deleteConfirmBtn" style="background:var(--danger-ink);border-color:var(--danger-ink)">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      "use strict";
+
+      /* ================= DATA CONTOH ================= */
+      var seedItems = [
+        { barcode:"899123456001", sku:"MKN-001", nama:"Mi Instan Goreng Spesial 85 g", kategori:"Makanan",      harga:3500,  stok:240 },
+        { barcode:"899123456002", sku:"SMB-001", nama:"Beras Premium 5 kg",           kategori:"Sembako",      harga:74500, stok:58  },
+        { barcode:"899123456003", sku:"SMB-002", nama:"Minyak Goreng 2 L",            kategori:"Sembako",      harga:42000, stok:96  },
+        { barcode:"899123456004", sku:"SMB-003", nama:"Gula Pasir 1 kg",              kategori:"Sembako",      harga:17500, stok:150 },
+        { barcode:"899123456005", sku:"MNM-001", nama:"Kopi Bubuk Robusta 200 g",     kategori:"Minuman",      harga:28000, stok:84  },
+        { barcode:"899123456006", sku:"MNM-002", nama:"Teh Celup Melati Isi 25",      kategori:"Minuman",      harga:12500, stok:132 },
+        { barcode:"899123456007", sku:"MNM-003", nama:"Susu UHT Full Cream 1 L",      kategori:"Minuman",      harga:21000, stok:67  },
+        { barcode:"899123456008", sku:"PRW-001", nama:"Sabun Mandi Cair 450 ml",      kategori:"Perawatan",    harga:32500, stok:45  },
+        { barcode:"899123456009", sku:"PRW-002", nama:"Sampo Anti Ketombe 340 ml",    kategori:"Perawatan",    harga:38000, stok:39  },
+        { barcode:"899123456010", sku:"PRW-003", nama:"Pasta Gigi Keluarga 190 g",    kategori:"Perawatan",    harga:19500, stok:88  },
+        { barcode:"899123456011", sku:"RMT-001", nama:"Deterjen Bubuk 800 g",         kategori:"Rumah Tangga", harga:24000, stok:73  },
+        { barcode:"899123456012", sku:"RMT-002", nama:"Tisu Wajah 250 Lembar",        kategori:"Rumah Tangga", harga:15000, stok:4   },
+        { barcode:"899123456013", sku:"ELK-001", nama:"Baterai AA Isi 4",             kategori:"Elektronik",   harga:27500, stok:0   },
+        { barcode:"899123456014", sku:"ELK-002", nama:"Kabel Data USB-C 1 m",         kategori:"Elektronik",   harga:35000, stok:26  },
+        { barcode:"899123456015", sku:"MNM-004", nama:"Air Mineral 600 ml",           kategori:"Minuman",      harga:4000,  stok:312 }
+      ];
+
+      var items = seedItems.map(function(it){ return Object.assign({}, it); });
+      var historyLog = [];        // {time:Date, code, item|null, found:bool}
+      var editingBarcode = null;  // barcode barang yang sedang diubah
+      var pendingDeleteBarcode = null;
+
+      /* ================= UTILITAS ================= */
+      var $ = function(id){ return document.getElementById(id); };
+      var fmtRp = function(n){ return "Rp" + Number(n).toLocaleString("id-ID"); };
+      function esc(s){
+        return String(s == null ? "" : s)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+      var toastTimer = null;
+      function toast(msg){
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+      }
+      function findItem(code){ return items.find(function(it){ return it.barcode === code; }) || null; }
+      function stockStatus(it){
+        if (it.stok <= 0) return { key:"habis",    label:"Stok Habis",   cls:"danger" };
+        if (it.stok <= 10) return { key:"menipis", label:"Stok Menipis", cls:"warn" };
+        return { key:"tersedia", label:"Tersedia", cls:"ok" };
+      }
+      function fmtTime(d){
+        return d.toLocaleDateString("id-ID",{ day:"numeric", month:"short", year:"numeric" }) + ", " +
+               d.toLocaleTimeString("id-ID",{ hour:"2-digit", minute:"2-digit", second:"2-digit" });
+      }
+
+      /* ============ BARCODE VISUAL (pola modul gaya EAN) ============ */
+      var L_PATTERNS = {
+        "0":"0001101","1":"0011001","2":"0010011","3":"0111101","4":"0100011",
+        "5":"0110001","6":"0101111","7":"0111011","8":"0110111","9":"0001011"
+      };
+      function barcodeSVG(code, height){
+        var digits = String(code).replace(/\D/g,"") || "0";
+        var modules = "101"; // guard awal
+        for (var i = 0; i < digits.length; i++){
+          modules += L_PATTERNS[digits[i]] || "0000000";
+          if (i === Math.floor(digits.length/2) - 1 && digits.length > 2) modules += "01010"; // guard tengah
+        }
+        modules += "101"; // guard akhir
+        var mw = 2, quiet = 8;
+        var w = modules.length * mw + quiet * 2;
+        var rects = "";
+        for (var j = 0; j < modules.length; j++){
+          if (modules[j] === "1"){
+            var isGuard = (j < 3 || j >= modules.length - 3);
+            var h = isGuard ? height : height - 6;
+            rects += '<rect x="' + (quiet + j*mw) + '" y="0" width="' + mw + '" height="' + h + '" fill="#222"/>';
+          }
+        }
+        return '<svg width="' + w + '" height="' + height + '" viewBox="0 0 ' + w + ' ' + height + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Barcode ' + esc(code) + '">' + rects + "</svg>";
+      }
+
+      /* ================= TAB ================= */
+      function switchTab(name){
+        document.querySelectorAll(".tab-btn").forEach(function(b){
+          var on = b.getAttribute("data-tab") === name;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll(".tab-panel").forEach(function(p){
+          p.classList.toggle("active", p.id === "panel-" + name);
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      document.querySelectorAll(".tab-btn").forEach(function(b){
+        b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab")); });
+      });
+
+      /* ================= PINDAI ================= */
+      function renderScanResult(item, code){
+        var box = $("scanResult");
+        if (!item){
+          box.innerHTML =
+            '<div class="result-miss">' +
+              '<p class="result-name">Barcode Tidak Ditemukan</p>' +
+              '<p style="margin:8px 0 0;color:var(--ink-soft)">Kode <span class="mono"><strong>' + esc(code) + '</strong></span> belum terdaftar di Data Barang. Anda bisa mendaftarkannya sekarang dengan kode yang sama.</p>' +
+              '<div class="action-row">' +
+                '<button type="button" class="btn primary" id="missAddBtn">Tambah Barang dengan Kode Ini</button>' +
+                '<button type="button" class="btn" id="missRetryBtn">Pindai Kode Lain</button>' +
+              '</div>' +
+            '</div>';
+          $("missAddBtn").addEventListener("click", function(){
+            switchTab("data");
+            resetForm();
+            $("fBarcode").value = code;
+            setTimeout(function(){ $("fNama").focus(); }, 60);
+          });
+          $("missRetryBtn").addEventListener("click", function(){
+            $("scanInput").value = ""; $("scanInput").focus();
+          });
+          return;
+        }
+        var st = stockStatus(item);
+        box.innerHTML =
+          '<div class="result-found">' +
+            '<div class="result-head">' +
+              '<div><p class="result-name">' + esc(item.nama) + '</p>' +
+              '<p style="margin:4px 0 0;color:var(--ink-soft)">SKU ' + esc(item.sku) + ' &middot; ' + esc(item.kategori) + '</p></div>' +
+              '<span class="badge ' + st.cls + '">' + st.label + '</span>' +
+            '</div>' +
+            '<div class="detail-grid">' +
+              '<div class="detail-cell"><div class="k">Harga</div><div class="v price">' + fmtRp(item.harga) + '</div></div>' +
+              '<div class="detail-cell"><div class="k">Stok Tersedia</div><div class="v">' + item.stok + ' unit</div></div>' +
+              '<div class="detail-cell"><div class="k">Kode Barcode</div><div class="v mono" style="font-size:.92rem">' + esc(item.barcode) + '</div></div>' +
+              '<div class="detail-cell"><div class="k">Status Stok</div><div class="v" style="font-size:.95rem">' + st.label + '</div></div>' +
+            '</div>' +
+            '<div class="barcode-box">' + barcodeSVG(item.barcode, 62) + '<div class="code-num mono">' + esc(item.barcode) + '</div></div>' +
+            '<div class="action-row">' +
+              '<button type="button" class="btn primary" id="resStockIn">Stok Masuk (+1)</button>' +
+              '<button type="button" class="btn" id="resStockOut">Terjual (&minus;1)</button>' +
+              '<button type="button" class="btn" id="resLabel">Cetak Label Barang Ini</button>' +
+              '<button type="button" class="btn" id="resAgain">Pindai Lagi</button>' +
+            '</div>' +
+          '</div>';
+        $("resStockIn").addEventListener("click", function(){
+          item.stok += 1; afterStockChange(item, "Stok " + item.nama + " bertambah menjadi " + item.stok + " unit.");
+        });
+        $("resStockOut").addEventListener("click", function(){
+          if (item.stok <= 0){ toast("Stok sudah habis, tidak bisa dikurangi."); return; }
+          item.stok -= 1; afterStockChange(item, "Stok " + item.nama + " berkurang menjadi " + item.stok + " unit.");
+        });
+        $("resLabel").addEventListener("click", function(){
+          switchTab("label"); setLabelSelection(item.barcode);
+        });
+        $("resAgain").addEventListener("click", function(){
+          $("scanInput").value = ""; $("scanInput").focus();
+          box.innerHTML = '<div class="empty">Masukkan kode barcode berikutnya untuk memindai lagi.</div>';
+        });
+      }
+      function afterStockChange(item, msg){
+        renderScanResult(item, item.barcode);
+        renderItems(); renderReport(); updateHeadStats();
+        toast(msg);
+      }
+      function doScan(rawCode){
+        var code = String(rawCode || "").trim();
+        if (!code){
+          toast("Masukkan kode barcode terlebih dahulu.");
+          $("scanInput").focus();
+          return;
+        }
+        var item = findItem(code);
+        historyLog.unshift({ time: new Date(), code: code, item: item, found: !!item });
+        renderScanResult(item, code);
+        renderHistory(); renderReport(); updateHeadStats();
+        if (item) toast("Ditemukan: " + item.nama + " — stok " + item.stok + " unit.");
+        else toast("Kode " + code + " tidak ditemukan.");
+      }
+      $("scanForm").addEventListener("submit", function(e){
+        e.preventDefault(); doScan($("scanInput").value);
+      });
+      document.querySelectorAll(".code-chip").forEach(function(chip){
+        chip.addEventListener("click", function(){
+          $("scanInput").value = chip.getAttribute("data-code");
+          doScan(chip.getAttribute("data-code"));
+        });
+      });
+
+      /* ================= DATA BARANG ================= */
+      function refreshCategoryFilter(){
+        var cats = [];
+        items.forEach(function(it){ if (cats.indexOf(it.kategori) === -1) cats.push(it.kategori); });
+        cats.sort();
+        var sel = $("categoryFilter");
+        var current = sel.value;
+        sel.innerHTML = '<option value="">Semua Kategori</option>' + cats.map(function(c){
+          return '<option value="' + esc(c) + '">' + esc(c) + "</option>";
+        }).join("");
+        if (cats.indexOf(current) !== -1) sel.value = current;
+      }
+      function renderItems(){
+        var q = $("searchInput").value.trim().toLowerCase();
+        var cat = $("categoryFilter").value;
+        var stk = $("stockFilter").value;
+        var filtered = items.filter(function(it){
+          if (q){
+            var hay = (it.nama + " " + it.sku + " " + it.barcode + " " + it.kategori).toLowerCase();
+            if (hay.indexOf(q) === -1) return false;
+          }
+          if (cat && it.kategori !== cat) return false;
+          if (stk && stockStatus(it).key !== stk) return false;
+          return true;
+        });
+        $("itemCountNote").textContent = "Menampilkan " + filtered.length + " dari " + items.length + " barang.";
+        $("itemEmpty").style.display = filtered.length ? "none" : "block";
+        $("itemGrid").innerHTML = filtered.map(function(it){
+          var st = stockStatus(it);
+          return '<article class="item-card">' +
+            '<div class="top"><h3>' + esc(it.nama) + '</h3><span class="badge ' + st.cls + '">' + st.label + '</span></div>' +
+            '<div class="meta">SKU <span class="mono">' + esc(it.sku) + '</span> &middot; ' + esc(it.kategori) + '</div>' +
+            '<div class="meta">Barcode <span class="mono">' + esc(it.barcode) + '</span></div>' +
+            '<div class="price-row"><span class="price">' + fmtRp(it.harga) + '</span><span class="stock">Stok <strong>' + it.stok + '</strong> unit</span></div>' +
+            '<div class="actions">' +
+              '<button type="button" class="btn small primary" data-act="scan" data-code="' + esc(it.barcode) + '">Pindai</button>' +
+              '<button type="button" class="btn small" data-act="label" data-code="' + esc(it.barcode) + '">Label</button>' +
+              '<button type="button" class="btn small" data-act="edit" data-code="' + esc(it.barcode) + '">Ubah</button>' +
+              '<button type="button" class="btn small danger-ghost" data-act="del" data-code="' + esc(it.barcode) + '">Hapus</button>' +
+            '</div>' +
+          '</article>';
+        }).join("");
+        $("itemGrid").querySelectorAll("button[data-act]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            var code = btn.getAttribute("data-code");
+            var act = btn.getAttribute("data-act");
+            var it = findItem(code);
+            if (!it) return;
+            if (act === "scan"){ switchTab("pindai"); $("scanInput").value = code; doScan(code); }
+            else if (act === "label"){ switchTab("label"); setLabelSelection(code); }
+            else if (act === "edit"){ startEdit(it); }
+            else if (act === "del"){
+              pendingDeleteBarcode = code;
+              $("deleteModalText").textContent = '"' + it.nama + '" (SKU ' + it.sku + ') akan dihapus dari daftar barang, label, dan laporan.';
+              $("deleteModal").classList.add("show");
+            }
+          });
+        });
+      }
+      ["searchInput","categoryFilter","stockFilter"].forEach(function(id){
+        $(id).addEventListener("input", renderItems);
+        $(id).addEventListener("change", renderItems);
+      });
+
+      /* ---------- Formulir tambah / ubah ---------- */
+      function formError(msg){
+        var e = $("formError");
+        if (!msg){ e.classList.remove("show"); e.textContent = ""; return; }
+        e.textContent = msg; e.classList.add("show");
+      }
+      function resetForm(){
+        editingBarcode = null;
+        $("itemForm").reset();
+        $("formTitle").textContent = "Tambah Barang via Barcode";
+        $("formSubmitBtn").textContent = "Simpan Barang";
+        $("formCancelBtn").style.display = "none";
+        formError("");
+      }
+      function startEdit(it){
+        editingBarcode = it.barcode;
+        $("fNama").value = it.nama;
+        $("fBarcode").value = it.barcode;
+        $("fSku").value = it.sku;
+        $("fKategori").value = it.kategori;
+        $("fHarga").value = it.harga;
+        $("fStok").value = it.stok;
+        $("formTitle").textContent = "Ubah Barang: " + it.nama;
+        $("formSubmitBtn").textContent = "Simpan Perubahan";
+        $("formCancelBtn").style.display = "inline-flex";
+        formError("");
+        $("itemFormCard").scrollIntoView({ behavior:"smooth", block:"start" });
+        setTimeout(function(){ $("fNama").focus(); }, 350);
+      }
+      $("formCancelBtn").addEventListener("click", resetForm);
+      function autoSku(kategori, barcode){
+        var prefixMap = { "Sembako":"SMB","Makanan":"MKN","Minuman":"MNM","Perawatan":"PRW","Rumah Tangga":"RMT","Elektronik":"ELK" };
+        var prefix = prefixMap[kategori] || "BRG";
+        return prefix + "-" + String(barcode).slice(-3);
+      }
+      $("itemForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        var nama = $("fNama").value.trim();
+        var barcode = $("fBarcode").value.trim();
+        var sku = $("fSku").value.trim();
+        var kategori = $("fKategori").value;
+        var harga = parseInt($("fHarga").value, 10);
+        var stok = parseInt($("fStok").value, 10);
+        if (!nama) return formError("Nama barang wajib diisi.");
+        if (!barcode) return formError("Kode barcode wajib diisi.");
+        if (isNaN(harga) || harga < 0) return formError("Harga harus berupa angka 0 atau lebih.");
+        if (isNaN(stok) || stok < 0) return formError("Stok harus berupa angka 0 atau lebih.");
+        var clash = items.find(function(it){ return it.barcode === barcode && it.barcode !== editingBarcode; });
+        if (clash) return formError('Kode barcode ' + barcode + ' sudah dipakai oleh "' + clash.nama + '". Gunakan kode lain.');
+        if (!sku) sku = autoSku(kategori, barcode);
+        if (editingBarcode){
+          var target = findItem(editingBarcode);
+          var oldBarcode = target.barcode;
+          target.nama = nama; target.barcode = barcode; target.sku = sku;
+          target.kategori = kategori; target.harga = harga; target.stok = stok;
+          historyLog.forEach(function(h){ if (h.item && h.item.barcode === oldBarcode) h.item = target; });
+          toast('Barang "' + nama + '" berhasil diperbarui.');
+        } else {
+          items.push({ barcode: barcode, sku: sku, nama: nama, kategori: kategori, harga: harga, stok: stok });
+          toast('Barang "' + nama + '" berhasil ditambahkan.');
+        }
+        resetForm();
+        refreshCategoryFilter(); renderItems(); refreshLabelOptions(); renderReport(); updateHeadStats();
+      });
+
+      /* ---------- Modal hapus ---------- */
+      $("deleteCancelBtn").addEventListener("click", function(){
+        pendingDeleteBarcode = null; $("deleteModal").classList.remove("show");
+      });
+      $("deleteModal").addEventListener("click", function(e){
+        if (e.target === $("deleteModal")){ pendingDeleteBarcode = null; $("deleteModal").classList.remove("show"); }
+      });
+      $("deleteConfirmBtn").addEventListener("click", function(){
+        if (!pendingDeleteBarcode) return;
+        var it = findItem(pendingDeleteBarcode);
+        items = items.filter(function(x){ return x.barcode !== pendingDeleteBarcode; });
+        if (editingBarcode === pendingDeleteBarcode) resetForm();
+        pendingDeleteBarcode = null;
+        $("deleteModal").classList.remove("show");
+        refreshCategoryFilter(); renderItems(); refreshLabelOptions(); renderReport(); updateHeadStats();
+        toast(it ? 'Barang "' + it.nama + '" telah dihapus.' : "Barang telah dihapus.");
+      });
+
+      /* ================= LABEL BARCODE ================= */
+      function refreshLabelOptions(keepCode){
+        var sel = $("labelSelect");
+        var current = keepCode || sel.value;
+        sel.innerHTML = items.map(function(it){
+          return '<option value="' + esc(it.barcode) + '">' + esc(it.nama) + " — " + esc(it.sku) + "</option>";
+        }).join("");
+        if (current && findItem(current)) sel.value = current;
+        renderLabels();
+      }
+      function labelHTML(it){
+        return '<div class="label-tag">' +
+          '<div class="shop">Toko &middot; Gudang</div>' +
+          '<div class="lname">' + esc(it.nama) + '</div>' +
+          '<div class="lsku">SKU ' + esc(it.sku) + '</div>' +
+          barcodeSVG(it.barcode, 54) +
+          '<div class="lcode mono">' + esc(it.barcode) + '</div>' +
+          '<div class="lprice">' + fmtRp(it.harga) + '</div>' +
+        '</div>';
+      }
+      function renderLabels(){
+        var it = findItem($("labelSelect").value);
+        var sheet = $("labelSheet");
+        if (!it){ sheet.innerHTML = '<div class="empty" style="width:100%">Belum ada barang. Tambahkan barang dulu di tab Data Barang.</div>'; return; }
+        var qty = parseInt($("labelQty").value, 10);
+        if (isNaN(qty) || qty < 1) qty = 1;
+        if (qty > 24) qty = 24;
+        var html = "";
+        for (var i = 0; i < qty; i++) html += labelHTML(it);
+        sheet.innerHTML = html;
+      }
+      function setLabelSelection(code){
+        refreshLabelOptions(code);
+      }
+      $("labelSelect").addEventListener("change", renderLabels);
+      $("labelQty").addEventListener("input", renderLabels);
+      $("labelQty").addEventListener("change", renderLabels);
+      $("printBtn").addEventListener("click", function(){
+        var it = findItem($("labelSelect").value);
+        if (!it){ toast("Pilih barang terlebih dahulu."); return; }
+        $("printSheet").innerHTML =
+          '<div class="sheet-bar">' +
+            '<p><strong>Tampilan Cetak Label</strong> — ' + esc(it.nama) + ' (SKU ' + esc(it.sku) + '). Gunakan perintah <strong>Cetak</strong> pada peramban Anda (Ctrl+P / Cmd+P) untuk mencetak label di bawah ini.</p>' +
+            '<button type="button" class="btn primary" id="sheetBackBtn">Kembali ke Aplikasi</button>' +
+          '</div>' +
+          '<div class="sheet-labels">' + $("labelSheet").innerHTML + '</div>';
+        document.body.classList.add("printing");
+        window.scrollTo({ top: 0 });
+        $("sheetBackBtn").addEventListener("click", function(){
+          document.body.classList.remove("printing");
+          window.scrollTo({ top: 0 });
+        });
+      });
+
+      /* ================= RIWAYAT ================= */
+      function renderHistory(){
+        var list = $("historyList");
+        $("historyEmpty").style.display = historyLog.length ? "none" : "block";
+        $("clearHistoryBtn").disabled = historyLog.length === 0;
+        list.innerHTML = historyLog.map(function(h){
+          return '<div class="history-item">' +
+            '<span class="dot ' + (h.found ? "found" : "miss") + '"></span>' +
+            '<div class="main">' +
+              '<div class="name">' + (h.found ? esc(h.item.nama) : "Tidak ditemukan") +
+                ' <span class="badge ' + (h.found ? "ok" : "danger") + '">' + (h.found ? "Ditemukan" : "Tidak Ditemukan") + '</span></div>' +
+              '<div class="sub">Kode <span class="mono">' + esc(h.code) + '</span>' +
+                (h.found ? ' &middot; SKU ' + esc(h.item.sku) + ' &middot; ' + fmtRp(h.item.harga) : ' &middot; kode belum terdaftar') +
+              '</div>' +
+            '</div>' +
+            '<time>' + fmtTime(h.time) + '</time>' +
+          '</div>';
+        }).join("");
+      }
+      $("clearHistoryBtn").addEventListener("click", function(){
+        if (!historyLog.length) return;
+        historyLog = [];
+        renderHistory(); renderReport(); updateHeadStats();
+        toast("Riwayat pemindaian telah dibersihkan.");
+      });
+
+      /* ================= LAPORAN ================= */
+      function renderReport(){
+        var totalStok = items.reduce(function(s, it){ return s + it.stok; }, 0);
+        var nilaiStok = items.reduce(function(s, it){ return s + it.stok * it.harga; }, 0);
+        var foundCount = historyLog.filter(function(h){ return h.found; }).length;
+        var rate = historyLog.length ? Math.round(foundCount / historyLog.length * 100) : 0;
+        $("statGrid").innerHTML =
+          '<div class="stat-card"><div class="k">Jumlah Barang</div><div class="v">' + items.length + '</div><div class="s">jenis barang (SKU) terdaftar</div></div>' +
+          '<div class="stat-card"><div class="k">Total Stok</div><div class="v">' + totalStok.toLocaleString("id-ID") + '</div><div class="s">unit dari seluruh barang</div></div>' +
+          '<div class="stat-card"><div class="k">Nilai Stok</div><div class="v" style="font-size:1.25rem">' + fmtRp(nilaiStok) + '</div><div class="s">harga &times; stok seluruh barang</div></div>' +
+          '<div class="stat-card"><div class="k">Total Pemindaian</div><div class="v">' + historyLog.length + '</div><div class="s">' + (historyLog.length ? rate + '% kode berhasil ditemukan' : 'belum ada pemindaian') + '</div></div>';
+
+        // Paling sering dipindai
+        var counts = {};
+        historyLog.forEach(function(h){ if (h.found && h.item) counts[h.item.barcode] = (counts[h.item.barcode] || 0) + 1; });
+        var ranked = Object.keys(counts).map(function(code){
+          return { item: findItem(code), n: counts[code] };
+        }).filter(function(r){ return r.item; }).sort(function(a, b){ return b.n - a.n; }).slice(0, 5);
+        $("topScannedEmpty").style.display = ranked.length ? "none" : "block";
+        $("topScannedList").innerHTML = ranked.map(function(r, i){
+          return '<li><span class="rank-num">' + (i + 1) + '</span>' +
+            '<span class="grow"><span class="nm">' + esc(r.item.nama) + '</span><br><span class="sb">SKU ' + esc(r.item.sku) + ' &middot; stok ' + r.item.stok + ' unit</span></span>' +
+            '<span class="badge neutral">' + r.n + '&times; dipindai</span></li>';
+        }).join("");
+
+        // Stok perlu perhatian
+        var low = items.filter(function(it){ return it.stok <= 10; }).sort(function(a, b){ return a.stok - b.stok; });
+        $("lowStockEmpty").style.display = low.length ? "none" : "block";
+        $("lowStockList").innerHTML = low.map(function(it){
+          var st = stockStatus(it);
+          return '<li><span class="rank-num" style="background:' + (it.stok === 0 ? "var(--danger-bg)" : "var(--warn-bg)") + ';color:' + (it.stok === 0 ? "var(--danger-ink)" : "var(--warn-ink)") + '">' + it.stok + '</span>' +
+            '<span class="grow"><span class="nm">' + esc(it.nama) + '</span><br><span class="sb">SKU ' + esc(it.sku) + ' &middot; ' + fmtRp(it.harga) + '</span></span>' +
+            '<span class="badge ' + st.cls + '">' + st.label + '</span></li>';
+        }).join("");
+      }
+
+      /* ---------- Unduh CSV ---------- */
+      function downloadCSV(filename, rows){
+        var csv = rows.map(function(r){
+          return r.map(function(c){
+            var s = String(c == null ? "" : c);
+            return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+          }).join(",");
+        }).join("\r\n");
+        var blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 800);
+      }
+      $("csvItemsBtn").addEventListener("click", function(){
+        var rows = [["Kode Barcode","SKU","Nama Barang","Kategori","Harga (Rp)","Stok"]];
+        items.forEach(function(it){ rows.push([it.barcode, it.sku, it.nama, it.kategori, it.harga, it.stok]); });
+        downloadCSV("data-barang.csv", rows);
+        toast("CSV data barang (" + items.length + " barang) diunduh.");
+      });
+      $("csvHistoryBtn").addEventListener("click", function(){
+        if (!historyLog.length){ toast("Belum ada riwayat pemindaian untuk diunduh."); return; }
+        var rows = [["Waktu","Kode Barcode","Nama Barang","SKU","Hasil"]];
+        historyLog.slice().reverse().forEach(function(h){
+          rows.push([fmtTime(h.time), h.code, h.found ? h.item.nama : "", h.found ? h.item.sku : "", h.found ? "Ditemukan" : "Tidak Ditemukan"]);
+        });
+        downloadCSV("riwayat-pemindaian.csv", rows);
+        toast("CSV riwayat pemindaian (" + historyLog.length + " entri) diunduh.");
+      });
+
+      /* ================= HEADER & INIT ================= */
+      function updateHeadStats(){
+        $("headItemCount").textContent = items.length;
+        $("headScanCount").textContent = historyLog.length;
+      }
+      refreshCategoryFilter();
+      renderItems();
+      refreshLabelOptions();
+      renderHistory();
+      renderReport();
+      updateHeadStats();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>Laporan Keuangan Toko</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#FAF7F1;
+        --surface:#FFFFFF;
+        --surface-soft:#F4EFE6;
+        --ink:#35312A;
+        --ink-soft:#57534A;
+        --muted:#8A8378;
+        --line:#EAE2D4;
+        --sage:#6E8B67;
+        --sage-dark:#4F6B49;
+        --sage-soft:#EAF1E6;
+        --gold:#B08A3C;
+        --gold-soft:#F6EDD8;
+        --rust:#BC6248;
+        --rust-soft:#F9EAE4;
+        --radius:18px;
+        --shadow:0 2px 6px rgba(90,78,55,.05), 0 14px 34px rgba(90,78,55,.07);
+        --shadow-sm:0 1px 3px rgba(90,78,55,.06), 0 6px 16px rgba(90,78,55,.05);
+      }
+      *{box-sizing:border-box;}
+      html{scroll-behavior:smooth;}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:15px;line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:600;line-height:1.2;margin:0;color:var(--ink);}
+      button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2.25rem;}
+      button{font-family:inherit;cursor:pointer;}
+      input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);}
+      .wrap{max-width:1120px;margin:0 auto;padding:0 18px 40px;}
+
+      /* ---------- Intro ---------- */
+      .intro{padding:30px 0 6px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;}
+      .intro h1{font-size:clamp(28px,4.5vw,40px);letter-spacing:.2px;}
+      .intro p{margin:8px 0 0;color:var(--ink-soft);max-width:560px;}
+      .period-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow-sm);}
+      .period-box label{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+      .period-box select{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--surface-soft);font-weight:600;width:100%;}
+
+      /* ---------- Tabs ---------- */
+      nav.tabs{
+        position:sticky;top:0;z-index:20;background:rgba(250,247,241,.92);backdrop-filter:blur(8px);
+        padding:14px 0 10px;margin-top:14px;
+      }
+      .tab-row{display:flex;gap:8px;flex-wrap:wrap;}
+      .tab-btn{
+        border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+        border-radius:999px;padding:9px 18px;font-weight:600;font-size:14px;min-height:40px;
+        transition:all .18s ease;
+      }
+      .tab-btn:hover{border-color:var(--sage);color:var(--sage-dark);}
+      .tab-btn.active{background:var(--sage);border-color:var(--sage);color:#fff;box-shadow:0 6px 16px rgba(110,139,103,.35);}
+      .tab-panel{display:none;padding-top:20px;animation:fade .25s ease;}
+      .tab-panel.active{display:block;}
+      @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+      @media (prefers-reduced-motion: reduce){.tab-panel{animation:none;} html{scroll-behavior:auto;}}
+
+      /* ---------- Cards & grids ---------- */
+      .grid{display:grid;gap:16px;}
+      .grid-4{grid-template-columns:repeat(4,1fr);}
+      .grid-2{grid-template-columns:repeat(2,1fr);}
+      @media (max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}}
+      @media (max-width:640px){.grid-2{grid-template-columns:1fr;}}
+      .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px;}
+      .card h2{font-size:21px;margin-bottom:4px;}
+      .card h3{font-size:17px;}
+      .card .sub{color:var(--muted);font-size:13px;margin:0 0 14px;}
+      .stat-label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+      .stat-value{font-size:clamp(19px,5.4vw,27px);font-weight:800;margin:6px 0 2px;letter-spacing:-.01em;white-space:nowrap;}
+      .stat-note{font-size:13px;color:var(--ink-soft);}
+      .stat-card{position:relative;overflow:hidden;}
+      .stat-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sage);}
+      .stat-card.gold::before{background:var(--gold);}
+      .stat-card.rust::before{background:var(--rust);}
+      .stat-card.plain::before{background:#CBBFA5;}
+      .pos{color:var(--sage-dark);font-weight:700;}
+      .neg{color:var(--rust);font-weight:700;}
+
+      /* ---------- Tables ---------- */
+      .table-scroll{overflow-x:auto;margin:0 -20px;padding:0 20px;}
+      table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px;}
+      th{text-align:left;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 10px;border-bottom:2px solid var(--line);white-space:nowrap;}
+      td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+      tr:last-child td{border-bottom:none;}
+      td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+      tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:none;background:var(--surface-soft);}
+      .cat-chip{display:inline-block;background:var(--sage-soft);color:var(--sage-dark);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap;}
+      .cat-chip.exp{background:var(--rust-soft);color:var(--rust);}
+      .del-btn{border:1px solid var(--line);background:#fff;color:var(--rust);border-radius:9px;padding:4px 10px;font-size:12.5px;font-weight:700;min-height:32px;}
+      .del-btn:hover{background:var(--rust-soft);}
+      .empty{padding:26px 10px;text-align:center;color:var(--muted);}
+
+      /* ---------- Forms ---------- */
+      .form-grid{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:12px;align-items:end;}
+      @media (max-width:900px){.form-grid{grid-template-columns:repeat(2,1fr);}}
+      @media (max-width:520px){.form-grid{grid-template-columns:1fr;}}
+      .field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;}
+      .field input,.field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:#fff;}
+      .field input:focus,.field select:focus{outline:2px solid var(--sage);outline-offset:1px;border-color:var(--sage);}
+      .btn{border:none;border-radius:12px;padding:10px 20px;font-weight:700;font-size:14.5px;min-height:44px;transition:filter .15s ease;}
+      .btn:hover{filter:brightness(1.06);}
+      .btn-sage{background:var(--sage);color:#fff;}
+      .btn-rust{background:var(--rust);color:#fff;}
+      .btn-ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);}
+      .btn-gold{background:var(--gold);color:#fff;}
+      .form-msg{font-size:13.5px;margin-top:10px;min-height:20px;}
+      .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;}
+      .toolbar .left{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+      /* ---------- Bars / chart ---------- */
+      .bar-row{display:grid;grid-template-columns:150px 1fr 110px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);}
+      .bar-row:last-child{border-bottom:none;}
+      .bar-row .name{font-weight:600;font-size:14px;}
+      .bar-track{background:var(--surface-soft);border-radius:999px;height:14px;overflow:hidden;}
+      .bar-fill{height:100%;border-radius:999px;background:var(--sage);transition:width .4s ease;}
+      .bar-fill.exp{background:var(--rust);}
+      .bar-fill.gold{background:var(--gold);}
+      .bar-row .val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;}
+      .bar-row .val small{display:block;font-weight:500;color:var(--muted);font-size:12px;}
+      @media (max-width:560px){.bar-row{grid-template-columns:110px 1fr 92px;}}
+      .chart-box{width:100%;}
+      .chart-box svg{width:100%;height:auto;display:block;}
+      .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin-top:8px;}
+      .legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+      .legend .l-in::before{background:var(--sage);}
+      .legend .l-out::before{background:var(--rust);}
+
+      /* ---------- Laba rugi ---------- */
+      .lr-row{display:flex;justify-content:space-between;gap:14px;padding:11px 2px;border-bottom:1px dashed var(--line);font-size:15px;}
+      .lr-row:last-child{border-bottom:none;}
+      .lr-row.total{border-top:2px solid var(--line);border-bottom:none;margin-top:4px;padding-top:14px;font-size:17px;font-weight:800;}
+      .lr-row .amt{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;}
+      .lr-indent{padding-left:20px;color:var(--ink-soft);font-size:14px;}
+
+      /* ---------- Panduan ---------- */
+      .guide h3{margin:22px 0 8px;font-size:18px;}
+      .guide h3:first-child{margin-top:0;}
+      .guide p,.guide li{color:var(--ink-soft);}
+      .guide ol,.guide ul{margin:6px 0 6px;padding-left:22px;}
+      .guide li{margin-bottom:5px;}
+      .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0;}
+      @media (max-width:760px){.price-grid{grid-template-columns:1fr;}}
+      .price-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface-soft);}
+      .price-card.featured{background:var(--sage-soft);border-color:var(--sage);}
+      .price-card .tier{font-weight:800;font-size:15px;}
+      .price-card .price{font-family:"Playfair Display",serif;font-size:24px;font-weight:700;margin:4px 0;}
+      .price-card .per{font-size:13px;color:var(--muted);}
+      .price-card ul{list-style:none;padding:0;margin:10px 0 0;font-size:13.5px;color:var(--ink-soft);}
+      .price-card li{margin-bottom:4px;padding-left:16px;position:relative;}
+      .price-card li::before{content:"•";position:absolute;left:2px;color:var(--sage-dark);font-weight:800;}
+      .note-box{background:var(--gold-soft);border-radius:14px;padding:14px 16px;font-size:14px;color:#6B5518;margin:12px 0;}
+      .warranty-box{background:var(--sage-soft);border-radius:14px;padding:16px 18px;margin:12px 0;}
+      .warranty-box p{margin:4px 0;color:var(--ink-soft);}
+
+      footer{margin-top:34px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px 22px;font-size:13.5px;color:var(--ink-soft);}
+      footer h3{font-size:16px;margin-bottom:8px;}
+      footer ul{margin:6px 0;padding-left:20px;}
+      footer li{margin-bottom:4px;}
+      .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s ease;z-index:50;max-width:92vw;text-align:center;}
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+      @media (max-width:640px){
+        .table-scroll{overflow-x:visible;}
+        table{min-width:0;font-size:13.5px;}
+        .tx-table thead{display:none;}
+        .tx-table tbody tr{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+        .tx-table tbody tr:last-child{border-bottom:none;}
+        .tx-table tbody td{border-bottom:none;padding:2px 0;}
+        .tx-table tbody td:nth-child(1){font-weight:600;white-space:nowrap;}
+        .tx-table tbody td:nth-child(3){order:4;flex-basis:100%;color:var(--ink-soft);}
+        .tx-table tbody td:nth-child(4){order:3;margin-left:auto;font-weight:700;}
+        .tx-table tbody td:nth-child(5){order:5;}
+        .tx-table tbody td[colspan]{flex-basis:100%;}
+        .tx-table tfoot tr{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+        .omzet-table{font-size:12.5px;}
+        .omzet-table th,.omzet-table td{padding:8px 5px;}
+        .omzet-table td.num,.omzet-table th.num{white-space:normal;}
+      }
+      @media (max-width:480px){.stat-value{font-size:18.5px;}.stat-card{padding:16px;}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <section class="intro">
+        <div>
+          <h1>Laporan Keuangan Toko</h1>
+          <p>Catat pemasukan dan pengeluaran harian toko Anda, lalu lihat laba rugi dan omzet per periode secara ringkas — tanpa spreadsheet yang rumit.</p>
+        </div>
+        <div class="period-box">
+          <label for="periodSelect">Periode Laporan</label>
+          <select id="periodSelect">
+            <option value="hari">Hari Ini</option>
+            <option value="7">7 Hari Terakhir</option>
+            <option value="30" selected>30 Hari Terakhir</option>
+            <option value="bulan">Bulan Ini</option>
+            <option value="semua">Semua Data</option>
+          </select>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Modul aplikasi">
+        <div class="tab-row" role="tablist">
+          <button class="tab-btn active" data-tab="dashboard" role="tab">Dashboard</button>
+          <button class="tab-btn" data-tab="pemasukan" role="tab">Pemasukan</button>
+          <button class="tab-btn" data-tab="pengeluaran" role="tab">Pengeluaran</button>
+          <button class="tab-btn" data-tab="labarugi" role="tab">Laba Rugi</button>
+          <button class="tab-btn" data-tab="rekap" role="tab">Rekap</button>
+          <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+        </div>
+      </nav>
+
+      <!-- ============ DASHBOARD ============ -->
+      <section class="tab-panel active" id="panel-dashboard">
+        <div class="grid grid-4">
+          <div class="card stat-card">
+            <div class="stat-label">Omzet (Pemasukan)</div>
+            <div class="stat-value" id="statOmzet">Rp0</div>
+            <div class="stat-note" id="statOmzetNote">—</div>
+          </div>
+          <div class="card stat-card rust">
+            <div class="stat-label">Total Pengeluaran</div>
+            <div class="stat-value" id="statKeluar">Rp0</div>
+            <div class="stat-note" id="statKeluarNote">—</div>
+          </div>
+          <div class="card stat-card gold">
+            <div class="stat-label">Laba Bersih</div>
+            <div class="stat-value" id="statLaba">Rp0</div>
+            <div class="stat-note" id="statLabaNote">—</div>
+          </div>
+          <div class="card stat-card plain">
+            <div class="stat-label">Jumlah Transaksi</div>
+            <div class="stat-value" id="statTx">0</div>
+            <div class="stat-note" id="statTxNote">—</div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:16px;">
+          <div class="card">
+            <h2>Grafik Arus Kas Harian</h2>
+            <p class="sub">Pemasukan dan pengeluaran per hari pada periode terpilih (maks. 31 hari terakhir dari periode).</p>
+            <div class="chart-box" id="chartHarian"></div>
+            <div class="legend"><span class="l-in">Pemasukan</span><span class="l-out">Pengeluaran</span></div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:16px;">
+          <div class="card">
+            <h2>Kategori Terlaris</h2>
+            <p class="sub">Pemasukan terbesar per kategori produk pada periode ini.</p>
+            <div id="dashTopKategori"></div>
+          </div>
+          <div class="card">
+            <h2>Transaksi Terakhir</h2>
+            <p class="sub">Lima catatan keuangan paling baru.</p>
+            <div id="dashTerakhir"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PEMASUKAN ============ -->
+      <section class="tab-panel" id="panel-pemasukan">
+        <div class="card">
+          <h2>Tambah Pemasukan</h2>
+          <p class="sub">Catat setiap penjualan atau pemasukan lain ke toko.</p>
+          <form id="formMasuk">
+            <div class="form-grid">
+              <div class="field">
+                <label for="inTanggal">Tanggal</label>
+                <input type="date" id="inTanggal" required />
+              </div>
+              <div class="field">
+                <label for="inKategori">Kategori Produk</label>
+                <select id="inKategori"></select>
+              </div>
+              <div class="field">
+                <label for="inKet">Keterangan</label>
+                <input type="text" id="inKet" placeholder="cth. Penjualan beras 5 kg" maxlength="80" />
+              </div>
+              <div class="field">
+                <label for="inJumlah">Jumlah (Rp)</label>
+                <input type="number" id="inJumlah" min="1" placeholder="cth. 250000" required />
+              </div>
+              <button type="submit" class="btn btn-sage">+ Tambah</button>
+            </div>
+            <div class="form-msg" id="msgMasuk"></div>
+          </form>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="toolbar">
+            <div class="left">
+              <h3>Daftar Pemasukan</h3>
+              <span class="stat-note" id="ringkasMasuk"></span>
+            </div>
+            <button class="btn btn-ghost" id="csvMasuk" type="button">Unduh CSV Pemasukan</button>
+          </div>
+          <div class="table-scroll">
+            <table class="tx-table">
+              <thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th class="num">Jumlah</th><th></th></tr></thead>
+              <tbody id="tbodyMasuk"></tbody>
+              <tfoot><tr><td colspan="3">Total Pemasukan (periode ini)</td><td class="num" id="totalMasuk">Rp0</td><td></td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PENGELUARAN ============ -->
+      <section class="tab-panel" id="panel-pengeluaran">
+        <div class="card">
+          <h2>Tambah Pengeluaran</h2>
+          <p class="sub">Catat belanja stok, operasional, dan biaya lain toko.</p>
+          <form id="formKeluar">
+            <div class="form-grid">
+              <div class="field">
+                <label for="outTanggal">Tanggal</label>
+                <input type="date" id="outTanggal" required />
+              </div>
+              <div class="field">
+                <label for="outKategori">Kategori Biaya</label>
+                <select id="outKategori"></select>
+              </div>
+              <div class="field">
+                <label for="outKet">Keterangan</label>
+                <input type="text" id="outKet" placeholder="cth. Restok minyak goreng" maxlength="80" />
+              </div>
+              <div class="field">
+                <label for="outJumlah">Jumlah (Rp)</label>
+                <input type="number" id="outJumlah" min="1" placeholder="cth. 150000" required />
+              </div>
+              <button type="submit" class="btn btn-rust">+ Tambah</button>
+            </div>
+            <div class="form-msg" id="msgKeluar"></div>
+          </form>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="toolbar">
+            <div class="left">
+              <h3>Daftar Pengeluaran</h3>
+              <span class="stat-note" id="ringkasKeluar"></span>
+            </div>
+            <button class="btn btn-ghost" id="csvKeluar" type="button">Unduh CSV Pengeluaran</button>
+          </div>
+          <div class="table-scroll">
+            <table class="tx-table">
+              <thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th class="num">Jumlah</th><th></th></tr></thead>
+              <tbody id="tbodyKeluar"></tbody>
+              <tfoot><tr><td colspan="3">Total Pengeluaran (periode ini)</td><td class="num" id="totalKeluar">Rp0</td><td></td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ LABA RUGI ============ -->
+      <section class="tab-panel" id="panel-labarugi">
+        <div class="card">
+          <div class="toolbar">
+            <div class="left">
+              <div>
+                <h2>Laporan Laba Rugi</h2>
+                <p class="sub" style="margin:0;" id="lrPeriodeLabel">—</p>
+              </div>
+            </div>
+            <button class="btn btn-gold" id="csvLabaRugi" type="button">Unduh CSV Laba Rugi</button>
+          </div>
+          <div id="lrBody"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h2>Omzet per Periode</h2>
+          <p class="sub">Ringkasan pemasukan, pengeluaran, dan laba per minggu pada periode terpilih.</p>
+          <div class="table-scroll">
+            <table class="omzet-table">
+              <thead><tr><th>Periode (Minggu)</th><th class="num">Pemasukan</th><th class="num">Pengeluaran</th><th class="num">Laba Bersih</th></tr></thead>
+              <tbody id="tbodyOmzetPeriode"></tbody>
+              <tfoot><tr><td>Total</td><td class="num" id="totOmzMasuk">Rp0</td><td class="num" id="totOmzKeluar">Rp0</td><td class="num" id="totOmzLaba">Rp0</td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ REKAP ============ -->
+      <section class="tab-panel" id="panel-rekap">
+        <div class="grid grid-2">
+          <div class="card">
+            <h2>Rekap per Kategori Produk</h2>
+            <p class="sub">Kontribusi tiap kategori terhadap total pemasukan periode ini.</p>
+            <div id="rekapMasuk"></div>
+          </div>
+          <div class="card">
+            <h2>Rekap Pengeluaran per Kategori</h2>
+            <p class="sub">Ke mana uang toko paling banyak keluar pada periode ini.</p>
+            <div id="rekapKeluar"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="toolbar">
+            <div class="left"><h3>Unduh Semua Data</h3></div>
+            <button class="btn btn-sage" id="csvSemua" type="button">Unduh CSV Semua Transaksi</button>
+          </div>
+          <p class="sub" style="margin:0;">File CSV berisi seluruh transaksi (pemasukan dan pengeluaran) pada periode terpilih — bisa dibuka di Excel, Google Sheets, atau aplikasi kasir lain.</p>
+        </div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="tab-panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan Penggunaan</h2>
+          <p class="sub">Laporan Keuangan Toko — untuk pemilik toko dan UMKM yang membutuhkan laporan keuangan sederhana dan rapi.</p>
+
+          <h3>1. Memahami Dashboard</h3>
+          <ol>
+            <li>Pilih <strong>Periode Laporan</strong> di kanan atas: Hari Ini, 7 Hari Terakhir, 30 Hari Terakhir, Bulan Ini, atau Semua Data. Semua angka, grafik, dan tabel di aplikasi mengikuti periode ini.</li>
+            <li>Empat kartu ringkasan menampilkan <strong>Omzet (Pemasukan)</strong>, <strong>Total Pengeluaran</strong>, <strong>Laba Bersih</strong> (pemasukan dikurangi pengeluaran), dan <strong>Jumlah Transaksi</strong>.</li>
+            <li><strong>Grafik Arus Kas Harian</strong> membandingkan pemasukan (hijau) dan pengeluaran (merah bata) per hari, sehingga hari-hari boros atau sepi mudah terlihat.</li>
+            <li><strong>Kategori Terlaris</strong> menunjukkan kategori produk penyumbang omzet terbesar, dan <strong>Transaksi Terakhir</strong> menampilkan lima catatan terbaru.</li>
+          </ol>
+
+          <h3>2. Mencatat Pemasukan</h3>
+          <ol>
+            <li>Buka tab <strong>Pemasukan</strong>, isi tanggal, kategori produk, keterangan, dan jumlah dalam rupiah.</li>
+            <li>Klik <strong>+ Tambah</strong>. Catatan langsung muncul di daftar dan ikut terhitung di Dashboard, Laba Rugi, dan Rekap.</li>
+            <li>Salah catat? Klik <strong>Hapus</strong> pada baris yang keliru, lalu buat catatan baru yang benar.</li>
+            <li>Klik <strong>Unduh CSV Pemasukan</strong> untuk menyimpan daftar pemasukan periode ini sebagai file yang bisa dibuka di Excel atau Google Sheets.</li>
+          </ol>
+
+          <h3>3. Mencatat Pengeluaran</h3>
+          <ol>
+            <li>Buka tab <strong>Pengeluaran</strong> dan catat setiap biaya: belanja stok, sewa, listrik &amp; air, gaji, transportasi, dan perlengkapan.</li>
+            <li>Catat pengeluaran di hari yang sama dengan transaksi agar laporan harian akurat.</li>
+            <li>Klik <strong>Unduh CSV Pengeluaran</strong> bila perlu membagikan rincian biaya, misalnya kepada mitra atau akuntan.</li>
+          </ol>
+
+          <h3>4. Membaca Laporan Laba Rugi</h3>
+          <ol>
+            <li>Tab <strong>Laba Rugi</strong> menyusun laporan standar: total pemasukan, rincian pengeluaran per kategori, lalu <strong>Laba Bersih</strong> dan <strong>margin laba</strong> (persentase laba dari omzet).</li>
+            <li>Tabel <strong>Omzet per Periode</strong> merangkum hasil per minggu — berguna untuk melihat tren naik-turun dari minggu ke minggu.</li>
+            <li>Klik <strong>Unduh CSV Laba Rugi</strong> untuk mengarsipkan laporan periode ini.</li>
+          </ol>
+
+          <h3>5. Menggunakan Rekap Kategori</h3>
+          <ol>
+            <li>Tab <strong>Rekap</strong> menampilkan kontribusi tiap kategori produk terhadap omzet, lengkap dengan persentasenya.</li>
+            <li>Gunakan rekap pengeluaran untuk menemukan biaya terbesar yang mungkin bisa ditekan.</li>
+            <li>Tombol <strong>Unduh CSV Semua Transaksi</strong> mengunduh gabungan pemasukan dan pengeluaran dalam satu file.</li>
+          </ol>
+
+          <h3>6. Tips Agar Laporan Selalu Akurat</h3>
+          <ul>
+            <li>Catat transaksi setiap hari sebelum toko tutup — menunda pencatatan adalah penyebab laporan tidak cocok yang paling sering terjadi.</li>
+            <li>Gunakan kategori yang konsisten; jangan mencampur belanja stok ke kategori perlengkapan.</li>
+            <li>Unduh CSV secara berkala (misalnya setiap akhir bulan) sebagai arsip cadangan di luar aplikasi.</li>
+          </ul>
+
+          <h3>Harga Aplikasi</h3>
+          <p><strong>Beli Sekali</strong> — bayar satu kali, aplikasi menjadi milik Anda:</p>
+          <div class="price-grid">
+            <div class="price-card">
+              <div class="tier">Pemula</div>
+              <div class="price">Rp499.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Versi standar siap pakai</li>
+                <li>Semua modul laporan keuangan</li>
+                <li>Garansi perbaikan bug 30 hari</li>
+              </ul>
+            </div>
+            <div class="price-card featured">
+              <div class="tier">Profesional</div>
+              <div class="price">Rp999.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Semua fitur Pemula</li>
+                <li>Penyesuaian merek (nama &amp; warna toko Anda)</li>
+                <li>APK Android</li>
+                <li>Garansi perbaikan bug 60 hari</li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="tier">Bisnis</div>
+              <div class="price">Rp1.999.000</div>
+              <div class="per">sekali bayar</div>
+              <ul>
+                <li>Semua fitur Profesional</li>
+                <li>Penyimpanan permanen &amp; multi-pengguna</li>
+                <li>Dukungan penuh</li>
+                <li>Garansi perbaikan bug 90 hari</li>
+              </ul>
+            </div>
+          </div>
+          <p><strong>Berlangganan</strong> — jalur upgrade dengan garansi dan dukungan selama langganan aktif:</p>
+          <div class="price-grid">
+            <div class="price-card">
+              <div class="tier">Pemula</div>
+              <div class="price">Rp49.000</div>
+              <div class="per">per bulan</div>
+            </div>
+            <div class="price-card featured">
+              <div class="tier">Profesional</div>
+              <div class="price">Rp99.000</div>
+              <div class="per">per bulan</div>
+            </div>
+            <div class="price-card">
+              <div class="tier">Bisnis</div>
+              <div class="price">Rp199.000</div>
+              <div class="per">per bulan</div>
+            </div>
+          </div>
+          <div class="note-box">
+            <strong>Request khusus:</strong> penyesuaian di luar paket dikenakan tambahan — Kecil +Rp100.000, Sedang +Rp250.000, Besar +Rp500.000. Waktu produksi request khusus adalah <strong>7 hari kalender</strong>. Langganan tahunan cukup membayar 10 bulan. Pembayaran dan pemesanan dilakukan melalui WhatsApp.
+          </div>
+
+          <h3>Garansi</h3>
+          <div class="warranty-box">
+            <p><strong>Garansi perbaikan bug / error — gratis.</strong> Jika ditemukan kesalahan fungsi pada aplikasi, perbaikan tidak dikenakan biaya selama masa garansi:</p>
+            <ul>
+              <li><strong>Beli sekali:</strong> Pemula 30 hari, Profesional 60 hari, Bisnis 90 hari sejak aplikasi diterima.</li>
+              <li><strong>Berlangganan:</strong> garansi dan dukungan berlaku selama langganan aktif.</li>
+              <li><strong>Cara klaim:</strong> hubungi kami melalui WhatsApp dan sertakan video atau tangkapan layar yang menunjukkan bug-nya, agar perbaikan bisa langsung dikerjakan.</li>
+            </ul>
+            <p>Garansi mencakup perbaikan bug dan error pada fitur yang ada. Penambahan fitur baru di luar paket termasuk request khusus (lihat harga di atas).</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <h3>Catatan Versi 1 (Demo)</h3>
+        <ul>
+          <li><strong>Data contoh hanya berlaku selama aplikasi dibuka.</strong> Aplikasi ini dimuat dengan data contoh toko kelontong selama 30 hari terakhir agar semua modul bisa langsung dicoba. Transaksi yang Anda tambah atau hapus tersimpan hanya di memori halaman ini — menutup atau memuat ulang halaman akan mengembalikan data ke kondisi awal.</li>
+          <li><strong>Belum terhubung ke penyimpanan permanen.</strong> Versi pembeli (paket Bisnis, atau sesuai kesepakatan) menyediakan penyimpanan permanen, multi-pengguna, dan sinkronisasi antarperangkat.</li>
+          <li><strong>Batasan v1:</strong> belum ada impor CSV masuk, pencetakan struk/laporan PDF, multi-toko, dan pemisahan hak akses kasir–pemilik. Angka laba rugi adalah laba operasional sederhana (pemasukan dikurangi pengeluaran tercatat) dan belum termasuk pajak serta penyusutan.</li>
+          <li>Unduhan CSV adalah cara yang disarankan untuk mengarsipkan data dari versi demo ini.</li>
+        </ul>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      "use strict";
+      /* ================= Data contoh ================= */
+      var KATEGORI_MASUK = ["Sembako","Minuman","Makanan Ringan","Kebutuhan Rumah Tangga","Pulsa & Digital","Rokok","Lainnya"];
+      var KATEGORI_KELUAR = ["Belanja Stok","Sewa Tempat","Listrik & Air","Gaji Karyawan","Transportasi","Perlengkapan Toko","Lainnya"];
+
+      var KET_MASUK = {
+        "Sembako":["Penjualan beras, minyak & gula","Penjualan kebutuhan pokok harian","Penjualan telur & tepung"],
+        "Minuman":["Penjualan minuman dingin","Penjualan kopi & teh sachet","Penjualan air galon & botol"],
+        "Makanan Ringan":["Penjualan snack & biskuit","Penjualan roti & kue kering","Penjualan permen & cokelat"],
+        "Kebutuhan Rumah Tangga":["Penjualan sabun & deterjen","Penjualan alat kebersihan","Penjualan tisu & pembalut"],
+        "Pulsa & Digital":["Top-up pulsa & paket data","Token listrik pelanggan","E-wallet & transfer"],
+        "Rokok":["Penjualan rokok eceran","Penjualan rokok per bungkus"],
+        "Lainnya":["Penjualan campuran","Jasa titip & lain-lain"]
+      };
+
+      function mulberry(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+      function pad(n){return (n<10?"0":"")+n;}
+      function toISO(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+      function fmtTgl(iso){
+        var b=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+        var p=iso.split("-");return parseInt(p[2],10)+" "+b[parseInt(p[1],10)-1]+" "+p[0];
+      }
+      var rpFmt=new Intl.NumberFormat("id-ID");
+      function rp(n){var s=(n<0?"-":"")+"Rp"+rpFmt.format(Math.abs(Math.round(n)));return s;}
+
+      var idCounter=1;
+      var transactions=[];
+      (function buatDataContoh(){
+        var rnd=mulberry(20261120);
+        var today=new Date();today.setHours(0,0,0,0);
+        function tambah(tipe,tgl,kategori,keterangan,jumlah){
+          transactions.push({id:idCounter++,tipe:tipe,tanggal:toISO(tgl),kategori:kategori,keterangan:keterangan,jumlah:jumlah});
+        }
+        for(var i=29;i>=0;i--){
+          var d=new Date(today);d.setDate(d.getDate()-i);
+          var dow=d.getDay();
+          var ramai=(dow===0||dow===6)?1.35:1;
+          var jumlahEntri=3+Math.floor(rnd()*2);
+          for(var k=0;k<jumlahEntri;k++){
+            var kat=KATEGORI_MASUK[Math.floor(rnd()*6)];
+            var basis={"Sembako":420000,"Minuman":185000,"Makanan Ringan":140000,"Kebutuhan Rumah Tangga":165000,"Pulsa & Digital":120000,"Rokok":210000}[kat]||150000;
+            var amt=Math.round(basis*ramai*(0.65+rnd()*0.8)/1000)*1000;
+            var ketList=KET_MASUK[kat];
+            tambah("masuk",d,kat,ketList[Math.floor(rnd()*ketList.length)],amt);
+          }
+          /* Pengeluaran rutin */
+          if(rnd()>0.35){tambah("keluar",d,"Transportasi","Bensin & parkir belanja",20000+Math.round(rnd()*25)*1000);}
+          if(i%5===2){tambah("keluar",d,"Belanja Stok","Restok grosir: sembako & minuman",1400000+Math.round(rnd()*9)*100000);}
+          if(i%9===4){tambah("keluar",d,"Perlengkapan Toko","Plastik, kantong & nota",65000+Math.round(rnd()*5)*10000);}
+          if(d.getDate()===1){tambah("keluar",d,"Sewa Tempat","Sewa ruko bulan ini",1500000);}
+          if(d.getDate()===5){tambah("keluar",d,"Listrik & Air","Token listrik & tagihan air",385000);}
+          if(d.getDate()===15){tambah("keluar",d,"Gaji Karyawan","Gaji karyawan toko (1 orang)",1200000);}
+        }
+        transactions.sort(function(a,b){return a.tanggal<b.tanggal?-1:1;});
+      })();
+
+      /* ================= State & filter periode ================= */
+      var period="30";
+      var periodSelect=document.getElementById("periodSelect");
+      periodSelect.addEventListener("change",function(){period=this.value;renderAll();});
+
+      function rentangPeriode(){
+        var today=new Date();today.setHours(0,0,0,0);
+        var akhir=toISO(today);
+        if(period==="semua")return{mulai:"0000-01-01",akhir:"9999-12-31",label:"Semua data"};
+        if(period==="hari")return{mulai:akhir,akhir:akhir,label:"Hari ini, "+fmtTgl(akhir)};
+        if(period==="bulan"){var m=today.getFullYear()+"-"+pad(today.getMonth()+1)+"-01";return{mulai:m,akhir:akhir,label:"Bulan ini (sejak "+fmtTgl(m)+")"};}
+        var n=parseInt(period,10);
+        var d=new Date(today);d.setDate(d.getDate()-(n-1));
+        return{mulai:toISO(d),akhir:akhir,label:n+" hari terakhir ("+fmtTgl(toISO(d))+" – "+fmtTgl(akhir)+")"};
+      }
+      function txPeriode(){
+        var r=rentangPeriode();
+        return transactions.filter(function(t){return t.tanggal>=r.mulai&&t.tanggal<=r.akhir;});
+      }
+      function sum(arr){return arr.reduce(function(s,t){return s+t.jumlah;},0);}
+      function grupKategori(arr){
+        var m={};
+        arr.forEach(function(t){m[t.kategori]=(m[t.kategori]||0)+t.jumlah;});
+        return Object.keys(m).map(function(k){return{kategori:k,total:m[k]};}).sort(function(a,b){return b.total-a.total;});
+      }
+
+      /* ================= Util UI ================= */
+      function el(id){return document.getElementById(id);}
+      var toastTimer=null;
+      function toast(pesan){
+        var t=el("toast");t.textContent=pesan;t.classList.add("show");
+        clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove("show");},2600);
+      }
+      function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+      /* ================= Tabs ================= */
+      var tabBtns=document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function(btn){
+        btn.addEventListener("click",function(){
+          tabBtns.forEach(function(b){b.classList.remove("active");});
+          btn.classList.add("active");
+          document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active");});
+          el("panel-"+btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ================= Render: Dashboard ================= */
+      function renderDashboard(){
+        var tx=txPeriode();
+        var masuk=tx.filter(function(t){return t.tipe==="masuk";});
+        var keluar=tx.filter(function(t){return t.tipe==="keluar";});
+        var totM=sum(masuk),totK=sum(keluar),laba=totM-totK;
+        el("statOmzet").textContent=rp(totM);
+        el("statOmzetNote").textContent=masuk.length+" transaksi pemasukan";
+        el("statKeluar").textContent=rp(totK);
+        el("statKeluarNote").textContent=keluar.length+" transaksi pengeluaran";
+        el("statLaba").innerHTML='<span class="'+(laba>=0?"pos":"neg")+'">'+rp(laba)+"</span>";
+        el("statLabaNote").textContent=totM>0?("Margin laba "+(laba/totM*100).toFixed(1).replace(".",",")+"% dari omzet"):"Belum ada pemasukan";
+        el("statTx").textContent=tx.length;
+        el("statTxNote").textContent="pada periode terpilih";
+
+        /* Grafik harian */
+        renderChart(tx);
+        /* Kategori terlaris */
+        var top=grupKategori(masuk).slice(0,5);
+        var box=el("dashTopKategori");
+        if(!top.length){box.innerHTML='<div class="empty">Belum ada pemasukan pada periode ini.</div>';}
+        else{
+          var max=top[0].total;
+          box.innerHTML=top.map(function(g){
+            return '<div class="bar-row"><span class="name">'+esc(g.kategori)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.max(4,Math.round(g.total/max*100))+'%"></div></div><span class="val">'+rp(g.total)+"<small>"+(totM?Math.round(g.total/totM*100):0)+"%</small></span></div>";
+          }).join("");
+        }
+        /* Transaksi terakhir */
+        var last=tx.slice().sort(function(a,b){return b.tanggal<a.tanggal?-1:b.tanggal>a.tanggal?1:b.id-a.id;}).slice(0,5);
+        var box2=el("dashTerakhir");
+        if(!last.length){box2.innerHTML='<div class="empty">Belum ada transaksi pada periode ini.</div>';}
+        else{
+          box2.innerHTML=last.map(function(t){
+            return '<div class="bar-row" style="grid-template-columns:1fr auto;"><span class="name" style="font-weight:500;">'+fmtTgl(t.tanggal)+' · '+esc(t.kategori)+'<small style="display:block;color:var(--muted);font-weight:400;">'+esc(t.keterangan||"-")+'</small></span><span class="val '+(t.tipe==="masuk"?"pos":"neg")+'">'+(t.tipe==="masuk"?"+":"−")+" "+rp(t.jumlah)+"</span></div>";
+          }).join("");
+        }
+      }
+
+      function renderChart(tx){
+        var perHari={};
+        tx.forEach(function(t){
+          if(!perHari[t.tanggal])perHari[t.tanggal]={m:0,k:0};
+          if(t.tipe==="masuk")perHari[t.tanggal].m+=t.jumlah;else perHari[t.tanggal].k+=t.jumlah;
+        });
+        var hari=Object.keys(perHari).sort().slice(-31);
+        var box=el("chartHarian");
+        if(!hari.length){box.innerHTML='<div class="empty">Tidak ada data untuk digambar pada periode ini.</div>';return;}
+        var max=0;hari.forEach(function(h){max=Math.max(max,perHari[h].m,perHari[h].k);});
+        if(max<=0)max=1;
+        var W=960,H=260,base=218,topPad=18,leftPad=104,plotW=W-leftPad,slot=plotW/hari.length,barW=Math.min(13,slot/3.4);
+        var s='<svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Grafik batang pemasukan dan pengeluaran harian">';
+        [0.25,0.5,0.75,1].forEach(function(f){
+          var y=base-(base-topPad)*f;
+          s+='<line x1="'+leftPad+'" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#EAE2D4" stroke-width="1"/>';
+          s+='<text x="'+(leftPad-8)+'" y="'+(y+4)+'" font-size="11.5" fill="#8A8378" text-anchor="end">'+rp(max*f)+"</text>";
+        });
+        s+='<line x1="'+leftPad+'" y1="'+base+'" x2="'+W+'" y2="'+base+'" stroke="#CBBFA5" stroke-width="1.5"/>';
+        hari.forEach(function(h,i){
+          var cx=leftPad+i*slot+slot/2;
+          var hm=(base-topPad)*(perHari[h].m/max),hk=(base-topPad)*(perHari[h].k/max);
+          s+='<rect x="'+(cx-barW-2)+'" y="'+(base-hm)+'" width="'+barW+'" height="'+Math.max(hm,perHari[h].m?2:0)+'" rx="3" fill="#6E8B67"><title>'+fmtTgl(h)+" · Pemasukan "+rp(perHari[h].m)+"</title></rect>";
+          s+='<rect x="'+(cx+2)+'" y="'+(base-hk)+'" width="'+barW+'" height="'+Math.max(hk,perHari[h].k?2:0)+'" rx="3" fill="#BC6248"><title>'+fmtTgl(h)+" · Pengeluaran "+rp(perHari[h].k)+"</title></rect>";
+          if(hari.length<=16||i%Math.ceil(hari.length/12)===0){
+            s+='<text x="'+cx+'" y="'+(base+18)+'" font-size="11" fill="#8A8378" text-anchor="middle">'+h.slice(8,10)+"/"+h.slice(5,7)+"</text>";
+          }
+        });
+        s+="</svg>";
+        box.innerHTML=s;
+      }
+
+      /* ================= Render: tabel transaksi ================= */
+      function renderTabel(tipe){
+        var tx=txPeriode().filter(function(t){return t.tipe===tipe;})
+          .sort(function(a,b){return b.tanggal<a.tanggal?-1:b.tanggal>a.tanggal?1:b.id-a.id;});
+        var tbody=el(tipe==="masuk"?"tbodyMasuk":"tbodyKeluar");
+        if(!tx.length){
+          tbody.innerHTML='<tr><td colspan="5"><div class="empty">Belum ada data pada periode ini. Tambahkan lewat formulir di atas, atau perpanjang periode laporan.</div></td></tr>';
+        }else{
+          tbody.innerHTML=tx.map(function(t){
+            return "<tr><td style='white-space:nowrap;'>"+fmtTgl(t.tanggal)+"</td><td><span class='cat-chip"+(tipe==="keluar"?" exp":"")+"'>"+esc(t.kategori)+"</span></td><td>"+esc(t.keterangan||"-")+'</td><td class="num">'+rp(t.jumlah)+'</td><td><button type="button" class="del-btn" data-del="'+t.id+'">Hapus</button></td></tr>';
+          }).join("");
+        }
+        var total=sum(tx);
+        if(tipe==="masuk"){el("totalMasuk").textContent=rp(total);el("ringkasMasuk").textContent="— "+tx.length+" catatan";}
+        else{el("totalKeluar").textContent=rp(total);el("ringkasKeluar").textContent="— "+tx.length+" catatan";}
+        tbody.querySelectorAll("[data-del]").forEach(function(btn){
+          btn.addEventListener("click",function(){
+            var id=parseInt(btn.getAttribute("data-del"),10);
+            transactions=transactions.filter(function(t){return t.id!==id;});
+            renderAll();toast("Catatan berhasil dihapus.");
+          });
+        });
+      }
+
+      /* ================= Render: Laba Rugi ================= */
+      function renderLabaRugi(){
+        var r=rentangPeriode();
+        el("lrPeriodeLabel").textContent="Periode: "+r.label;
+        var tx=txPeriode();
+        var masuk=tx.filter(function(t){return t.tipe==="masuk";});
+        var keluar=tx.filter(function(t){return t.tipe==="keluar";});
+        var totM=sum(masuk),totK=sum(keluar),laba=totM-totK;
+        var grupK=grupKategori(keluar);
+        var html="";
+        html+='<div class="lr-row"><span><strong>Total Pemasukan (Omzet)</strong></span><span class="amt pos">'+rp(totM)+"</span></div>";
+        grupKategori(masuk).forEach(function(g){
+          html+='<div class="lr-row lr-indent"><span>'+esc(g.kategori)+'</span><span class="amt">'+rp(g.total)+"</span></div>";
+        });
+        html+='<div class="lr-row" style="margin-top:8px;"><span><strong>Total Pengeluaran</strong></span><span class="amt neg">'+rp(totK)+"</span></div>";
+        grupK.forEach(function(g){
+          html+='<div class="lr-row lr-indent"><span>'+esc(g.kategori)+'</span><span class="amt">'+rp(g.total)+"</span></div>";
+        });
+        if(!grupK.length){html+='<div class="lr-row lr-indent"><span>Tidak ada pengeluaran tercatat</span><span class="amt">Rp0</span></div>';}
+        html+='<div class="lr-row total"><span>Laba Bersih</span><span class="amt '+(laba>=0?"pos":"neg")+'">'+rp(laba)+"</span></div>";
+        html+='<div class="lr-row"><span>Margin Laba (dari omzet)</span><span class="amt">'+(totM>0?(laba/totM*100).toFixed(1).replace(".",",")+"%":"—")+"</span></div>";
+        el("lrBody").innerHTML=html;
+
+        /* Omzet per minggu */
+        var minggu={};
+        tx.forEach(function(t){
+          var d=new Date(t.tanggal+"T00:00:00");
+          var senin=new Date(d);var geser=(d.getDay()+6)%7;senin.setDate(d.getDate()-geser);
+          var kunci=toISO(senin);
+          if(!minggu[kunci])minggu[kunci]={m:0,k:0};
+          if(t.tipe==="masuk")minggu[kunci].m+=t.jumlah;else minggu[kunci].k+=t.jumlah;
+        });
+        var keys=Object.keys(minggu).sort();
+        var tb=el("tbodyOmzetPeriode");
+        if(!keys.length){tb.innerHTML='<tr><td colspan="4"><div class="empty">Belum ada data pada periode ini.</div></td></tr>';}
+        else{
+          tb.innerHTML=keys.map(function(k){
+            var akhirM=new Date(k+"T00:00:00");akhirM.setDate(akhirM.getDate()+6);
+            var lb=minggu[k].m-minggu[k].k;
+            return "<tr><td>"+fmtTgl(k)+" – "+fmtTgl(toISO(akhirM))+'</td><td class="num">'+rp(minggu[k].m)+'</td><td class="num">'+rp(minggu[k].k)+'</td><td class="num '+(lb>=0?"pos":"neg")+'">'+rp(lb)+"</td></tr>";
+          }).join("");
+        }
+        el("totOmzMasuk").textContent=rp(totM);
+        el("totOmzKeluar").textContent=rp(totK);
+        el("totOmzLaba").textContent=rp(laba);
+      }
+
+      /* ================= Render: Rekap ================= */
+      function barList(arr,total,cls){
+        if(!arr.length)return '<div class="empty">Belum ada data pada periode ini.</div>';
+        var max=arr[0].total;
+        return arr.map(function(g){
+          return '<div class="bar-row"><span class="name">'+esc(g.kategori)+'</span><div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+Math.max(4,Math.round(g.total/max*100))+'%"></div></div><span class="val">'+rp(g.total)+"<small>"+(total?Math.round(g.total/total*100):0)+"% dari total</small></span></div>";
+        }).join("");
+      }
+      function renderRekap(){
+        var tx=txPeriode();
+        var masuk=tx.filter(function(t){return t.tipe==="masuk";});
+        var keluar=tx.filter(function(t){return t.tipe==="keluar";});
+        el("rekapMasuk").innerHTML=barList(grupKategori(masuk),sum(masuk),"");
+        el("rekapKeluar").innerHTML=barList(grupKategori(keluar),sum(keluar),"exp");
+      }
+
+      function renderAll(){renderDashboard();renderTabel("masuk");renderTabel("keluar");renderLabaRugi();renderRekap();}
+
+      /* ================= Formulir ================= */
+      function isiSelect(id,arr){
+        el(id).innerHTML=arr.map(function(k){return '<option value="'+esc(k)+'">'+esc(k)+"</option>";}).join("");
+      }
+      isiSelect("inKategori",KATEGORI_MASUK);
+      isiSelect("outKategori",KATEGORI_KELUAR);
+      var hariIni=toISO(new Date());
+      el("inTanggal").value=hariIni;el("outTanggal").value=hariIni;
+
+      function tanganiForm(tipe){
+        return function(ev){
+          ev.preventDefault();
+          var pre=tipe==="masuk"?"in":"out";
+          var tgl=el(pre+"Tanggal").value;
+          var kat=el(pre+"Kategori").value;
+          var ket=el(pre+"Ket").value.trim();
+          var jml=parseInt(el(pre+"Jumlah").value,10);
+          var msg=el(tipe==="masuk"?"msgMasuk":"msgKeluar");
+          if(!tgl||!jml||isNaN(jml)||jml<=0){
+            msg.style.color="var(--rust)";msg.textContent="Periksa kembali: tanggal harus terisi dan jumlah harus lebih dari Rp0.";
+            return;
+          }
+          transactions.push({id:idCounter++,tipe:tipe,tanggal:tgl,kategori:kat,keterangan:ket||(tipe==="masuk"?"Penjualan":"Pengeluaran"),jumlah:jml});
+          el(pre+"Ket").value="";el(pre+"Jumlah").value="";
+          msg.style.color="var(--sage-dark)";msg.textContent="Tersimpan: "+kat+" sebesar "+rp(jml)+" ("+fmtTgl(tgl)+").";
+          renderAll();toast((tipe==="masuk"?"Pemasukan":"Pengeluaran")+" berhasil ditambahkan.");
+        };
+      }
+      el("formMasuk").addEventListener("submit",tanganiForm("masuk"));
+      el("formKeluar").addEventListener("submit",tanganiForm("keluar"));
+
+      /* ================= Unduh CSV ================= */
+      function unduhCSV(namaFile,baris){
+        var isi=baris.map(function(r){return r.map(function(c){
+          var s=String(c==null?"":c);
+          return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+        }).join(";");}).join("\r\n");
+        var blob=new Blob(["\ufeff"+isi],{type:"text/csv;charset=utf-8"});
+        var a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);a.download=namaFile;
+        document.body.appendChild(a);a.click();
+        setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+      }
+      function barisTx(tipe){
+        var rows=[["Tanggal","Jenis","Kategori","Keterangan","Jumlah (Rp)"]];
+        txPeriode().filter(function(t){return !tipe||t.tipe===tipe;})
+          .sort(function(a,b){return a.tanggal<b.tanggal?-1:1;})
+          .forEach(function(t){rows.push([t.tanggal,t.tipe==="masuk"?"Pemasukan":"Pengeluaran",t.kategori,t.keterangan||"",t.jumlah]);});
+        return rows;
+      }
+      el("csvMasuk").addEventListener("click",function(){unduhCSV("pemasukan-toko.csv",barisTx("masuk"));toast("CSV pemasukan diunduh.");});
+      el("csvKeluar").addEventListener("click",function(){unduhCSV("pengeluaran-toko.csv",barisTx("keluar"));toast("CSV pengeluaran diunduh.");});
+      el("csvSemua").addEventListener("click",function(){unduhCSV("semua-transaksi-toko.csv",barisTx(null));toast("CSV semua transaksi diunduh.");});
+      el("csvLabaRugi").addEventListener("click",function(){
+        var tx=txPeriode();
+        var masuk=tx.filter(function(t){return t.tipe==="masuk";});
+        var keluar=tx.filter(function(t){return t.tipe==="keluar";});
+        var totM=sum(masuk),totK=sum(keluar);
+        var rows=[["Laporan Laba Rugi Toko"],["Periode",rentangPeriode().label],[],["Uraian","Jumlah (Rp)"],["Total Pemasukan (Omzet)",totM]];
+        grupKategori(masuk).forEach(function(g){rows.push(["  "+g.kategori,g.total]);});
+        rows.push(["Total Pengeluaran",totK]);
+        grupKategori(keluar).forEach(function(g){rows.push(["  "+g.kategori,g.total]);});
+        rows.push(["Laba Bersih",totM-totK]);
+        rows.push(["Margin Laba (%)",totM>0?(totM-totK)/totM*100:0]);
+        unduhCSV("laba-rugi-toko.csv",rows);toast("CSV laba rugi diunduh.");
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>

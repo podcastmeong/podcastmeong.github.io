@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<link rel="icon" href="data:," />
+<title>Manajemen Pelanggan &amp; Membership</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#faf7f2;
+    --surface:#ffffff;
+    --surface-soft:#f3efe7;
+    --ink:#33302b;
+    --ink-soft:#6f6a5f;
+    --line:#e7e0d3;
+    --sage:#5c7a63;
+    --sage-dark:#47624e;
+    --sage-soft:#e6efe7;
+    --gold:#b08d4f;
+    --gold-soft:#f5ecdb;
+    --rose:#b96a5e;
+    --rose-soft:#f9e9e5;
+    --blue:#5b7d99;
+    --blue-soft:#e7eef4;
+    --silver:#8a8d90;
+    --shadow:0 2px 10px rgba(80,70,50,.06), 0 10px 30px rgba(80,70,50,.05);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px;line-height:1.55;
+  }
+  h1,h2,h3,.serif{font-family:"Lora",Georgia,serif;font-weight:600}
+  button,[role="button"],select,input,textarea{font-family:inherit;font-size:14px}
+  button,select,input:not([type="checkbox"]),textarea{min-height:40px}
+  button{cursor:pointer}
+  .wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+
+  /* ---------- Header ---------- */
+  header.top{padding:14px 0 6px}
+  header.top h1{font-size:clamp(26px,4.5vw,38px);margin:0 0 6px;letter-spacing:.2px}
+  header.top p{margin:0;color:var(--ink-soft);max-width:640px}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:22px 0 6px}
+  @media(min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+  .stat .num{font-family:"Lora",serif;font-size:26px;font-weight:600;line-height:1.15}
+  .stat .lbl{color:var(--ink-soft);font-size:12.5px;margin-top:2px}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 22px}
+  nav.tabs button{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink);
+    border-radius:999px;padding:9px 18px;font-weight:600;min-height:42px;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  nav.tabs button:hover{border-color:var(--sage)}
+  nav.tabs button.active{background:var(--sage);border-color:var(--sage);color:#fff}
+  section.tab{display:none}
+  section.tab.active{display:block}
+
+  /* ---------- Cards & layout ---------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+  .toolbar .grow{flex:1 1 200px}
+  .toolbar input[type="search"],.toolbar select,.toolbar input[type="text"]{
+    width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface);color:var(--ink);
+  }
+  .toolbar select{width:auto;min-width:150px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:980px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .grid2{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:860px){.grid2{grid-template-columns:repeat(2,1fr)}}
+
+  .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 16px;font-weight:600;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn:hover{border-color:var(--sage)}
+  .btn.primary{background:var(--sage);border-color:var(--sage);color:#fff}
+  .btn.primary:hover{background:var(--sage-dark)}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+  .btn.danger{color:var(--rose);border-color:#e8c9c2}
+  .btn.danger:hover{background:var(--rose-soft)}
+  .btn.small{padding:6px 12px;min-height:36px;font-size:13px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .cust-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .cust-name{font-family:"Lora",serif;font-size:19px;font-weight:600;margin:0}
+  .cust-meta{color:var(--ink-soft);font-size:13px;margin-top:3px;word-break:break-word}
+  .cust-nums{display:flex;gap:18px;margin:14px 0;padding:12px 0;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+  .cust-nums div b{display:block;font-size:16px}
+  .cust-nums div span{font-size:12px;color:var(--ink-soft)}
+  .cust-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .label-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--ink-soft)}
+  .label-row select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-height:36px;background:var(--surface-soft);color:var(--ink);font-weight:600}
+
+  .badge{display:inline-block;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  .lv-reguler{background:var(--surface-soft);color:var(--ink-soft);border:1px solid var(--line)}
+  .lv-silver{background:#eef0f1;color:#5f6468;border:1px solid #d8dbdd}
+  .lv-gold{background:var(--gold-soft);color:#8a6a33;border:1px solid #e6d3a8}
+  .lv-platinum{background:#e9e6f2;color:#574f7d;border:1px solid #cfc8e4}
+  .chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--sage-soft);color:var(--sage-dark)}
+  .chip.warn{background:var(--rose-soft);color:var(--rose)}
+  .chip.info{background:var(--blue-soft);color:var(--blue)}
+
+  /* ---------- Tables ---------- */
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+  @media(max-width:640px){
+    table.stack{min-width:0}
+    table.stack thead{display:none}
+    table.stack tr{display:block;padding:10px 2px;border-bottom:1px solid var(--line)}
+    table.stack tr:last-child{border-bottom:none}
+    table.stack td{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:none;padding:4px 2px;text-align:right}
+    table.stack td::before{content:attr(data-label);font-weight:700;color:var(--ink-soft);font-size:12.5px;text-align:left;flex:0 0 auto;padding-top:1px}
+    table.stack td[data-label=""]{justify-content:flex-end}
+    table.stack td[data-label=""]::before{content:none}
+    table.stack td .progress{min-width:130px}
+  }
+  th{text-align:left;padding:10px 12px;color:var(--ink-soft);font-size:12.5px;font-weight:700;border-bottom:2px solid var(--line);white-space:nowrap}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .empty{padding:28px;text-align:center;color:var(--ink-soft)}
+
+  /* ---------- Membership ---------- */
+  .level-card{border-top:5px solid var(--line)}
+  .level-card.reguler{border-top-color:#c9c2b2}
+  .level-card.silver{border-top-color:#b9bdc0}
+  .level-card.gold{border-top-color:var(--gold)}
+  .level-card.platinum{border-top-color:#8d84b8}
+  .level-card h3{margin:0 0 4px;font-size:20px}
+  .level-card ul{margin:10px 0 0;padding-left:18px;color:var(--ink-soft);font-size:13.5px}
+  .progress{height:9px;background:var(--surface-soft);border-radius:99px;overflow:hidden;margin-top:6px}
+  .progress i{display:block;height:100%;background:var(--sage);border-radius:99px}
+  .bar-row{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .bar-row .bar-name{width:92px;font-weight:600;font-size:13.5px}
+  .bar-row .bar-track{flex:1;height:14px;background:var(--surface-soft);border-radius:99px;overflow:hidden}
+  .bar-row .bar-track i{display:block;height:100%;background:var(--gold)}
+  .bar-row .bar-val{width:34px;text-align:right;font-weight:700}
+
+  /* ---------- Reminders ---------- */
+  .rem-item{display:flex;gap:14px;align-items:flex-start;padding:16px 18px}
+  .rem-item + .rem-item{border-top:1px solid var(--line)}
+  .rem-item.done{opacity:.62}
+  .rem-item.done .rem-title{text-decoration:line-through}
+  .rem-check{width:26px;height:26px;flex:0 0 auto;border-radius:8px;border:2px solid var(--sage);background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;margin-top:2px;min-height:26px;padding:0}
+  .rem-check.on{background:var(--sage)}
+  .rem-body{flex:1;min-width:0}
+  .rem-title{font-weight:700}
+  .rem-sub{color:var(--ink-soft);font-size:13px}
+  .overdue{color:var(--rose);font-weight:700}
+  @media(max-width:560px){
+    /* Jenis sudah tertulis di judul pengingat — chip disembunyikan di layar sempit agar judul tidak terjepit */
+    #daftarPengingat .rem-item > span{display:none}
+    .rem-item{padding:14px}
+  }
+
+  /* ---------- Panduan ---------- */
+  .guide h2{margin:26px 0 8px;font-size:22px}
+  .guide h2:first-child{margin-top:0}
+  .guide h3{margin:18px 0 6px;font-size:17px}
+  .guide p,.guide li{color:#4c473e}
+  .guide ol,.guide ul{padding-left:22px}
+  .guide li{margin:4px 0}
+  .price-table{min-width:0}
+  .price-table td:first-child{font-weight:600}
+  .note-box{background:var(--gold-soft);border:1px solid #e6d3a8;border-radius:12px;padding:14px 16px;font-size:14px}
+  .soft-box{background:var(--sage-soft);border:1px solid #cfdfd2;border-radius:12px;padding:14px 16px;font-size:14px}
+
+  footer{margin-top:36px;border-top:1px solid var(--line);padding-top:18px;color:var(--ink-soft);font-size:13px}
+  footer p{margin:5px 0}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(51,48,43,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:24px 22px 28px}
+  @media(min-width:640px){.overlay{align-items:center;padding:20px}.modal{border-radius:20px}}
+  .modal h3{margin:0 0 4px;font-size:21px}
+  .modal .sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-weight:600;font-size:13.5px;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface);color:var(--ink)}
+  .field textarea{resize:vertical;min-height:64px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:92vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Manajemen Pelanggan &amp; Membership</h1>
+    <p>Kelola pelanggan tetap toko dan reseller Anda dalam satu tempat — data pelanggan, level membership otomatis, poin belanja, pengingat, dan laporan, tersaji rapi dan mudah dipakai.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statPelanggan">0</div><div class="lbl">Total pelanggan</div></div>
+    <div class="stat"><div class="num" id="statBelanja">Rp0</div><div class="lbl">Total belanja semua pelanggan</div></div>
+    <div class="stat"><div class="num" id="statPoin">0</div><div class="lbl">Poin aktif beredar</div></div>
+    <div class="stat"><div class="num" id="statPengingat">0</div><div class="lbl">Pengingat belum selesai</div></div>
+  </div>
+
+  <nav class="tabs" id="tabNav" aria-label="Modul aplikasi">
+    <button data-tab="pelanggan" class="active">Pelanggan</button>
+    <button data-tab="membership">Membership</button>
+    <button data-tab="belanja">Riwayat Belanja</button>
+    <button data-tab="pengingat">Pengingat</button>
+    <button data-tab="laporan">Laporan</button>
+    <button data-tab="panduan">Panduan</button>
+  </nav>
+
+  <!-- ============ TAB PELANGGAN ============ -->
+  <section class="tab active" id="tab-pelanggan">
+    <div class="toolbar">
+      <div class="grow"><input type="search" id="cariPelanggan" placeholder="Cari nama, telepon, atau alamat…" aria-label="Cari pelanggan" /></div>
+      <select id="filterLevel" aria-label="Filter level">
+        <option value="">Semua Level</option>
+        <option>Reguler</option><option>Silver</option><option>Gold</option><option>Platinum</option>
+      </select>
+      <select id="filterLabel" aria-label="Filter label">
+        <option value="">Semua Label</option>
+        <option>Pelanggan Baru</option><option>Pelanggan Setia</option><option>Belum Bayar</option><option>Sudah Langganan</option>
+      </select>
+      <button class="btn primary" id="btnTambahPelanggan">+ Tambah Pelanggan</button>
+    </div>
+    <div class="grid" id="daftarPelanggan"></div>
+    <div class="empty card" id="pelangganKosong" style="display:none">Tidak ada pelanggan yang cocok dengan pencarian atau filter. Coba ubah kata kunci, atau tambah pelanggan baru.</div>
+  </section>
+
+  <!-- ============ TAB MEMBERSHIP ============ -->
+  <section class="tab" id="tab-membership">
+    <div class="grid" id="kartuLevel" style="margin-bottom:16px"></div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin:0 0 6px;font-size:19px">Cara kerja poin</h3>
+      <p style="margin:0;color:var(--ink-soft)">Setiap belanja Rp10.000 menghasilkan <b>1 poin</b> (dihitung dari total belanja, dibulatkan ke bawah). Poin dapat ditukar di tab Pelanggan: <b>100 poin = potongan Rp10.000</b>. Penukaran mengurangi saldo poin pelanggan, dan nilainya dicatat sebagai keterangan — potongan diberikan saat pelanggan belanja berikutnya di toko Anda.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 4px;font-size:19px">Semua Member — Urut Total Belanja Tertinggi</h3>
+      <p style="color:var(--ink-soft);margin:0 0 8px;font-size:13.5px">Bilah menunjukkan kemajuan menuju level berikutnya. Level naik otomatis begitu total belanja melewati batas level di atasnya.</p>
+      <div class="table-wrap">
+        <table class="stack">
+          <thead><tr><th>Pelanggan</th><th>Level</th><th class="num">Total Belanja</th><th class="num">Diskon</th><th class="num">Poin</th><th style="min-width:170px">Menuju Level Berikutnya</th></tr></thead>
+          <tbody id="tabelMember"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB RIWAYAT BELANJA ============ -->
+  <section class="tab" id="tab-belanja">
+    <div class="toolbar">
+      <select id="filterBelanjaPelanggan" aria-label="Filter pelanggan" style="min-width:220px">
+        <option value="">Semua Pelanggan</option>
+      </select>
+      <div class="grow"></div>
+      <button class="btn primary" id="btnTambahTransaksi">+ Tambah Transaksi</button>
+    </div>
+    <div class="card" style="margin-bottom:16px" id="ringkasanBelanja"></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="stack">
+          <thead><tr><th>Tanggal</th><th>Pelanggan</th><th>Keterangan</th><th class="num">Nominal</th><th class="num">Poin Didapat</th><th></th></tr></thead>
+          <tbody id="tabelTransaksi"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="transaksiKosong" style="display:none">Belum ada transaksi untuk pilihan ini.</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB PENGINGAT ============ -->
+  <section class="tab" id="tab-pengingat">
+    <div class="toolbar">
+      <select id="filterPengingat" aria-label="Filter pengingat">
+        <option value="">Semua Pengingat</option>
+        <option value="belum">Belum Selesai</option>
+        <option value="selesai">Sudah Selesai</option>
+        <option value="Ulang Tahun">Ulang Tahun</option>
+        <option value="Jatuh Tempo">Jatuh Tempo</option>
+        <option value="Follow-up">Follow-up</option>
+      </select>
+      <div class="grow"></div>
+      <button class="btn primary" id="btnTambahPengingat">+ Tambah Pengingat</button>
+    </div>
+    <div class="card" id="daftarPengingat" style="padding:6px 0"></div>
+    <div class="empty card" id="pengingatKosong" style="display:none">Tidak ada pengingat untuk filter ini.</div>
+  </section>
+
+  <!-- ============ TAB LAPORAN ============ -->
+  <section class="tab" id="tab-laporan">
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin:0 0 10px;font-size:19px">Jumlah Pelanggan per Level</h3>
+        <div id="laporanLevel"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 10px;font-size:19px">Pelanggan Baru per Periode</h3>
+        <div id="laporanBaru"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 4px;font-size:19px">Pelanggan Teratas — Total Belanja Tertinggi</h3>
+      <p style="color:var(--ink-soft);margin:0 0 8px;font-size:13.5px">Lima pelanggan dengan akumulasi belanja terbesar selama menjadi pelanggan.</p>
+      <div class="table-wrap">
+        <table class="stack">
+          <thead><tr><th>#</th><th>Pelanggan</th><th>Level</th><th>Label</th><th class="num">Transaksi</th><th class="num">Total Belanja</th><th class="num">Poin</th></tr></thead>
+          <tbody id="tabelTeratas"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 6px;font-size:19px">Unduh Data (CSV)</h3>
+      <p style="color:var(--ink-soft);margin:0 0 14px;font-size:13.5px">File CSV dapat dibuka di Excel, Google Sheets, atau LibreOffice untuk diolah lebih lanjut atau dicetak.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn gold" id="btnCsvPelanggan">⬇ Unduh CSV Pelanggan</button>
+        <button class="btn gold" id="btnCsvTransaksi">⬇ Unduh CSV Riwayat Belanja</button>
+        <button class="btn gold" id="btnCsvPengingat">⬇ Unduh CSV Pengingat</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB PANDUAN ============ -->
+  <section class="tab guide" id="tab-panduan">
+    <div class="card">
+      <h2>Buku Panduan Penggunaan</h2>
+      <p>Selamat datang di aplikasi <b>Manajemen Pelanggan &amp; Membership</b>. Aplikasi ini membantu toko dan reseller mengelola pelanggan tetap: mencatat data pelanggan, menghitung total belanja dan level membership secara otomatis, mengelola poin, membuat pengingat, dan menyusun laporan. Ikuti panduan per modul di bawah ini.</p>
+
+      <h3>Memulai dalam 3 langkah</h3>
+      <ol>
+        <li>Buka tab <b>Pelanggan</b>, lalu periksa data contoh yang tersedia untuk memahami tampilan aplikasi.</li>
+        <li>Tambahkan pelanggan asli Anda dengan tombol <b>+ Tambah Pelanggan</b>.</li>
+        <li>Setiap ada penjualan, catat di tab <b>Riwayat Belanja</b> — total belanja, level, dan poin pelanggan akan terhitung otomatis.</li>
+      </ol>
+
+      <h2>1. Modul Pelanggan</h2>
+      <ol>
+        <li><b>Menambah pelanggan:</b> klik <b>+ Tambah Pelanggan</b>, isi nama, nomor telepon, alamat, tanggal bergabung, dan label awal, lalu klik <b>Simpan</b>.</li>
+        <li><b>Mencari pelanggan:</b> ketik nama, nomor telepon, atau alamat pada kolom pencarian di bagian atas.</li>
+        <li><b>Memfilter:</b> gunakan menu <i>Semua Level</i> untuk menyaring berdasarkan level membership, dan <i>Semua Label</i> untuk menyaring berdasarkan kelompok pelanggan.</li>
+        <li><b>Mengubah data:</b> klik tombol <b>Ubah</b> pada kartu pelanggan, perbaiki isian, lalu simpan.</li>
+        <li><b>Mengubah label:</b> pilih label langsung dari menu pada kartu pelanggan — pilihan: <i>Pelanggan Baru</i>, <i>Pelanggan Setia</i>, <i>Belum Bayar</i>, atau <i>Sudah Langganan</i>. Label berguna untuk mengelompokkan pelanggan, misalnya daftar “Belum Bayar” untuk ditagih, atau “Pelanggan Setia” untuk diberi penawaran khusus.</li>
+        <li><b>Menghapus pelanggan:</b> klik <b>Hapus</b> pada kartu, lalu konfirmasi. Menghapus pelanggan juga menghapus seluruh riwayat belanja dan pengingat miliknya.</li>
+        <li><b>Menukar poin:</b> klik <b>Tukar Poin</b> pada kartu pelanggan, masukkan jumlah poin (kelipatan 100), lalu konfirmasi. Nilai tukar 100 poin = Rp10.000; berikan potongannya saat pelanggan belanja berikutnya.</li>
+      </ol>
+
+      <h2>2. Modul Membership</h2>
+      <p>Level membership naik <b>otomatis</b> berdasarkan total belanja pelanggan — Anda tidak perlu mengubahnya secara manual. Aturannya:</p>
+      <div class="table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Level</th><th>Total Belanja</th><th class="num">Diskon</th></tr></thead>
+          <tbody>
+            <tr><td>Reguler</td><td>Di bawah Rp1.000.000</td><td class="num">0%</td></tr>
+            <tr><td>Silver</td><td>Rp1.000.000 – Rp4.999.999</td><td class="num">3%</td></tr>
+            <tr><td>Gold</td><td>Rp5.000.000 – Rp14.999.999</td><td class="num">5%</td></tr>
+            <tr><td>Platinum</td><td>Rp15.000.000 ke atas</td><td class="num">10%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ol>
+        <li>Berikan <b>diskon sesuai level</b> saat pelanggan membayar di toko Anda (aplikasi menampilkan persentase diskonnya di kartu pelanggan dan tabel member).</li>
+        <li><b>Poin:</b> pelanggan mendapat 1 poin untuk setiap belanja Rp10.000. Poin dihitung dari total belanja dan berkurang saat ditukar.</li>
+        <li>Tabel di tab Membership mengurutkan member dari total belanja tertinggi, lengkap dengan bilah kemajuan menuju level berikutnya — gunakan untuk melihat siapa yang hampir naik level dan layak diberi dorongan promo.</li>
+      </ol>
+
+      <h2>3. Modul Riwayat Belanja</h2>
+      <ol>
+        <li>Klik <b>+ Tambah Transaksi</b>, pilih pelanggan, isi tanggal, keterangan belanja (misalnya nama produk), dan nominal, lalu simpan.</li>
+        <li>Total belanja, level, dan poin pelanggan <b>langsung diperbarui otomatis</b> di semua modul.</li>
+        <li>Gunakan menu pilihan pelanggan di bagian atas untuk melihat riwayat satu pelanggan saja, beserta ringkasan total belanja dan jumlah transaksinya.</li>
+        <li>Salah catat? Klik <b>Hapus</b> pada baris transaksi — total belanja dan poin pelanggan akan dihitung ulang secara otomatis.</li>
+      </ol>
+
+      <h2>4. Modul Pengingat</h2>
+      <ol>
+        <li>Klik <b>+ Tambah Pengingat</b>, pilih pelanggan, jenis pengingat (<i>Ulang Tahun</i>, <i>Jatuh Tempo</i>, atau <i>Follow-up</i>), tanggal, dan catatan bila perlu.</li>
+        <li>Pengingat yang tanggalnya sudah lewat dan belum selesai ditandai <b>“Lewat tanggal”</b> dengan warna merah.</li>
+        <li>Klik kotak centang di kiri pengingat untuk menandainya selesai atau membatalkannya kembali.</li>
+        <li>Saring pengingat dengan menu filter: berdasarkan status selesai/belum, atau berdasarkan jenisnya.</li>
+        <li>Klik <b>Hapus</b> untuk membuang pengingat yang tidak diperlukan lagi.</li>
+      </ol>
+      <div class="note-box">Pengingat bersifat catatan di dalam aplikasi. Pengiriman pesan otomatis ke pelanggan via WhatsApp adalah <b>pengembangan lanjutan</b> dan belum tersedia di versi ini — untuk saat ini, hubungi pelanggan secara manual dari nomor telepon yang tercatat di kartunya.</div>
+
+      <h2>5. Modul Laporan</h2>
+      <ol>
+        <li><b>Jumlah pelanggan per level:</b> melihat sebaran member Anda di level Reguler, Silver, Gold, dan Platinum.</li>
+        <li><b>Pelanggan teratas:</b> lima pelanggan dengan total belanja terbesar — calon penerima apresiasi atau penawaran eksklusif.</li>
+        <li><b>Pelanggan baru per periode:</b> jumlah pelanggan yang bergabung bulan ini, 3 bulan terakhir, dan tahun ini, berdasarkan tanggal bergabung.</li>
+        <li><b>Unduh CSV:</b> klik tombol unduh untuk menyimpan data pelanggan, riwayat belanja, atau pengingat sebagai file CSV yang bisa dibuka di Excel atau Google Sheets.</li>
+      </ol>
+
+      <h2>Harga Aplikasi</h2>
+      <h3>Beli Sekali (penawaran utama)</h3>
+      <div class="table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Paket</th><th class="num">Harga</th><th>Garansi Perbaikan Bug</th></tr></thead>
+          <tbody>
+            <tr><td>Pemula — standar siap pakai</td><td class="num">Rp499.000</td><td>30 hari</td></tr>
+            <tr><td>Profesional — + penyesuaian merek + APK Android</td><td class="num">Rp999.000</td><td>60 hari</td></tr>
+            <tr><td>Bisnis — + penyimpanan permanen, multi-user, dukungan penuh</td><td class="num">Rp1.999.000</td><td>90 hari</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Berlangganan (jalur upgrade)</h3>
+      <div class="table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Paket</th><th class="num">Harga per Bulan</th></tr></thead>
+          <tbody>
+            <tr><td>Pemula</td><td class="num">Rp49.000</td></tr>
+            <tr><td>Profesional</td><td class="num">Rp99.000</td></tr>
+            <tr><td>Bisnis</td><td class="num">Rp199.000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Berlangganan tahunan cukup membayar 10 bulan. Berhenti berlangganan berarti akses berhenti; pembayaran dilakukan manual via WhatsApp. Paket berlangganan mencakup garansi dan dukungan selama masa langganan aktif.</p>
+      <h3>Request Khusus</h3>
+      <p>Butuh penyesuaian di luar paket standar? Biaya tambahan berdasarkan ukuran perubahan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>, dengan waktu produksi <b>7 hari kalender</b>.</p>
+
+      <h2>Garansi</h2>
+      <div class="soft-box">
+        <p style="margin-top:0"><b>Garansi perbaikan bug / error gratis</b> berlaku untuk setiap pembelian:</p>
+        <ul style="margin-bottom:0">
+          <li><b>Beli sekali:</b> Pemula 30 hari, Profesional 60 hari, Bisnis 90 hari sejak pembelian.</li>
+          <li><b>Berlangganan:</b> garansi dan dukungan berlaku selama langganan aktif.</li>
+          <li><b>Cara klaim:</b> hubungi kami via WhatsApp dan kirimkan video atau screenshot yang menunjukkan bug/error-nya. Perbaikan bug tidak dikenakan biaya selama masa garansi.</li>
+          <li>Garansi mencakup perbaikan kesalahan fungsi aplikasi (bug/error), bukan penambahan fitur baru — penambahan fitur mengikuti ketentuan Request Khusus di atas.</li>
+        </ul>
+      </div>
+
+      <h2>Pertanyaan yang Sering Muncul</h2>
+      <ul>
+        <li><b>Apakah level bisa diubah manual?</b> Tidak perlu — level selalu dihitung otomatis dari total belanja agar adil dan konsisten. Jika total belanja berubah (transaksi ditambah/dihapus), level menyesuaikan sendiri.</li>
+        <li><b>Apakah data saya tersimpan?</b> Pada versi ini data tersimpan selama aplikasi dibuka. Menutup atau memuat ulang halaman akan mengembalikan data contoh awal — lihat catatan di bagian bawah halaman.</li>
+        <li><b>Bisakah aplikasi dipakai di HP dan laptop?</b> Bisa. Buka file aplikasi di browser HP atau laptop; di Chrome/Edge Anda juga dapat memilih menu “Install” atau “Tambah ke Layar Utama” agar tampil seperti aplikasi.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Catatan versi 1 (jujur):</b> data contoh dan semua perubahan yang Anda buat hanya berlaku selama aplikasi dibuka — data akan hilang dan kembali ke data contoh saat aplikasi ditutup atau dimuat ulang. Simpan data penting Anda dengan mengunduh CSV di tab Laporan.</p>
+    <p>Pengiriman pesan otomatis via WhatsApp (misalnya ucapan ulang tahun atau tagihan jatuh tempo) adalah pengembangan lanjutan dan belum tersedia di versi ini. Paket Bisnis dengan penyimpanan permanen dan multi-user tersedia sebagai jalur upgrade.</p>
+  </footer>
+</div>
+
+<!-- ============ MODAL PELANGGAN ============ -->
+<div class="overlay" id="modalPelanggan">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="judulModalPelanggan">
+    <h3 id="judulModalPelanggan">Tambah Pelanggan</h3>
+    <p class="sub">Isi data pelanggan. Level membership akan dihitung otomatis dari total belanjanya.</p>
+    <form id="formPelanggan">
+      <input type="hidden" id="pId" />
+      <div class="field"><label for="pNama">Nama lengkap *</label><input id="pNama" required maxlength="60" placeholder="cth. Sari Wulandari" /></div>
+      <div class="field"><label for="pTelepon">Nomor telepon / WhatsApp *</label><input id="pTelepon" required maxlength="20" placeholder="cth. 0812-3456-7890" /></div>
+      <div class="field"><label for="pAlamat">Alamat</label><textarea id="pAlamat" maxlength="160" placeholder="cth. Jl. Merdeka No. 10, Bandung"></textarea></div>
+      <div class="field"><label for="pBergabung">Tanggal bergabung *</label><input type="date" id="pBergabung" required /></div>
+      <div class="field"><label for="pLabel">Label pelanggan</label>
+        <select id="pLabel"><option>Pelanggan Baru</option><option>Pelanggan Setia</option><option>Belum Bayar</option><option>Sudah Langganan</option></select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-tutup>Batal</button>
+        <button type="submit" class="btn primary">Simpan Pelanggan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL TRANSAKSI ============ -->
+<div class="overlay" id="modalTransaksi">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="judulModalTransaksi">
+    <h3 id="judulModalTransaksi">Tambah Transaksi Belanja</h3>
+    <p class="sub">Setelah disimpan, total belanja, level, dan poin pelanggan diperbarui otomatis.</p>
+    <form id="formTransaksi">
+      <div class="field"><label for="tPelanggan">Pelanggan *</label><select id="tPelanggan" required></select></div>
+      <div class="field"><label for="tTanggal">Tanggal *</label><input type="date" id="tTanggal" required /></div>
+      <div class="field"><label for="tKeterangan">Keterangan belanja *</label><input id="tKeterangan" required maxlength="80" placeholder="cth. Beli 2 kg kopi arabika" /></div>
+      <div class="field"><label for="tNominal">Nominal (Rp) *</label><input type="number" id="tNominal" required min="1000" step="500" placeholder="cth. 250000" /></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-tutup>Batal</button>
+        <button type="submit" class="btn primary">Simpan Transaksi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL PENGINGAT ============ -->
+<div class="overlay" id="modalPengingat">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="judulModalPengingat">
+    <h3 id="judulModalPengingat">Tambah Pengingat</h3>
+    <p class="sub">Catat momen penting pelanggan: ulang tahun, jatuh tempo pembayaran, atau jadwal follow-up.</p>
+    <form id="formPengingat">
+      <div class="field"><label for="rPelanggan">Pelanggan *</label><select id="rPelanggan" required></select></div>
+      <div class="field"><label for="rJenis">Jenis pengingat *</label>
+        <select id="rJenis"><option>Ulang Tahun</option><option>Jatuh Tempo</option><option>Follow-up</option></select>
+      </div>
+      <div class="field"><label for="rTanggal">Tanggal *</label><input type="date" id="rTanggal" required /></div>
+      <div class="field"><label for="rCatatan">Catatan</label><input id="rCatatan" maxlength="100" placeholder="cth. Kirim ucapan + voucher ulang tahun" /></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-tutup>Batal</button>
+        <button type="submit" class="btn primary">Simpan Pengingat</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL TUKAR POIN ============ -->
+<div class="overlay" id="modalPoin">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="judulModalPoin">
+    <h3 id="judulModalPoin">Tukar Poin</h3>
+    <p class="sub" id="infoPoin"></p>
+    <form id="formPoin">
+      <input type="hidden" id="poinPelangganId" />
+      <div class="field"><label for="poinJumlah">Jumlah poin yang ditukar (kelipatan 100)</label><input type="number" id="poinJumlah" min="100" step="100" required /></div>
+      <p id="poinNilai" style="margin:0;color:var(--sage-dark);font-weight:700"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-tutup>Batal</button>
+        <button type="submit" class="btn gold">Konfirmasi Penukaran</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL KONFIRMASI HAPUS ============ -->
+<div class="overlay" id="modalHapus">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="judulModalHapus">
+    <h3 id="judulModalHapus">Hapus data?</h3>
+    <p class="sub" id="teksHapus"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-tutup>Batal</button>
+      <button type="button" class="btn danger" id="btnKonfirmasiHapus">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= DATA CONTOH ================= */
+var LABELS = ["Pelanggan Baru","Pelanggan Setia","Belum Bayar","Sudah Langganan"];
+var LEVELS = [
+  {nama:"Reguler",  min:0,        maks:999999,    diskon:0,  kelas:"reguler"},
+  {nama:"Silver",   min:1000000,  maks:4999999,   diskon:3,  kelas:"silver"},
+  {nama:"Gold",     min:5000000,  maks:14999999,  diskon:5,  kelas:"gold"},
+  {nama:"Platinum", min:15000000, maks:Infinity,  diskon:10, kelas:"platinum"}
+];
+
+var pelanggan = [
+  {id:1, nama:"Sari Wulandari",  telepon:"0812-3456-7801", alamat:"Jl. Melati No. 8, Bandung",        bergabung:"2025-03-12", label:"Pelanggan Setia",  poinTerpakai:200},
+  {id:2, nama:"Budi Santoso",    telepon:"0813-2211-4502", alamat:"Jl. Kenanga Raya 21, Jakarta Timur",bergabung:"2025-06-03", label:"Sudah Langganan",  poinTerpakai:100},
+  {id:3, nama:"Dewi Anggraini",  telepon:"0821-9876-3303", alamat:"Perum Griya Asri B4, Depok",        bergabung:"2025-08-19", label:"Pelanggan Setia",  poinTerpakai:0},
+  {id:4, nama:"Andi Pratama",    telepon:"0857-1122-9004", alamat:"Jl. Sudirman Km 4, Palembang",      bergabung:"2026-01-15", label:"Sudah Langganan",  poinTerpakai:0},
+  {id:5, nama:"Rina Marlina",    telepon:"0819-3344-5505", alamat:"Jl. Cendana 3, Yogyakarta",         bergabung:"2026-02-08", label:"Pelanggan Setia",  poinTerpakai:100},
+  {id:6, nama:"Joko Prasetyo",   telepon:"0822-6677-8806", alamat:"Desa Sukamaju RT 02, Kediri",       bergabung:"2026-09-21", label:"Pelanggan Baru",   poinTerpakai:0},
+  {id:7, nama:"Maya Kusuma",     telepon:"0812-9090-1207", alamat:"Jl. Pantai Indah Blok C, Denpasar", bergabung:"2024-11-27", label:"Pelanggan Setia",  poinTerpakai:300},
+  {id:8, nama:"Rizky Ramadhan",  telepon:"0856-7788-9908", alamat:"Jl. Ahmad Yani 145, Bekasi",        bergabung:"2026-05-30", label:"Belum Bayar",      poinTerpakai:0},
+  {id:9, nama:"Fitri Handayani", telepon:"0813-5566-2109", alamat:"Komplek Bukit Indah 7, Semarang",   bergabung:"2025-04-14", label:"Sudah Langganan",  poinTerpakai:200},
+  {id:10,nama:"Agus Wijaya",     telepon:"0821-4433-2210", alamat:"Jl. Diponegoro 56, Surabaya",       bergabung:"2026-10-05", label:"Pelanggan Baru",   poinTerpakai:0},
+  {id:11,nama:"Lestari Ningrum", telepon:"0817-6655-4411", alamat:"Jl. Anggrek Bulan 2, Malang",       bergabung:"2025-12-01", label:"Pelanggan Setia",  poinTerpakai:0},
+  {id:12,nama:"Dedi Kurniawan",  telepon:"0895-3322-1112", alamat:"Jl. Pahlawan No. 99, Bogor",        bergabung:"2026-11-02", label:"Belum Bayar",      poinTerpakai:0},
+  {id:13,nama:"Putri Ayu Lestari",telepon:"0812-1212-3413",alamat:"Jl. Flamboyan 15, Tangerang",       bergabung:"2026-11-16", label:"Pelanggan Baru",   poinTerpakai:0}
+];
+
+var transaksi = [
+  {id:1,  pelangganId:1,  tanggal:"2025-04-02", keterangan:"Paket skincare bulanan",        nominal:2400000},
+  {id:2,  pelangganId:1,  tanggal:"2025-07-18", keterangan:"Restock serum & toner (3 set)", nominal:3850000},
+  {id:3,  pelangganId:1,  tanggal:"2025-11-25", keterangan:"Paket perawatan lengkap",      nominal:4200000},
+  {id:4,  pelangganId:1,  tanggal:"2026-03-09", keterangan:"Belanja grosir untuk reseller", nominal:5100000},
+  {id:5,  pelangganId:1,  tanggal:"2026-08-14", keterangan:"Paket skincare + parfum",       nominal:2950000},
+  {id:6,  pelangganId:2,  tanggal:"2025-07-01", keterangan:"Kopi arabika 10 kg",            nominal:2800000},
+  {id:7,  pelangganId:2,  tanggal:"2025-12-20", keterangan:"Kopi robusta 12 kg",            nominal:3100000},
+  {id:8,  pelangganId:2,  tanggal:"2026-06-11", keterangan:"Kopi arabika 8 kg + gula aren", nominal:3300000},
+  {id:9,  pelangganId:3,  tanggal:"2025-09-05", keterangan:"Bahan kue premium (set A)",     nominal:2150000},
+  {id:10, pelangganId:3,  tanggal:"2026-02-17", keterangan:"Bahan kue premium (set B)",     nominal:2300000},
+  {id:11, pelangganId:3,  tanggal:"2026-09-28", keterangan:"Cokelat & keju impor",          nominal:2300000},
+  {id:12, pelangganId:4,  tanggal:"2026-02-02", keterangan:"Sembako paket usaha warung",    nominal:1750000},
+  {id:13, pelangganId:4,  tanggal:"2026-07-19", keterangan:"Restock minyak & beras",        nominal:1650000},
+  {id:14, pelangganId:5,  tanggal:"2026-03-14", keterangan:"Hijab & gamis (4 pcs)",         nominal:1150000},
+  {id:15, pelangganId:5,  tanggal:"2026-08-03", keterangan:"Hijab premium (3 pcs)",         nominal:1000000},
+  {id:16, pelangganId:6,  tanggal:"2026-10-01", keterangan:"Pupuk & benih sayur",           nominal:450000},
+  {id:17, pelangganId:7,  tanggal:"2025-01-20", keterangan:"Perabot dapur set lengkap",     nominal:6800000},
+  {id:18, pelangganId:7,  tanggal:"2025-08-08", keterangan:"Elektronik dapur (2 unit)",     nominal:5900000},
+  {id:19, pelangganId:7,  tanggal:"2026-04-26", keterangan:"Restock perabot untuk villa",   nominal:6400000},
+  {id:20, pelangganId:7,  tanggal:"2026-10-19", keterangan:"Set piring & gelas premium",    nominal:3200000},
+  {id:21, pelangganId:8,  tanggal:"2026-06-15", keterangan:"Sepatu lari (2 pasang)",        nominal:1250000},
+  {id:22, pelangganId:9,  tanggal:"2025-05-22", keterangan:"Kain batik premium (6 potong)", nominal:4400000},
+  {id:23, pelangganId:9,  tanggal:"2025-12-09", keterangan:"Kain tenun untuk butik",        nominal:4600000},
+  {id:24, pelangganId:9,  tanggal:"2026-07-30", keterangan:"Batik tulis edisi khusus",      nominal:3800000},
+  {id:25, pelangganId:10, tanggal:"2026-10-20", keterangan:"Alat tulis kantor (paket)",     nominal:750000},
+  {id:26, pelangganId:11, tanggal:"2026-01-11", keterangan:"Buku & mainan edukasi anak",   nominal:2300000},
+  {id:27, pelangganId:11, tanggal:"2026-06-23", keterangan:"Paket mainan edukasi (seri 2)", nominal:2300000},
+  {id:28, pelangganId:12, tanggal:"2026-11-10", keterangan:"Pulsa & paket data (grosir)",   nominal:180000}
+];
+
+var pengingat = [
+  {id:1, pelangganId:1, jenis:"Ulang Tahun", tanggal:"2026-11-25", catatan:"Kirim ucapan + voucher ulang tahun 15%", selesai:false},
+  {id:2, pelangganId:8, jenis:"Jatuh Tempo", tanggal:"2026-11-18", catatan:"Sisa pembayaran sepatu Rp350.000", selesai:false},
+  {id:3, pelangganId:3, jenis:"Follow-up",   tanggal:"2026-11-22", catatan:"Tawarkan bahan kue edisi akhir tahun", selesai:false},
+  {id:4, pelangganId:12,jenis:"Jatuh Tempo", tanggal:"2026-11-27", catatan:"Tagih pembayaran pulsa grosir", selesai:false},
+  {id:5, pelangganId:7, jenis:"Ulang Tahun", tanggal:"2026-12-05", catatan:"Pelanggan Platinum — siapkan hampers kecil", selesai:false},
+  {id:6, pelangganId:2, jenis:"Follow-up",   tanggal:"2026-11-12", catatan:"Konfirmasi stok kopi untuk Desember", selesai:true},
+  {id:7, pelangganId:5, jenis:"Follow-up",   tanggal:"2026-11-15", catatan:"Sudah ditawari koleksi hijab terbaru", selesai:true}
+];
+
+var nextPelangganId = 14, nextTransaksiId = 29, nextPengingatId = 8;
+var hapusTarget = null; // {tipe:'pelanggan'|'transaksi'|'pengingat', id}
+
+/* ================= HELPER ================= */
+function rp(n){ return "Rp" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function fmtTanggal(iso){
+  if(!iso) return "-";
+  var b = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  var p = iso.split("-");
+  return parseInt(p[2],10) + " " + b[parseInt(p[1],10)-1] + " " + p[0];
+}
+function hariIni(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function cariPelanggan(id){ for(var i=0;i<pelanggan.length;i++) if(pelanggan[i].id===id) return pelanggan[i]; return null; }
+function totalBelanja(id){ var t=0; transaksi.forEach(function(x){ if(x.pelangganId===id) t+=x.nominal; }); return t; }
+function jumlahTransaksi(id){ var t=0; transaksi.forEach(function(x){ if(x.pelangganId===id) t++; }); return t; }
+function levelDari(total){ for(var i=LEVELS.length-1;i>=0;i--) if(total>=LEVELS[i].min) return LEVELS[i]; return LEVELS[0]; }
+function levelPelanggan(p){ return levelDari(totalBelanja(p.id)); }
+function poinKotor(id){ return Math.floor(totalBelanja(id)/10000); }
+function poinAktif(p){ return Math.max(0, poinKotor(p.id) - (p.poinTerpakai||0)); }
+function toast(msg){
+  var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._timer); t._timer=setTimeout(function(){ t.classList.remove("show"); },2600);
+}
+
+/* ================= TABS ================= */
+document.getElementById("tabNav").addEventListener("click", function(e){
+  var btn = e.target.closest("button[data-tab]"); if(!btn) return;
+  document.querySelectorAll("#tabNav button").forEach(function(b){ b.classList.toggle("active", b===btn); });
+  document.querySelectorAll("section.tab").forEach(function(s){ s.classList.toggle("active", s.id==="tab-"+btn.dataset.tab); });
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+/* ================= RENDER: STATISTIK ================= */
+function renderStatistik(){
+  var totalSemua=0, poinSemua=0;
+  pelanggan.forEach(function(p){ totalSemua+=totalBelanja(p.id); poinSemua+=poinAktif(p); });
+  document.getElementById("statPelanggan").textContent = pelanggan.length;
+  document.getElementById("statBelanja").textContent = rp(totalSemua);
+  document.getElementById("statPoin").textContent = poinSemua.toLocaleString("id-ID");
+  document.getElementById("statPengingat").textContent = pengingat.filter(function(r){ return !r.selesai; }).length;
+}
+
+/* ================= RENDER: PELANGGAN ================= */
+function renderPelanggan(){
+  var q = document.getElementById("cariPelanggan").value.trim().toLowerCase();
+  var fLevel = document.getElementById("filterLevel").value;
+  var fLabel = document.getElementById("filterLabel").value;
+  var wadah = document.getElementById("daftarPelanggan");
+  var hasil = pelanggan.filter(function(p){
+    var lv = levelPelanggan(p).nama;
+    if(fLevel && lv!==fLevel) return false;
+    if(fLabel && p.label!==fLabel) return false;
+    if(q){
+      var hay = (p.nama+" "+p.telepon+" "+(p.alamat||"")).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+  hasil.sort(function(a,b){ return totalBelanja(b.id)-totalBelanja(a.id); });
+  document.getElementById("pelangganKosong").style.display = hasil.length? "none":"block";
+  wadah.innerHTML = hasil.map(function(p){
+    var lv = levelPelanggan(p), total = totalBelanja(p.id), poin = poinAktif(p);
+    var labelOpts = LABELS.map(function(l){ return '<option value="'+l+'"'+(p.label===l?" selected":"")+">"+l+"</option>"; }).join("");
+    return '<article class="card">'
+      + '<div class="cust-head"><div><h3 class="cust-name">'+esc(p.nama)+'</h3>'
+      + '<div class="cust-meta">'+esc(p.telepon)+(p.alamat? "<br>"+esc(p.alamat):"")+'<br>Bergabung '+fmtTanggal(p.bergabung)+'</div></div>'
+      + '<span class="badge lv-'+lv.kelas+'">'+lv.nama+'</span></div>'
+      + '<div class="label-row"><span>Label:</span><select data-label-for="'+p.id+'" aria-label="Label '+esc(p.nama)+'">'+labelOpts+'</select></div>'
+      + '<div class="cust-nums"><div><b>'+rp(total)+'</b><span>Total belanja</span></div>'
+      + '<div><b>'+poin.toLocaleString("id-ID")+'</b><span>Poin aktif</span></div>'
+      + '<div><b>'+lv.diskon+'%</b><span>Diskon member</span></div></div>'
+      + '<div class="cust-actions">'
+      + '<button class="btn small" data-aksi="belanja" data-id="'+p.id+'">+ Belanja</button>'
+      + '<button class="btn small" data-aksi="poin" data-id="'+p.id+'"'+(poin<100?" disabled":"")+'>Tukar Poin</button>'
+      + '<button class="btn small" data-aksi="ubah" data-id="'+p.id+'">Ubah</button>'
+      + '<button class="btn small danger" data-aksi="hapus" data-id="'+p.id+'">Hapus</button>'
+      + '</div></article>';
+  }).join("");
+}
+document.getElementById("cariPelanggan").addEventListener("input", renderPelanggan);
+document.getElementById("filterLevel").addEventListener("change", renderPelanggan);
+document.getElementById("filterLabel").addEventListener("change", renderPelanggan);
+document.getElementById("daftarPelanggan").addEventListener("change", function(e){
+  var sel = e.target.closest("select[data-label-for]"); if(!sel) return;
+  var p = cariPelanggan(parseInt(sel.dataset.labelFor,10)); if(!p) return;
+  p.label = sel.value; toast("Label "+p.nama+" diubah menjadi “"+sel.value+"”."); renderSemua(false);
+});
+document.getElementById("daftarPelanggan").addEventListener("click", function(e){
+  var btn = e.target.closest("button[data-aksi]"); if(!btn) return;
+  var id = parseInt(btn.dataset.id,10), p = cariPelanggan(id); if(!p) return;
+  if(btn.dataset.aksi==="ubah") bukaModalPelanggan(p);
+  if(btn.dataset.aksi==="hapus") mintaHapus("pelanggan", id, "Pelanggan “"+p.nama+"” beserta seluruh riwayat belanja dan pengingatnya akan dihapus permanen dari sesi ini.");
+  if(btn.dataset.aksi==="belanja"){ isiPilihanPelanggan(); document.getElementById("tPelanggan").value=id; bukaModal("modalTransaksi"); }
+  if(btn.dataset.aksi==="poin") bukaModalPoin(p);
+});
+
+/* ================= RENDER: MEMBERSHIP ================= */
+function renderMembership(){
+  document.getElementById("kartuLevel").innerHTML = LEVELS.map(function(lv, i){
+    var rentang = lv.maks===Infinity ? rp(lv.min)+" ke atas" : rp(lv.min)+" – "+rp(lv.maks);
+    if(i===0) rentang = "Di bawah "+rp(LEVELS[1].min);
+    var jumlah = pelanggan.filter(function(p){ return levelPelanggan(p).nama===lv.nama; }).length;
+    return '<div class="card level-card '+lv.kelas+'"><h3>'+lv.nama+'</h3>'
+      + '<div style="color:var(--ink-soft);font-size:13.5px">Total belanja: <b style="color:var(--ink)">'+rentang+'</b></div>'
+      + '<ul><li>Diskon belanja <b>'+lv.diskon+'%</b></li>'
+      + '<li>Poin: 1 poin per Rp10.000 belanja</li>'
+      + '<li>'+jumlah+' pelanggan di level ini</li></ul></div>';
+  }).join("");
+
+  var urut = pelanggan.slice().sort(function(a,b){ return totalBelanja(b.id)-totalBelanja(a.id); });
+  document.getElementById("tabelMember").innerHTML = urut.map(function(p){
+    var total = totalBelanja(p.id), lv = levelPelanggan(p), idx = LEVELS.indexOf(lv);
+    var progres;
+    if(idx===LEVELS.length-1){ progres = '<div style="font-size:13px;color:var(--ink-soft)">Level tertinggi</div><div class="progress"><i style="width:100%"></i></div>'; }
+    else{
+      var next = LEVELS[idx+1], persen = Math.min(100, Math.round(total/next.min*100));
+      progres = '<div style="font-size:13px;color:var(--ink-soft)">Kurang '+rp(next.min-total)+' menuju '+next.nama+'</div><div class="progress"><i style="width:'+persen+'%"></i></div>';
+    }
+    return '<tr><td data-label="Pelanggan"><span><b>'+esc(p.nama)+'</b><br><span style="color:var(--ink-soft);font-size:12.5px">'+esc(p.telepon)+'</span></span></td>'
+      + '<td data-label="Level"><span class="badge lv-'+lv.kelas+'">'+lv.nama+'</span></td>'
+      + '<td data-label="Total Belanja" class="num">'+rp(total)+'</td><td data-label="Diskon" class="num">'+lv.diskon+'%</td>'
+      + '<td data-label="Poin" class="num">'+poinAktif(p).toLocaleString("id-ID")+'</td><td data-label="Kemajuan">'+progres+'</td></tr>';
+  }).join("");
+}
+
+/* ================= RENDER: RIWAYAT BELANJA ================= */
+function isiPilihanPelanggan(){
+  var opts = pelanggan.map(function(p){ return '<option value="'+p.id+'">'+esc(p.nama)+'</option>'; }).join("");
+  document.getElementById("tPelanggan").innerHTML = opts;
+  document.getElementById("rPelanggan").innerHTML = opts;
+  var f = document.getElementById("filterBelanjaPelanggan"), nilaiLama = f.value;
+  f.innerHTML = '<option value="">Semua Pelanggan</option>' + opts;
+  if(nilaiLama && cariPelanggan(parseInt(nilaiLama,10))) f.value = nilaiLama;
+}
+function renderBelanja(){
+  var fid = document.getElementById("filterBelanjaPelanggan").value;
+  var list = transaksi.filter(function(t){ return !fid || t.pelangganId===parseInt(fid,10); })
+                       .slice().sort(function(a,b){ return b.tanggal.localeCompare(a.tanggal) || b.id-a.id; });
+  var ringkasan = document.getElementById("ringkasanBelanja");
+  if(fid){
+    var p = cariPelanggan(parseInt(fid,10));
+    ringkasan.innerHTML = p ? '<b>'+esc(p.nama)+'</b> — total belanja <b>'+rp(totalBelanja(p.id))+'</b> dari '+jumlahTransaksi(p.id)+' transaksi · Level <b>'+levelPelanggan(p).nama+'</b> · Poin aktif <b>'+poinAktif(p).toLocaleString("id-ID")+'</b>' : "";
+  } else {
+    var tot=0; transaksi.forEach(function(t){ tot+=t.nominal; });
+    ringkasan.innerHTML = 'Menampilkan <b>semua pelanggan</b> — '+transaksi.length+' transaksi dengan total <b>'+rp(tot)+'</b>.';
+  }
+  document.getElementById("transaksiKosong").style.display = list.length? "none":"block";
+  document.getElementById("tabelTransaksi").innerHTML = list.map(function(t){
+    var p = cariPelanggan(t.pelangganId);
+    return '<tr><td data-label="Tanggal" style="white-space:nowrap">'+fmtTanggal(t.tanggal)+'</td>'
+      + '<td data-label="Pelanggan"><b>'+esc(p? p.nama:"(pelanggan terhapus)")+'</b></td>'
+      + '<td data-label="Keterangan">'+esc(t.keterangan)+'</td>'
+      + '<td data-label="Nominal" class="num">'+rp(t.nominal)+'</td>'
+      + '<td data-label="Poin Didapat" class="num">'+Math.floor(t.nominal/10000).toLocaleString("id-ID")+'</td>'
+      + '<td data-label=""><button class="btn small danger" data-hapus-transaksi="'+t.id+'">Hapus</button></td></tr>';
+  }).join("");
+}
+document.getElementById("filterBelanjaPelanggan").addEventListener("change", renderBelanja);
+document.getElementById("tabelTransaksi").addEventListener("click", function(e){
+  var btn = e.target.closest("button[data-hapus-transaksi]"); if(!btn) return;
+  mintaHapus("transaksi", parseInt(btn.dataset.hapusTransaksi,10), "Transaksi ini akan dihapus. Total belanja, level, dan poin pelanggan dihitung ulang otomatis.");
+});
+
+/* ================= RENDER: PENGINGAT ================= */
+function renderPengingat(){
+  var f = document.getElementById("filterPengingat").value;
+  var list = pengingat.filter(function(r){
+    if(f==="belum") return !r.selesai;
+    if(f==="selesai") return r.selesai;
+    if(f) return r.jenis===f;
+    return true;
+  }).slice().sort(function(a,b){
+    if(a.selesai!==b.selesai) return a.selesai? 1:-1;
+    return a.tanggal.localeCompare(b.tanggal);
+  });
+  document.getElementById("pengingatKosong").style.display = list.length? "none":"block";
+  document.getElementById("daftarPengingat").style.display = list.length? "block":"none";
+  var hari = hariIni();
+  var chipKelas = {"Ulang Tahun":"chip info","Jatuh Tempo":"chip warn","Follow-up":"chip"};
+  document.getElementById("daftarPengingat").innerHTML = list.map(function(r){
+    var p = cariPelanggan(r.pelangganId);
+    var lewat = !r.selesai && r.tanggal < hari;
+    return '<div class="rem-item'+(r.selesai?" done":"")+'">'
+      + '<button class="rem-check'+(r.selesai?" on":"")+'" data-toggle-pengingat="'+r.id+'" aria-label="Tandai selesai">'+(r.selesai?"✓":"")+'</button>'
+      + '<div class="rem-body"><div class="rem-title">'+esc(r.jenis)+' — '+esc(p? p.nama:"(pelanggan terhapus)")+'</div>'
+      + '<div class="rem-sub">'+fmtTanggal(r.tanggal)+(lewat? ' · <span class="overdue">Lewat tanggal</span>':"")+(r.catatan? " · "+esc(r.catatan):"")+'</div></div>'
+      + '<span class="'+chipKelas[r.jenis]+'">'+esc(r.jenis)+'</span>'
+      + '<button class="btn small danger" data-hapus-pengingat="'+r.id+'">Hapus</button></div>';
+  }).join("");
+}
+document.getElementById("filterPengingat").addEventListener("change", renderPengingat);
+document.getElementById("daftarPengingat").addEventListener("click", function(e){
+  var tog = e.target.closest("button[data-toggle-pengingat]");
+  if(tog){
+    var r = pengingat.filter(function(x){ return x.id===parseInt(tog.dataset.togglePengingat,10); })[0];
+    if(r){ r.selesai=!r.selesai; toast(r.selesai? "Pengingat ditandai selesai.":"Pengingat dibuka kembali."); renderSemua(false); }
+    return;
+  }
+  var del = e.target.closest("button[data-hapus-pengingat]");
+  if(del) mintaHapus("pengingat", parseInt(del.dataset.hapusPengingat,10), "Pengingat ini akan dihapus.");
+});
+
+/* ================= RENDER: LAPORAN ================= */
+function renderLaporan(){
+  var maks = 1;
+  var perLevel = LEVELS.map(function(lv){
+    var j = pelanggan.filter(function(p){ return levelPelanggan(p).nama===lv.nama; }).length;
+    if(j>maks) maks=j; return {lv:lv, jumlah:j};
+  });
+  document.getElementById("laporanLevel").innerHTML = perLevel.map(function(x){
+    return '<div class="bar-row"><div class="bar-name">'+x.lv.nama+'</div><div class="bar-track"><i style="width:'+Math.round(x.jumlah/maks*100)+'%"></i></div><div class="bar-val">'+x.jumlah+'</div></div>';
+  }).join("") + '<p style="color:var(--ink-soft);font-size:13px;margin:8px 0 0">Total '+pelanggan.length+' pelanggan terdaftar.</p>';
+
+  var now = new Date();
+  function awalBulan(offset){ return new Date(now.getFullYear(), now.getMonth()-offset, 1); }
+  function hitungSejak(d){
+    var iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01";
+    return pelanggan.filter(function(p){ return p.bergabung>=iso; }).length;
+  }
+  var awalTahun = now.getFullYear()+"-01-01";
+  var tahunIni = pelanggan.filter(function(p){ return p.bergabung>=awalTahun; }).length;
+  document.getElementById("laporanBaru").innerHTML =
+      '<div class="bar-row"><div class="bar-name" style="width:130px">Bulan ini</div><div class="bar-val" style="width:auto;font-size:20px">'+hitungSejak(awalBulan(0))+' pelanggan</div></div>'
+    + '<div class="bar-row"><div class="bar-name" style="width:130px">3 bulan terakhir</div><div class="bar-val" style="width:auto;font-size:20px">'+hitungSejak(awalBulan(2))+' pelanggan</div></div>'
+    + '<div class="bar-row"><div class="bar-name" style="width:130px">Tahun '+now.getFullYear()+'</div><div class="bar-val" style="width:auto;font-size:20px">'+tahunIni+' pelanggan</div></div>'
+    + '<p style="color:var(--ink-soft);font-size:13px;margin:8px 0 0">Dihitung dari tanggal bergabung yang tercatat pada data pelanggan.</p>';
+
+  var top = pelanggan.slice().sort(function(a,b){ return totalBelanja(b.id)-totalBelanja(a.id); }).slice(0,5);
+  document.getElementById("tabelTeratas").innerHTML = top.map(function(p,i){
+    var lv = levelPelanggan(p);
+    return '<tr><td data-label="Peringkat">'+(i+1)+'</td><td data-label="Pelanggan"><b>'+esc(p.nama)+'</b></td>'
+      + '<td data-label="Level"><span class="badge lv-'+lv.kelas+'">'+lv.nama+'</span></td>'
+      + '<td data-label="Label">'+esc(p.label)+'</td>'
+      + '<td data-label="Transaksi" class="num">'+jumlahTransaksi(p.id)+'</td>'
+      + '<td data-label="Total Belanja" class="num"><b>'+rp(totalBelanja(p.id))+'</b></td>'
+      + '<td data-label="Poin" class="num">'+poinAktif(p).toLocaleString("id-ID")+'</td></tr>';
+  }).join("");
+}
+
+/* ================= CSV ================= */
+function unduhCsv(namaFile, baris){
+  var isi = baris.map(function(r){ return r.map(function(c){
+    c = String(c==null?"":c);
+    return /[",;\n]/.test(c)? '"'+c.replace(/"/g,'""')+'"' : c;
+  }).join(";"); }).join("\r\n");
+  var blob = new Blob(["\ufeff"+isi], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = namaFile;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+}
+document.getElementById("btnCsvPelanggan").addEventListener("click", function(){
+  var baris = [["Nama","Telepon","Alamat","Tanggal Bergabung","Label","Level","Total Belanja (Rp)","Jumlah Transaksi","Poin Aktif","Diskon (%)"]];
+  pelanggan.slice().sort(function(a,b){ return totalBelanja(b.id)-totalBelanja(a.id); }).forEach(function(p){
+    var lv = levelPelanggan(p);
+    baris.push([p.nama, p.telepon, p.alamat||"", p.bergabung, p.label, lv.nama, totalBelanja(p.id), jumlahTransaksi(p.id), poinAktif(p), lv.diskon]);
+  });
+  unduhCsv("data-pelanggan.csv", baris); toast("CSV pelanggan diunduh.");
+});
+document.getElementById("btnCsvTransaksi").addEventListener("click", function(){
+  var baris = [["Tanggal","Pelanggan","Keterangan","Nominal (Rp)","Poin Didapat"]];
+  transaksi.slice().sort(function(a,b){ return a.tanggal.localeCompare(b.tanggal); }).forEach(function(t){
+    var p = cariPelanggan(t.pelangganId);
+    baris.push([t.tanggal, p? p.nama:"", t.keterangan, t.nominal, Math.floor(t.nominal/10000)]);
+  });
+  unduhCsv("riwayat-belanja.csv", baris); toast("CSV riwayat belanja diunduh.");
+});
+document.getElementById("btnCsvPengingat").addEventListener("click", function(){
+  var baris = [["Tanggal","Pelanggan","Jenis","Catatan","Status"]];
+  pengingat.slice().sort(function(a,b){ return a.tanggal.localeCompare(b.tanggal); }).forEach(function(r){
+    var p = cariPelanggan(r.pelangganId);
+    baris.push([r.tanggal, p? p.nama:"", r.jenis, r.catatan||"", r.selesai? "Selesai":"Belum selesai"]);
+  });
+  unduhCsv("pengingat-pelanggan.csv", baris); toast("CSV pengingat diunduh.");
+});
+
+/* ================= MODAL UMUM ================= */
+function bukaModal(id){ document.getElementById(id).classList.add("open"); }
+function tutupModal(el){ el.classList.remove("open"); }
+document.querySelectorAll(".overlay").forEach(function(ov){
+  ov.addEventListener("click", function(e){ if(e.target===ov) tutupModal(ov); });
+  ov.querySelectorAll("[data-tutup]").forEach(function(b){ b.addEventListener("click", function(){ tutupModal(ov); }); });
+});
+
+/* ---- Form Pelanggan ---- */
+function bukaModalPelanggan(p){
+  document.getElementById("judulModalPelanggan").textContent = p? "Ubah Pelanggan":"Tambah Pelanggan";
+  document.getElementById("pId").value = p? p.id:"";
+  document.getElementById("pNama").value = p? p.nama:"";
+  document.getElementById("pTelepon").value = p? p.telepon:"";
+  document.getElementById("pAlamat").value = p? (p.alamat||""):"";
+  document.getElementById("pBergabung").value = p? p.bergabung:hariIni();
+  document.getElementById("pLabel").value = p? p.label:"Pelanggan Baru";
+  bukaModal("modalPelanggan");
+}
+document.getElementById("btnTambahPelanggan").addEventListener("click", function(){ bukaModalPelanggan(null); });
+document.getElementById("formPelanggan").addEventListener("submit", function(e){
+  e.preventDefault();
+  var id = document.getElementById("pId").value;
+  var data = {
+    nama: document.getElementById("pNama").value.trim(),
+    telepon: document.getElementById("pTelepon").value.trim(),
+    alamat: document.getElementById("pAlamat").value.trim(),
+    bergabung: document.getElementById("pBergabung").value,
+    label: document.getElementById("pLabel").value
+  };
+  if(!data.nama || !data.telepon || !data.bergabung){ toast("Nama, telepon, dan tanggal bergabung wajib diisi."); return; }
+  if(id){
+    var p = cariPelanggan(parseInt(id,10));
+    Object.keys(data).forEach(function(k){ p[k]=data[k]; });
+    toast("Data "+p.nama+" diperbarui.");
+  } else {
+    data.id = nextPelangganId++; data.poinTerpakai = 0;
+    pelanggan.push(data);
+    toast("Pelanggan "+data.nama+" ditambahkan.");
+  }
+  tutupModal(document.getElementById("modalPelanggan"));
+  renderSemua(true);
+});
+
+/* ---- Form Transaksi ---- */
+document.getElementById("btnTambahTransaksi").addEventListener("click", function(){
+  if(!pelanggan.length){ toast("Tambahkan pelanggan terlebih dahulu."); return; }
+  isiPilihanPelanggan();
+  document.getElementById("tTanggal").value = hariIni();
+  document.getElementById("tKeterangan").value = "";
+  document.getElementById("tNominal").value = "";
+  bukaModal("modalTransaksi");
+});
+document.getElementById("formTransaksi").addEventListener("submit", function(e){
+  e.preventDefault();
+  var pid = parseInt(document.getElementById("tPelanggan").value,10);
+  var nominal = parseInt(document.getElementById("tNominal").value,10);
+  var ket = document.getElementById("tKeterangan").value.trim();
+  var tgl = document.getElementById("tTanggal").value;
+  if(!cariPelanggan(pid) || !ket || !tgl || !(nominal>0)){ toast("Periksa kembali isian transaksi."); return; }
+  var p = cariPelanggan(pid), lvSebelum = levelPelanggan(p).nama;
+  transaksi.push({id:nextTransaksiId++, pelangganId:pid, tanggal:tgl, keterangan:ket, nominal:nominal});
+  tutupModal(document.getElementById("modalTransaksi"));
+  renderSemua(true);
+  var lvSesudah = levelPelanggan(p).nama;
+  toast(lvSesudah!==lvSebelum
+    ? "Transaksi tersimpan. "+p.nama+" naik level menjadi "+lvSesudah+"!"
+    : "Transaksi "+rp(nominal)+" untuk "+p.nama+" tersimpan.");
+});
+
+/* ---- Form Pengingat ---- */
+document.getElementById("btnTambahPengingat").addEventListener("click", function(){
+  if(!pelanggan.length){ toast("Tambahkan pelanggan terlebih dahulu."); return; }
+  isiPilihanPelanggan();
+  document.getElementById("rTanggal").value = hariIni();
+  document.getElementById("rCatatan").value = "";
+  bukaModal("modalPengingat");
+});
+document.getElementById("formPengingat").addEventListener("submit", function(e){
+  e.preventDefault();
+  var pid = parseInt(document.getElementById("rPelanggan").value,10);
+  var tgl = document.getElementById("rTanggal").value;
+  if(!cariPelanggan(pid) || !tgl){ toast("Periksa kembali isian pengingat."); return; }
+  pengingat.push({id:nextPengingatId++, pelangganId:pid, jenis:document.getElementById("rJenis").value,
+    tanggal:tgl, catatan:document.getElementById("rCatatan").value.trim(), selesai:false});
+  tutupModal(document.getElementById("modalPengingat"));
+  toast("Pengingat untuk "+cariPelanggan(pid).nama+" ditambahkan.");
+  renderSemua(false);
+});
+
+/* ---- Tukar Poin ---- */
+function bukaModalPoin(p){
+  document.getElementById("poinPelangganId").value = p.id;
+  var poin = poinAktif(p);
+  document.getElementById("infoPoin").innerHTML = "<b>"+esc(p.nama)+"</b> memiliki <b>"+poin.toLocaleString("id-ID")+" poin</b> aktif. Setiap 100 poin bernilai potongan Rp10.000.";
+  var inp = document.getElementById("poinJumlah");
+  inp.max = Math.floor(poin/100)*100; inp.value = Math.min(100, Math.floor(poin/100)*100);
+  perbaruiNilaiPoin();
+  bukaModal("modalPoin");
+}
+function perbaruiNilaiPoin(){
+  var j = parseInt(document.getElementById("poinJumlah").value,10)||0;
+  document.getElementById("poinNilai").textContent = j>0? "Nilai potongan: "+rp(j/100*10000) : "";
+}
+document.getElementById("poinJumlah").addEventListener("input", perbaruiNilaiPoin);
+document.getElementById("formPoin").addEventListener("submit", function(e){
+  e.preventDefault();
+  var p = cariPelanggan(parseInt(document.getElementById("poinPelangganId").value,10)); if(!p) return;
+  var j = parseInt(document.getElementById("poinJumlah").value,10)||0;
+  if(j<100 || j%100!==0){ toast("Jumlah poin harus kelipatan 100, minimal 100."); return; }
+  if(j>poinAktif(p)){ toast("Poin tidak cukup. Saldo aktif: "+poinAktif(p).toLocaleString("id-ID")+" poin."); return; }
+  p.poinTerpakai = (p.poinTerpakai||0) + j;
+  tutupModal(document.getElementById("modalPoin"));
+  toast(p.nama+" menukar "+j.toLocaleString("id-ID")+" poin = potongan "+rp(j/100*10000)+". Berikan potongannya saat belanja berikutnya.");
+  renderSemua(false);
+});
+
+/* ---- Konfirmasi Hapus ---- */
+function mintaHapus(tipe, id, teks){
+  hapusTarget = {tipe:tipe, id:id};
+  document.getElementById("teksHapus").textContent = teks;
+  bukaModal("modalHapus");
+}
+document.getElementById("btnKonfirmasiHapus").addEventListener("click", function(){
+  if(!hapusTarget) return;
+  if(hapusTarget.tipe==="pelanggan"){
+    pelanggan = pelanggan.filter(function(p){ return p.id!==hapusTarget.id; });
+    transaksi = transaksi.filter(function(t){ return t.pelangganId!==hapusTarget.id; });
+    pengingat = pengingat.filter(function(r){ return r.pelangganId!==hapusTarget.id; });
+    toast("Pelanggan berhasil dihapus.");
+  } else if(hapusTarget.tipe==="transaksi"){
+    transaksi = transaksi.filter(function(t){ return t.id!==hapusTarget.id; });
+    toast("Transaksi dihapus. Total belanja dan poin dihitung ulang.");
+  } else if(hapusTarget.tipe==="pengingat"){
+    pengingat = pengingat.filter(function(r){ return r.id!==hapusTarget.id; });
+    toast("Pengingat dihapus.");
+  }
+  hapusTarget = null;
+  tutupModal(document.getElementById("modalHapus"));
+  renderSemua(true);
+});
+
+/* ================= RENDER SEMUA ================= */
+function renderSemua(segarkanPilihan){
+  if(segarkanPilihan) isiPilihanPelanggan();
+  renderStatistik();
+  renderPelanggan();
+  renderMembership();
+  renderBelanja();
+  renderPengingat();
+  renderLaporan();
+}
+renderSemua(true);
+</script>
+</body>
+</html>
