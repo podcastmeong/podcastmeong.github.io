@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Kurir</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f2f6f5;
+        --surface: #ffffff;
+        --surface-2: #eef4f2;
+        --ink: #17302b;
+        --ink-soft: #4c635d;
+        --ink-faint: #7d938c;
+        --line: #dce8e4;
+        --accent: #0e7c6b;
+        --accent-dark: #0a5f52;
+        --accent-soft: #e0f2ec;
+        --amber: #b45309;
+        --amber-soft: #fdf0dc;
+        --blue: #1d6fb8;
+        --blue-soft: #e1effa;
+        --orange: #c2570b;
+        --orange-soft: #fdeadd;
+        --green: #1c7a3d;
+        --green-soft: #e2f4e4;
+        --red: #b3261e;
+        --red-soft: #fbe7e5;
+        --shadow: 0 2px 10px rgba(23, 48, 43, 0.06), 0 10px 28px rgba(23, 48, 43, 0.05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101a17;
+          --surface: #1a2622;
+          --surface-2: #22322c;
+          --ink: #e6f0ec;
+          --ink-soft: #a9c0b8;
+          --ink-faint: #7d938c;
+          --line: #2c3f38;
+          --accent: #2fbf9f;
+          --accent-dark: #5fd3b6;
+          --accent-soft: #17392f;
+          --amber: #e8a94e;
+          --amber-soft: #3a2d15;
+          --blue: #6db3e8;
+          --blue-soft: #1a3247;
+          --orange: #e8935a;
+          --orange-soft: #3d2716;
+          --green: #6fcf8b;
+          --green-soft: #1c3524;
+          --red: #f08a84;
+          --red-soft: #3d1f1d;
+          --shadow: 0 2px 10px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.3);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      button { font: inherit; cursor: pointer; }
+      input, select, textarea { font: inherit; color: var(--ink); }
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+      header.app-head { padding: 10px 2px 4px; }
+      header.app-head h1 { font-size: 1.7rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+      header.app-head p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; max-width: 60ch; }
+
+      nav.tabs {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        margin: 20px 0 22px; position: sticky; top: 0; z-index: 20;
+        background: var(--bg); padding: 8px 0;
+      }
+      nav.tabs button {
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+        border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 0.92rem;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      nav.tabs button:hover { border-color: var(--accent); color: var(--accent-dark); }
+      nav.tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) {
+        nav.tabs button.active { color: #0c1a16; }
+      }
+
+      section.tab { display: none; }
+      section.tab.active { display: block; }
+
+      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+      .stat-card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 20px; box-shadow: var(--shadow);
+      }
+      .stat-card .label { font-size: 0.85rem; color: var(--ink-soft); font-weight: 600; margin: 0 0 6px; }
+      .stat-card .value { font-size: 1.9rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+      .stat-card .sub { font-size: 0.82rem; color: var(--ink-faint); margin: 6px 0 0; }
+      .stat-card.money .value { color: var(--accent-dark); }
+
+      .panel {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 20px; margin-top: 16px;
+      }
+      .panel h2 { font-size: 1.08rem; font-weight: 700; margin: 0 0 4px; }
+      .panel .hint { color: var(--ink-soft); font-size: 0.88rem; margin: 0 0 14px; }
+
+      .flow-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      .flow-chip {
+        flex: 1 1 120px; background: var(--surface-2); border-radius: 12px; padding: 12px 14px;
+      }
+      .flow-chip .n { font-size: 1.35rem; font-weight: 800; }
+      .flow-chip .t { font-size: 0.82rem; color: var(--ink-soft); font-weight: 600; }
+
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 220px; }
+      .search-box { position: relative; }
+      .search-box input { width: 100%; padding-left: 38px; }
+      .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; stroke: var(--ink-faint); pointer-events: none; }
+      input[type="search"], input[type="text"], input[type="number"], input[type="tel"], select, textarea {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+        padding: 8px 12px; width: 100%;
+      }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+      textarea { min-height: 64px; resize: vertical; }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+      .chips button {
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+        border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 0.85rem;
+      }
+      .chips button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+
+      .btn {
+        border: none; border-radius: 10px; padding: 9px 18px; font-weight: 700; font-size: 0.9rem;
+        background: var(--accent); color: #fff; display: inline-flex; align-items: center; gap: 7px;
+      }
+      @media (prefers-color-scheme: dark) { .btn { color: #0c1a16; } }
+      .btn:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn:hover { color: #0c1a16; } }
+      .btn.ghost { background: var(--surface); color: var(--ink-soft); border: 1px solid var(--line); }
+      .btn.ghost:hover { color: var(--accent-dark); border-color: var(--accent); background: var(--surface); }
+      .btn.small { padding: 6px 12px; font-size: 0.83rem; border-radius: 8px; }
+      .btn.danger { background: var(--red-soft); color: var(--red); border: 1px solid transparent; }
+      .btn.danger:hover { background: var(--red-soft); border-color: var(--red); }
+
+      .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+      .pkg-card, .courier-card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 8px;
+      }
+      .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+      .resi { font-weight: 800; font-size: 1rem; letter-spacing: 0.01em; }
+      .route { font-size: 0.92rem; }
+      .route b { font-weight: 700; }
+      .meta { font-size: 0.85rem; color: var(--ink-soft); margin: 0; }
+      .meta b { color: var(--ink); font-weight: 600; }
+      .card-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+      .card-actions select { width: auto; flex: 1 1 130px; }
+      .ongkir { font-weight: 800; color: var(--accent-dark); font-size: 1.05rem; }
+
+      .badge {
+        display: inline-block; padding: 3px 11px; border-radius: 999px;
+        font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+      }
+      .badge.baru { background: var(--blue-soft); color: var(--blue); }
+      .badge.dijemput { background: var(--amber-soft); color: var(--amber); }
+      .badge.diantar { background: var(--orange-soft); color: var(--orange); }
+      .badge.terkirim { background: var(--green-soft); color: var(--green); }
+      .badge.gagal { background: var(--red-soft); color: var(--red); }
+
+      .empty {
+        text-align: center; color: var(--ink-soft); padding: 34px 16px;
+        border: 1px dashed var(--line); border-radius: var(--radius); background: var(--surface);
+      }
+
+      form.add-form { display: none; }
+      form.add-form.open { display: block; }
+      .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+      .form-grid .full { grid-column: 1 / -1; }
+      label.field { display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+      label.field input, label.field select, label.field textarea { margin-top: 5px; font-weight: 400; color: var(--ink); }
+      .form-foot { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+      .ongkir-preview { font-weight: 700; color: var(--accent-dark); }
+
+      table.tarif { width: 100%; border-collapse: collapse; }
+      table.tarif th, table.tarif td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+      table.tarif th { font-size: 0.82rem; color: var(--ink-soft); font-weight: 700; }
+      table.tarif tr:last-child td { border-bottom: none; }
+      .tarif-input { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .tarif-input input { width: 130px; }
+      @media (max-width: 560px) {
+        table.tarif thead { display: none; }
+        table.tarif, table.tarif tbody, table.tarif tr, table.tarif td { display: block; width: 100%; }
+        table.tarif tr { padding: 10px 0; border-bottom: 1px solid var(--line); }
+        table.tarif td { border-bottom: none; padding: 4px 2px; }
+        table.tarif tr:last-child { border-bottom: none; }
+      }
+
+      .guide { max-width: 78ch; }
+      .guide h2 { font-size: 1.25rem; margin: 26px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-soft); font-size: 0.94rem; }
+      .guide b, .guide strong { color: var(--ink); }
+      .guide ol, .guide ul { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide .callout {
+        background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; margin: 12px 0;
+      }
+      .guide .callout p { margin: 0; color: var(--ink); }
+
+      footer.note {
+        margin-top: 30px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); color: var(--ink-soft); font-size: 0.86rem; box-shadow: var(--shadow);
+      }
+      footer.note p { margin: 0 0 6px; }
+      footer.note p:last-child { margin-bottom: 0; }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); padding: 11px 20px; border-radius: 999px;
+        font-size: 0.9rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+        z-index: 50; max-width: calc(100vw - 32px); text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      .modal-back {
+        position: fixed; inset: 0; background: rgba(10, 25, 21, 0.5); display: none;
+        align-items: center; justify-content: center; z-index: 60; padding: 16px;
+      }
+      .modal-back.open { display: flex; }
+      .modal {
+        background: var(--surface); border-radius: var(--radius); padding: 22px; max-width: 420px; width: 100%;
+        box-shadow: var(--shadow);
+      }
+      .modal h3 { margin: 0 0 8px; font-size: 1.05rem; }
+      .modal p { margin: 0 0 16px; color: var(--ink-soft); font-size: 0.92rem; }
+      .modal .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="app-head">
+        <h1>Aplikasi Kurir</h1>
+        <p>Catat paket masuk, pantau pengantaran kurir, dan hitung ongkir otomatis untuk usaha jasa pengiriman Anda — semua dalam satu halaman.</p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu utama">
+        <button type="button" class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button>
+        <button type="button" class="tab-btn" data-tab="paket" role="tab">Paket</button>
+        <button type="button" class="tab-btn" data-tab="kurir" role="tab">Kurir</button>
+        <button type="button" class="tab-btn" data-tab="tarif" role="tab">Tarif</button>
+        <button type="button" class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- RINGKASAN -->
+      <section class="tab active" id="tab-ringkasan">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <p class="label">Paket Hari Ini</p>
+            <p class="value" id="stat-total">0</p>
+            <p class="sub">Semua paket yang tercatat hari ini</p>
+          </div>
+          <div class="stat-card">
+            <p class="label">Sedang Diantar</p>
+            <p class="value" id="stat-diantar">0</p>
+            <p class="sub">Paket berstatus Diantar saat ini</p>
+          </div>
+          <div class="stat-card">
+            <p class="label">Terkirim Hari Ini</p>
+            <p class="value" id="stat-terkirim">0</p>
+            <p class="sub">Paket yang sudah sampai ke penerima</p>
+          </div>
+          <div class="stat-card money">
+            <p class="label">Pemasukan Hari Ini</p>
+            <p class="value" id="stat-pemasukan">Rp0</p>
+            <p class="sub">Total ongkir dari paket terkirim</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Alur Paket</h2>
+          <p class="hint">Jumlah paket pada setiap tahap pengiriman saat ini.</p>
+          <div class="flow-row" id="flow-row"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Paket Terbaru</h2>
+          <p class="hint">Lima paket terakhir yang dicatat. Ubah status dan kelola paket di tab Paket.</p>
+          <div class="card-list" id="recent-list"></div>
+        </div>
+      </section>
+
+      <!-- PAKET -->
+      <section class="tab" id="tab-paket">
+        <div class="toolbar">
+          <div class="search-box grow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="pkg-search" placeholder="Cari nomor resi, pengirim, atau penerima…" aria-label="Cari paket" />
+          </div>
+          <button type="button" class="btn" id="btn-add-pkg">+ Tambah Paket</button>
+        </div>
+
+        <div class="chips" id="pkg-filters" role="group" aria-label="Filter status paket">
+          <button type="button" data-status="Semua" class="active">Semua</button>
+          <button type="button" data-status="Baru">Baru</button>
+          <button type="button" data-status="Dijemput">Dijemput</button>
+          <button type="button" data-status="Diantar">Diantar</button>
+          <button type="button" data-status="Terkirim">Terkirim</button>
+          <button type="button" data-status="Gagal">Gagal</button>
+        </div>
+
+        <form class="add-form panel" id="form-pkg" style="margin:0 0 16px;">
+          <h2 style="margin-bottom:12px;">Tambah Paket Baru</h2>
+          <div class="form-grid">
+            <label class="field">Nama Pengirim
+              <input type="text" id="f-pengirim" required placeholder="cth. Toko Berkah" />
+            </label>
+            <label class="field">Nama Penerima
+              <input type="text" id="f-penerima" required placeholder="cth. Sari Wulandari" />
+            </label>
+            <label class="field full">Alamat Tujuan
+              <textarea id="f-alamat" required placeholder="cth. Jl. Merdeka No. 12, Bandung"></textarea>
+            </label>
+            <label class="field">Berat (kg)
+              <input type="number" id="f-berat" required min="0.1" step="0.1" value="1" />
+            </label>
+            <label class="field">Zona Tujuan
+              <select id="f-zona"></select>
+            </label>
+            <label class="field">Kurir Pengantar
+              <select id="f-kurir"></select>
+            </label>
+          </div>
+          <div class="form-foot">
+            <span class="ongkir-preview" id="ongkir-preview">Ongkir: Rp0</span>
+            <span style="flex:1"></span>
+            <button type="button" class="btn ghost" id="btn-cancel-pkg">Batal</button>
+            <button type="submit" class="btn">Simpan Paket</button>
+          </div>
+        </form>
+
+        <div class="card-list" id="pkg-list"></div>
+        <div class="empty" id="pkg-empty" style="display:none;">Tidak ada paket yang cocok dengan pencarian atau filter ini.</div>
+      </section>
+
+      <!-- KURIR -->
+      <section class="tab" id="tab-kurir">
+        <div class="toolbar">
+          <div class="search-box grow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="courier-search" placeholder="Cari nama kurir atau wilayah…" aria-label="Cari kurir" />
+          </div>
+          <button type="button" class="btn" id="btn-add-courier">+ Tambah Kurir</button>
+        </div>
+
+        <form class="add-form panel" id="form-courier" style="margin:0 0 16px;">
+          <h2 style="margin-bottom:12px;" id="courier-form-title">Tambah Kurir</h2>
+          <input type="hidden" id="fc-id" />
+          <div class="form-grid">
+            <label class="field">Nama Kurir
+              <input type="text" id="fc-nama" required placeholder="cth. Budi Santoso" />
+            </label>
+            <label class="field">Nomor Telepon
+              <input type="tel" id="fc-telp" required placeholder="cth. 0812-3456-7890" />
+            </label>
+            <label class="field">Wilayah Tugas
+              <input type="text" id="fc-wilayah" required placeholder="cth. Bandung Kota" />
+            </label>
+            <label class="field">Kendaraan
+              <select id="fc-kendaraan">
+                <option>Motor</option>
+                <option>Mobil Box</option>
+                <option>Sepeda</option>
+                <option>Truk Kecil</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-foot">
+            <span style="flex:1"></span>
+            <button type="button" class="btn ghost" id="btn-cancel-courier">Batal</button>
+            <button type="submit" class="btn">Simpan Kurir</button>
+          </div>
+        </form>
+
+        <div class="card-list" id="courier-list"></div>
+        <div class="empty" id="courier-empty" style="display:none;">Tidak ada kurir yang cocok dengan pencarian ini.</div>
+      </section>
+
+      <!-- TARIF -->
+      <section class="tab" id="tab-tarif">
+        <div class="panel" style="margin-top:0;">
+          <h2>Tarif per Zona</h2>
+          <p class="hint">Ongkir dihitung otomatis: berat paket dibulatkan ke atas ke kilogram terdekat (minimum 1 kg), lalu dikalikan tarif per kg zona tujuan. Mengubah tarif di sini berlaku untuk paket yang ditambahkan <b>setelahnya</b> — ongkir paket yang sudah tercatat tidak ikut berubah.</p>
+          <table class="tarif">
+            <thead>
+              <tr><th>Zona</th><th>Jangkauan</th><th>Tarif per kg</th><th></th></tr>
+            </thead>
+            <tbody id="tarif-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PANDUAN -->
+      <section class="tab" id="tab-panduan">
+        <div class="panel guide" style="margin-top:0;">
+          <h2>Panduan Penggunaan Aplikasi Kurir</h2>
+          <p>Aplikasi Kurir adalah aplikasi pencatatan pengiriman untuk usaha jasa kurir dan ekspedisi skala kecil. Dengan aplikasi ini Anda bisa mencatat paket masuk, menugaskan kurir, memantau status pengantaran, dan menghitung ongkos kirim secara otomatis berdasarkan berat dan zona tujuan.</p>
+
+          <h3>Memulai</h3>
+          <ol>
+            <li>Buka aplikasi — Anda langsung berada di tab <b>Ringkasan</b> yang menampilkan keadaan pengiriman hari ini.</li>
+            <li>Aplikasi dibuka dengan data contoh (10 paket, 5 kurir, 5 tarif zona) agar Anda bisa langsung mencoba semua fitur.</li>
+            <li>Hapus atau ubah data contoh sesuai kebutuhan usaha Anda, lalu mulai catat paket sungguhan.</li>
+          </ol>
+
+          <h3>Tab Ringkasan</h3>
+          <p>Tab ini menampilkan empat angka utama hari ini: <b>Paket Hari Ini</b> (semua paket yang tercatat), <b>Sedang Diantar</b> (paket berstatus Diantar), <b>Terkirim Hari Ini</b> (paket berstatus Terkirim), dan <b>Pemasukan Hari Ini</b> (total ongkir dari paket yang sudah terkirim). Di bawahnya ada ringkasan alur paket per status dan lima paket terbaru.</p>
+
+          <h3>Tab Paket</h3>
+          <ol>
+            <li><b>Menambah paket:</b> klik <b>+ Tambah Paket</b>, isi nama pengirim, nama penerima, alamat tujuan, berat paket (kg), zona tujuan, dan kurir pengantar. Ongkir tampil otomatis saat Anda mengisi berat dan zona. Klik <b>Simpan Paket</b> — paket mendapat nomor resi otomatis (contoh: KR-011).</li>
+            <li><b>Mencari paket:</b> ketik nomor resi, nama pengirim, atau nama penerima di kolom pencarian.</li>
+            <li><b>Memfilter status:</b> gunakan tombol filter Semua, Baru, Dijemput, Diantar, Terkirim, atau Gagal di atas daftar.</li>
+            <li><b>Mengubah status:</b> pilih status baru pada menu di kartu paket. Urutan alur yang umum: Baru → Dijemput → Diantar → Terkirim. Gunakan status Gagal bila paket tidak berhasil diantar (alamat tidak ditemukan, penerima menolak, dan sebagainya).</li>
+            <li><b>Menghapus paket:</b> klik tombol <b>Hapus</b> pada kartu paket, lalu konfirmasi. Paket yang terhapus tidak bisa dikembalikan.</li>
+          </ol>
+          <div class="callout"><p><b>Catatan pemasukan:</b> paket baru masuk hitungan Pemasukan Hari Ini di tab Ringkasan hanya setelah statusnya menjadi <b>Terkirim</b>.</p></div>
+
+          <h3>Tab Kurir</h3>
+          <ol>
+            <li><b>Menambah kurir:</b> klik <b>+ Tambah Kurir</b>, isi nama, nomor telepon, wilayah tugas, dan kendaraan, lalu simpan.</li>
+            <li><b>Mengubah data kurir:</b> klik <b>Ubah</b> pada kartu kurir, perbaiki datanya, lalu simpan.</li>
+            <li><b>Menghapus kurir:</b> klik <b>Hapus</b> pada kartu kurir dan konfirmasi. Paket yang sudah ditugaskan ke kurir tersebut tidak ikut terhapus, tetapi kolom kurirnya menjadi kosong dan perlu ditugaskan ulang saat menambah paket baru.</li>
+            <li>Setiap kartu kurir menampilkan jumlah <b>paket aktif</b> — paket yang sedang ditangani kurir itu (status Baru, Dijemput, atau Diantar).</li>
+          </ol>
+
+          <h3>Tab Tarif</h3>
+          <p>Tab Tarif berisi daftar tarif per zona tujuan. Untuk mengubah tarif: ubah angka pada kolom tarif per kg, lalu klik <b>Simpan</b> pada baris zona tersebut. Tarif baru berlaku untuk ongkir paket yang ditambahkan setelah perubahan disimpan; ongkir paket yang sudah tercatat tetap seperti semula agar catatan keuangan tidak berubah di tengah jalan.</p>
+          <p><b>Cara hitung ongkir:</b> berat dibulatkan ke atas ke kilogram terdekat (minimum 1 kg) × tarif per kg zona. Contoh: paket 1,3 kg ke zona Dalam Kota (Rp8.000/kg) dihitung 2 kg × Rp8.000 = Rp16.000.</p>
+
+          <h3>Batasan Aplikasi</h3>
+          <ul>
+            <li>Data tersimpan hanya selama aplikasi dibuka. Menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal.</li>
+            <li>Aplikasi ini adalah alat <b>pencatatan</b> pengiriman — bukan sistem pelacakan GPS real-time dan tidak menyediakan pembayaran online.</li>
+            <li>Nomor resi dibuat berurutan secara otomatis di dalam aplikasi dan tidak terhubung ke sistem ekspedisi mana pun.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Aplikasi ini dilengkapi garansi perbaikan <b>bug/error</b> untuk fitur-fitur yang dijelaskan di buku panduan ini dan yang tampil pada versi demo.</p>
+          <h3>Masa garansi</h3>
+          <ul>
+            <li><b>Beli Sekali — Pemula:</b> 30 hari sejak tanggal pembelian.</li>
+            <li><b>Beli Sekali — Profesional:</b> 60 hari sejak tanggal pembelian.</li>
+            <li><b>Beli Sekali — Bisnis:</b> 90 hari sejak tanggal pembelian.</li>
+            <li><b>Berlangganan:</b> garansi berlaku selama masa langganan aktif.</li>
+          </ul>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang ada di buku panduan dan demo, <b>gratis</b> selama masa garansi.</li>
+          </ul>
+          <h3>Yang tidak ditanggung garansi</h3>
+          <ul>
+            <li>Permintaan fitur baru di luar panduan dan demo.</li>
+            <li>Perubahan desain, tampilan, atau struktur data.</li>
+            <li>Kerusakan akibat pembeli mengubah file aplikasi sendiri.</li>
+            <li>Gangguan yang berasal dari layanan pihak ketiga.</li>
+          </ul>
+          <h3>Cara klaim</h3>
+          <p>Hubungi penjual melalui <b>WhatsApp</b> dan sertakan <b>video atau screenshot</b> yang menunjukkan bug/error-nya, beserta penjelasan singkat langkah yang dilakukan sebelum error muncul. Klaim yang jelas akan diproses lebih cepat.</p>
+        </div>
+      </section>
+
+      <footer class="note">
+        <p><b>Tentang data di aplikasi ini:</b> data contoh (10 paket, 5 kurir, 5 tarif zona) hanya tersimpan selama aplikasi dibuka. Menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal — perubahan yang Anda buat tidak tersimpan permanen.</p>
+        <p>Aplikasi Kurir adalah aplikasi <b>pencatatan pengiriman</b>: bukan sistem pelacakan GPS real-time dan bukan sistem pembayaran online. Ongkir yang tampil adalah perhitungan internal berdasarkan tarif yang Anda atur.</p>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <div class="modal-back" id="modal-back">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <h3 id="modal-title">Hapus data?</h3>
+        <p id="modal-text"></p>
+        <div class="row">
+          <button type="button" class="btn ghost" id="modal-cancel">Batal</button>
+          <button type="button" class="btn danger" id="modal-ok">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      var TARIF_AWAL = [
+        { id: "Z1", zona: "Dalam Kota", jangkauan: "0–5 km", perKg: 8000 },
+        { id: "Z2", zona: "Kota Sekitar", jangkauan: "6–20 km", perKg: 12000 },
+        { id: "Z3", zona: "Antar Kota Satu Provinsi", jangkauan: "21–100 km", perKg: 18000 },
+        { id: "Z4", zona: "Antar Provinsi (Satu Pulau)", jangkauan: "101–600 km", perKg: 28000 },
+        { id: "Z5", zona: "Antar Pulau", jangkauan: "di atas 600 km", perKg: 45000 }
+      ];
+
+      var KURIR_AWAL = [
+        { id: "K1", nama: "Budi Santoso", telp: "0812-3456-7801", wilayah: "Bandung Kota", kendaraan: "Motor" },
+        { id: "K2", nama: "Andi Pratama", telp: "0813-2233-4455", wilayah: "Cimahi & Bandung Barat", kendaraan: "Motor" },
+        { id: "K3", nama: "Dedi Kurniawan", telp: "0821-5566-7788", wilayah: "Kabupaten Bandung", kendaraan: "Mobil Box" },
+        { id: "K4", nama: "Rina Amelia", telp: "0857-9988-1122", wilayah: "Bandung Timur", kendaraan: "Motor" },
+        { id: "K5", nama: "Joko Widarto", telp: "0896-3344-9900", wilayah: "Antar Kota Jawa Barat", kendaraan: "Truk Kecil" }
+      ];
+
+      var PAKET_AWAL = [
+        { id: "KR-001", pengirim: "Toko Berkah Jaya", penerima: "Sari Wulandari", alamat: "Jl. Merdeka No. 12, Bandung", berat: 1.2, zonaId: "Z1", kurirId: "K1", status: "Terkirim" },
+        { id: "KR-002", pengirim: "Rudi Hartono", penerima: "Dewi Lestari", alamat: "Jl. Asia Afrika No. 8, Bandung", berat: 0.8, zonaId: "Z1", kurirId: "K1", status: "Terkirim" },
+        { id: "KR-003", pengirim: "Olshop Cantikku", penerima: "Fitri Rahmawati", alamat: "Perumahan Griya Asri Blok C3, Cimahi", berat: 2.4, zonaId: "Z2", kurirId: "K2", status: "Diantar" },
+        { id: "KR-004", pengirim: "Bengkel Maju Motor", penerima: "Agus Salim", alamat: "Jl. Raya Soreang No. 45, Kabupaten Bandung", berat: 5.0, zonaId: "Z3", kurirId: "K3", status: "Diantar" },
+        { id: "KR-005", pengirim: "Toko Buku Cendekia", penerima: "Bambang Sutrisno", alamat: "Jl. Diponegoro No. 21, Bandung", berat: 3.1, zonaId: "Z1", kurirId: "K4", status: "Dijemput" },
+        { id: "KR-006", pengirim: "Sinta Maharani", penerima: "Yusuf Hamdani", alamat: "Jl. Cibiru Raya No. 9, Bandung Timur", berat: 1.0, zonaId: "Z1", kurirId: "K4", status: "Baru" },
+        { id: "KR-007", pengirim: "UD Sumber Rejeki", penerima: "Toko Kelontong Makmur", alamat: "Jl. Sudirman No. 102, Garut", berat: 12.5, zonaId: "Z3", kurirId: "K5", status: "Dijemput" },
+        { id: "KR-008", pengirim: "Hendra Wijaya", penerima: "Lilis Suryani", alamat: "Jl. Pahlawan No. 3, Tasikmalaya", berat: 2.0, zonaId: "Z3", kurirId: "K5", status: "Baru" },
+        { id: "KR-009", pengirim: "Kopi Nusantara", penerima: "Cafe Senja", alamat: "Jl. Braga No. 17, Bandung", berat: 4.6, zonaId: "Z1", kurirId: "K1", status: "Gagal" },
+        { id: "KR-010", pengirim: "Aneka Elektronik", penerima: "Rahmat Hidayat", alamat: "Komp. Permata Hijau Blok B7, Padalarang", berat: 6.3, zonaId: "Z2", kurirId: "K2", status: "Baru" }
+      ];
+
+      var STATUS_LIST = ["Baru", "Dijemput", "Diantar", "Terkirim", "Gagal"];
+
+      var state = {
+        tarif: TARIF_AWAL.map(function (t) { return Object.assign({}, t); }),
+        kurir: KURIR_AWAL.map(function (k) { return Object.assign({}, k); }),
+        paket: [],
+        resiCounter: 10,
+        kurirCounter: 5,
+        pkgFilter: "Semua",
+        pkgSearch: "",
+        courierSearch: ""
+      };
+
+      function hitungOngkir(berat, zonaId) {
+        var z = state.tarif.find(function (t) { return t.id === zonaId; });
+        if (!z) return 0;
+        var kg = Math.max(1, Math.ceil(berat));
+        return kg * z.perKg;
+      }
+
+      state.paket = PAKET_AWAL.map(function (p) {
+        var copy = Object.assign({}, p);
+        copy.ongkir = hitungOngkir(copy.berat, copy.zonaId);
+        return copy;
+      });
+
+      function rp(n) {
+        return "Rp" + Number(n).toLocaleString("id-ID");
+      }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function zonaNama(id) {
+        var z = state.tarif.find(function (t) { return t.id === id; });
+        return z ? z.zona : "-";
+      }
+      function kurirNama(id) {
+        var k = state.kurir.find(function (x) { return x.id === id; });
+        return k ? k.nama : "— belum ditugaskan";
+      }
+      function badgeClass(status) {
+        return status.toLowerCase();
+      }
+
+      var toastTimer = null;
+      function toast(msg) {
+        var el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2600);
+      }
+
+      /* ---------- Modal konfirmasi hapus ---------- */
+      var pendingDelete = null;
+      function askDelete(text, fn) {
+        document.getElementById("modal-text").textContent = text;
+        pendingDelete = fn;
+        document.getElementById("modal-back").classList.add("open");
+      }
+      document.getElementById("modal-cancel").addEventListener("click", function () {
+        pendingDelete = null;
+        document.getElementById("modal-back").classList.remove("open");
+      });
+      document.getElementById("modal-ok").addEventListener("click", function () {
+        var fn = pendingDelete;
+        pendingDelete = null;
+        document.getElementById("modal-back").classList.remove("open");
+        if (fn) fn();
+      });
+      document.getElementById("modal-back").addEventListener("click", function (e) {
+        if (e.target === this) {
+          pendingDelete = null;
+          this.classList.remove("open");
+        }
+      });
+
+      /* ---------- Tabs ---------- */
+      document.querySelectorAll(".tab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+          document.querySelectorAll("section.tab").forEach(function (s) { s.classList.remove("active"); });
+          btn.classList.add("active");
+          document.getElementById("tab-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ---------- Render: kartu paket ---------- */
+      function pkgCardHTML(p) {
+        var options = STATUS_LIST.map(function (s) {
+          return '<option value="' + s + '"' + (s === p.status ? " selected" : "") + ">" + s + "</option>";
+        }).join("");
+        return '<article class="pkg-card">' +
+          '<div class="card-top"><span class="resi">' + esc(p.id) + '</span>' +
+          '<span class="badge ' + badgeClass(p.status) + '">' + esc(p.status) + "</span></div>" +
+          '<div class="route"><b>' + esc(p.pengirim) + "</b> → <b>" + esc(p.penerima) + "</b></div>" +
+          '<p class="meta">' + esc(p.alamat) + "</p>" +
+          '<p class="meta">Berat <b>' + esc(String(p.berat).replace(".", ",")) + ' kg</b> · Zona <b>' + esc(zonaNama(p.zonaId)) + '</b></p>' +
+          '<p class="meta">Kurir: <b>' + esc(kurirNama(p.kurirId)) + '</b></p>' +
+          '<div class="card-top" style="align-items:center;"><span class="meta">Ongkir</span><span class="ongkir">' + rp(p.ongkir) + "</span></div>" +
+          '<div class="card-actions">' +
+            '<select data-action="status" data-id="' + esc(p.id) + '" aria-label="Ubah status paket ' + esc(p.id) + '">' + options + "</select>" +
+            '<button type="button" class="btn danger small" data-action="delete-pkg" data-id="' + esc(p.id) + '">Hapus</button>' +
+          "</div></article>";
+      }
+
+      function renderRingkasan() {
+        var total = state.paket.length;
+        var diantar = state.paket.filter(function (p) { return p.status === "Diantar"; }).length;
+        var terkirimList = state.paket.filter(function (p) { return p.status === "Terkirim"; });
+        var pemasukan = terkirimList.reduce(function (s, p) { return s + p.ongkir; }, 0);
+        document.getElementById("stat-total").textContent = total;
+        document.getElementById("stat-diantar").textContent = diantar;
+        document.getElementById("stat-terkirim").textContent = terkirimList.length;
+        document.getElementById("stat-pemasukan").textContent = rp(pemasukan);
+
+        document.getElementById("flow-row").innerHTML = STATUS_LIST.map(function (s) {
+          var n = state.paket.filter(function (p) { return p.status === s; }).length;
+          return '<div class="flow-chip"><div class="n">' + n + '</div><div class="t">' + s + "</div></div>";
+        }).join("");
+
+        var recent = state.paket.slice(-5).reverse();
+        document.getElementById("recent-list").innerHTML = recent.length
+          ? recent.map(pkgCardHTML).join("")
+          : '<div class="empty" style="grid-column:1/-1;">Belum ada paket tercatat.</div>';
+      }
+
+      function renderPaket() {
+        var q = state.pkgSearch.trim().toLowerCase();
+        var list = state.paket.filter(function (p) {
+          if (state.pkgFilter !== "Semua" && p.status !== state.pkgFilter) return false;
+          if (!q) return true;
+          return (p.id + " " + p.pengirim + " " + p.penerima + " " + p.alamat).toLowerCase().indexOf(q) !== -1;
+        });
+        document.getElementById("pkg-list").innerHTML = list.map(pkgCardHTML).join("");
+        document.getElementById("pkg-empty").style.display = list.length ? "none" : "block";
+      }
+
+      function renderKurir() {
+        var q = state.courierSearch.trim().toLowerCase();
+        var list = state.kurir.filter(function (k) {
+          if (!q) return true;
+          return (k.nama + " " + k.wilayah + " " + k.kendaraan).toLowerCase().indexOf(q) !== -1;
+        });
+        document.getElementById("courier-list").innerHTML = list.map(function (k) {
+          var aktif = state.paket.filter(function (p) {
+            return p.kurirId === k.id && (p.status === "Baru" || p.status === "Dijemput" || p.status === "Diantar");
+          }).length;
+          var selesai = state.paket.filter(function (p) {
+            return p.kurirId === k.id && p.status === "Terkirim";
+          }).length;
+          return '<article class="courier-card">' +
+            '<div class="card-top"><span class="resi">' + esc(k.nama) + "</span>" +
+            '<span class="badge ' + (aktif > 0 ? "diantar" : "terkirim") + '">' + aktif + " paket aktif</span></div>" +
+            '<p class="meta">Wilayah: <b>' + esc(k.wilayah) + "</b></p>" +
+            '<p class="meta">Telepon: <b>' + esc(k.telp) + "</b> · Kendaraan: <b>" + esc(k.kendaraan) + "</b></p>" +
+            '<p class="meta">Paket terkirim oleh kurir ini: <b>' + selesai + "</b></p>" +
+            '<div class="card-actions">' +
+              '<button type="button" class="btn ghost small" data-action="edit-courier" data-id="' + esc(k.id) + '">Ubah</button>' +
+              '<button type="button" class="btn danger small" data-action="delete-courier" data-id="' + esc(k.id) + '">Hapus</button>' +
+            "</div></article>";
+        }).join("");
+        document.getElementById("courier-empty").style.display = list.length ? "none" : "block";
+      }
+
+      function renderTarif() {
+        document.getElementById("tarif-body").innerHTML = state.tarif.map(function (t) {
+          return "<tr>" +
+            "<td><b>" + esc(t.zona) + "</b></td>" +
+            "<td>" + esc(t.jangkauan) + "</td>" +
+            '<td><div class="tarif-input"><span>Rp</span><input type="number" min="0" step="500" value="' + t.perKg + '" id="tarif-' + t.id + '" aria-label="Tarif per kg ' + esc(t.zona) + '" /><span>/kg</span></div></td>' +
+            '<td><button type="button" class="btn small" data-action="save-tarif" data-id="' + t.id + '">Simpan</button></td>' +
+            "</tr>";
+        }).join("");
+      }
+
+      function renderSelects() {
+        document.getElementById("f-zona").innerHTML = state.tarif.map(function (t) {
+          return '<option value="' + t.id + '">' + esc(t.zona) + " (" + esc(t.jangkauan) + ") — " + rp(t.perKg) + "/kg</option>";
+        }).join("");
+        document.getElementById("f-kurir").innerHTML =
+          '<option value="">— Belum ditugaskan —</option>' +
+          state.kurir.map(function (k) {
+            return '<option value="' + k.id + '">' + esc(k.nama) + " · " + esc(k.wilayah) + "</option>";
+          }).join("");
+      }
+
+      function renderAll() {
+        renderRingkasan();
+        renderPaket();
+        renderKurir();
+        renderTarif();
+        renderSelects();
+        updateOngkirPreview();
+      }
+
+      /* ---------- Aksi pada kartu (delegasi) ---------- */
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest('select[data-action="status"]');
+        if (sel) {
+          var p = state.paket.find(function (x) { return x.id === sel.getAttribute("data-id"); });
+          if (p) {
+            p.status = sel.value;
+            renderAll();
+            toast("Status " + p.id + " diubah menjadi " + p.status + ".");
+          }
+        }
+      });
+
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        var action = btn.getAttribute("data-action");
+        var id = btn.getAttribute("data-id");
+
+        if (action === "delete-pkg") {
+          var p = state.paket.find(function (x) { return x.id === id; });
+          askDelete("Paket " + id + (p ? " (" + p.pengirim + " → " + p.penerima + ")" : "") + " akan dihapus permanen dari daftar.", function () {
+            state.paket = state.paket.filter(function (x) { return x.id !== id; });
+            renderAll();
+            toast("Paket " + id + " dihapus.");
+          });
+        }
+        if (action === "delete-courier") {
+          var k = state.kurir.find(function (x) { return x.id === id; });
+          askDelete("Kurir " + (k ? k.nama : id) + " akan dihapus. Paket yang ditugaskan kepadanya tidak ikut terhapus, tetapi kolom kurirnya menjadi kosong.", function () {
+            state.paket.forEach(function (x) { if (x.kurirId === id) x.kurirId = ""; });
+            state.kurir = state.kurir.filter(function (x) { return x.id !== id; });
+            renderAll();
+            toast("Kurir dihapus.");
+          });
+        }
+        if (action === "edit-courier") {
+          var kc = state.kurir.find(function (x) { return x.id === id; });
+          if (!kc) return;
+          document.getElementById("fc-id").value = kc.id;
+          document.getElementById("fc-nama").value = kc.nama;
+          document.getElementById("fc-telp").value = kc.telp;
+          document.getElementById("fc-wilayah").value = kc.wilayah;
+          document.getElementById("fc-kendaraan").value = kc.kendaraan;
+          document.getElementById("courier-form-title").textContent = "Ubah Kurir — " + kc.nama;
+          document.getElementById("form-courier").classList.add("open");
+          document.getElementById("fc-nama").focus();
+        }
+        if (action === "save-tarif") {
+          var input = document.getElementById("tarif-" + id);
+          var val = parseInt(input.value, 10);
+          if (isNaN(val) || val < 0) { toast("Tarif tidak valid."); return; }
+          var t = state.tarif.find(function (x) { return x.id === id; });
+          if (t) {
+            t.perKg = val;
+            renderAll();
+            toast("Tarif " + t.zona + " diubah menjadi " + rp(val) + "/kg. Berlaku untuk paket berikutnya.");
+          }
+        }
+      });
+
+      /* ---------- Paket: pencarian, filter, form ---------- */
+      document.getElementById("pkg-search").addEventListener("input", function (e) {
+        state.pkgSearch = e.target.value;
+        renderPaket();
+      });
+      document.querySelectorAll("#pkg-filters button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.querySelectorAll("#pkg-filters button").forEach(function (x) { x.classList.remove("active"); });
+          b.classList.add("active");
+          state.pkgFilter = b.getAttribute("data-status");
+          renderPaket();
+        });
+      });
+
+      var formPkg = document.getElementById("form-pkg");
+      document.getElementById("btn-add-pkg").addEventListener("click", function () {
+        formPkg.classList.toggle("open");
+        if (formPkg.classList.contains("open")) document.getElementById("f-pengirim").focus();
+      });
+      document.getElementById("btn-cancel-pkg").addEventListener("click", function () {
+        formPkg.classList.remove("open");
+        formPkg.reset();
+        updateOngkirPreview();
+      });
+
+      function updateOngkirPreview() {
+        var berat = parseFloat(document.getElementById("f-berat").value) || 0;
+        var zonaId = document.getElementById("f-zona").value;
+        document.getElementById("ongkir-preview").textContent = "Ongkir: " + rp(hitungOngkir(berat, zonaId));
+      }
+      document.getElementById("f-berat").addEventListener("input", updateOngkirPreview);
+      document.getElementById("f-zona").addEventListener("change", updateOngkirPreview);
+
+      formPkg.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var berat = parseFloat(document.getElementById("f-berat").value);
+        if (isNaN(berat) || berat <= 0) { toast("Berat paket harus lebih dari 0 kg."); return; }
+        var zonaId = document.getElementById("f-zona").value;
+        state.resiCounter += 1;
+        var id = "KR-" + String(state.resiCounter).padStart(3, "0");
+        state.paket.push({
+          id: id,
+          pengirim: document.getElementById("f-pengirim").value.trim(),
+          penerima: document.getElementById("f-penerima").value.trim(),
+          alamat: document.getElementById("f-alamat").value.trim(),
+          berat: berat,
+          zonaId: zonaId,
+          kurirId: document.getElementById("f-kurir").value,
+          status: "Baru",
+          ongkir: hitungOngkir(berat, zonaId)
+        });
+        formPkg.reset();
+        document.getElementById("f-berat").value = "1";
+        formPkg.classList.remove("open");
+        renderAll();
+        toast("Paket " + id + " ditambahkan dengan status Baru.");
+      });
+
+      /* ---------- Kurir: pencarian & form ---------- */
+      document.getElementById("courier-search").addEventListener("input", function (e) {
+        state.courierSearch = e.target.value;
+        renderKurir();
+      });
+      var formCourier = document.getElementById("form-courier");
+      document.getElementById("btn-add-courier").addEventListener("click", function () {
+        formCourier.reset();
+        document.getElementById("fc-id").value = "";
+        document.getElementById("courier-form-title").textContent = "Tambah Kurir";
+        formCourier.classList.toggle("open");
+        if (formCourier.classList.contains("open")) document.getElementById("fc-nama").focus();
+      });
+      document.getElementById("btn-cancel-courier").addEventListener("click", function () {
+        formCourier.classList.remove("open");
+        formCourier.reset();
+        document.getElementById("fc-id").value = "";
+      });
+      formCourier.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var editId = document.getElementById("fc-id").value;
+        var data = {
+          nama: document.getElementById("fc-nama").value.trim(),
+          telp: document.getElementById("fc-telp").value.trim(),
+          wilayah: document.getElementById("fc-wilayah").value.trim(),
+          kendaraan: document.getElementById("fc-kendaraan").value
+        };
+        if (editId) {
+          var k = state.kurir.find(function (x) { return x.id === editId; });
+          if (k) Object.assign(k, data);
+          toast("Data kurir " + data.nama + " diperbarui.");
+        } else {
+          state.kurirCounter += 1;
+          data.id = "K" + state.kurirCounter;
+          state.kurir.push(data);
+          toast("Kurir " + data.nama + " ditambahkan.");
+        }
+        formCourier.reset();
+        document.getElementById("fc-id").value = "";
+        document.getElementById("courier-form-title").textContent = "Tambah Kurir";
+        formCourier.classList.remove("open");
+        renderAll();
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>
