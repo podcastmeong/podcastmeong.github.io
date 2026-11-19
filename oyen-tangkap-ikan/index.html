@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#e8761a" />
+    <meta name="description" content="Oyen Tangkap Ikan — game kasual Podcast Meong. Tangkap ikan goreng yang jatuh, hindari ikan busuk dan bom!" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Oyen Tangkap Ikan</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6e7d2;
+        --bg-deep: #efd9ba;
+        --panel: #fffaf1;
+        --panel-edge: #e8cfa5;
+        --ink: #40260f;
+        --ink-soft: #7a5a38;
+        --accent: #e8761a;
+        --accent-dark: #bc5808;
+        --accent-soft: #fdeed3;
+        --gold: #f2a81d;
+        --danger: #d64541;
+        --good: #3d9b4f;
+        --shadow: 0 10px 30px rgba(120, 66, 10, 0.18);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #221407;
+          --bg-deep: #180d03;
+          --panel: #33200e;
+          --panel-edge: #5a3a1a;
+          --ink: #fbeed9;
+          --ink-soft: #d9b98c;
+          --accent: #ff8f2b;
+          --accent-dark: #ff8f2b;
+          --accent-soft: #472c10;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background:
+          radial-gradient(120% 60% at 50% -10%, var(--bg) 0%, var(--bg-deep) 100%);
+        color: var(--ink);
+        min-height: 100dvh;
+        display: flex;
+        justify-content: center;
+        padding: 14px 12px 28px;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ---------- HUD ---------- */
+      .hud {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .hud-box {
+        flex: 1;
+        background: var(--panel);
+        border: 2px solid var(--panel-edge);
+        border-radius: 14px;
+        padding: 7px 10px 8px;
+        text-align: center;
+        box-shadow: 0 3px 0 var(--panel-edge);
+      }
+      .hud-box .label {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .hud-box .value {
+        display: block;
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+      }
+      .hearts {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3px;
+        min-height: 1.55rem;
+      }
+      .hearts svg { width: 22px; height: 22px; display: block; }
+      .hearts .lost { opacity: 0.22; filter: grayscale(1); }
+      .level-progress {
+        height: 8px;
+        border-radius: 99px;
+        background: var(--accent-soft);
+        border: 1px solid var(--panel-edge);
+        overflow: hidden;
+      }
+      .level-progress > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--gold), var(--accent));
+        border-radius: 99px;
+        transition: width 0.18s ease-out;
+      }
+      .level-progress-label {
+        font-size: 0.72rem;
+        color: var(--ink-soft);
+        text-align: right;
+        margin-top: -4px;
+      }
+
+      /* ---------- Stage ---------- */
+      .stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 3px solid var(--accent-dark);
+        background: #ffe9c4;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+      /* ---------- Overlays ---------- */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(46, 24, 4, 0.45);
+      }
+      .overlay[hidden] { display: none; }
+      .card {
+        background: var(--panel);
+        border: 2px solid var(--panel-edge);
+        border-radius: 20px;
+        box-shadow: 0 14px 34px rgba(40, 20, 0, 0.35);
+        padding: 22px 20px 20px;
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+        max-height: 100%;
+        overflow-y: auto;
+      }
+      .card h1 {
+        margin: 0 0 2px;
+        font-size: 1.9rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--accent-dark);
+      }
+      .card h2 {
+        margin: 0 0 6px;
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1.15;
+        color: var(--accent-dark);
+      }
+      .brand {
+        margin: 0 0 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .howto {
+        text-align: left;
+        margin: 0 auto 16px;
+        padding: 0;
+        list-style: none;
+        max-width: 290px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.92rem;
+        line-height: 1.35;
+      }
+      .howto li { display: flex; gap: 9px; align-items: flex-start; }
+      .howto .dot {
+        flex: 0 0 auto;
+        width: 22px; height: 22px;
+        margin-top: 1px;
+      }
+      .howto .dot svg { width: 22px; height: 22px; display: block; }
+      .btn {
+        appearance: none;
+        border: none;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        border-radius: 14px;
+        min-height: 52px;
+        padding: 12px 26px;
+        font-size: 1.05rem;
+        transition: transform 0.06s ease, filter 0.15s ease;
+      }
+      .btn:active { transform: scale(0.97); }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 5px 0 var(--accent-dark), 0 10px 18px rgba(188, 88, 8, 0.35);
+        width: 100%;
+      }
+      .btn-primary:hover { filter: brightness(1.06); }
+      .final-score {
+        font-size: 2.6rem;
+        font-weight: 900;
+        line-height: 1;
+        margin: 6px 0 2px;
+        font-variant-numeric: tabular-nums;
+      }
+      .final-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+      .high-line { margin: 8px 0 16px; font-size: 0.95rem; color: var(--ink-soft); }
+      .high-line strong { color: var(--ink); }
+      .record-badge {
+        display: inline-block;
+        background: var(--gold);
+        color: #4a2c00;
+        font-weight: 800;
+        font-size: 0.82rem;
+        padding: 5px 12px;
+        border-radius: 99px;
+        margin-bottom: 10px;
+      }
+      .record-badge[hidden] { display: none; }
+      .menu-high { margin: 12px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+      .menu-high strong { color: var(--ink); }
+
+      /* ---------- Control bar ---------- */
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+      .ctl-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 10px 8px;
+        font: inherit;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--ink);
+        background: var(--panel);
+        border: 2px solid var(--panel-edge);
+        border-radius: 14px;
+        box-shadow: 0 3px 0 var(--panel-edge);
+        cursor: pointer;
+      }
+      .ctl-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--panel-edge); }
+      .ctl-btn svg { width: 20px; height: 20px; flex: 0 0 auto; }
+      .ctl-btn[disabled] { opacity: 0.45; cursor: default; }
+      .ctl-btn[disabled]:active { transform: none; }
+      .hint {
+        margin: 2px 4px 0;
+        text-align: center;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: var(--ink-soft);
+      }
+      .hint kbd {
+        font-family: inherit;
+        font-weight: 700;
+        background: var(--panel);
+        border: 1px solid var(--panel-edge);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        padding: 0 5px;
+        font-size: 0.78rem;
+      }
+      @media (max-width: 380px) {
+        .card h1 { font-size: 1.6rem; }
+        .hud-box .value { font-size: 1.15rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <!-- HUD -->
+      <div class="hud" aria-label="Status permainan">
+        <div class="hud-box">
+          <span class="label">Skor</span>
+          <span class="value" id="hudScore">0</span>
+        </div>
+        <div class="hud-box">
+          <span class="label">Level</span>
+          <span class="value" id="hudLevel">1</span>
+        </div>
+        <div class="hud-box">
+          <span class="label">Nyawa</span>
+          <span class="hearts" id="hudLives" role="img" aria-label="3 nyawa"></span>
+        </div>
+      </div>
+      <div>
+        <div class="level-progress" aria-hidden="true"><div id="levelBar"></div></div>
+        <div class="level-progress-label" id="levelBarLabel">0 / 100 menuju level 2</div>
+      </div>
+
+      <!-- Stage -->
+      <div class="stage" id="stage">
+        <canvas id="game" width="480" height="640" aria-label="Area permainan Oyen Tangkap Ikan"></canvas>
+
+        <!-- Menu -->
+        <div class="overlay" id="menuOverlay">
+          <div class="card">
+            <h1>Oyen Tangkap Ikan</h1>
+            <p class="brand">Podcast Meong</p>
+            <ul class="howto">
+              <li>
+                <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="10" cy="12" rx="7" ry="4.6" fill="#e8930c"/><path d="M16.5 12 L22 7.5 L21.4 12 L22 16.5 Z" fill="#c97408"/><circle cx="7" cy="11" r="1.1" fill="#40260f"/><path d="M4 15.5 Q10 18 16 15.5" stroke="#b35f06" stroke-width="1.3" fill="none"/></svg></span>
+                <span><strong>Ikan goreng = +10 poin.</strong> Tangkap sebanyak-banyaknya pakai keranjang Oyen.</span>
+              </li>
+              <li>
+                <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="10" cy="12" rx="7" ry="4.6" fill="#7d8f57"/><path d="M16.5 12 L22 7.5 L21.4 12 L22 16.5 Z" fill="#5f703d"/><path d="M5.5 9.5 L8.5 12.5 M8.5 9.5 L5.5 12.5" stroke="#2f3a1c" stroke-width="1.4"/></svg></span>
+                <span><strong>Ikan busuk &amp; bom = nyawa −1.</strong> Kamu punya 3 nyawa — hindari keduanya!</span>
+              </li>
+              <li>
+                <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#f2a81d"/><path d="M12 6.5 L14 10.2 L18 10.8 L15.1 13.6 L15.8 17.6 L12 15.6 L8.2 17.6 L8.9 13.6 L6 10.8 L10 10.2 Z" fill="#fff3d6"/></svg></span>
+                <span><strong>Naik level tiap 100 poin.</strong> Ikan jatuh makin cepat dan makin banyak.</span>
+              </li>
+              <li>
+                <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3" fill="#40260f"/><path d="M7 10 L4.8 12 L7 14 M17 10 L19.2 12 L17 14" stroke="#fdeed3" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span>
+                <span>Gerakkan Oyen dengan tombol <strong>← →</strong> / <strong>A D</strong>, atau <strong>seret</strong> di layar HP.</span>
+              </li>
+            </ul>
+            <button class="btn btn-primary" id="startBtn" type="button">Mulai Main</button>
+            <p class="menu-high" id="menuHigh">Skor tertinggi: <strong>0</strong></p>
+          </div>
+        </div>
+
+        <!-- Game over -->
+        <div class="overlay" id="overOverlay" hidden>
+          <div class="card">
+            <h2>Game Over!</h2>
+            <p style="margin:0; color: var(--ink-soft); font-size:0.92rem;">Nyawa Oyen habis. Perutnya masih lapar…</p>
+            <div class="final-label" style="margin-top:14px;">Skor kamu</div>
+            <div class="final-score" id="finalScore">0</div>
+            <div><span class="record-badge" id="recordBadge" hidden>Rekor Baru!</span></div>
+            <p class="high-line">Skor tertinggi: <strong id="overHigh">0</strong> &nbsp;·&nbsp; Level <strong id="overLevel">1</strong></p>
+            <button class="btn btn-primary" id="againBtn" type="button">Main Lagi</button>
+          </div>
+        </div>
+
+        <!-- Pause -->
+        <div class="overlay" id="pauseOverlay" hidden>
+          <div class="card">
+            <h2>Jeda Sebentar</h2>
+            <p style="margin:0 0 16px; color: var(--ink-soft); font-size:0.92rem;">Ikan-ikannya menunggu, kok.</p>
+            <button class="btn btn-primary" id="resumeBtn" type="button">Lanjutkan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctl-btn" id="pauseBtn" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.4" fill="currentColor"/></svg>
+          <span>Jeda</span>
+        </button>
+        <button class="ctl-btn" id="muteBtn" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" id="soundIconOn"><path d="M4 9.5 v5 h3.5 L12 18.6 V5.4 L7.5 9.5 Z" fill="currentColor"/><path d="M15 9.2 a4 4 0 0 1 0 5.6 M17.4 6.8 a7.4 7.4 0 0 1 0 10.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true" id="soundIconOff" style="display:none"><path d="M4 9.5 v5 h3.5 L12 18.6 V5.4 L7.5 9.5 Z" fill="currentColor"/><path d="M15.5 9.8 L21 15.3 M21 9.8 L15.5 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="muteLabel">Suara: Nyala</span>
+        </button>
+        <button class="ctl-btn" id="restartBtn" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5 A8 8 0 1 1 4 13.5" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M4 4.6 L4.6 9 L8.8 7.4 Z" fill="currentColor"/></svg>
+          <span>Ulangi</span>
+        </button>
+      </div>
+
+      <p class="hint">Di HP: <strong>seret</strong> Oyen ke kiri–kanan. Di laptop: tahan <kbd>←</kbd> <kbd>→</kbd> atau <kbd>A</kbd> <kbd>D</kbd>. Tekan <kbd>Spasi</kbd> untuk mulai / main lagi, <kbd>P</kbd> untuk jeda.</p>
+    </main>
+
+    <script>
+      "use strict";
+      /* ============================================================
+         OYEN TANGKAP IKAN — Podcast Meong
+         Canvas 480x640 (portrait). Semua gambar digambar via Canvas,
+         semua suara via WebAudio. Tanpa aset eksternal.
+         ============================================================ */
+      var W = 480, H = 640;
+      var canvas = document.getElementById("game");
+      var ctx = canvas.getContext("2d");
+
+      /* Skala tajam untuk layar retina */
+      function fitCanvas() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      fitCanvas();
+      window.addEventListener("resize", fitCanvas);
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* ---------------- Skor tertinggi (localStorage) ---------------- */
+      var HS_KEY = "oyen-tangkap-ikan-highscore";
+      var highScore = 0;
+      try {
+        highScore = parseInt(localStorage.getItem(HS_KEY) || "0", 10) || 0;
+      } catch (e) { highScore = 0; }
+      function saveHighScore(v) {
+        try { localStorage.setItem(HS_KEY, String(v)); } catch (e) {}
+      }
+
+      /* ---------------- Audio (WebAudio, tanpa file) ---------------- */
+      var audioCtx = null;
+      var muted = false;
+      function ensureAudio() {
+        if (!audioCtx) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) { try { audioCtx = new AC(); } catch (e) { audioCtx = null; } }
+        }
+        if (audioCtx && audioCtx.state === "suspended") { audioCtx.resume(); }
+      }
+      function tone(freq, dur, type, vol, delay, slideTo) {
+        if (muted || !audioCtx) return;
+        var t0 = audioCtx.currentTime + (delay || 0);
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = type || "sine";
+        osc.frequency.setValueAtTime(freq, t0);
+        if (slideTo) { osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur); }
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(vol || 0.16, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(t0); osc.stop(t0 + dur + 0.05);
+      }
+      function sfxCatch()  { tone(659, 0.09, "sine", 0.18); tone(988, 0.13, "sine", 0.16, 0.06); }
+      function sfxBad()    { tone(196, 0.22, "sawtooth", 0.14, 0, 92); tone(130, 0.2, "square", 0.08, 0.02, 70); }
+      function sfxLevel()  { tone(523, 0.09, "triangle", 0.16); tone(659, 0.09, "triangle", 0.16, 0.08); tone(784, 0.14, "triangle", 0.18, 0.16); }
+      function sfxOver()   { tone(392, 0.18, "triangle", 0.16); tone(330, 0.18, "triangle", 0.16, 0.17); tone(262, 0.32, "triangle", 0.17, 0.34); }
+      function sfxClick()  { tone(740, 0.05, "sine", 0.1); }
+
+      /* ---------------- State ---------------- */
+      var STATE = { MENU: 0, PLAYING: 1, PAUSED: 2, OVER: 3 };
+      var state = STATE.MENU;
+      var score = 0, lives = 3, level = 1;
+      var items = [], particles = [], floaters = [];
+      var spawnTimer = 0, elapsed = 0, shake = 0, levelFlash = 0;
+      var newRecord = false;
+
+      var player = {
+        x: W / 2, y: H - 64, r: 52,
+        vx: 0, face: 1, bob: 0, blink: 0, blinkTimer: 2.4
+      };
+      var keys = { left: false, right: false };
+      var pointer = { active: false, x: W / 2 };
+
+      /* ---------------- Elemen UI ---------------- */
+      var hudScore = document.getElementById("hudScore");
+      var hudLevel = document.getElementById("hudLevel");
+      var hudLives = document.getElementById("hudLives");
+      var levelBar = document.getElementById("levelBar");
+      var levelBarLabel = document.getElementById("levelBarLabel");
+      var menuOverlay = document.getElementById("menuOverlay");
+      var overOverlay = document.getElementById("overOverlay");
+      var pauseOverlay = document.getElementById("pauseOverlay");
+      var pauseBtn = document.getElementById("pauseBtn");
+      var restartBtn = document.getElementById("restartBtn");
+
+      var HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 C6.2 16.4 3 13.1 3 9.3 C3 6.4 5.2 4.2 8 4.2 C9.7 4.2 11.2 5 12 6.2 C12.8 5 14.3 4.2 16 4.2 C18.8 4.2 21 6.4 21 9.3 C21 13.1 17.8 16.4 12 20.6 Z" fill="#e2483d"/></svg>';
+      function renderLives() {
+        var html = "";
+        for (var i = 0; i < 3; i++) {
+          html += '<span class="' + (i < lives ? "" : "lost") + '">' + HEART + "</span>";
+        }
+        hudLives.innerHTML = html;
+        hudLives.setAttribute("aria-label", lives + " nyawa");
+      }
+      function renderHUD() {
+        hudScore.textContent = score;
+        hudLevel.textContent = level;
+        var into = score % 100;
+        levelBar.style.width = into + "%";
+        levelBarLabel.textContent = into + " / 100 menuju level " + (level + 1);
+        renderLives();
+      }
+      function renderMenuHigh() {
+        document.getElementById("menuHigh").innerHTML =
+          "Skor tertinggi: <strong>" + highScore + "</strong>";
+      }
+
+      /* ---------------- Spawning ---------------- */
+      function badChance() { return Math.min(0.16 + level * 0.022, 0.36); }
+      function spawnInterval() { return Math.max(1.05 - level * 0.075, 0.42); }
+      function fallSpeed() { return 150 + level * 26 + Math.random() * 55; }
+      function spawnItem() {
+        var roll = Math.random();
+        var type = "fish";
+        if (roll < badChance()) { type = Math.random() < 0.55 ? "rotten" : "bomb"; }
+        items.push({
+          x: 34 + Math.random() * (W - 68),
+          y: -30,
+          vy: fallSpeed(),
+          type: type,
+          rot: (Math.random() - 0.5) * 0.5,
+          vr: (Math.random() - 0.5) * 1.1,
+          wob: Math.random() * Math.PI * 2,
+          r: type === "bomb" ? 21 : 25
+        });
+      }
+
+      /* ---------------- Efek partikel & teks melayang ---------------- */
+      function burst(x, y, color, n) {
+        if (reduceMotion) n = Math.ceil(n / 3);
+        for (var i = 0; i < n; i++) {
+          var a = Math.random() * Math.PI * 2, sp = 40 + Math.random() * 130;
+          particles.push({
+            x: x, y: y,
+            vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 50,
+            life: 0.55 + Math.random() * 0.3, max: 0.85,
+            size: 2.5 + Math.random() * 3.5, color: color
+          });
+        }
+      }
+      function floatText(x, y, text, color, size) {
+        floaters.push({ x: x, y: y, text: text, color: color, size: size || 21, life: 0.95 });
+      }
+
+      /* ---------------- Alur game ---------------- */
+      function startGame() {
+        ensureAudio(); sfxClick();
+        score = 0; lives = 3; level = 1;
+        items = []; particles = []; floaters = [];
+        spawnTimer = 0.35; shake = 0; levelFlash = 0; newRecord = false;
+        player.x = W / 2; pointer.x = W / 2;
+        state = STATE.PLAYING;
+        menuOverlay.hidden = true;
+        overOverlay.hidden = true;
+        pauseOverlay.hidden = true;
+        pauseBtn.disabled = false;
+        restartBtn.disabled = false;
+        renderHUD();
+      }
+      function gameOver() {
+        state = STATE.OVER;
+        sfxOver();
+        newRecord = score > highScore;
+        if (newRecord) { highScore = score; saveHighScore(highScore); }
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("overHigh").textContent = highScore;
+        document.getElementById("overLevel").textContent = level;
+        document.getElementById("recordBadge").hidden = !newRecord;
+        overOverlay.hidden = false;
+        pauseBtn.disabled = true;
+        restartBtn.disabled = true;
+        renderMenuHigh();
+      }
+      function setPaused(on) {
+        if (on && state === STATE.PLAYING) {
+          state = STATE.PAUSED;
+          pauseOverlay.hidden = false;
+        } else if (!on && state === STATE.PAUSED) {
+          state = STATE.PLAYING;
+          pauseOverlay.hidden = true;
+        }
+      }
+      function loseLife(x, y) {
+        lives--;
+        shake = reduceMotion ? 0 : 0.32;
+        sfxBad();
+        burst(x, y, "#8a8f6a", 10);
+        renderHUD();
+        if (lives <= 0) { setTimeout(gameOver, 260); state = STATE.OVER; }
+      }
+
+      /* ---------------- Update ---------------- */
+      function update(dt) {
+        elapsed += dt;
+        player.bob += dt * 5;
+        player.blinkTimer -= dt;
+        if (player.blinkTimer <= 0) { player.blink = 0.12; player.blinkTimer = 2 + Math.random() * 2.4; }
+        if (player.blink > 0) player.blink -= dt;
+        if (shake > 0) shake -= dt;
+        if (levelFlash > 0) levelFlash -= dt;
+
+        /* Gerak pemain */
+        var speed = 460;
+        var move = 0;
+        if (keys.left) move -= 1;
+        if (keys.right) move += 1;
+        if (pointer.active) {
+          var dx = pointer.x - player.x;
+          if (Math.abs(dx) > 3) {
+            var step = Math.sign(dx) * Math.min(Math.abs(dx), 900 * dt);
+            player.x += step;
+            player.face = dx >= 0 ? 1 : -1;
+          }
+        } else if (move !== 0) {
+          player.x += move * speed * dt;
+          player.face = move;
+        }
+        player.x = Math.max(46, Math.min(W - 46, player.x));
+
+        if (state !== STATE.PLAYING) { updateFx(dt); return; }
+
+        /* Spawn */
+        spawnTimer -= dt;
+        if (spawnTimer <= 0) { spawnItem(); spawnTimer = spawnInterval() * (0.75 + Math.random() * 0.5); }
+
+        /* Item jatuh */
+        var basketY = player.y - 26;
+        for (var i = items.length - 1; i >= 0; i--) {
+          var it = items[i];
+          it.y += it.vy * dt;
+          it.rot += it.vr * dt;
+          it.wob += dt * 6;
+          var caught =
+            it.y + it.r * 0.55 >= basketY && it.y - it.r <= basketY + 14 &&
+            Math.abs(it.x - player.x) <= 58;
+          if (caught) {
+            if (it.type === "fish") {
+              score += 10;
+              sfxCatch();
+              burst(it.x, basketY, "#f2a81d", 9);
+              floatText(it.x, basketY - 18, "+10", "#b35f06", 21);
+              var newLevel = Math.floor(score / 100) + 1;
+              if (newLevel > level) {
+                level = newLevel;
+                levelFlash = 1.4;
+                sfxLevel();
+                floatText(W / 2, 150, "Level " + level + "!", "#bc5808", 32);
+              }
+              renderHUD();
+            } else {
+              floatText(it.x, basketY - 18, it.type === "bomb" ? "DUAR!" : "Ih, busuk!", "#c0392b", 19);
+              items.splice(i, 1);
+              loseLife(it.x, basketY);
+              if (state !== STATE.PLAYING) { updateFx(dt); return; }
+              continue;
+            }
+            items.splice(i, 1);
+            continue;
+          }
+          if (it.y - it.r > H - 18) {
+            if (it.type === "fish") burst(it.x, H - 22, "#d9c9a8", 4);
+            items.splice(i, 1);
+          }
+        }
+        updateFx(dt);
+      }
+      function updateFx(dt) {
+        for (var i = particles.length - 1; i >= 0; i--) {
+          var p = particles[i];
+          p.life -= dt;
+          p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt;
+          if (p.life <= 0) particles.splice(i, 1);
+        }
+        for (var j = floaters.length - 1; j >= 0; j--) {
+          var f = floaters[j];
+          f.life -= dt; f.y -= 44 * dt;
+          if (f.life <= 0) floaters.splice(j, 1);
+        }
+      }
+
+      /* ============================================================
+         GAMBAR — semua vektor digambar manual di Canvas
+         ============================================================ */
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function drawScene(t) {
+        /* Langit krem hangat */
+        var g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, "#ffedb8");
+        g.addColorStop(0.55, "#ffe3ae");
+        g.addColorStop(1, "#ffd9a0");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        /* Matahari */
+        ctx.fillStyle = "rgba(242,168,29,0.85)";
+        ctx.beginPath(); ctx.arc(W - 74, 72, 30, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(242,168,29,0.22)";
+        ctx.beginPath(); ctx.arc(W - 74, 72, 46, 0, Math.PI * 2); ctx.fill();
+
+        /* Awan melayang pelan */
+        ctx.fillStyle = "rgba(255,252,244,0.9)";
+        drawCloud(((t * 9) % (W + 160)) - 80, 58, 1);
+        drawCloud(((t * 6 + 240) % (W + 200)) - 100, 118, 0.7);
+        drawCloud(((t * 12 + 420) % (W + 180)) - 90, 30, 0.55);
+
+        /* Bukit jauh */
+        ctx.fillStyle = "#f3c98b";
+        ctx.beginPath();
+        ctx.moveTo(0, H - 120);
+        ctx.quadraticCurveTo(120, H - 168, 250, H - 122);
+        ctx.quadraticCurveTo(370, H - 84, W, H - 128);
+        ctx.lineTo(W, H); ctx.lineTo(0, H);
+        ctx.closePath(); ctx.fill();
+
+        /* Lantai dapur / tanah */
+        ctx.fillStyle = "#e8a558";
+        ctx.fillRect(0, H - 44, W, 44);
+        ctx.fillStyle = "#d98f3e";
+        ctx.fillRect(0, H - 44, W, 5);
+        ctx.fillStyle = "rgba(160,95,25,0.35)";
+        for (var i = 0; i < 7; i++) {
+          ctx.fillRect(28 + i * 66, H - 26, 34, 4);
+        }
+      }
+      function drawCloud(x, y, s) {
+        ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.arc(20, -6, 21, 0, Math.PI * 2);
+        ctx.arc(44, 0, 16, 0, Math.PI * 2);
+        ctx.arc(22, 6, 19, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      /* ---- Ikan goreng (bagus) ---- */
+      function drawFish(it) {
+        ctx.save();
+        ctx.translate(it.x, it.y + Math.sin(it.wob) * 2);
+        ctx.rotate(Math.sin(it.rot) * 0.35 - 0.5);
+        /* ekor */
+        ctx.fillStyle = "#c97408";
+        ctx.beginPath();
+        ctx.moveTo(16, 0); ctx.lineTo(28, -10); ctx.lineTo(27, 0); ctx.lineTo(28, 10);
+        ctx.closePath(); ctx.fill();
+        /* badan renyah */
+        var g = ctx.createLinearGradient(0, -12, 0, 12);
+        g.addColorStop(0, "#f7b733"); g.addColorStop(0.55, "#e8930c"); g.addColorStop(1, "#cf7605");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.ellipse(0, 0, 21, 11.5, 0, 0, Math.PI * 2); ctx.fill();
+        /* garis goreng */
+        ctx.strokeStyle = "rgba(150,80,5,0.55)"; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(-6, -8); ctx.quadraticCurveTo(-3, 0, -6, 8);
+        ctx.moveTo(3, -9); ctx.quadraticCurveTo(6, 0, 3, 9);
+        ctx.stroke();
+        /* sirip */
+        ctx.fillStyle = "#c97408";
+        ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(7, -16); ctx.lineTo(10, -9); ctx.closePath(); ctx.fill();
+        /* mata */
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(-13, -3, 3.6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#40260f";
+        ctx.beginPath(); ctx.arc(-13.6, -3, 1.9, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      /* ---- Ikan busuk (buruk) ---- */
+      function drawRotten(it) {
+        ctx.save();
+        ctx.translate(it.x, it.y + Math.sin(it.wob) * 2);
+        ctx.rotate(Math.sin(it.rot) * 0.4 - 0.5);
+        ctx.fillStyle = "#5f703d";
+        ctx.beginPath();
+        ctx.moveTo(16, 0); ctx.lineTo(28, -10); ctx.lineTo(27, 0); ctx.lineTo(28, 10);
+        ctx.closePath(); ctx.fill();
+        var g = ctx.createLinearGradient(0, -12, 0, 12);
+        g.addColorStop(0, "#93a465"); g.addColorStop(1, "#6d8148");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.ellipse(0, 0, 21, 11.5, 0, 0, Math.PI * 2); ctx.fill();
+        /* bercak */
+        ctx.fillStyle = "rgba(70,84,40,0.6)";
+        ctx.beginPath(); ctx.arc(4, 4, 3.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-4, -5, 2.6, 0, Math.PI * 2); ctx.fill();
+        /* mata X */
+        ctx.strokeStyle = "#2f3a1c"; ctx.lineWidth = 1.8; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(-16, -6); ctx.lineTo(-10, 0);
+        ctx.moveTo(-10, -6); ctx.lineTo(-16, 0);
+        ctx.stroke();
+        ctx.restore();
+        /* garis bau */
+        ctx.save();
+        ctx.translate(it.x, it.y - 22);
+        ctx.strokeStyle = "rgba(110,130,70,0.75)"; ctx.lineWidth = 2; ctx.lineCap = "round";
+        for (var i = -1; i <= 1; i++) {
+          var ph = Math.sin(it.wob * 1.4 + i) * 2;
+          ctx.beginPath();
+          ctx.moveTo(i * 11, 6);
+          ctx.quadraticCurveTo(i * 11 + ph, 0, i * 11, -6);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      /* ---- Bom (buruk) ---- */
+      function drawBomb(it) {
+        ctx.save();
+        ctx.translate(it.x, it.y);
+        ctx.rotate(Math.sin(it.rot) * 0.25);
+        var g = ctx.createRadialGradient(-7, -8, 3, 0, 0, 22);
+        g.addColorStop(0, "#6b6f78"); g.addColorStop(0.5, "#33363d"); g.addColorStop(1, "#17181c");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(0, 2, 19, 0, Math.PI * 2); ctx.fill();
+        /* leher + sumbu */
+        ctx.fillStyle = "#4a4e57";
+        ctx.fillRect(-4, -21, 8, 6);
+        ctx.strokeStyle = "#a4713a"; ctx.lineWidth = 2.4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(0, -20);
+        ctx.quadraticCurveTo(6, -27, 11, -25);
+        ctx.stroke();
+        /* percikan sumbu */
+        var flick = 0.7 + Math.sin(it.wob * 3) * 0.3;
+        ctx.fillStyle = "#ffb02e";
+        ctx.save(); ctx.translate(12, -25); ctx.scale(flick, flick);
+        ctx.beginPath();
+        for (var i = 0; i < 8; i++) {
+          var a = (i / 8) * Math.PI * 2;
+          var r = i % 2 === 0 ? 5.4 : 2.2;
+          var px = Math.cos(a) * r, py = Math.sin(a) * r;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+        /* kilau */
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.beginPath(); ctx.ellipse(-7, -4, 5, 3.4, -0.6, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      /* ---- Oyen ---- */
+      function drawOyen(t) {
+        var x = player.x;
+        var bobY = state === STATE.PLAYING ? Math.sin(player.bob) * 2 : Math.sin(t * 2.2) * 3;
+        var y = player.y + bobY;
+        ctx.save();
+        ctx.translate(x, y);
+
+        /* bayangan */
+        ctx.fillStyle = "rgba(120,60,10,0.25)";
+        ctx.beginPath(); ctx.ellipse(0, 34, 46, 9, 0, 0, Math.PI * 2); ctx.fill();
+
+        /* ekor melengkung */
+        ctx.strokeStyle = "#e8761a"; ctx.lineWidth = 11; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(player.face * -26, 22);
+        ctx.quadraticCurveTo(player.face * -52, 16, player.face * -48, -8 + Math.sin(t * 3) * 3);
+        ctx.stroke();
+        ctx.strokeStyle = "#c25e0e"; ctx.lineWidth = 11;
+        ctx.beginPath();
+        ctx.moveTo(player.face * -49, -2 + Math.sin(t * 3) * 3);
+        ctx.lineTo(player.face * -48, -8 + Math.sin(t * 3) * 3);
+        ctx.stroke();
+
+        /* badan */
+        var bg = ctx.createLinearGradient(0, -46, 0, 34);
+        bg.addColorStop(0, "#ffa53d"); bg.addColorStop(1, "#f07f13");
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.ellipse(0, 8, 34, 30, 0, 0, Math.PI * 2); ctx.fill();
+        /* perut krem */
+        ctx.fillStyle = "#ffe9c9";
+        ctx.beginPath(); ctx.ellipse(0, 16, 19, 19, 0, 0, Math.PI * 2); ctx.fill();
+        /* belang badan */
+        ctx.strokeStyle = "rgba(178,84,8,0.65)"; ctx.lineWidth = 3.4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(-30, -4); ctx.lineTo(-21, -2);
+        ctx.moveTo(30, -4); ctx.lineTo(21, -2);
+        ctx.moveTo(-31, 8); ctx.lineTo(-23, 9);
+        ctx.moveTo(31, 8); ctx.lineTo(23, 9);
+        ctx.stroke();
+        /* kaki */
+        ctx.fillStyle = "#f07f13";
+        ctx.beginPath(); ctx.ellipse(-18, 35, 11, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(18, 35, 11, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+        /* kepala */
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.arc(0, -34, 27, 0, Math.PI * 2); ctx.fill();
+        /* telinga */
+        drawEar(-19, -52, -1);
+        drawEar(19, -52, 1);
+        /* belang dahi */
+        ctx.strokeStyle = "rgba(178,84,8,0.7)"; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-8, -56); ctx.lineTo(-7, -48);
+        ctx.moveTo(0, -58); ctx.lineTo(0, -49);
+        ctx.moveTo(8, -56); ctx.lineTo(7, -48);
+        ctx.stroke();
+        /* mata */
+        var eyeH = player.blink > 0 ? 1.2 : 5.2;
+        ctx.fillStyle = "#40260f";
+        ctx.beginPath(); ctx.ellipse(-10.5, -36, 3.4, eyeH / 1.6 + 1.6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(10.5, -36, 3.4, eyeH / 1.6 + 1.6, 0, 0, Math.PI * 2); ctx.fill();
+        if (player.blink <= 0) {
+          ctx.fillStyle = "#fff";
+          ctx.beginPath(); ctx.arc(-11.6, -37.6, 1.2, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(9.4, -37.6, 1.2, 0, Math.PI * 2); ctx.fill();
+        }
+        /* pipi */
+        ctx.fillStyle = "rgba(255,140,90,0.5)";
+        ctx.beginPath(); ctx.ellipse(-18, -27, 5.4, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(18, -27, 5.4, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+        /* hidung + mulut */
+        ctx.fillStyle = "#e2607a";
+        ctx.beginPath();
+        ctx.moveTo(-3.4, -29); ctx.lineTo(3.4, -29); ctx.lineTo(0, -25.6);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#8a4d12"; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, -25.6);
+        ctx.quadraticCurveTo(-3.4, -22.6, -6.6, -24.4);
+        ctx.moveTo(0, -25.6);
+        ctx.quadraticCurveTo(3.4, -22.6, 6.6, -24.4);
+        ctx.stroke();
+        /* kumis */
+        ctx.strokeStyle = "rgba(90,50,10,0.55)"; ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(-16, -28); ctx.lineTo(-27, -30);
+        ctx.moveTo(-16, -25); ctx.lineTo(-26, -23);
+        ctx.moveTo(16, -28); ctx.lineTo(27, -30);
+        ctx.moveTo(16, -25); ctx.lineTo(26, -23);
+        ctx.stroke();
+
+        /* lengan memegang keranjang */
+        ctx.fillStyle = "#f07f13";
+        ctx.beginPath(); ctx.ellipse(-27, -8, 8, 12, 0.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(27, -8, 8, 12, -0.5, 0, Math.PI * 2); ctx.fill();
+
+        /* keranjang penangkap */
+        ctx.save();
+        ctx.translate(0, -16);
+        ctx.fillStyle = "#a4713a";
+        ctx.beginPath();
+        ctx.moveTo(-46, -8); ctx.lineTo(46, -8); ctx.lineTo(37, 16); ctx.lineTo(-37, 16);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#8a5a28";
+        ctx.fillRect(-46, -8, 92, 5);
+        ctx.strokeStyle = "rgba(70,42,10,0.5)"; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-41, 3); ctx.lineTo(41, 3);
+        ctx.moveTo(-39, 10); ctx.lineTo(39, 10);
+        ctx.moveTo(-16, -3); ctx.lineTo(-14, 15);
+        ctx.moveTo(16, -3); ctx.lineTo(14, 15);
+        ctx.stroke();
+        ctx.fillStyle = "#c98d4b";
+        roundRect(-49, -13, 98, 7, 3.5); ctx.fill();
+        ctx.restore();
+
+        ctx.restore();
+      }
+      function drawEar(cx, cy, dir) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.fillStyle = "#f07f13";
+        ctx.beginPath();
+        ctx.moveTo(-9, 8); ctx.lineTo(dir * 2, -13); ctx.lineTo(10, 6);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#ffb3a0";
+        ctx.beginPath();
+        ctx.moveTo(-4.4, 6); ctx.lineTo(dir * 2, -7); ctx.lineTo(6, 4.6);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+
+      function draw() {
+        ctx.save();
+        if (shake > 0) {
+          var s = shake * 14;
+          ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s);
+        }
+        drawScene(elapsed);
+        for (var i = 0; i < items.length; i++) {
+          var it = items[i];
+          if (it.type === "fish") drawFish(it);
+          else if (it.type === "rotten") drawRotten(it);
+          else drawBomb(it);
+        }
+        drawOyen(elapsed);
+
+        /* partikel */
+        for (var p = 0; p < particles.length; p++) {
+          var pt = particles[p];
+          ctx.globalAlpha = Math.max(pt.life / pt.max, 0);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        /* teks melayang */
+        ctx.textAlign = "center";
+        for (var f = 0; f < floaters.length; f++) {
+          var fl = floaters[f];
+          ctx.globalAlpha = Math.min(fl.life / 0.5, 1);
+          ctx.font = "800 " + fl.size + "px ui-rounded, system-ui, sans-serif";
+          ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,250,240,0.9)";
+          ctx.strokeText(fl.text, fl.x, fl.y);
+          ctx.fillStyle = fl.color;
+          ctx.fillText(fl.text, fl.x, fl.y);
+        }
+        ctx.globalAlpha = 1;
+
+        /* kilat pengumuman level */
+        if (levelFlash > 0) {
+          ctx.globalAlpha = Math.min(levelFlash, 0.16);
+          ctx.fillStyle = "#f2a81d";
+          ctx.fillRect(0, 0, W, H);
+          ctx.globalAlpha = 1;
+        }
+        ctx.restore();
+      }
+
+      /* ---------------- Loop ---------------- */
+      var lastTime = performance.now();
+      function loop(now) {
+        var dt = Math.min((now - lastTime) / 1000, 0.05);
+        lastTime = now;
+        if (state === STATE.PLAYING || state === STATE.MENU || state === STATE.OVER) {
+          update(dt);
+        } else {
+          elapsed += dt; /* latar tetap hidup saat jeda */
+        }
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      /* ---------------- Input: keyboard ---------------- */
+      window.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") { keys.left = true; e.preventDefault(); }
+        else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") { keys.right = true; e.preventDefault(); }
+        else if (e.key === " " || e.key === "Enter") {
+          if (state === STATE.MENU || state === STATE.OVER) { startGame(); e.preventDefault(); }
+          else if (state === STATE.PAUSED) { ensureAudio(); setPaused(false); e.preventDefault(); }
+        }
+        else if (e.key === "p" || e.key === "P" || e.key === "Escape") {
+          if (state === STATE.PLAYING) setPaused(true);
+          else if (state === STATE.PAUSED) setPaused(false);
+        }
+      });
+      window.addEventListener("keyup", function (e) {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = false;
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = false;
+      });
+
+      /* ---------------- Input: sentuh / mouse (seret) ---------------- */
+      function canvasX(clientX) {
+        var rect = canvas.getBoundingClientRect();
+        return ((clientX - rect.left) / rect.width) * W;
+      }
+      canvas.addEventListener("pointerdown", function (e) {
+        if (state !== STATE.PLAYING) return;
+        ensureAudio();
+        pointer.active = true;
+        pointer.x = canvasX(e.clientX);
+        canvas.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      canvas.addEventListener("pointermove", function (e) {
+        if (!pointer.active) return;
+        pointer.x = canvasX(e.clientX);
+        e.preventDefault();
+      });
+      function endPointer() { pointer.active = false; }
+      canvas.addEventListener("pointerup", endPointer);
+      canvas.addEventListener("pointercancel", endPointer);
+
+      /* ---------------- Tombol ---------------- */
+      document.getElementById("startBtn").addEventListener("click", startGame);
+      document.getElementById("againBtn").addEventListener("click", startGame);
+      document.getElementById("resumeBtn").addEventListener("click", function () {
+        ensureAudio(); sfxClick(); setPaused(false);
+      });
+      pauseBtn.addEventListener("click", function () {
+        ensureAudio();
+        if (state === STATE.PLAYING) setPaused(true);
+        else if (state === STATE.PAUSED) setPaused(false);
+      });
+      restartBtn.addEventListener("click", function () {
+        if (state === STATE.PLAYING || state === STATE.PAUSED) startGame();
+      });
+      var muteBtn = document.getElementById("muteBtn");
+      muteBtn.addEventListener("click", function () {
+        muted = !muted;
+        muteBtn.setAttribute("aria-pressed", String(muted));
+        document.getElementById("soundIconOn").style.display = muted ? "none" : "";
+        document.getElementById("soundIconOff").style.display = muted ? "" : "none";
+        document.getElementById("muteLabel").textContent = muted ? "Suara: Mati" : "Suara: Nyala";
+        if (!muted) { ensureAudio(); sfxClick(); }
+      });
+
+      /* Jeda otomatis saat tab disembunyikan */
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden && state === STATE.PLAYING) setPaused(true);
+      });
+
+      /* ---------------- Mulai ---------------- */
+      renderHUD();
+      renderMenuHigh();
+      requestAnimationFrame(loop);
+    </script>
+    <script>
+      /* PWA: daftarkan service worker agar game bisa dimainkan offline */
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('sw.js').catch(function () {});
+        });
+      }
+    </script>
+  </body>
+</html>
