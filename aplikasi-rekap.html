@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Rekap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+    </style>
+    <style>
+      :root{
+        --bg:#f5f3ee;
+        --surface:#ffffff;
+        --surface-2:#fbfaf6;
+        --ink:#22302a;
+        --ink-soft:#43534b;
+        --muted:#72827a;
+        --line:#e6e1d4;
+        --accent:#17785a;
+        --accent-dark:#0f5c44;
+        --accent-soft:#e2f1e9;
+        --amber:#b97a16;
+        --amber-soft:#faf0da;
+        --danger:#b3402f;
+        --shadow:0 1px 2px rgba(34,48,42,.05),0 10px 28px -14px rgba(34,48,42,.18);
+        --shadow-sm:0 1px 2px rgba(34,48,42,.06),0 4px 14px -8px rgba(34,48,42,.16);
+        --radius:16px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#131916;
+          --surface:#1c2420;
+          --surface-2:#212a25;
+          --ink:#e9edea;
+          --ink-soft:#c3cec7;
+          --muted:#93a69b;
+          --line:#2d3831;
+          --accent:#45bd8f;
+          --accent-dark:#7ad3ae;
+          --accent-soft:#20392e;
+          --amber:#e0aa4e;
+          --amber-soft:#3a2f18;
+          --danger:#e08a7a;
+          --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -14px rgba(0,0,0,.55);
+          --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 4px 14px -8px rgba(0,0,0,.5);
+        }
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:16px;line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      .wrap{max-width:1060px;margin:0 auto;padding:20px 16px 40px}
+
+      /* ---------- Kepala ---------- */
+      .kepala{margin:6px 0 18px}
+      .kepala h1{font-size:clamp(24px,4.5vw,32px);font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+      .kepala p{margin:0;color:var(--muted);font-size:15px;max-width:60ch}
+
+      /* ---------- Tab ---------- */
+      .tabs{
+        display:flex;flex-wrap:wrap;gap:8px;
+        position:sticky;top:0;z-index:20;
+        background:var(--bg);padding:10px 0 12px;
+      }
+      .tab-btn{
+        appearance:none;border:1px solid var(--line);background:var(--surface);
+        color:var(--ink-soft);font:inherit;font-weight:600;font-size:14.5px;
+        padding:9px 16px;border-radius:999px;cursor:pointer;min-height:40px;
+        box-shadow:var(--shadow-sm);transition:background .15s,color .15s,border-color .15s;
+      }
+      .tab-btn:hover{border-color:var(--accent);color:var(--accent-dark)}
+      .tab-btn[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+      @media (prefers-color-scheme: dark){
+        .tab-btn[aria-selected="true"]{color:#0d1512}
+      }
+      .panel{display:none}
+      .panel.aktif{display:block}
+
+      /* ---------- Kartu & statistik ---------- */
+      .grid{display:grid;gap:14px}
+      .grid-3{grid-template-columns:repeat(3,1fr)}
+      .grid-2{grid-template-columns:repeat(2,1fr)}
+      @media (max-width:820px){.grid-3{grid-template-columns:1fr}}
+      @media (max-width:640px){.grid-2{grid-template-columns:1fr}}
+      .kartu{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:20px;
+      }
+      .kartu h2{font-size:17px;font-weight:700;margin:0 0 2px;letter-spacing:-.01em}
+      .kartu h3{font-size:15px;font-weight:700;margin:0 0 10px}
+      .kartu .sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+      .label-periode{
+        display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+        color:var(--accent-dark);background:var(--accent-soft);border-radius:999px;padding:3px 10px;margin-bottom:12px;
+      }
+      .stat-utama{font-size:clamp(24px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.15}
+      .stat-utama small{display:block;font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:0;margin-bottom:2px}
+      .stat-baris{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+      .stat-mini{flex:1}
+      .stat-mini b{display:block;font-size:16.5px;font-weight:700}
+      .stat-mini span{font-size:12.5px;color:var(--muted)}
+      .seksi-judul{font-size:19px;font-weight:800;letter-spacing:-.01em;margin:26px 0 4px}
+      .seksi-sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+
+      /* ---------- Terlaris ---------- */
+      .terlaris{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+      .terlaris li{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center}
+      .peringkat{
+        width:26px;height:26px;border-radius:9px;background:var(--amber-soft);color:var(--amber);
+        font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;
+      }
+      .terlaris .nama{font-weight:600;font-size:14.5px}
+      .terlaris .bar{height:7px;border-radius:99px;background:var(--accent-soft);margin-top:5px;overflow:hidden}
+      .terlaris .bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+      .terlaris .jml{font-weight:700;font-size:14.5px;text-align:right}
+      .terlaris .jml span{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+
+      /* ---------- Grafik batang ---------- */
+      .grafik{display:flex;align-items:flex-end;gap:8px;padding-top:8px}
+      .grafik .kolom{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+      .grafik .nilai{font-size:11.5px;font-weight:700;color:var(--ink-soft);text-align:center;line-height:1.25}
+      .grafik .batang{width:100%;max-width:64px;background:var(--accent);border-radius:8px 8px 4px 4px;min-height:4px}
+      .grafik .batang.sorot{background:var(--amber)}
+      .grafik .ket{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+
+      /* ---------- Tabel ---------- */
+      .alat{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .alat input[type="search"],.alat select{
+        font:inherit;font-size:14.5px;color:var(--ink);
+        background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;
+      }
+      .alat input[type="search"]{flex:1 1 220px}
+      .alat select{flex:0 1 auto}
+      .alat input:focus,.alat select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+      .tabel-bungkus{overflow:hidden}
+      table{width:100%;border-collapse:collapse;font-size:14.5px}
+      thead th{
+        text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+        padding:10px 12px;border-bottom:2px solid var(--line);white-space:nowrap;
+      }
+      thead th.kanan,tbody td.kanan{text-align:right}
+      tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+      tbody tr:last-child td{border-bottom:none}
+      tbody tr.klik{cursor:pointer}
+      tbody tr.klik:hover td{background:var(--surface-2)}
+      tbody tr.klik:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+      tbody tr.dipilih td{background:var(--accent-soft)}
+      td .tgl{font-weight:700}
+      td .ket-bawah{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:1px}
+      .lencana{
+        display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;
+        background:var(--amber-soft);color:var(--amber);white-space:nowrap;
+      }
+      .kosong{padding:28px 16px;text-align:center;color:var(--muted)}
+      @media (max-width:680px){
+        .tabel-bungkus{overflow:visible}
+        table,tbody,tr,td{display:block;width:100%}
+        thead{display:none}
+        tbody tr{
+          border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--surface);
+          box-shadow:var(--shadow-sm);padding:6px 4px;
+        }
+        tbody td{border-bottom:none;padding:6px 12px;display:flex;justify-content:space-between;gap:14px;align-items:baseline}
+        tbody td::before{content:attr(data-label);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);flex:0 0 auto;padding-top:2px}
+        tbody td.kanan{text-align:right}
+        tbody tr td:first-child{display:block}
+        tbody tr td:first-child::before{display:block;margin-bottom:2px}
+      }
+
+      /* ---------- Rincian ---------- */
+      .rincian{margin-top:16px;scroll-margin-top:190px}
+      .rincian-kepala{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px}
+      .chip{
+        display:inline-block;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
+        padding:4px 12px;font-size:13px;font-weight:600;margin:2px 4px 2px 0;
+      }
+      .catatan-hari{background:var(--amber-soft);border-radius:10px;padding:10px 14px;font-size:14px;margin:10px 0}
+      .tutup-btn{
+        appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+        font:inherit;font-weight:600;font-size:13.5px;border-radius:999px;padding:7px 14px;cursor:pointer;min-height:36px;
+      }
+      .tutup-btn:hover{border-color:var(--accent);color:var(--accent-dark)}
+
+      /* ---------- Formulir ---------- */
+      form.rekap{display:grid;gap:14px;max-width:560px}
+      .medan label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+      .medan .petunjuk{font-size:12.5px;color:var(--muted);margin-top:4px}
+      .medan input,.medan textarea{
+        width:100%;font:inherit;font-size:15px;color:var(--ink);
+        background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+      }
+      .medan input:focus,.medan textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+      .medan textarea{resize:vertical;min-height:76px}
+      .btn{
+        appearance:none;border:none;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:15px;
+        border-radius:12px;padding:12px 22px;cursor:pointer;min-height:46px;box-shadow:var(--shadow-sm);
+      }
+      .btn:hover{background:var(--accent-dark)}
+      @media (prefers-color-scheme: dark){.btn{color:#0d1512}.btn:hover{color:#0d1512}}
+      .pesan{display:none;border-radius:12px;padding:13px 16px;font-size:14.5px;font-weight:600}
+      .pesan.sukses{display:block;background:var(--accent-soft);color:var(--accent-dark)}
+      .pesan.gagal{display:block;background:#fbe9e5;color:var(--danger)}
+      @media (prefers-color-scheme: dark){.pesan.gagal{background:#3d231d}}
+
+      /* ---------- Panduan ---------- */
+      .panduan{max-width:76ch}
+      .panduan h2{font-size:19px;font-weight:800;margin:30px 0 8px;letter-spacing:-.01em}
+      .panduan h2:first-child{margin-top:4px}
+      .panduan h3{font-size:15.5px;font-weight:700;margin:18px 0 6px}
+      .panduan p{margin:0 0 10px;color:var(--ink-soft)}
+      .panduan ul,.panduan ol{margin:0 0 12px;padding-left:22px;color:var(--ink-soft)}
+      .panduan li{margin-bottom:5px}
+      .panduan b{color:var(--ink)}
+      .kotak-garansi{border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius);padding:20px;margin-top:12px}
+      .kotak-garansi h2{margin-top:0}
+      .tabel-garansi{width:100%;border-collapse:collapse;font-size:14.5px;margin:10px 0 14px;color:var(--ink-soft)}
+      .tabel-garansi th,.tabel-garansi td{border:1px solid var(--line);padding:9px 12px;text-align:left;background:var(--surface)}
+      .tabel-garansi th{background:var(--surface-2);font-weight:700;color:var(--ink)}
+
+      footer{
+        margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+        color:var(--muted);font-size:13.5px;line-height:1.6;
+      }
+      footer p{margin:0 0 6px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="kepala">
+        <h1>Rekap Laporan Usaha</h1>
+        <p>Catat dan pantau penjualan toko Anda dari hari ke hari — ringkasan harian, mingguan, dan bulanan dalam satu tempat.</p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn" role="tab" id="tab-ringkasan" aria-selected="true" aria-controls="panel-ringkasan" data-tab="ringkasan">Ringkasan</button>
+        <button class="tab-btn" role="tab" id="tab-harian" aria-selected="false" aria-controls="panel-harian" data-tab="harian">Rekap Harian</button>
+        <button class="tab-btn" role="tab" id="tab-periode" aria-selected="false" aria-controls="panel-periode" data-tab="periode">Rekap Mingguan &amp; Bulanan</button>
+        <button class="tab-btn" role="tab" id="tab-tambah" aria-selected="false" aria-controls="panel-tambah" data-tab="tambah">Tambah Rekap</button>
+        <button class="tab-btn" role="tab" id="tab-panduan" aria-selected="false" aria-controls="panel-panduan" data-tab="panduan">Panduan</button>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section class="panel aktif" id="panel-ringkasan" role="tabpanel" aria-labelledby="tab-ringkasan">
+        <div class="grid grid-3" id="kartu-periode"></div>
+
+        <h2 class="seksi-judul">Barang Terlaris</h2>
+        <p class="seksi-sub">Lima barang dengan jumlah penjualan terbanyak dari seluruh data yang tercatat.</p>
+        <div class="kartu">
+          <ul class="terlaris" id="daftar-terlaris"></ul>
+        </div>
+
+        <h2 class="seksi-judul">Penjualan 7 Hari Terakhir</h2>
+        <p class="seksi-sub">Total penjualan per hari selama tujuh hari terakhir yang tercatat.</p>
+        <div class="kartu">
+          <div class="grafik" id="grafik-7hari"></div>
+        </div>
+      </section>
+
+      <!-- ============ REKAP HARIAN ============ -->
+      <section class="panel" id="panel-harian" role="tabpanel" aria-labelledby="tab-harian">
+        <div class="alat">
+          <input type="search" id="cari-harian" placeholder="Cari tanggal, barang terlaris, atau keterangan…" aria-label="Cari rekap harian" />
+          <select id="filter-bulan" aria-label="Filter bulan"></select>
+        </div>
+        <div class="kartu tabel-bungkus" style="padding:6px 10px">
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th class="kanan">Penjualan</th>
+                <th class="kanan">Transaksi</th>
+                <th class="kanan">Barang Terjual</th>
+                <th class="kanan">Rata-rata / Transaksi</th>
+                <th>Barang Terlaris</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-harian"></tbody>
+          </table>
+          <div class="kosong" id="harian-kosong" hidden>Tidak ada rekap yang cocok dengan pencarian atau filter Anda.</div>
+        </div>
+        <div id="rincian-hari"></div>
+      </section>
+
+      <!-- ============ MINGGUAN & BULANAN ============ -->
+      <section class="panel" id="panel-periode" role="tabpanel" aria-labelledby="tab-periode">
+        <h2 class="seksi-judul" style="margin-top:6px">Rekap Mingguan</h2>
+        <p class="seksi-sub">Total penjualan, transaksi, dan barang terjual per minggu (Senin–Minggu).</p>
+        <div class="kartu tabel-bungkus" style="padding:6px 10px;margin-bottom:14px">
+          <table>
+            <thead>
+              <tr>
+                <th>Minggu</th>
+                <th class="kanan">Hari Tercatat</th>
+                <th class="kanan">Penjualan</th>
+                <th class="kanan">Transaksi</th>
+                <th class="kanan">Barang Terjual</th>
+                <th class="kanan">Rata-rata Penjualan / Hari</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-mingguan"></tbody>
+          </table>
+        </div>
+        <div class="kartu">
+          <h3>Grafik Penjualan per Minggu</h3>
+          <div class="grafik" id="grafik-mingguan"></div>
+        </div>
+
+        <h2 class="seksi-judul">Rekap Bulanan</h2>
+        <p class="seksi-sub">Total penjualan, transaksi, dan barang terjual per bulan.</p>
+        <div class="kartu tabel-bungkus" style="padding:6px 10px;margin-bottom:14px">
+          <table>
+            <thead>
+              <tr>
+                <th>Bulan</th>
+                <th class="kanan">Hari Tercatat</th>
+                <th class="kanan">Penjualan</th>
+                <th class="kanan">Transaksi</th>
+                <th class="kanan">Barang Terjual</th>
+                <th class="kanan">Rata-rata Penjualan / Hari</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-bulanan"></tbody>
+          </table>
+        </div>
+        <div class="kartu">
+          <h3>Grafik Penjualan per Bulan</h3>
+          <div class="grafik" id="grafik-bulanan"></div>
+        </div>
+      </section>
+
+      <!-- ============ TAMBAH REKAP ============ -->
+      <section class="panel" id="panel-tambah" role="tabpanel" aria-labelledby="tab-tambah">
+        <div class="kartu">
+          <h2>Catat Rekap Harian</h2>
+          <p class="sub">Isi rekap penjualan satu hari. Jika tanggal yang sama sudah ada, data lama akan diganti dengan data baru ini.</p>
+          <div class="pesan" id="pesan-form" role="status"></div>
+          <form class="rekap" id="form-rekap" novalidate>
+            <div class="medan">
+              <label for="f-tanggal">Tanggal</label>
+              <input type="date" id="f-tanggal" required />
+            </div>
+            <div class="medan">
+              <label for="f-penjualan">Total Penjualan (Rp)</label>
+              <input type="number" id="f-penjualan" min="0" step="500" inputmode="numeric" placeholder="Contoh: 850000" required />
+              <div class="petunjuk">Total uang penjualan pada hari itu, tanpa titik atau koma. Contoh: 850000 untuk Rp850.000.</div>
+            </div>
+            <div class="medan">
+              <label for="f-transaksi">Jumlah Transaksi</label>
+              <input type="number" id="f-transaksi" min="0" step="1" inputmode="numeric" placeholder="Contoh: 32" required />
+              <div class="petunjuk">Berapa kali kasir melayani pembelian pada hari itu.</div>
+            </div>
+            <div class="medan">
+              <label for="f-barang">Barang Terjual (buah/pcs)</label>
+              <input type="number" id="f-barang" min="0" step="1" inputmode="numeric" placeholder="Contoh: 74" required />
+              <div class="petunjuk">Total jumlah barang yang keluar dari toko pada hari itu.</div>
+            </div>
+            <div class="medan">
+              <label for="f-keterangan">Keterangan (boleh kosong)</label>
+              <textarea id="f-keterangan" placeholder="Contoh: Hujan deras sore hari, toko tutup lebih awal."></textarea>
+            </div>
+            <div>
+              <button type="submit" class="btn">Simpan Rekap</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel" aria-labelledby="tab-panduan">
+        <div class="kartu panduan">
+          <h2>Tentang Aplikasi Rekap</h2>
+          <p>Aplikasi Rekap adalah aplikasi pencatatan rekap laporan usaha untuk toko kecil. Aplikasi ini membantu pemilik toko melihat kembali hasil penjualan dari hari ke hari, minggu ke minggu, dan bulan ke bulan — tanpa perlu membuka buku catatan atau menghitung ulang dari nota.</p>
+          <p>Saat pertama dibuka, aplikasi menampilkan <b>30 hari data contoh</b> (Oktober–November 2026) agar Anda bisa langsung melihat cara kerjanya. Anda dapat menambahkan rekap baru lewat tab <b>Tambah Rekap</b>.</p>
+
+          <h2>Memulai</h2>
+          <ol>
+            <li>Buka tab <b>Ringkasan</b> untuk melihat keadaan toko hari ini, minggu ini, dan bulan ini.</li>
+            <li>Buka tab <b>Rekap Harian</b> untuk melihat daftar rekap per hari, lalu klik salah satu hari untuk melihat rincian transaksinya.</li>
+            <li>Setiap selesai berjualan, catat rekap hari itu lewat tab <b>Tambah Rekap</b>.</li>
+            <li>Seminggu atau sebulan sekali, periksa tab <b>Rekap Mingguan &amp; Bulanan</b> untuk menilai perkembangan usaha.</li>
+          </ol>
+
+          <h2>Tab Ringkasan</h2>
+          <p>Tab ini menampilkan tiga kartu periode dan dua bagian pendukung:</p>
+          <ul>
+            <li><b>Hari Ini</b> — total penjualan, jumlah transaksi, dan jumlah barang terjual pada hari terakhir yang tercatat, lengkap dengan rata-rata nilai per transaksi.</li>
+            <li><b>Minggu Ini</b> — gabungan rekap dari hari Senin sampai Minggu pada minggu yang sama dengan hari terakhir tercatat.</li>
+            <li><b>Bulan Ini</b> — gabungan rekap selama bulan yang sama dengan hari terakhir tercatat.</li>
+            <li><b>Barang Terlaris</b> — lima barang dengan jumlah penjualan terbanyak dari seluruh data, dihitung dari rincian transaksi.</li>
+            <li><b>Penjualan 7 Hari Terakhir</b> — grafik batang sederhana untuk melihat naik-turunnya penjualan seminggu terakhir.</li>
+          </ul>
+
+          <h2>Tab Rekap Harian</h2>
+          <p>Tab ini berisi tabel rekap satu baris per hari: tanggal, total penjualan, jumlah transaksi, barang terjual, rata-rata per transaksi, dan barang terlaris hari itu.</p>
+          <ul>
+            <li><b>Pencarian</b> — ketik kata kunci pada kotak pencarian untuk menyaring berdasarkan tanggal, nama barang terlaris, atau keterangan hari itu.</li>
+            <li><b>Filter bulan</b> — pilih bulan tertentu untuk hanya menampilkan rekap bulan tersebut.</li>
+            <li><b>Rincian transaksi</b> — klik baris hari mana pun untuk membuka rincian di bawah tabel: jam transaksi, isi belanja, jumlah barang, dan total per transaksi, ditutup dengan total hari itu. Klik tombol <b>Tutup Rincian</b> untuk menutupnya.</li>
+            <li>Rekap yang dicatat sendiri lewat formulir ditandai lencana <b>Catatan manual</b> dan tidak memiliki rincian per transaksi.</li>
+          </ul>
+
+          <h2>Tab Rekap Mingguan &amp; Bulanan</h2>
+          <ul>
+            <li><b>Rekap Mingguan</b> — data dikelompokkan per minggu (Senin–Minggu). Kolom <i>Rata-rata Penjualan / Hari</i> dihitung dari hari yang tercatat saja, sehingga minggu yang belum selesai tetap bisa dibandingkan secara wajar.</li>
+            <li><b>Rekap Bulanan</b> — data dikelompokkan per bulan dengan kolom yang sama.</li>
+            <li>Di bawah setiap tabel terdapat <b>grafik batang</b> total penjualan agar perbedaan antarperiode mudah terlihat sekilas.</li>
+          </ul>
+
+          <h2>Tab Tambah Rekap</h2>
+          <p>Gunakan formulir ini setiap hari setelah toko tutup:</p>
+          <ol>
+            <li>Pilih <b>Tanggal</b> rekap.</li>
+            <li>Isi <b>Total Penjualan</b> hari itu dalam rupiah (angka saja, tanpa titik).</li>
+            <li>Isi <b>Jumlah Transaksi</b> dan <b>Barang Terjual</b>.</li>
+            <li>Isi <b>Keterangan</b> bila ada hal penting hari itu — misalnya promo, hujan, atau pesanan besar. Keterangan membantu menjelaskan mengapa penjualan naik atau turun.</li>
+            <li>Tekan <b>Simpan Rekap</b>. Data langsung muncul di tab Ringkasan, Rekap Harian, dan Rekap Mingguan &amp; Bulanan.</li>
+          </ol>
+          <p>Jika tanggal yang dimasukkan sudah ada, rekap lama pada tanggal itu <b>diganti</b> dengan rekap baru. Rekap hasil formulir tidak memiliki rincian per transaksi.</p>
+
+          <h2>Tips Mencatat Rekap yang Rapi</h2>
+          <ul>
+            <li>Catat rekap di hari yang sama, selagi angka dan kejadiannya masih segar di ingatan.</li>
+            <li>Gunakan keterangan untuk mencatat sebab perubahan — sebulan kemudian, keterangan itulah yang membuat angka-angkanya masuk akal.</li>
+            <li>Bandingkan rata-rata per hari, bukan hanya total, saat menilai minggu atau bulan yang jumlah hari tercatatnya berbeda.</li>
+            <li>Perhatikan barang terlaris untuk menentukan barang yang stoknya tidak boleh sampai kosong.</li>
+          </ul>
+
+          <h2>Keterbatasan Aplikasi</h2>
+          <ul>
+            <li>Data yang Anda tambahkan hanya tersimpan <b>selama aplikasi dibuka</b>. Menutup atau memuat ulang halaman akan mengembalikan tampilan ke 30 hari data contoh.</li>
+            <li>Aplikasi ini adalah aplikasi <b>rekap laporan</b> — bukan sistem kasir (POS) dan bukan aplikasi akuntansi lengkap. Aplikasi ini tidak mencatat stok, utang-piutang, laba-rugi, atau pajak.</li>
+            <li>Rincian transaksi hanya tersedia pada data contoh; rekap yang dicatat lewat formulir tersimpan sebagai ringkasan harian.</li>
+          </ul>
+
+          <div class="kotak-garansi">
+            <h2>Garansi</h2>
+            <p>Aplikasi ini dilengkapi <b>garansi perbaikan bug/error</b>: apabila ada fitur yang dijelaskan dalam buku panduan ini dan ditampilkan pada demo yang tidak berjalan sebagaimana mestinya (bug/error), perbaikan dilakukan <b>gratis selama masa garansi</b>.</p>
+            <h3>Masa garansi — pembelian sekali bayar</h3>
+            <table class="tabel-garansi">
+              <tr><th>Paket</th><th>Masa Garansi</th></tr>
+              <tr><td>Pemula</td><td>30 hari</td></tr>
+              <tr><td>Profesional</td><td>60 hari</td></tr>
+              <tr><td>Bisnis</td><td>90 hari</td></tr>
+            </table>
+            <h3>Masa garansi — berlangganan</h3>
+            <p>Untuk pembelian berlangganan, garansi berlaku <b>selama masa langganan aktif</b>.</p>
+            <h3>Yang tidak termasuk garansi</h3>
+            <ul>
+              <li>Permintaan fitur baru di luar yang dijelaskan dalam buku panduan ini.</li>
+              <li>Perubahan desain atau perubahan struktur data.</li>
+              <li>Kerusakan atau kesalahan yang timbul karena pembeli mengubah file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga.</li>
+            </ul>
+            <h3>Cara klaim garansi</h3>
+            <p>Hubungi penjual melalui <b>WhatsApp</b> dan sertakan <b>video atau screenshot</b> yang menunjukkan bug/error-nya, beserta keterangan singkat tentang apa yang terjadi. Bukti visual ini membantu perbaikan dilakukan dengan cepat dan tepat.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><b>Catatan jujur:</b> halaman ini berisi 30 hari data contoh. Rekap yang Anda tambahkan hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data contoh.</p>
+        <p>Aplikasi Rekap adalah aplikasi rekap laporan usaha sederhana untuk toko kecil. Aplikasi ini bukan sistem kasir (POS) dan bukan aplikasi akuntansi lengkap.</p>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+
+      /* ================= Data contoh: 30 hari (21 Okt – 19 Nov 2026) =================
+         Rincian transaksi dibuat dengan pola tetap (seed per tanggal) supaya
+         total harian, barang terlaris, dan rincian selalu konsisten. */
+      var PRODUK = [
+        { nama: "Beras 5 kg", harga: 68000 },
+        { nama: "Minyak Goreng 2 L", harga: 42000 },
+        { nama: "Telur Ayam 1 kg", harga: 28500 },
+        { nama: "Gula Pasir 1 kg", harga: 17500 },
+        { nama: "Susu UHT 1 L", harga: 19500 },
+        { nama: "Kecap Manis 600 ml", harga: 24000 },
+        { nama: "Deterjen 800 g", harga: 21000 },
+        { nama: "Air Mineral Galon", harga: 19000 },
+        { nama: "Roti Tawar", harga: 16000 },
+        { nama: "Tepung Terigu 1 kg", harga: 12500 },
+        { nama: "Sarden Kaleng", harga: 11500 },
+        { nama: "Teh Celup isi 25", harga: 8500 },
+        { nama: "Sabun Mandi", harga: 5500 },
+        { nama: "Mie Instan", harga: 3500 },
+        { nama: "Kopi Sachet", harga: 1500 }
+      ];
+      var CATATAN = {
+        "2026-10-24": "Promo akhir pekan: beli 5 mie instan gratis 1.",
+        "2026-10-28": "Hujan deras sejak sore, pengunjung lebih sepi dari biasa.",
+        "2026-10-31": "Akhir bulan, banyak pelanggan belanja bulanan.",
+        "2026-11-01": "Awal bulan, stok beras dan minyak goreng ditambah.",
+        "2026-11-07": "Ada pesanan besar untuk acara RT di lingkungan toko.",
+        "2026-11-11": "Promo tanggal kembar 11.11, toko ramai sejak pagi.",
+        "2026-11-15": "Toko tutup lebih awal karena acara keluarga.",
+        "2026-11-19": "Rekap hari ini."
+      };
+
+      function rngBenih(benih) {
+        var a = benih >>> 0;
+        return function () {
+          a |= 0; a = (a + 0x6D2B79F5) | 0;
+          var t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      function kunciTanggal(d) {
+        var m = String(d.getMonth() + 1).padStart(2, "0");
+        var t = String(d.getDate()).padStart(2, "0");
+        return d.getFullYear() + "-" + m + "-" + t;
+      }
+      function buatTransaksiHari(tanggal) {
+        var rnd = rngBenih(tanggal.getFullYear() * 10000 + (tanggal.getMonth() + 1) * 100 + tanggal.getDate());
+        var dow = tanggal.getDay();
+        var akhirPekan = (dow === 0 || dow === 6);
+        var jumlah = Math.round(20 + rnd() * 13 + (akhirPekan ? 8 : 0));
+        var daftar = [];
+        for (var i = 0; i < jumlah; i++) {
+          var jam = 7 + Math.floor(rnd() * 13.6);
+          var menit = Math.floor(rnd() * 60);
+          var waktu = String(jam).padStart(2, "0") + "." + String(menit).padStart(2, "0");
+          var nItem = 1 + Math.floor(rnd() * 3);
+          var dipakai = {};
+          var items = [];
+          for (var j = 0; j < nItem; j++) {
+            var idx = Math.floor(rnd() * PRODUK.length);
+            if (dipakai[idx]) continue;
+            dipakai[idx] = true;
+            var p = PRODUK[idx];
+            var qty = p.harga <= 6000 ? 1 + Math.floor(rnd() * 5) : 1 + Math.floor(rnd() * 2);
+            items.push({ nama: p.nama, qty: qty, harga: p.harga });
+          }
+          if (!items.length) continue;
+          var total = 0, qtyTotal = 0;
+          items.forEach(function (it) { total += it.harga * it.qty; qtyTotal += it.qty; });
+          daftar.push({ waktu: waktu, items: items, total: total, qty: qtyTotal });
+        }
+        daftar.sort(function (a, b) { return a.waktu < b.waktu ? -1 : 1; });
+        return daftar;
+      }
+      function buatHariContoh(tanggal) {
+        var kunci = kunciTanggal(tanggal);
+        var txs = buatTransaksiHari(tanggal);
+        var penjualan = 0, barang = 0, perBarang = {};
+        txs.forEach(function (tx) {
+          penjualan += tx.total; barang += tx.qty;
+          tx.items.forEach(function (it) { perBarang[it.nama] = (perBarang[it.nama] || 0) + it.qty; });
+        });
+        var terlaris = null;
+        Object.keys(perBarang).forEach(function (n) {
+          if (!terlaris || perBarang[n] > terlaris.qty) terlaris = { nama: n, qty: perBarang[n] };
+        });
+        return {
+          tanggal: kunci, penjualan: penjualan, transaksi: txs.length, barang: barang,
+          terlaris: terlaris, keterangan: CATATAN[kunci] || "", txs: txs, manual: false
+        };
+      }
+
+      var hari = [];
+      (function () {
+        var d = new Date(2026, 9, 21);
+        for (var i = 0; i < 30; i++) {
+          hari.push(buatHariContoh(d));
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+        }
+      })();
+
+      /* ================= Utilitas ================= */
+      var NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var NAMA_BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      var BULAN_SINGKAT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      var rp = new Intl.NumberFormat("id-ID");
+      function formatRp(n) { return "Rp" + rp.format(Math.round(n)); }
+      function formatRpSingkat(n) {
+        if (n >= 1000000) return "Rp" + (n / 1000000).toFixed(2).replace(".", ",").replace(/,?0+$/, "") + " jt";
+        if (n >= 1000) return "Rp" + Math.round(n / 1000) + " rb";
+        return "Rp" + n;
+      }
+      function tanggalDariKunci(k) { var p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+      function formatTanggalPanjang(k) {
+        var d = tanggalDariKunci(k);
+        return NAMA_HARI[d.getDay()] + ", " + d.getDate() + " " + NAMA_BULAN[d.getMonth()] + " " + d.getFullYear();
+      }
+      function formatTanggalSingkat(k) {
+        var d = tanggalDariKunci(k);
+        return d.getDate() + " " + BULAN_SINGKAT[d.getMonth()] + " " + d.getFullYear();
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function jumlahkan(daftar) {
+        var r = { penjualan: 0, transaksi: 0, barang: 0, hari: daftar.length };
+        daftar.forEach(function (h) { r.penjualan += h.penjualan; r.transaksi += h.transaksi; r.barang += h.barang; });
+        return r;
+      }
+      function seninDari(d) {
+        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        var geser = (x.getDay() + 6) % 7;
+        x.setDate(x.getDate() - geser);
+        return x;
+      }
+
+      /* ================= Render: Ringkasan ================= */
+      function kartuPeriode(label, sub, agg) {
+        var rata = agg.transaksi ? agg.penjualan / agg.transaksi : 0;
+        return '<div class="kartu">' +
+          '<span class="label-periode">' + label + "</span>" +
+          '<div class="stat-utama"><small>Total Penjualan</small>' + formatRp(agg.penjualan) + "</div>" +
+          '<p class="sub" style="margin:8px 0 0">' + esc(sub) + "</p>" +
+          '<div class="stat-baris">' +
+          '<div class="stat-mini"><b>' + rp.format(agg.transaksi) + '</b><span>Transaksi</span></div>' +
+          '<div class="stat-mini"><b>' + rp.format(agg.barang) + '</b><span>Barang terjual</span></div>' +
+          '<div class="stat-mini"><b>' + formatRpSingkat(rata) + '</b><span>Rata-rata / transaksi</span></div>' +
+          "</div></div>";
+      }
+      function renderRingkasan() {
+        var terurut = hari.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; });
+        var terakhir = terurut[terurut.length - 1];
+        var dTerakhir = tanggalDariKunci(terakhir.tanggal);
+
+        var hariIni = jumlahkan(terurut.filter(function (h) { return h.tanggal === terakhir.tanggal; }));
+
+        var senin = seninDari(dTerakhir);
+        var minggu = seninDari(dTerakhir); minggu.setDate(minggu.getDate() + 6);
+        var kSenin = kunciTanggal(senin), kMinggu = kunciTanggal(minggu);
+        var mingguIni = jumlahkan(terurut.filter(function (h) { return h.tanggal >= kSenin && h.tanggal <= kMinggu; }));
+
+        var ym = terakhir.tanggal.slice(0, 7);
+        var bulanIni = jumlahkan(terurut.filter(function (h) { return h.tanggal.slice(0, 7) === ym; }));
+
+        document.getElementById("kartu-periode").innerHTML =
+          kartuPeriode("Hari Ini", formatTanggalPanjang(terakhir.tanggal), hariIni) +
+          kartuPeriode("Minggu Ini", formatTanggalSingkat(kSenin) + " – " + formatTanggalSingkat(kMinggu) + " · " + mingguIni.hari + " hari tercatat", mingguIni) +
+          kartuPeriode("Bulan Ini", NAMA_BULAN[dTerakhir.getMonth()] + " " + dTerakhir.getFullYear() + " · " + bulanIni.hari + " hari tercatat", bulanIni);
+
+        /* Barang terlaris keseluruhan */
+        var perBarang = {};
+        terurut.forEach(function (h) {
+          h.txs.forEach(function (tx) {
+            tx.items.forEach(function (it) { perBarang[it.nama] = (perBarang[it.nama] || 0) + it.qty; });
+          });
+        });
+        var top = Object.keys(perBarang).map(function (n) { return { nama: n, qty: perBarang[n] }; })
+          .sort(function (a, b) { return b.qty - a.qty; }).slice(0, 5);
+        var maks = top.length ? top[0].qty : 1;
+        document.getElementById("daftar-terlaris").innerHTML = top.map(function (t, i) {
+          return "<li><span class=\"peringkat\">" + (i + 1) + "</span>" +
+            "<div><span class=\"nama\">" + esc(t.nama) + "</span>" +
+            "<div class=\"bar\"><i style=\"width:" + Math.round(t.qty / maks * 100) + "%\"></i></div></div>" +
+            "<div class=\"jml\">" + rp.format(t.qty) + "<span>terjual</span></div></li>";
+        }).join("");
+
+        /* Grafik 7 hari terakhir */
+        var tujuh = terurut.slice(-7);
+        document.getElementById("grafik-7hari").innerHTML = buatGrafik(tujuh.map(function (h) {
+          var d = tanggalDariKunci(h.tanggal);
+          return {
+            nilai: h.penjualan, tampil: formatRpSingkat(h.penjualan),
+            ket: NAMA_HARI[d.getDay()].slice(0, 3) + ", " + d.getDate() + " " + BULAN_SINGKAT[d.getMonth()],
+            sorot: h.tanggal === terakhir.tanggal
+          };
+        }));
+      }
+      function buatGrafik(daftar) {
+        var maks = Math.max.apply(null, daftar.map(function (x) { return x.nilai; }).concat([1]));
+        return daftar.map(function (x) {
+          var tinggi = Math.max(4, Math.round(x.nilai / maks * 110));
+          return '<div class="kolom"><div class="nilai">' + esc(x.tampil) + "</div>" +
+            '<div class="batang' + (x.sorot ? " sorot" : "") + '" style="height:' + tinggi + 'px"></div>' +
+            '<div class="ket">' + esc(x.ket) + "</div></div>";
+        }).join("");
+      }
+
+      /* ================= Render: Rekap Harian ================= */
+      var hariDipilih = null;
+      function isiFilterBulan() {
+        var sel = document.getElementById("filter-bulan");
+        var nilaiLama = sel.value;
+        var bulan = {};
+        hari.forEach(function (h) { bulan[h.tanggal.slice(0, 7)] = true; });
+        var kunci = Object.keys(bulan).sort().reverse();
+        sel.innerHTML = '<option value="">Semua bulan</option>' + kunci.map(function (k) {
+          var p = k.split("-");
+          return '<option value="' + k + '">' + NAMA_BULAN[+p[1] - 1] + " " + p[0] + "</option>";
+        }).join("");
+        if (nilaiLama && bulan[nilaiLama]) sel.value = nilaiLama;
+      }
+      function renderHarian() {
+        var kata = document.getElementById("cari-harian").value.trim().toLowerCase();
+        var fBulan = document.getElementById("filter-bulan").value;
+        var daftar = hari.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? 1 : -1; });
+        daftar = daftar.filter(function (h) {
+          if (fBulan && h.tanggal.slice(0, 7) !== fBulan) return false;
+          if (!kata) return true;
+          var teks = (formatTanggalPanjang(h.tanggal) + " " + formatTanggalSingkat(h.tanggal) + " " +
+            (h.terlaris ? h.terlaris.nama : "") + " " + h.keterangan).toLowerCase();
+          return teks.indexOf(kata) !== -1;
+        });
+        var tb = document.getElementById("tabel-harian");
+        document.getElementById("harian-kosong").hidden = daftar.length > 0;
+        tb.innerHTML = daftar.map(function (h) {
+          var rata = h.transaksi ? h.penjualan / h.transaksi : 0;
+          return '<tr class="klik' + (hariDipilih === h.tanggal ? " dipilih" : "") + '" tabindex="0" data-tanggal="' + h.tanggal + '" aria-label="Lihat rincian ' + esc(formatTanggalPanjang(h.tanggal)) + '">' +
+            '<td data-label="Tanggal"><span class="tgl">' + formatTanggalPanjang(h.tanggal) + "</span>" +
+            (h.manual ? ' <span class="lencana">Catatan manual</span>' : "") +
+            (h.keterangan ? '<span class="ket-bawah">' + esc(h.keterangan) + "</span>" : "") + "</td>" +
+            '<td class="kanan" data-label="Penjualan"><b>' + formatRp(h.penjualan) + "</b></td>" +
+            '<td class="kanan" data-label="Transaksi">' + rp.format(h.transaksi) + "</td>" +
+            '<td class="kanan" data-label="Barang Terjual">' + rp.format(h.barang) + "</td>" +
+            '<td class="kanan" data-label="Rata-rata / Transaksi">' + formatRp(rata) + "</td>" +
+            '<td data-label="Barang Terlaris">' + (h.terlaris ? esc(h.terlaris.nama) + ' <span class="ket-bawah" style="display:inline">(' + h.terlaris.qty + " terjual)</span>" : "—") + "</td></tr>";
+        }).join("");
+        Array.prototype.forEach.call(tb.querySelectorAll("tr.klik"), function (tr) {
+          tr.addEventListener("click", function () { pilihHari(tr.getAttribute("data-tanggal")); });
+          tr.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pilihHari(tr.getAttribute("data-tanggal")); }
+          });
+        });
+      }
+      function pilihHari(kunci) {
+        hariDipilih = kunci;
+        renderHarian();
+        renderRincian();
+        var el = document.getElementById("rincian-hari");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      function renderRincian() {
+        var bungkus = document.getElementById("rincian-hari");
+        if (!hariDipilih) { bungkus.innerHTML = ""; return; }
+        var h = null;
+        hari.forEach(function (x) { if (x.tanggal === hariDipilih) h = x; });
+        if (!h) { bungkus.innerHTML = ""; return; }
+        var isi;
+        if (h.manual || !h.txs.length) {
+          isi = '<p style="color:var(--muted)">Rekap ini dicatat lewat formulir Tambah Rekap sebagai ringkasan harian, sehingga tidak ada rincian per transaksi.</p>';
+        } else {
+          isi = '<div class="tabel-bungkus"><table><thead><tr><th>Jam</th><th>Rincian Belanja</th><th class="kanan">Barang</th><th class="kanan">Total</th></tr></thead><tbody>' +
+            h.txs.map(function (tx) {
+              var rincian = tx.items.map(function (it) { return esc(it.nama) + " ×" + it.qty; }).join(", ");
+              return "<tr><td data-label=\"Jam\">" + tx.waktu + "</td><td data-label=\"Rincian Belanja\">" + rincian + "</td>" +
+                '<td class="kanan" data-label="Barang">' + tx.qty + "</td>" +
+                '<td class="kanan" data-label="Total"><b>' + formatRp(tx.total) + "</b></td></tr>";
+            }).join("") +
+            '<tr><td colspan="2" style="font-weight:700">Total hari ini</td><td class="kanan" style="font-weight:700">' + rp.format(h.barang) + '</td><td class="kanan" style="font-weight:700">' + formatRp(h.penjualan) + "</td></tr>" +
+            "</tbody></table></div>";
+        }
+        bungkus.innerHTML = '<div class="kartu rincian" id="kartu-rincian">' +
+          '<div class="rincian-kepala"><h2 style="font-size:17px;margin:0">Rincian — ' + formatTanggalPanjang(h.tanggal) + "</h2>" +
+          '<button class="tutup-btn" id="tutup-rincian" type="button">Tutup Rincian</button></div>' +
+          "<div><span class=\"chip\">Penjualan " + formatRp(h.penjualan) + "</span>" +
+          "<span class=\"chip\">" + rp.format(h.transaksi) + " transaksi</span>" +
+          "<span class=\"chip\">" + rp.format(h.barang) + " barang terjual</span>" +
+          (h.terlaris ? "<span class=\"chip\">Terlaris: " + esc(h.terlaris.nama) + "</span>" : "") + "</div>" +
+          (h.keterangan ? '<div class="catatan-hari"><b>Keterangan:</b> ' + esc(h.keterangan) + "</div>" : "") +
+          isi + "</div>";
+        document.getElementById("tutup-rincian").addEventListener("click", function () {
+          hariDipilih = null; renderHarian(); renderRincian();
+        });
+      }
+
+      /* ================= Render: Mingguan & Bulanan ================= */
+      function renderPeriode() {
+        var mingguMap = {};
+        hari.forEach(function (h) {
+          var senin = seninDari(tanggalDariKunci(h.tanggal));
+          var k = kunciTanggal(senin);
+          if (!mingguMap[k]) {
+            var minggu = new Date(senin); minggu.setDate(minggu.getDate() + 6);
+            mingguMap[k] = { label: formatTanggalSingkat(k) + " – " + formatTanggalSingkat(kunciTanggal(minggu)), daftar: [] };
+          }
+          mingguMap[k].daftar.push(h);
+        });
+        var mingguKeys = Object.keys(mingguMap).sort().reverse();
+        document.getElementById("tabel-mingguan").innerHTML = mingguKeys.map(function (k) {
+          var g = mingguMap[k], agg = jumlahkan(g.daftar);
+          return "<tr><td data-label=\"Minggu\"><span class=\"tgl\">" + g.label + "</span></td>" +
+            '<td class="kanan" data-label="Hari Tercatat">' + agg.hari + "</td>" +
+            '<td class="kanan" data-label="Penjualan"><b>' + formatRp(agg.penjualan) + "</b></td>" +
+            '<td class="kanan" data-label="Transaksi">' + rp.format(agg.transaksi) + "</td>" +
+            '<td class="kanan" data-label="Barang Terjual">' + rp.format(agg.barang) + "</td>" +
+            '<td class="kanan" data-label="Rata-rata / Hari">' + formatRp(agg.penjualan / agg.hari) + "</td></tr>";
+        }).join("");
+        document.getElementById("grafik-mingguan").innerHTML = buatGrafik(mingguKeys.slice().reverse().map(function (k) {
+          var g = mingguMap[k];
+          return { nilai: jumlahkan(g.daftar).penjualan, tampil: formatRpSingkat(jumlahkan(g.daftar).penjualan), ket: g.label };
+        }));
+
+        var bulanMap = {};
+        hari.forEach(function (h) {
+          var k = h.tanggal.slice(0, 7);
+          if (!bulanMap[k]) {
+            var p = k.split("-");
+            bulanMap[k] = { label: NAMA_BULAN[+p[1] - 1] + " " + p[0], daftar: [] };
+          }
+          bulanMap[k].daftar.push(h);
+        });
+        var bulanKeys = Object.keys(bulanMap).sort().reverse();
+        document.getElementById("tabel-bulanan").innerHTML = bulanKeys.map(function (k) {
+          var g = bulanMap[k], agg = jumlahkan(g.daftar);
+          return "<tr><td data-label=\"Bulan\"><span class=\"tgl\">" + g.label + "</span></td>" +
+            '<td class="kanan" data-label="Hari Tercatat">' + agg.hari + "</td>" +
+            '<td class="kanan" data-label="Penjualan"><b>' + formatRp(agg.penjualan) + "</b></td>" +
+            '<td class="kanan" data-label="Transaksi">' + rp.format(agg.transaksi) + "</td>" +
+            '<td class="kanan" data-label="Barang Terjual">' + rp.format(agg.barang) + "</td>" +
+            '<td class="kanan" data-label="Rata-rata / Hari">' + formatRp(agg.penjualan / agg.hari) + "</td></tr>";
+        }).join("");
+        document.getElementById("grafik-bulanan").innerHTML = buatGrafik(bulanKeys.slice().reverse().map(function (k) {
+          var g = bulanMap[k], agg = jumlahkan(g.daftar);
+          return { nilai: agg.penjualan, tampil: formatRpSingkat(agg.penjualan), ket: g.label };
+        }));
+      }
+
+      /* ================= Tab & formulir ================= */
+      function renderSemua() {
+        isiFilterBulan();
+        renderRingkasan();
+        renderHarian();
+        renderRincian();
+        renderPeriode();
+      }
+      document.querySelectorAll(".tab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll(".tab-btn").forEach(function (b) { b.setAttribute("aria-selected", "false"); });
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("aktif"); });
+          btn.setAttribute("aria-selected", "true");
+          document.getElementById("panel-" + btn.getAttribute("data-tab")).classList.add("aktif");
+        });
+      });
+      document.getElementById("cari-harian").addEventListener("input", renderHarian);
+      document.getElementById("filter-bulan").addEventListener("change", renderHarian);
+
+      var form = document.getElementById("form-rekap");
+      document.getElementById("f-tanggal").value = "2026-11-19";
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var pesan = document.getElementById("pesan-form");
+        var tanggal = document.getElementById("f-tanggal").value;
+        var penjualan = parseFloat(document.getElementById("f-penjualan").value);
+        var transaksi = parseInt(document.getElementById("f-transaksi").value, 10);
+        var barang = parseInt(document.getElementById("f-barang").value, 10);
+        var keterangan = document.getElementById("f-keterangan").value.trim();
+        function gagal(teks) {
+          pesan.className = "pesan gagal"; pesan.textContent = teks;
+        }
+        if (!tanggal) return gagal("Tanggal belum diisi. Silakan pilih tanggal rekap.");
+        if (isNaN(penjualan) || penjualan < 0) return gagal("Total penjualan belum benar. Isi angka 0 atau lebih, contoh: 850000.");
+        if (isNaN(transaksi) || transaksi < 0) return gagal("Jumlah transaksi belum benar. Isi angka 0 atau lebih.");
+        if (isNaN(barang) || barang < 0) return gagal("Jumlah barang terjual belum benar. Isi angka 0 atau lebih.");
+
+        var diganti = false;
+        for (var i = 0; i < hari.length; i++) {
+          if (hari[i].tanggal === tanggal) {
+            hari[i] = { tanggal: tanggal, penjualan: penjualan, transaksi: transaksi, barang: barang, terlaris: null, keterangan: keterangan, txs: [], manual: true };
+            diganti = true; break;
+          }
+        }
+        if (!diganti) {
+          hari.push({ tanggal: tanggal, penjualan: penjualan, transaksi: transaksi, barang: barang, terlaris: null, keterangan: keterangan, txs: [], manual: true });
+        }
+        hariDipilih = tanggal;
+        renderSemua();
+        pesan.className = "pesan sukses";
+        pesan.textContent = (diganti ? "Rekap " : "Rekap baru tersimpan: ") + formatTanggalPanjang(tanggal) +
+          " — penjualan " + formatRp(penjualan) + ", " + rp.format(transaksi) + " transaksi, " + rp.format(barang) +
+          " barang terjual. Lihat hasilnya di tab Rekap Harian.";
+        form.reset();
+        document.getElementById("f-tanggal").value = tanggal;
+      });
+
+      renderSemua();
+    </script>
+  </body>
+</html>
