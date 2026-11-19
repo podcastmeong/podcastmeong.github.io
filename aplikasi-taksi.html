@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Taksi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f6f4ef;
+        --surface: #ffffff;
+        --surface-2: #fbf9f4;
+        --ink: #23211c;
+        --ink-soft: #5c574c;
+        --ink-faint: #8a8474;
+        --line: #e7e1d3;
+        --accent: #d9930d;
+        --accent-strong: #b97a06;
+        --accent-soft: #fdf3dd;
+        --green: #1e7d4f;
+        --green-soft: #e3f3e9;
+        --blue: #2563a8;
+        --blue-soft: #e4eef8;
+        --teal: #0f766e;
+        --teal-soft: #e0f2f0;
+        --amber: #b45309;
+        --amber-soft: #fdf0e0;
+        --red: #b3372e;
+        --red-soft: #fae7e4;
+        --shadow: 0 1px 2px rgba(60, 50, 20, .05), 0 8px 24px rgba(60, 50, 20, .06);
+        --shadow-lg: 0 12px 40px rgba(60, 50, 20, .16);
+        --radius: 16px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171512;
+          --surface: #221f1a;
+          --surface-2: #1c1a16;
+          --ink: #f0ead9;
+          --ink-soft: #c4bda9;
+          --ink-faint: #948d7a;
+          --line: #38332a;
+          --accent: #e8a81c;
+          --accent-strong: #f2bc45;
+          --accent-soft: #3a2f14;
+          --green: #4cc084;
+          --green-soft: #173527;
+          --blue: #6aa5dd;
+          --blue-soft: #1b2c42;
+          --teal: #3ec2b4;
+          --teal-soft: #14322f;
+          --amber: #eda54e;
+          --amber-soft: #3a2a12;
+          --red: #e07a6f;
+          --red-soft: #3d1e1a;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+          --shadow-lg: 0 12px 40px rgba(0,0,0,.5);
+        }
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 48px; }
+
+      /* ---------- Header ---------- */
+      header.top { padding: 28px 0 6px; }
+      header.top h1 { font-size: 1.7rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -.01em; }
+      header.top p { margin: 0; color: var(--ink-soft); font-size: .95rem; max-width: 56ch; }
+
+      /* ---------- Tabs ---------- */
+      nav.tabs {
+        position: sticky; top: 0; z-index: 20;
+        display: flex; gap: 6px; flex-wrap: wrap;
+        padding: 12px 0 10px;
+        background: var(--bg);
+      }
+      nav.tabs button {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font: inherit; font-weight: 600; font-size: .92rem;
+        padding: 8px 16px; border-radius: 999px; cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      nav.tabs button:hover { border-color: var(--accent); color: var(--ink); }
+      nav.tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) {
+        nav.tabs button.active { color: #221a05; }
+      }
+      section.tab { display: none; }
+      section.tab.active { display: block; }
+
+      /* ---------- Cards & stats ---------- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 8px 0 18px; }
+      .stat .label { font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 6px; }
+      .stat .value { font-size: 1.65rem; font-weight: 800; margin: 0; letter-spacing: -.01em; }
+      .stat .sub { font-size: .8rem; color: var(--ink-faint); margin: 4px 0 0; }
+      .stat .value.money { color: var(--accent-strong); }
+      @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+      h2.sec { font-size: 1.15rem; font-weight: 700; margin: 26px 0 12px; }
+      h2.sec:first-child { margin-top: 6px; }
+
+      /* ---------- Toolbar ---------- */
+      .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 6px 0 14px; }
+      .toolbar .grow { flex: 1 1 220px; }
+      input[type="search"], input[type="text"], input[type="number"], select, textarea {
+        font: inherit; font-size: .95rem; color: var(--ink);
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 10px; padding: 8px 12px; width: 100%;
+      }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+      .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+      .chips button {
+        font: inherit; font-size: .85rem; font-weight: 600;
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+        border-radius: 999px; padding: 6px 13px; cursor: pointer; min-height: 2.25rem;
+      }
+      .chips button.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+      .btn {
+        font: inherit; font-weight: 700; font-size: .92rem;
+        border-radius: 10px; padding: 9px 18px; cursor: pointer; border: 1px solid transparent;
+        display: inline-flex; align-items: center; gap: 7px; justify-content: center;
+      }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-strong); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #221a05; } }
+      .btn-ghost { background: var(--surface); border-color: var(--line); color: var(--ink); }
+      .btn-ghost:hover { border-color: var(--accent); }
+      .btn-danger { background: var(--surface); border-color: var(--line); color: var(--red); }
+      .btn-danger:hover { background: var(--red-soft); border-color: var(--red); }
+      .btn-small { padding: 6px 12px; font-size: .85rem; border-radius: 8px; }
+
+      /* ---------- Lists ---------- */
+      .list { display: grid; gap: 12px; }
+      .order-head, .driver-head { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+      .order-id { font-size: .78rem; font-weight: 700; color: var(--ink-faint); letter-spacing: .04em; }
+      .passenger { font-weight: 700; font-size: 1.02rem; margin: 2px 0 0; }
+      .route { margin: 8px 0 0; color: var(--ink-soft); font-size: .92rem; }
+      .route b { color: var(--ink); font-weight: 600; }
+      .meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: .86rem; color: var(--ink-soft); }
+      .meta .fare { font-weight: 800; color: var(--ink); font-size: .98rem; }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+      .actions select { width: auto; min-width: 132px; }
+      .actions .spacer { flex: 1; }
+
+      .badge { display: inline-block; font-size: .76rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+      .b-baru { background: var(--blue-soft); color: var(--blue); }
+      .b-dijemput { background: var(--amber-soft); color: var(--amber); }
+      .b-diantar { background: var(--teal-soft); color: var(--teal); }
+      .b-selesai { background: var(--green-soft); color: var(--green); }
+      .b-batal { background: var(--red-soft); color: var(--red); }
+      .b-siaga { background: var(--green-soft); color: var(--green); }
+      .b-istirahat { background: var(--accent-soft); color: var(--amber); }
+
+      .driver-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+      .unit { display: inline-flex; align-items: center; gap: 8px; }
+      .unit .uno {
+        background: var(--accent-soft); color: var(--accent-strong);
+        font-weight: 800; font-size: .85rem; padding: 4px 10px; border-radius: 8px;
+      }
+      .plate {
+        font-weight: 700; letter-spacing: .06em; font-size: .9rem;
+        border: 1.5px solid var(--ink); border-radius: 6px; padding: 2px 9px;
+      }
+      .driver-nums { display: flex; gap: 18px; margin-top: 12px; }
+      .driver-nums div p { margin: 0; }
+      .driver-nums .n { font-weight: 800; font-size: 1.05rem; }
+      .driver-nums .l { font-size: .76rem; color: var(--ink-faint); font-weight: 600; }
+
+      .tarif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+      .tarif-grid label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin: 10px 0 4px; }
+      .tarif-name { font-weight: 700; font-size: 1rem; margin: 0; }
+      .tarif-desc { font-size: .85rem; color: var(--ink-soft); margin: 4px 0 0; }
+      .input-rp { position: relative; }
+      .input-rp span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: .9rem; }
+      .input-rp input { padding-left: 38px; }
+
+      .empty { text-align: center; color: var(--ink-faint); padding: 34px 16px; font-size: .95rem; }
+
+      /* ---------- Form panel ---------- */
+      .form-panel { display: none; margin-bottom: 16px; }
+      .form-panel.open { display: block; }
+      .form-panel h3 { margin: 0 0 4px; font-size: 1.05rem; }
+      .form-panel p.hint { margin: 0 0 12px; font-size: .86rem; color: var(--ink-soft); }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .form-grid .full { grid-column: 1 / -1; }
+      .form-grid label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 4px; }
+      @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+      .fare-preview {
+        background: var(--accent-soft); border-radius: 10px; padding: 12px 14px;
+        font-size: .92rem; color: var(--ink);
+      }
+      .fare-preview b { font-size: 1.15rem; color: var(--accent-strong); }
+      .form-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+      /* ---------- Panduan ---------- */
+      .guide h3 { font-size: 1.02rem; margin: 22px 0 6px; }
+      .guide h3:first-child { margin-top: 0; }
+      .guide p, .guide li { color: var(--ink-soft); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 20px; margin: 6px 0; }
+      .guide li { margin: 3px 0; }
+      .guide b { color: var(--ink); }
+      .warranty { border-color: var(--accent); background: var(--surface-2); }
+
+      footer.note {
+        margin-top: 36px; padding: 16px 18px;
+        border: 1px dashed var(--line); border-radius: var(--radius);
+        color: var(--ink-soft); font-size: .86rem; background: var(--surface-2);
+      }
+      footer.note p { margin: 4px 0; }
+
+      /* ---------- Toast ---------- */
+      #toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); font-size: .9rem; font-weight: 600;
+        padding: 11px 20px; border-radius: 999px; box-shadow: var(--shadow-lg);
+        opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50;
+        max-width: calc(100vw - 32px); text-align: center;
+      }
+      #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <h1>Aplikasi Taksi</h1>
+        <p>Catat orderan, atur pengemudi dan unit taksi, serta pantau pemasukan armada kecil Anda dalam satu tempat.</p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu utama">
+        <button type="button" class="active" data-tab="ringkasan" role="tab">Ringkasan</button>
+        <button type="button" data-tab="orderan" role="tab">Orderan</button>
+        <button type="button" data-tab="pengemudi" role="tab">Pengemudi</button>
+        <button type="button" data-tab="tarif" role="tab">Tarif</button>
+        <button type="button" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section class="tab active" id="tab-ringkasan">
+        <div class="stats">
+          <div class="card stat">
+            <p class="label">Orderan Hari Ini</p>
+            <p class="value" id="stat-orderan">0</p>
+            <p class="sub">Semua orderan yang tercatat hari ini</p>
+          </div>
+          <div class="card stat">
+            <p class="label">Taksi Beroperasi</p>
+            <p class="value" id="stat-taksi">0</p>
+            <p class="sub" id="stat-taksi-sub">dari 0 pengemudi terdaftar</p>
+          </div>
+          <div class="card stat">
+            <p class="label">Orderan Selesai Hari Ini</p>
+            <p class="value" id="stat-selesai">0</p>
+            <p class="sub">Penumpang sudah sampai tujuan</p>
+          </div>
+          <div class="card stat">
+            <p class="label">Pemasukan Hari Ini</p>
+            <p class="value money" id="stat-pemasukan">Rp0</p>
+            <p class="sub">Dari orderan berstatus Selesai</p>
+          </div>
+        </div>
+
+        <h2 class="sec">Orderan Berlangsung</h2>
+        <div class="list" id="ringkasan-aktif"></div>
+
+        <h2 class="sec">Status Pengemudi</h2>
+        <div class="list" id="ringkasan-pengemudi"></div>
+      </section>
+
+      <!-- ============ ORDERAN ============ -->
+      <section class="tab" id="tab-orderan">
+        <div class="toolbar">
+          <div class="grow"><input type="search" id="cari-orderan" placeholder="Cari penumpang, titik jemput, atau tujuan…" aria-label="Cari orderan" /></div>
+          <button type="button" class="btn btn-primary" id="btn-tambah-orderan">+ Tambah Orderan</button>
+        </div>
+        <div class="chips" id="filter-status" style="margin-bottom:14px;">
+          <button type="button" class="active" data-status="Semua">Semua</button>
+          <button type="button" data-status="Baru">Baru</button>
+          <button type="button" data-status="Dijemput">Dijemput</button>
+          <button type="button" data-status="Diantar">Diantar</button>
+          <button type="button" data-status="Selesai">Selesai</button>
+          <button type="button" data-status="Batal">Batal</button>
+        </div>
+
+        <div class="card form-panel" id="form-orderan">
+          <h3>Orderan Baru</h3>
+          <p class="hint">Argo dihitung otomatis dari jarak dan tarif yang dipilih. Tarif minimum berlaku bila hasil hitungan lebih kecil.</p>
+          <form id="form-orderan-el">
+            <div class="form-grid">
+              <div>
+                <label for="f-penumpang">Nama Penumpang</label>
+                <input type="text" id="f-penumpang" required placeholder="cth. Sari Wulandari" />
+              </div>
+              <div>
+                <label for="f-pengemudi">Pengemudi</label>
+                <select id="f-pengemudi"></select>
+              </div>
+              <div>
+                <label for="f-jemput">Titik Jemput</label>
+                <input type="text" id="f-jemput" required placeholder="cth. Stasiun Gambir" />
+              </div>
+              <div>
+                <label for="f-tujuan">Tujuan</label>
+                <input type="text" id="f-tujuan" required placeholder="cth. Kemang, Jakarta Selatan" />
+              </div>
+              <div>
+                <label for="f-tarif">Jenis Tarif</label>
+                <select id="f-tarif"></select>
+              </div>
+              <div>
+                <label for="f-jarak">Jarak (km)</label>
+                <input type="number" id="f-jarak" min="0.1" step="0.1" value="5" required />
+              </div>
+              <div class="full fare-preview" id="fare-preview">Argo: <b>Rp0</b></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Simpan Orderan</button>
+              <button type="button" class="btn btn-ghost" id="batal-orderan">Batal</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="list" id="daftar-orderan"></div>
+      </section>
+
+      <!-- ============ PENGEMUDI ============ -->
+      <section class="tab" id="tab-pengemudi">
+        <div class="toolbar">
+          <div class="grow"><input type="search" id="cari-pengemudi" placeholder="Cari nama pengemudi, nomor unit, atau plat…" aria-label="Cari pengemudi" /></div>
+          <button type="button" class="btn btn-primary" id="btn-tambah-pengemudi">+ Tambah Pengemudi</button>
+        </div>
+
+        <div class="card form-panel" id="form-pengemudi">
+          <h3 id="form-pengemudi-judul">Tambah Pengemudi</h3>
+          <p class="hint">Satu pengemudi terikat pada satu unit taksi (nomor unit dan plat nomor).</p>
+          <form id="form-pengemudi-el">
+            <div class="form-grid">
+              <div>
+                <label for="d-nama">Nama Pengemudi</label>
+                <input type="text" id="d-nama" required placeholder="cth. Budi Santoso" />
+              </div>
+              <div>
+                <label for="d-unit">Nomor Unit</label>
+                <input type="text" id="d-unit" required placeholder="cth. T-06" />
+              </div>
+              <div>
+                <label for="d-plat">Plat Nomor</label>
+                <input type="text" id="d-plat" required placeholder="cth. B 6789 TX" />
+              </div>
+              <div>
+                <label for="d-status">Status</label>
+                <select id="d-status">
+                  <option value="Beroperasi">Beroperasi</option>
+                  <option value="Istirahat">Istirahat</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Simpan</button>
+              <button type="button" class="btn btn-ghost" id="batal-pengemudi">Batal</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="driver-grid" id="daftar-pengemudi"></div>
+      </section>
+
+      <!-- ============ TARIF ============ -->
+      <section class="tab" id="tab-tarif">
+        <p style="color:var(--ink-soft); font-size:.94rem; margin:6px 0 14px; max-width:64ch;">
+          Tarif argo per kilometer dan tarif minimum untuk setiap jenis layanan. Perubahan yang disimpan
+          langsung berlaku untuk <b>orderan berikutnya</b> yang Anda buat — orderan yang sudah tercatat tidak berubah.
+        </p>
+        <div class="tarif-grid" id="daftar-tarif"></div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="tab guide" id="tab-panduan">
+        <div class="card">
+          <h3>Panduan Penggunaan Aplikasi Taksi</h3>
+          <p>
+            Aplikasi Taksi adalah aplikasi pencatatan untuk armada taksi kecil: mencatat orderan penumpang,
+            mengelola pengemudi dan unit taksi, mengatur tarif argo, dan melihat ringkasan pemasukan harian.
+            Aplikasi ini berjalan sepenuhnya di perangkat Anda; semua contoh data di dalamnya hanya tersimpan
+            selama aplikasi dibuka.
+          </p>
+
+          <h3>1. Tab Ringkasan</h3>
+          <ul>
+            <li><b>Orderan Hari Ini</b> — jumlah seluruh orderan yang tercatat.</li>
+            <li><b>Taksi Beroperasi</b> — jumlah pengemudi berstatus Beroperasi dari seluruh pengemudi terdaftar.</li>
+            <li><b>Orderan Selesai Hari Ini</b> — jumlah orderan berstatus Selesai.</li>
+            <li><b>Pemasukan Hari Ini</b> — total argo dari orderan berstatus Selesai. Orderan Batal tidak dihitung.</li>
+            <li>Daftar <b>Orderan Berlangsung</b> menampilkan orderan berstatus Dijemput dan Diantar, dan daftar <b>Status Pengemudi</b> menampilkan keadaan tiap pengemudi beserta orderan aktifnya.</li>
+          </ul>
+
+          <h3>2. Tab Orderan</h3>
+          <ul>
+            <li><b>Mencari orderan:</b> ketik nama penumpang, titik jemput, atau tujuan pada kolom pencarian.</li>
+            <li><b>Memfilter status:</b> gunakan tombol Semua, Baru, Dijemput, Diantar, Selesai, atau Batal di atas daftar.</li>
+            <li><b>Menambah orderan:</b> tekan <b>+ Tambah Orderan</b>, isi nama penumpang, titik jemput, tujuan, pengemudi, jenis tarif, dan jarak dalam kilometer. Argo dihitung otomatis: <b>jarak × tarif per km</b>, dan bila hasilnya di bawah tarif minimum, yang dipakai adalah tarif minimum. Tekan <b>Simpan Orderan</b>.</li>
+            <li><b>Mengubah status:</b> pilih status baru pada menu di kartu orderan — Baru → Dijemput (pengemudi menuju titik jemput) → Diantar (penumpang sedang diantar) → Selesai (sampai tujuan, argo masuk pemasukan). Pilih Batal bila orderan dibatalkan.</li>
+            <li><b>Menghapus orderan:</b> tekan tombol <b>Hapus</b> pada kartu orderan, lalu konfirmasi. Orderan yang dihapus tidak dapat dikembalikan.</li>
+          </ul>
+
+          <h3>3. Tab Pengemudi</h3>
+          <ul>
+            <li>Daftar menampilkan nama pengemudi, nomor unit, plat nomor, status (Beroperasi/Istirahat), jumlah <b>orderan aktif</b> (status Dijemput atau Diantar), dan <b>total pendapatan</b> dari orderan Selesai miliknya.</li>
+            <li><b>Mencari:</b> ketik nama, nomor unit, atau plat pada kolom pencarian.</li>
+            <li><b>Menambah:</b> tekan <b>+ Tambah Pengemudi</b>, isi nama, nomor unit, plat nomor, dan status, lalu Simpan.</li>
+            <li><b>Mengubah:</b> tekan <b>Ubah</b> pada kartu pengemudi, sesuaikan isian, lalu Simpan.</li>
+            <li><b>Menghapus:</b> tekan <b>Hapus</b> pada kartu pengemudi, lalu konfirmasi. Orderan lama milik pengemudi tersebut tetap tercatat, tetapi namanya tidak lagi terhubung ke pengemudi.</li>
+          </ul>
+
+          <h3>4. Tab Tarif</h3>
+          <ul>
+            <li>Setiap jenis layanan memiliki <b>tarif per km</b> dan <b>tarif minimum</b>.</li>
+            <li>Untuk mengubah: sesuaikan angka pada kartu tarif, lalu tekan <b>Simpan Tarif</b>. Tarif baru berlaku untuk orderan yang dibuat setelahnya; orderan lama tetap memakai argo saat dibuat.</li>
+          </ul>
+
+          <h3>5. Hal yang Perlu Diketahui</h3>
+          <ul>
+            <li>Aplikasi ini adalah aplikasi <b>pencatatan orderan</b> — bukan aplikasi pemesanan untuk penumpang dan tidak memiliki pelacakan GPS. Titik jemput dan tujuan dicatat sebagai teks.</li>
+            <li>Jarak diisi manual berdasarkan perkiraan atau odometer; argo dihitung dari jarak tersebut.</li>
+            <li>Data contoh hanya tersimpan selama aplikasi dibuka. Menutup atau memuat ulang halaman mengembalikan data ke contoh awal.</li>
+          </ul>
+        </div>
+
+        <div class="card warranty" style="margin-top:14px;">
+          <h3>Garansi</h3>
+          <p>
+            Setiap pembelian aplikasi ini dilengkapi garansi perbaikan <b>bug/error</b> — kesalahan fungsi pada fitur
+            yang dijelaskan dalam buku panduan ini dan yang tampil pada demo — <b>gratis selama masa garansi</b>:
+          </p>
+          <ul>
+            <li><b>Beli Sekali — Pemula:</b> 30 hari sejak pembelian.</li>
+            <li><b>Beli Sekali — Profesional:</b> 60 hari sejak pembelian.</li>
+            <li><b>Beli Sekali — Bisnis:</b> 90 hari sejak pembelian.</li>
+            <li><b>Berlangganan:</b> garansi dan dukungan berlaku selama langganan aktif.</li>
+          </ul>
+          <p><b>Garansi tidak mencakup:</b></p>
+          <ul>
+            <li>Permintaan fitur baru di luar buku panduan dan demo.</li>
+            <li>Perubahan desain atau perubahan data/isi.</li>
+            <li>Kerusakan akibat pembeli mengubah file aplikasi sendiri.</li>
+            <li>Gangguan yang berasal dari layanan pihak ketiga.</li>
+          </ul>
+          <p>
+            <b>Cara klaim:</b> hubungi penjual melalui <b>WhatsApp</b> dan kirimkan <b>video atau screenshot</b> yang
+            menunjukkan bug/error beserta penjelasan singkat kapan masalah terjadi. Perbaikan akan dikerjakan selama
+            masa garansi masih berlaku.
+          </p>
+        </div>
+      </section>
+
+      <footer class="note">
+        <p><b>Catatan:</b> Data contoh pada aplikasi ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data awal.</p>
+        <p>Aplikasi Taksi adalah aplikasi pencatatan orderan untuk pengelola armada, bukan aplikasi pemesanan penumpang dan bukan aplikasi pelacakan GPS.</p>
+      </footer>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      // ================= Data contoh (hanya di memori) =================
+      var TARIF_AWAL = [
+        { id: 1, nama: "Reguler Dalam Kota", desc: "Perjalanan harian di dalam kota.", perKm: 4500, minimum: 15000 },
+        { id: 2, nama: "Bandara", desc: "Antar dan jemput bandara, termasuk biaya tol perkiraan awal.", perKm: 6000, minimum: 50000 },
+        { id: 3, nama: "Antar Kota", desc: "Perjalanan keluar kota jarak menengah dan jauh.", perKm: 5500, minimum: 75000 },
+        { id: 4, nama: "Malam Hari", desc: "Orderan pukul 22.00–05.00.", perKm: 5000, minimum: 20000 },
+        { id: 5, nama: "Premium", desc: "Unit kelas premium dengan pengemudi pilihan.", perKm: 8000, minimum: 30000 }
+      ];
+
+      var PENGEMUDI_AWAL = [
+        { id: 1, nama: "Budi Santoso", unit: "T-01", plat: "B 1234 TX", status: "Beroperasi" },
+        { id: 2, nama: "Agus Wijaya", unit: "T-02", plat: "B 2345 TX", status: "Beroperasi" },
+        { id: 3, nama: "Slamet Riyadi", unit: "T-03", plat: "B 3456 TX", status: "Beroperasi" },
+        { id: 4, nama: "Dedi Kurniawan", unit: "T-04", plat: "B 4567 TX", status: "Beroperasi" },
+        { id: 5, nama: "Rudi Hartono", unit: "T-05", plat: "B 5678 TX", status: "Istirahat" }
+      ];
+
+      var ORDERAN_AWAL = [
+        { id: "TX-001", penumpang: "Sari Wulandari", jemput: "Stasiun Gambir", tujuan: "Kemang, Jakarta Selatan", jarak: 12, tarifId: 1, argo: 54000, status: "Selesai", pengemudiId: 1, jam: "06.40" },
+        { id: "TX-002", penumpang: "Andi Pratama", jemput: "Mall Kelapa Gading", tujuan: "Pluit, Jakarta Utara", jarak: 9, tarifId: 1, argo: 40500, status: "Selesai", pengemudiId: 2, jam: "07.15" },
+        { id: "TX-003", penumpang: "Dewi Lestari", jemput: "Bandara Soekarno-Hatta", tujuan: "Hotel Indonesia, Jakarta Pusat", jarak: 28, tarifId: 2, argo: 168000, status: "Diantar", pengemudiId: 3, jam: "07.50" },
+        { id: "TX-004", penumpang: "Bambang Sutrisno", jemput: "Blok M, Jakarta Selatan", tujuan: "Cibubur, Jakarta Timur", jarak: 18, tarifId: 1, argo: 81000, status: "Dijemput", pengemudiId: 4, jam: "08.05" },
+        { id: "TX-005", penumpang: "Fitri Rahmawati", jemput: "RS Fatmawati", tujuan: "Margonda, Depok", jarak: 11, tarifId: 1, argo: 49500, status: "Baru", pengemudiId: 0, jam: "08.20" },
+        { id: "TX-006", penumpang: "Joko Prasetyo", jemput: "Senayan City", tujuan: "BSD City, Tangerang Selatan", jarak: 26, tarifId: 3, argo: 143000, status: "Diantar", pengemudiId: 1, jam: "08.35" },
+        { id: "TX-007", penumpang: "Maya Kusuma", jemput: "Tebet, Jakarta Selatan", tujuan: "Bandara Halim Perdanakusuma", jarak: 8, tarifId: 1, argo: 36000, status: "Selesai", pengemudiId: 1, jam: "09.00" },
+        { id: "TX-008", penumpang: "Rizky Ramadhan", jemput: "Cikini, Jakarta Pusat", tujuan: "Kota Bogor", jarak: 55, tarifId: 3, argo: 302500, status: "Selesai", pengemudiId: 2, jam: "09.25" },
+        { id: "TX-009", penumpang: "Putri Ayu", jemput: "Pondok Indah, Jakarta Selatan", tujuan: "SCBD, Jakarta Selatan", jarak: 7, tarifId: 5, argo: 56000, status: "Dijemput", pengemudiId: 3, jam: "09.50" },
+        { id: "TX-010", penumpang: "Hendra Gunawan", jemput: "Bekasi Barat", tujuan: "Cikarang", jarak: 20, tarifId: 1, argo: 90000, status: "Batal", pengemudiId: 0, jam: "10.10" }
+      ];
+
+      var tarif = TARIF_AWAL.slice();
+      var pengemudi = PENGEMUDI_AWAL.slice();
+      var orderan = ORDERAN_AWAL.slice();
+      var nomorOrder = 11;
+      var idPengemudiBaru = 6;
+      var filterStatus = "Semua";
+      var editPengemudiId = null;
+
+      var STATUS_LIST = ["Baru", "Dijemput", "Diantar", "Selesai", "Batal"];
+
+      // ================= Utilitas =================
+      function rp(n) { return "Rp" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function cariTarif(id) { for (var i = 0; i < tarif.length; i++) if (tarif[i].id === id) return tarif[i]; return null; }
+      function cariPengemudi(id) { for (var i = 0; i < pengemudi.length; i++) if (pengemudi[i].id === id) return pengemudi[i]; return null; }
+      function hitungArgo(tarifObj, jarak) {
+        if (!tarifObj) return 0;
+        return Math.max(Math.round(jarak * tarifObj.perKm), tarifObj.minimum);
+      }
+      function badgeStatus(s) {
+        var cls = { "Baru": "b-baru", "Dijemput": "b-dijemput", "Diantar": "b-diantar", "Selesai": "b-selesai", "Batal": "b-batal" }[s] || "b-baru";
+        return '<span class="badge ' + cls + '">' + esc(s) + "</span>";
+      }
+      var toastTimer = null;
+      function toast(pesan) {
+        var t = document.getElementById("toast");
+        t.textContent = pesan;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+      }
+
+      // ================= Ringkasan =================
+      function orderanAktifPengemudi(pid) {
+        return orderan.filter(function (o) { return o.pengemudiId === pid && (o.status === "Dijemput" || o.status === "Diantar"); }).length;
+      }
+      function pendapatanPengemudi(pid) {
+        return orderan.filter(function (o) { return o.pengemudiId === pid && o.status === "Selesai"; })
+          .reduce(function (s, o) { return s + o.argo; }, 0);
+      }
+      function kartuOrderanRingkas(o) {
+        var p = cariPengemudi(o.pengemudiId);
+        var t = cariTarif(o.tarifId);
+        return '<article class="card">' +
+          '<div class="order-head"><div><span class="order-id">' + esc(o.id) + " · " + esc(o.jam) + ' WIB</span>' +
+          '<p class="passenger">' + esc(o.penumpang) + "</p></div>" + badgeStatus(o.status) + "</div>" +
+          '<p class="route">Dari <b>' + esc(o.jemput) + "</b> ke <b>" + esc(o.tujuan) + "</b></p>" +
+          '<div class="meta"><span>Pengemudi: <b>' + (p ? esc(p.nama) + " (" + esc(p.unit) + ")" : "Belum ditentukan") + "</b></span>" +
+          "<span>Tarif: " + (t ? esc(t.nama) : "-") + "</span><span>Jarak: " + o.jarak + ' km</span>' +
+          '<span class="fare">' + rp(o.argo) + "</span></div></article>";
+      }
+      function renderRingkasan() {
+        var selesai = orderan.filter(function (o) { return o.status === "Selesai"; });
+        var pemasukan = selesai.reduce(function (s, o) { return s + o.argo; }, 0);
+        var beroperasi = pengemudi.filter(function (p) { return p.status === "Beroperasi"; }).length;
+        document.getElementById("stat-orderan").textContent = orderan.length;
+        document.getElementById("stat-taksi").textContent = beroperasi;
+        document.getElementById("stat-taksi-sub").textContent = "dari " + pengemudi.length + " pengemudi terdaftar";
+        document.getElementById("stat-selesai").textContent = selesai.length;
+        document.getElementById("stat-pemasukan").textContent = rp(pemasukan);
+
+        var aktif = orderan.filter(function (o) { return o.status === "Dijemput" || o.status === "Diantar"; });
+        document.getElementById("ringkasan-aktif").innerHTML = aktif.length
+          ? aktif.map(kartuOrderanRingkas).join("")
+          : '<div class="card empty">Tidak ada orderan yang sedang berlangsung.</div>';
+
+        document.getElementById("ringkasan-pengemudi").innerHTML = pengemudi.map(function (p) {
+          var b = p.status === "Beroperasi" ? '<span class="badge b-siaga">Beroperasi</span>' : '<span class="badge b-istirahat">Istirahat</span>';
+          return '<article class="card"><div class="order-head"><div class="unit"><span class="uno">' + esc(p.unit) + "</span>" +
+            '<span style="font-weight:700;">' + esc(p.nama) + '</span></div>' + b + "</div>" +
+            '<div class="meta"><span>Plat: <b>' + esc(p.plat) + "</b></span><span>Orderan aktif: <b>" + orderanAktifPengemudi(p.id) +
+            "</b></span><span>Pendapatan: <b>" + rp(pendapatanPengemudi(p.id)) + "</b></span></div></article>";
+        }).join("");
+      }
+
+      // ================= Orderan =================
+      function opsiStatus(terpilih) {
+        return STATUS_LIST.map(function (s) {
+          return '<option value="' + s + '"' + (s === terpilih ? " selected" : "") + ">" + s + "</option>";
+        }).join("");
+      }
+      function renderOrderan() {
+        var q = document.getElementById("cari-orderan").value.trim().toLowerCase();
+        var hasil = orderan.filter(function (o) {
+          if (filterStatus !== "Semua" && o.status !== filterStatus) return false;
+          if (!q) return true;
+          return (o.penumpang + " " + o.jemput + " " + o.tujuan + " " + o.id).toLowerCase().indexOf(q) >= 0;
+        });
+        var wadah = document.getElementById("daftar-orderan");
+        if (!hasil.length) {
+          wadah.innerHTML = '<div class="card empty">Tidak ada orderan yang cocok dengan pencarian atau filter ini.</div>';
+          return;
+        }
+        wadah.innerHTML = hasil.map(function (o) {
+          var p = cariPengemudi(o.pengemudiId);
+          var t = cariTarif(o.tarifId);
+          return '<article class="card">' +
+            '<div class="order-head"><div><span class="order-id">' + esc(o.id) + " · " + esc(o.jam) + ' WIB</span>' +
+            '<p class="passenger">' + esc(o.penumpang) + "</p></div>" + badgeStatus(o.status) + "</div>" +
+            '<p class="route">Dari <b>' + esc(o.jemput) + "</b> ke <b>" + esc(o.tujuan) + "</b></p>" +
+            '<div class="meta"><span>Pengemudi: <b>' + (p ? esc(p.nama) + " (" + esc(p.unit) + ")" : "Belum ditentukan") + "</b></span>" +
+            "<span>Tarif: " + (t ? esc(t.nama) : "-") + "</span><span>Jarak: " + o.jarak + ' km</span>' +
+            '<span class="fare">' + rp(o.argo) + "</span></div>" +
+            '<div class="actions"><label style="font-size:.85rem; font-weight:600; color:var(--ink-soft);" for="status-' + o.id + '">Status:</label>' +
+            '<select id="status-' + o.id + '" data-ubah-status="' + o.id + '" aria-label="Ubah status orderan ' + esc(o.id) + '">' + opsiStatus(o.status) + "</select>" +
+            '<span class="spacer"></span>' +
+            '<button type="button" class="btn btn-danger btn-small" data-hapus-orderan="' + o.id + '">Hapus</button></div></article>';
+        }).join("");
+      }
+
+      function isiOpsiFormOrderan() {
+        document.getElementById("f-pengemudi").innerHTML =
+          '<option value="0">Belum ditentukan</option>' + pengemudi.map(function (p) {
+            return '<option value="' + p.id + '">' + esc(p.nama) + " — " + esc(p.unit) + " (" + esc(p.plat) + ")</option>";
+          }).join("");
+        document.getElementById("f-tarif").innerHTML = tarif.map(function (t) {
+          return '<option value="' + t.id + '">' + esc(t.nama) + " — " + rp(t.perKm) + "/km, min " + rp(t.minimum) + "</option>";
+        }).join("");
+      }
+      function perbaruiPreviewArgo() {
+        var t = cariTarif(parseInt(document.getElementById("f-tarif").value, 10));
+        var jarak = parseFloat(document.getElementById("f-jarak").value) || 0;
+        var argo = hitungArgo(t, jarak);
+        var ket = "";
+        if (t && jarak > 0 && jarak * t.perKm < t.minimum) ket = " (tarif minimum berlaku)";
+        document.getElementById("fare-preview").innerHTML =
+          "Argo: <b>" + rp(argo) + "</b>" + (t ? ' <span style="color:var(--ink-soft);">— ' + jarak + " km × " + rp(t.perKm) + "/km, minimum " + rp(t.minimum) + ket + "</span>" : "");
+      }
+
+      // ================= Pengemudi =================
+      function renderPengemudi() {
+        var q = document.getElementById("cari-pengemudi").value.trim().toLowerCase();
+        var hasil = pengemudi.filter(function (p) {
+          if (!q) return true;
+          return (p.nama + " " + p.unit + " " + p.plat).toLowerCase().indexOf(q) >= 0;
+        });
+        var wadah = document.getElementById("daftar-pengemudi");
+        if (!hasil.length) {
+          wadah.innerHTML = '<div class="card empty">Tidak ada pengemudi yang cocok dengan pencarian ini.</div>';
+          return;
+        }
+        wadah.innerHTML = hasil.map(function (p) {
+          var b = p.status === "Beroperasi" ? '<span class="badge b-siaga">Beroperasi</span>' : '<span class="badge b-istirahat">Istirahat</span>';
+          return '<article class="card">' +
+            '<div class="order-head"><div class="unit"><span class="uno">' + esc(p.unit) + '</span><span class="plate">' + esc(p.plat) + "</span></div>" + b + "</div>" +
+            '<p class="passenger" style="margin-top:10px;">' + esc(p.nama) + "</p>" +
+            '<div class="driver-nums"><div><p class="n">' + orderanAktifPengemudi(p.id) + '</p><p class="l">ORDERAN AKTIF</p></div>' +
+            '<div><p class="n">' + rp(pendapatanPengemudi(p.id)) + '</p><p class="l">TOTAL PENDAPATAN</p></div></div>' +
+            '<div class="actions"><button type="button" class="btn btn-ghost btn-small" data-ubah-pengemudi="' + p.id + '">Ubah</button>' +
+            '<button type="button" class="btn btn-danger btn-small" data-hapus-pengemudi="' + p.id + '">Hapus</button></div></article>';
+        }).join("");
+      }
+
+      // ================= Tarif =================
+      function renderTarif() {
+        document.getElementById("daftar-tarif").innerHTML = tarif.map(function (t) {
+          return '<article class="card"><p class="tarif-name">' + esc(t.nama) + '</p><p class="tarif-desc">' + esc(t.desc) + "</p>" +
+            '<label for="perkm-' + t.id + '">Tarif per km (Rp)</label>' +
+            '<div class="input-rp"><span>Rp</span><input type="number" id="perkm-' + t.id + '" min="0" step="100" value="' + t.perKm + '" /></div>' +
+            '<label for="min-' + t.id + '">Tarif minimum (Rp)</label>' +
+            '<div class="input-rp"><span>Rp</span><input type="number" id="min-' + t.id + '" min="0" step="500" value="' + t.minimum + '" /></div>' +
+            '<div class="form-actions"><button type="button" class="btn btn-primary btn-small" data-simpan-tarif="' + t.id + '">Simpan Tarif</button></div></article>';
+        }).join("");
+      }
+
+      function renderSemua() {
+        renderRingkasan();
+        renderOrderan();
+        renderPengemudi();
+        renderTarif();
+        isiOpsiFormOrderan();
+        perbaruiPreviewArgo();
+      }
+
+      // ================= Navigasi tab =================
+      var tombolTab = document.querySelectorAll("nav.tabs button");
+      tombolTab.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tombolTab.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll("section.tab").forEach(function (s) { s.classList.remove("active"); });
+          document.getElementById("tab-" + btn.getAttribute("data-tab")).classList.add("active");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      // ================= Peristiwa: Orderan =================
+      document.getElementById("cari-orderan").addEventListener("input", renderOrderan);
+      document.getElementById("filter-status").addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-status]");
+        if (!btn) return;
+        filterStatus = btn.getAttribute("data-status");
+        this.querySelectorAll("button").forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        renderOrderan();
+      });
+      document.getElementById("btn-tambah-orderan").addEventListener("click", function () {
+        document.getElementById("form-orderan").classList.add("open");
+        isiOpsiFormOrderan();
+        perbaruiPreviewArgo();
+        document.getElementById("f-penumpang").focus();
+      });
+      document.getElementById("batal-orderan").addEventListener("click", function () {
+        document.getElementById("form-orderan").classList.remove("open");
+      });
+      document.getElementById("f-tarif").addEventListener("change", perbaruiPreviewArgo);
+      document.getElementById("f-jarak").addEventListener("input", perbaruiPreviewArgo);
+      document.getElementById("form-orderan-el").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var t = cariTarif(parseInt(document.getElementById("f-tarif").value, 10));
+        var jarak = parseFloat(document.getElementById("f-jarak").value) || 0;
+        if (jarak <= 0) { toast("Jarak harus lebih dari 0 km."); return; }
+        var sekarang = new Date();
+        var jam = ("0" + sekarang.getHours()).slice(-2) + "." + ("0" + sekarang.getMinutes()).slice(-2);
+        orderan.unshift({
+          id: "TX-" + ("00" + nomorOrder).slice(-3),
+          penumpang: document.getElementById("f-penumpang").value.trim(),
+          jemput: document.getElementById("f-jemput").value.trim(),
+          tujuan: document.getElementById("f-tujuan").value.trim(),
+          jarak: jarak,
+          tarifId: t ? t.id : 0,
+          argo: hitungArgo(t, jarak),
+          status: "Baru",
+          pengemudiId: parseInt(document.getElementById("f-pengemudi").value, 10) || 0,
+          jam: jam
+        });
+        nomorOrder++;
+        this.reset();
+        document.getElementById("f-jarak").value = 5;
+        document.getElementById("form-orderan").classList.remove("open");
+        renderSemua();
+        toast("Orderan baru berhasil ditambahkan.");
+      });
+      document.getElementById("daftar-orderan").addEventListener("change", function (e) {
+        var sel = e.target.closest("select[data-ubah-status]");
+        if (!sel) return;
+        var id = sel.getAttribute("data-ubah-status");
+        for (var i = 0; i < orderan.length; i++) {
+          if (orderan[i].id === id) { orderan[i].status = sel.value; break; }
+        }
+        renderSemua();
+        toast("Status orderan " + id + " diubah menjadi " + sel.value + ".");
+      });
+      document.getElementById("daftar-orderan").addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-hapus-orderan]");
+        if (!btn) return;
+        var id = btn.getAttribute("data-hapus-orderan");
+        orderan = orderan.filter(function (o) { return o.id !== id; });
+        renderSemua();
+        toast("Orderan " + id + " telah dihapus.");
+      });
+
+      // ================= Peristiwa: Pengemudi =================
+      document.getElementById("cari-pengemudi").addEventListener("input", renderPengemudi);
+      document.getElementById("btn-tambah-pengemudi").addEventListener("click", function () {
+        editPengemudiId = null;
+        document.getElementById("form-pengemudi-judul").textContent = "Tambah Pengemudi";
+        document.getElementById("form-pengemudi-el").reset();
+        document.getElementById("form-pengemudi").classList.add("open");
+        document.getElementById("d-nama").focus();
+      });
+      document.getElementById("batal-pengemudi").addEventListener("click", function () {
+        document.getElementById("form-pengemudi").classList.remove("open");
+        editPengemudiId = null;
+      });
+      document.getElementById("form-pengemudi-el").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var data = {
+          nama: document.getElementById("d-nama").value.trim(),
+          unit: document.getElementById("d-unit").value.trim(),
+          plat: document.getElementById("d-plat").value.trim(),
+          status: document.getElementById("d-status").value
+        };
+        if (editPengemudiId !== null) {
+          var p = cariPengemudi(editPengemudiId);
+          if (p) { p.nama = data.nama; p.unit = data.unit; p.plat = data.plat; p.status = data.status; }
+          toast("Data pengemudi " + data.nama + " berhasil diubah.");
+        } else {
+          pengemudi.push({ id: idPengemudiBaru++, nama: data.nama, unit: data.unit, plat: data.plat, status: data.status });
+          toast("Pengemudi " + data.nama + " berhasil ditambahkan.");
+        }
+        editPengemudiId = null;
+        this.reset();
+        document.getElementById("form-pengemudi").classList.remove("open");
+        renderSemua();
+      });
+      document.getElementById("daftar-pengemudi").addEventListener("click", function (e) {
+        var ubah = e.target.closest("button[data-ubah-pengemudi]");
+        var hapus = e.target.closest("button[data-hapus-pengemudi]");
+        if (ubah) {
+          var p = cariPengemudi(parseInt(ubah.getAttribute("data-ubah-pengemudi"), 10));
+          if (!p) return;
+          editPengemudiId = p.id;
+          document.getElementById("form-pengemudi-judul").textContent = "Ubah Pengemudi";
+          document.getElementById("d-nama").value = p.nama;
+          document.getElementById("d-unit").value = p.unit;
+          document.getElementById("d-plat").value = p.plat;
+          document.getElementById("d-status").value = p.status;
+          document.getElementById("form-pengemudi").classList.add("open");
+          document.getElementById("form-pengemudi").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        if (hapus) {
+          var id = parseInt(hapus.getAttribute("data-hapus-pengemudi"), 10);
+          var korban = cariPengemudi(id);
+          pengemudi = pengemudi.filter(function (x) { return x.id !== id; });
+          orderan.forEach(function (o) { if (o.pengemudiId === id) o.pengemudiId = 0; });
+          renderSemua();
+          toast("Pengemudi " + (korban ? korban.nama : "") + " telah dihapus.");
+        }
+      });
+
+      // ================= Peristiwa: Tarif =================
+      document.getElementById("daftar-tarif").addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-simpan-tarif]");
+        if (!btn) return;
+        var id = parseInt(btn.getAttribute("data-simpan-tarif"), 10);
+        var t = cariTarif(id);
+        if (!t) return;
+        var perKm = parseFloat(document.getElementById("perkm-" + id).value);
+        var minimum = parseFloat(document.getElementById("min-" + id).value);
+        if (isNaN(perKm) || perKm < 0 || isNaN(minimum) || minimum < 0) {
+          toast("Tarif tidak valid. Isi angka 0 atau lebih.");
+          return;
+        }
+        t.perKm = perKm;
+        t.minimum = minimum;
+        renderSemua();
+        toast("Tarif " + t.nama + " disimpan dan berlaku untuk orderan berikutnya.");
+      });
+
+      renderSemua();
+    </script>
+  </body>
+</html>
