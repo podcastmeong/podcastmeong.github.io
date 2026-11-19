@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Pembelian</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f5f7f4;
+        --surface: #ffffff;
+        --surface-2: #edf3ee;
+        --ink: #1d2b25;
+        --muted: #5d6f66;
+        --faint: #85958c;
+        --border: #dde6df;
+        --accent: #146c54;
+        --accent-strong: #0d5240;
+        --accent-soft: #e2f0e8;
+        --amber: #9a6206;
+        --amber-soft: #faf0da;
+        --danger: #b3261e;
+        --danger-soft: #fbe9e7;
+        --shadow: 0 1px 2px rgba(23, 54, 42, .05), 0 8px 24px rgba(23, 54, 42, .06);
+        --shadow-lg: 0 12px 40px rgba(15, 40, 30, .18);
+        --radius: 16px;
+        --radius-sm: 10px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101613;
+          --surface: #1a211c;
+          --surface-2: #232d26;
+          --ink: #e9f0ea;
+          --muted: #a7b8ad;
+          --faint: #7e9184;
+          --border: #2e3a32;
+          --accent: #4cc39a;
+          --accent-strong: #7adbb6;
+          --accent-soft: #1e3329;
+          --amber: #e5b95c;
+          --amber-soft: #38300f;
+          --danger: #f2a49e;
+          --danger-soft: #3d2321;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+          --shadow-lg: 0 12px 40px rgba(0,0,0,.5);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+        font-size: 15.5px;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      button { font: inherit; cursor: pointer; }
+      input, select, textarea { font: inherit; color: var(--ink); }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 18px 40px; }
+
+      header.app-head {
+        padding: 26px 0 6px;
+      }
+      header.app-head h1 {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+      }
+      header.app-head p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: .95rem;
+      }
+
+      nav.tabs {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: var(--bg);
+        padding: 12px 0 10px;
+      }
+      .tablist {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 5px;
+        box-shadow: var(--shadow);
+      }
+      .tab-btn {
+        flex: 1 1 auto;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: .92rem;
+        padding: 8px 14px;
+        border-radius: 999px;
+        white-space: nowrap;
+        min-height: 2.5rem;
+      }
+      .tab-btn[aria-selected="true"] {
+        background: var(--accent);
+        color: #fff;
+      }
+      @media (prefers-color-scheme: dark) {
+        .tab-btn[aria-selected="true"] { color: #0c1a13; }
+      }
+
+      section.panel { display: none; padding-top: 10px; }
+      section.panel.active { display: block; }
+      section.panel > h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 8px 0 4px;
+      }
+      .panel-sub { color: var(--muted); margin: 0 0 16px; font-size: .93rem; }
+
+      /* ---------- Ringkasan ---------- */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .stat-card .label {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin: 0 0 6px;
+      }
+      .stat-card .value {
+        font-size: 1.45rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .stat-card .note { font-size: .82rem; color: var(--faint); margin: 6px 0 0; }
+      .stat-card.debt .value { color: var(--amber); }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+      .card h3 { margin: 0 0 12px; font-size: 1rem; font-weight: 700; }
+      .mini-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 9px 0;
+        border-top: 1px solid var(--border);
+      }
+      .mini-row:first-of-type { border-top: 0; }
+      .mini-row .main { font-weight: 600; font-size: .93rem; }
+      .mini-row .sub { color: var(--muted); font-size: .82rem; }
+      .mini-row .amt { font-weight: 700; font-size: .93rem; white-space: nowrap; }
+      .empty-note { color: var(--faint); font-size: .9rem; padding: 8px 0; }
+
+      /* ---------- Toolbar & tabel ---------- */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .toolbar .grow { flex: 1 1 180px; }
+      .field-input, .field-select {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        min-height: 2.5rem;
+      }
+      .toolbar .field-select { width: auto; }
+      @media (max-width: 640px) {
+        .toolbar .field-select { flex: 1 1 42%; width: auto; }
+      }
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: .92rem;
+        min-height: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover { background: var(--accent-strong); }
+      @media (prefers-color-scheme: dark) {
+        .btn-primary { color: #0c1a13; }
+        .btn-primary:hover { background: var(--accent-strong); }
+      }
+      .btn-small {
+        padding: 5px 11px;
+        min-height: 2.25rem;
+        font-size: .85rem;
+      }
+      .btn-danger { color: var(--danger); }
+      .btn-danger:hover { border-color: var(--danger); }
+
+      .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      table.data { width: 100%; border-collapse: collapse; }
+      table.data th {
+        text-align: left;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 12px 14px;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+      }
+      table.data td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        font-size: .93rem;
+      }
+      table.data tr:last-child td { border-bottom: 0; }
+      td.num, th.num { text-align: right; white-space: nowrap; }
+      .cell-main { font-weight: 600; }
+      .cell-sub { color: var(--muted); font-size: .82rem; }
+      .row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+      .table-foot {
+        padding: 12px 14px;
+        background: var(--surface-2);
+        font-size: .9rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .table-foot strong { font-weight: 800; }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .badge-lunas { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge-utang { background: var(--amber-soft); color: var(--amber); }
+      .badge-ok { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge-wait { background: var(--amber-soft); color: var(--amber); }
+
+      @media (max-width: 720px) {
+        table.data thead { display: none; }
+        table.data, table.data tbody, table.data tr, table.data td { display: block; width: 100%; }
+        table.data tr { padding: 10px 4px; border-bottom: 1px solid var(--border); }
+        table.data tr:last-child { border-bottom: 0; }
+        table.data td {
+          border-bottom: 0;
+          padding: 4px 14px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 14px;
+          text-align: right;
+        }
+        table.data td::before {
+          content: attr(data-label);
+          font-size: .78rem;
+          font-weight: 700;
+          letter-spacing: .03em;
+          text-transform: uppercase;
+          color: var(--muted);
+          text-align: left;
+        }
+        table.data td.cell-plain { display: block; text-align: left; }
+        table.data td.cell-plain::before { display: block; margin-bottom: 2px; }
+        .row-actions { justify-content: flex-end; }
+      }
+
+      /* ---------- Supplier ---------- */
+      .supplier-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 14px;
+      }
+      .supplier-card h3 { margin: 0; font-size: 1.05rem; }
+      .supplier-card .contact { color: var(--muted); font-size: .88rem; margin: 3px 0 0; }
+      .supplier-card .addr { color: var(--faint); font-size: .85rem; margin: 2px 0 0; }
+      .supplier-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin: 14px 0;
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .supplier-stats .s-label { font-size: .76rem; color: var(--muted); font-weight: 600; }
+      .supplier-stats .s-value { font-weight: 700; font-size: .95rem; }
+      .supplier-stats .s-value.debt { color: var(--amber); }
+      .card-actions { display: flex; gap: 8px; }
+
+      /* ---------- Penerimaan ---------- */
+      .progress-wrap {
+        height: 8px;
+        background: var(--surface-2);
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 110px;
+      }
+      .progress-bar { height: 100%; background: var(--accent); border-radius: 999px; }
+      .recv-summary {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .recv-chip {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: .88rem;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+      }
+      .recv-chip span { color: var(--muted); font-weight: 500; }
+
+      /* ---------- Panduan ---------- */
+      .guide { max-width: 760px; }
+      .guide h3 {
+        font-size: 1.05rem;
+        margin: 26px 0 8px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+      }
+      .guide h3:first-child { border-top: 0; padding-top: 0; margin-top: 4px; }
+      .guide p { margin: 0 0 10px; color: var(--ink); }
+      .guide ul, .guide ol { margin: 0 0 10px; padding-left: 22px; }
+      .guide li { margin-bottom: 5px; }
+      .guide .warranty-box {
+        background: var(--accent-soft);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        margin: 10px 0;
+      }
+      .guide .warranty-box p:last-child, .guide .warranty-box ul:last-child { margin-bottom: 0; }
+
+      footer.app-foot {
+        margin-top: 34px;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+        color: var(--muted);
+        font-size: .87rem;
+      }
+      footer.app-foot p { margin: 0 0 6px; }
+
+      /* ---------- Modal ---------- */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(12, 24, 18, .45);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        z-index: 50;
+        padding: 0;
+      }
+      .overlay.open { display: flex; }
+      @media (min-width: 640px) { .overlay { align-items: center; padding: 20px; } }
+      .modal {
+        background: var(--surface);
+        width: 100%;
+        max-width: 520px;
+        max-height: 92vh;
+        overflow-y: auto;
+        border-radius: 20px 20px 0 0;
+        box-shadow: var(--shadow-lg);
+        padding: 22px;
+      }
+      @media (min-width: 640px) { .modal { border-radius: 20px; } }
+      .modal h3 { margin: 0 0 4px; font-size: 1.15rem; }
+      .modal .modal-sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .form-grid .full { grid-column: 1 / -1; }
+      @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+      .form-field label {
+        display: block;
+        font-size: .83rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .form-field input, .form-field select {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        min-height: 2.6rem;
+      }
+      .total-preview {
+        background: var(--surface-2);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+      }
+      .total-preview .t-label { font-size: .85rem; color: var(--muted); font-weight: 600; }
+      .total-preview .t-value { font-size: 1.2rem; font-weight: 800; }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+      .form-error {
+        display: none;
+        background: var(--danger-soft);
+        color: var(--danger);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        font-size: .88rem;
+        margin-top: 12px;
+      }
+      .form-error.show { display: block; }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ink);
+        color: var(--bg);
+        padding: 11px 20px;
+        border-radius: 999px;
+        font-size: .92rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s, transform .25s;
+        z-index: 80;
+        max-width: calc(100vw - 32px);
+        text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      @media (prefers-reduced-motion: reduce) {
+        .toast { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="app-head">
+        <h1>Aplikasi Pembelian</h1>
+        <p>Pencatatan pembelian stok untuk toko kecil — supplier, utang, dan penerimaan barang dalam satu tempat.</p>
+      </header>
+
+      <nav class="tabs" aria-label="Menu utama">
+        <div class="tablist" role="tablist">
+          <button class="tab-btn" role="tab" data-tab="ringkasan" aria-selected="true">Ringkasan</button>
+          <button class="tab-btn" role="tab" data-tab="pembelian" aria-selected="false">Pembelian</button>
+          <button class="tab-btn" role="tab" data-tab="supplier" aria-selected="false">Supplier</button>
+          <button class="tab-btn" role="tab" data-tab="penerimaan" aria-selected="false">Penerimaan Barang</button>
+          <button class="tab-btn" role="tab" data-tab="panduan" aria-selected="false">Panduan</button>
+        </div>
+      </nav>
+
+      <!-- ============ RINGKASAN ============ -->
+      <section class="panel active" id="panel-ringkasan" role="tabpanel">
+        <h2>Ringkasan</h2>
+        <p class="panel-sub" id="ringkasan-sub">Gambaran pembelian toko Anda.</p>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <p class="label">Total Pembelian Bulan Ini</p>
+            <p class="value" id="stat-bulan-ini">Rp0</p>
+            <p class="note" id="stat-bulan-ini-note">—</p>
+          </div>
+          <div class="stat-card debt">
+            <p class="label">Utang ke Supplier</p>
+            <p class="value" id="stat-utang">Rp0</p>
+            <p class="note" id="stat-utang-note">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="label">Barang Diterima Bulan Ini</p>
+            <p class="value" id="stat-diterima">0</p>
+            <p class="note" id="stat-diterima-note">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="label">Supplier Aktif</p>
+            <p class="value" id="stat-supplier">0</p>
+            <p class="note">supplier terdaftar di aplikasi</p>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <h3>Pembelian Terbaru</h3>
+            <div id="ringkasan-terbaru"></div>
+          </div>
+          <div class="card">
+            <h3>Utang per Supplier</h3>
+            <div id="ringkasan-utang"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PEMBELIAN ============ -->
+      <section class="panel" id="panel-pembelian" role="tabpanel">
+        <h2>Daftar Pembelian</h2>
+        <p class="panel-sub">Semua catatan pembelian stok. Gunakan pencarian dan filter untuk menemukan transaksi tertentu.</p>
+        <div class="toolbar">
+          <div class="grow">
+            <input class="field-input" type="search" id="cari-pembelian" placeholder="Cari barang atau supplier…" aria-label="Cari pembelian" />
+          </div>
+          <select class="field-select" id="filter-supplier" aria-label="Filter supplier"></select>
+          <select class="field-select" id="filter-status" aria-label="Filter status pembayaran">
+            <option value="">Semua Status</option>
+            <option value="Lunas">Lunas</option>
+            <option value="Utang">Utang</option>
+          </select>
+          <select class="field-select" id="filter-bulan" aria-label="Filter bulan"></select>
+          <button class="btn" id="btn-csv" type="button">Unduh CSV</button>
+          <button class="btn btn-primary" id="btn-tambah-pembelian" type="button">+ Tambah Pembelian</button>
+        </div>
+        <div class="table-card">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Barang</th>
+                <th>Supplier</th>
+                <th class="num">Jumlah</th>
+                <th class="num">Harga Satuan</th>
+                <th class="num">Total</th>
+                <th>Status</th>
+                <th class="num">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-pembelian"></tbody>
+          </table>
+          <div class="table-foot">
+            <span id="foot-pembelian-count">0 transaksi</span>
+            <span>Total tampil: <strong id="foot-pembelian-total">Rp0</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SUPPLIER ============ -->
+      <section class="panel" id="panel-supplier" role="tabpanel">
+        <h2>Daftar Supplier</h2>
+        <p class="panel-sub">Supplier tempat toko Anda membeli stok, lengkap dengan total pembelian dan sisa utang masing-masing.</p>
+        <div class="toolbar">
+          <div class="grow">
+            <input class="field-input" type="search" id="cari-supplier" placeholder="Cari nama supplier atau kontak…" aria-label="Cari supplier" />
+          </div>
+          <button class="btn btn-primary" id="btn-tambah-supplier" type="button">+ Tambah Supplier</button>
+        </div>
+        <div class="supplier-grid" id="supplier-grid"></div>
+        <p class="empty-note" id="supplier-empty" style="display:none">Tidak ada supplier yang cocok dengan pencarian.</p>
+      </section>
+
+      <!-- ============ PENERIMAAN ============ -->
+      <section class="panel" id="panel-penerimaan" role="tabpanel">
+        <h2>Penerimaan Barang</h2>
+        <p class="panel-sub">Bandingkan barang yang dipesan dengan yang sudah diterima. Tandai pesanan yang barangnya sudah sampai di toko.</p>
+        <div class="recv-summary" id="recv-summary"></div>
+        <div class="table-card">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Barang</th>
+                <th>Supplier</th>
+                <th>Tanggal Pesan</th>
+                <th class="num">Dipesan</th>
+                <th class="num">Diterima</th>
+                <th>Kemajuan</th>
+                <th>Status</th>
+                <th class="num">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-penerimaan"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan" role="tabpanel">
+        <h2>Panduan Penggunaan</h2>
+        <p class="panel-sub">Buku panduan lengkap Aplikasi Pembelian.</p>
+        <div class="card guide">
+          <h3>Selamat Datang</h3>
+          <p>Aplikasi Pembelian membantu pemilik toko kecil mencatat semua pembelian stok: dari supplier mana barang dibeli, berapa jumlah dan harganya, apakah sudah dibayar lunas atau masih utang, dan apakah barangnya sudah diterima di toko. Aplikasi terdiri dari lima tab: <strong>Ringkasan</strong>, <strong>Pembelian</strong>, <strong>Supplier</strong>, <strong>Penerimaan Barang</strong>, dan <strong>Panduan</strong> ini.</p>
+          <p>Aplikasi dibuka dengan data contoh (6 supplier dan 15 pembelian selama dua bulan) supaya Anda bisa langsung mencoba semua fitur. Silakan ubah atau hapus data contoh tersebut dan ganti dengan data toko Anda sendiri.</p>
+
+          <h3>Tab Ringkasan</h3>
+          <p>Tab ini menampilkan gambaran cepat kondisi pembelian toko Anda:</p>
+          <ul>
+            <li><strong>Total Pembelian Bulan Ini</strong> — jumlah seluruh nilai pembelian pada bulan berjalan.</li>
+            <li><strong>Utang ke Supplier</strong> — total nilai pembelian berstatus Utang yang belum dilunasi, beserta jumlah transaksinya.</li>
+            <li><strong>Barang Diterima Bulan Ini</strong> — total jumlah barang dari pesanan bulan ini yang sudah ditandai diterima.</li>
+            <li><strong>Supplier Aktif</strong> — jumlah supplier yang terdaftar di aplikasi.</li>
+          </ul>
+          <p>Di bawahnya ada daftar <strong>Pembelian Terbaru</strong> dan rincian <strong>Utang per Supplier</strong>, sehingga Anda tahu kepada siapa saja toko masih memiliki utang dan berapa besarnya.</p>
+
+          <h3>Tab Pembelian</h3>
+          <p>Tab ini berisi seluruh catatan pembelian. Setiap catatan memuat tanggal, supplier, nama barang, jumlah, harga satuan, total (dihitung otomatis), dan status pembayaran.</p>
+          <p><strong>Mencari dan menyaring:</strong></p>
+          <ul>
+            <li>Ketik kata kunci di kolom pencarian untuk mencari berdasarkan nama barang atau nama supplier.</li>
+            <li>Gunakan filter <strong>Supplier</strong> untuk melihat pembelian dari satu supplier saja.</li>
+            <li>Gunakan filter <strong>Status</strong> untuk melihat pembelian yang Lunas atau yang masih Utang saja.</li>
+            <li>Gunakan filter <strong>Bulan</strong> untuk melihat pembelian pada bulan tertentu.</li>
+          </ul>
+          <p><strong>Menambah pembelian:</strong></p>
+          <ol>
+            <li>Klik tombol <strong>+ Tambah Pembelian</strong>.</li>
+            <li>Isi tanggal pembelian, pilih supplier, dan tulis nama barang (daftar 10 barang contoh akan muncul sebagai saran, tetapi Anda bebas menulis barang apa pun).</li>
+            <li>Isi jumlah dan harga satuan — total harga dihitung otomatis di bagian bawah formulir.</li>
+            <li>Pilih status pembayaran: <strong>Lunas</strong> bila sudah dibayar, atau <strong>Utang</strong> bila belum.</li>
+            <li>Klik <strong>Simpan Pembelian</strong>. Pembelian baru otomatis tercatat sebagai belum diterima; tandai diterima di tab Penerimaan Barang setelah barangnya sampai.</li>
+          </ol>
+          <p><strong>Mengubah dan menghapus:</strong> klik tombol <strong>Ubah</strong> pada baris pembelian untuk mengganti isinya, atau <strong>Hapus</strong> untuk menghapusnya (akan muncul konfirmasi terlebih dahulu). Mengubah status dari Utang menjadi Lunas adalah cara mencatat pelunasan utang ke supplier.</p>
+          <p><strong>Unduh CSV:</strong> klik tombol <strong>Unduh CSV</strong> untuk mengunduh daftar pembelian yang sedang tampil (sesuai filter) sebagai berkas CSV yang bisa dibuka di Excel atau Google Sheets, misalnya untuk dicetak atau dibagikan.</p>
+
+          <h3>Tab Supplier</h3>
+          <p>Tab ini berisi daftar supplier beserta nama kontak, nomor telepon, alamat, dan ringkasan transaksinya: jumlah transaksi, total nilai pembelian, dan total utang yang masih berjalan ke supplier tersebut.</p>
+          <ul>
+            <li>Klik <strong>+ Tambah Supplier</strong> untuk mendaftarkan supplier baru.</li>
+            <li>Klik <strong>Ubah</strong> untuk memperbarui data supplier, atau <strong>Hapus</strong> untuk menghapusnya. Supplier yang masih memiliki catatan pembelian tidak dapat dihapus — hapus atau pindahkan dulu catatan pembeliannya.</li>
+            <li>Gunakan kolom pencarian untuk menemukan supplier berdasarkan nama atau nama kontak.</li>
+          </ul>
+
+          <h3>Tab Penerimaan Barang</h3>
+          <p>Tab ini membantu memastikan barang yang dipesan benar-benar sudah sampai. Setiap pembelian muncul sebagai satu baris pesanan dengan jumlah <strong>Dipesan</strong> dan jumlah <strong>Diterima</strong>, disertai batang kemajuan dan statusnya.</p>
+          <ul>
+            <li>Bila barang sudah sampai dan jumlahnya sesuai, klik <strong>Tandai Diterima</strong> — jumlah diterima akan menjadi sama dengan jumlah dipesan dan status berubah menjadi <strong>Sudah Diterima</strong>.</li>
+            <li>Pesanan yang belum ditandai berstatus <strong>Menunggu</strong> dan jumlah diterimanya 0.</li>
+            <li>Ringkasan di bagian atas menunjukkan berapa pesanan yang sudah diterima dari seluruh pesanan.</li>
+          </ul>
+
+          <h3>Tips Pemakaian</h3>
+          <ul>
+            <li>Catat pembelian pada hari yang sama dengan transaksi agar tidak ada yang terlewat.</li>
+            <li>Periksa tab Ringkasan secara berkala untuk memantau utang ke supplier sebelum jatuh tempo.</li>
+            <li>Unduh CSV secara berkala sebagai cadangan catatan di luar aplikasi.</li>
+            <li>Tandai penerimaan barang segera setelah barang tiba dan selesai dihitung.</li>
+          </ul>
+
+          <h3>Garansi</h3>
+          <div class="warranty-box">
+            <p>Aplikasi ini dilengkapi garansi perbaikan <strong>bug/error</strong> untuk fitur-fitur yang tercantum di buku panduan ini dan yang tampil pada versi demo. Perbaikan selama masa garansi <strong>gratis</strong>.</p>
+            <p><strong>Masa garansi:</strong></p>
+            <ul>
+              <li><strong>Beli Sekali — Pemula:</strong> 30 hari sejak pembelian.</li>
+              <li><strong>Beli Sekali — Profesional:</strong> 60 hari sejak pembelian.</li>
+              <li><strong>Beli Sekali — Bisnis:</strong> 90 hari sejak pembelian.</li>
+              <li><strong>Berlangganan:</strong> garansi berlaku selama masa langganan aktif.</li>
+            </ul>
+            <p><strong>Garansi tidak mencakup:</strong></p>
+            <ul>
+              <li>Penambahan fitur baru di luar fitur yang ada saat pembelian.</li>
+              <li>Perubahan desain atau perubahan data/isi aplikasi.</li>
+              <li>Kerusakan yang disebabkan pembeli mengubah file aplikasi sendiri.</li>
+              <li>Gangguan yang berasal dari layanan pihak ketiga.</li>
+            </ul>
+            <p><strong>Cara klaim:</strong> hubungi penjual melalui WhatsApp dan kirimkan <strong>video atau screenshot</strong> yang menunjukkan bug/error-nya, beserta keterangan singkat kapan masalah terjadi. Tim kami akan memeriksa dan memperbaiki sesuai ketentuan garansi di atas.</p>
+          </div>
+
+          <h3>Batasan Aplikasi</h3>
+          <p>Aplikasi Pembelian adalah aplikasi <strong>pencatatan pembelian</strong> untuk membantu operasional harian toko kecil. Aplikasi ini bukan sistem akuntansi lengkap: tidak ada jurnal umum, laporan laba rugi, neraca, maupun perhitungan pajak. Untuk kebutuhan pembukuan resmi dan pajak, gunakan jasa akuntan atau aplikasi akuntansi khusus.</p>
+          <p>Data yang Anda masukkan hanya tersimpan selama aplikasi dibuka di perangkat ini. Menutup tab atau memuat ulang halaman akan mengembalikan aplikasi ke data contoh awal, jadi unduhlah CSV secara berkala bila catatan perlu disimpan.</p>
+        </div>
+      </section>
+
+      <footer class="app-foot">
+        <p><strong>Catatan:</strong> Data contoh hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data contoh awal. Unduh CSV untuk menyimpan catatan Anda.</p>
+        <p>Aplikasi Pembelian adalah aplikasi pencatatan pembelian stok untuk toko kecil, bukan sistem akuntansi lengkap.</p>
+      </footer>
+    </div>
+
+    <!-- ============ MODAL PEMBELIAN ============ -->
+    <div class="overlay" id="overlay-pembelian" role="dialog" aria-modal="true" aria-labelledby="judul-modal-pembelian">
+      <div class="modal">
+        <h3 id="judul-modal-pembelian">Tambah Pembelian</h3>
+        <p class="modal-sub">Total harga dihitung otomatis dari jumlah × harga satuan.</p>
+        <form id="form-pembelian" novalidate>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="f-tanggal">Tanggal</label>
+              <input type="date" id="f-tanggal" required />
+            </div>
+            <div class="form-field">
+              <label for="f-status">Status Pembayaran</label>
+              <select id="f-status">
+                <option value="Lunas">Lunas</option>
+                <option value="Utang">Utang</option>
+              </select>
+            </div>
+            <div class="form-field full">
+              <label for="f-supplier">Supplier</label>
+              <select id="f-supplier" required></select>
+            </div>
+            <div class="form-field full">
+              <label for="f-barang">Nama Barang</label>
+              <input type="text" id="f-barang" list="daftar-barang" placeholder="cth. Beras Premium 5 kg" required />
+              <datalist id="daftar-barang"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="f-jumlah">Jumlah</label>
+              <input type="number" id="f-jumlah" min="1" step="1" placeholder="0" required />
+            </div>
+            <div class="form-field">
+              <label for="f-harga">Harga Satuan (Rp)</label>
+              <input type="number" id="f-harga" min="0" step="1" placeholder="0" required />
+            </div>
+          </div>
+          <div class="total-preview">
+            <span class="t-label">Total Pembelian</span>
+            <span class="t-value" id="f-total">Rp0</span>
+          </div>
+          <p class="form-error" id="error-pembelian"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn" data-tutup="overlay-pembelian">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Pembelian</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ MODAL SUPPLIER ============ -->
+    <div class="overlay" id="overlay-supplier" role="dialog" aria-modal="true" aria-labelledby="judul-modal-supplier">
+      <div class="modal">
+        <h3 id="judul-modal-supplier">Tambah Supplier</h3>
+        <p class="modal-sub">Data supplier dipakai pada formulir pembelian dan ringkasan utang.</p>
+        <form id="form-supplier" novalidate>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="s-nama">Nama Supplier</label>
+              <input type="text" id="s-nama" placeholder="cth. CV Sinar Abadi" required />
+            </div>
+            <div class="form-field">
+              <label for="s-kontak">Nama Kontak</label>
+              <input type="text" id="s-kontak" placeholder="cth. Pak Budi" />
+            </div>
+            <div class="form-field">
+              <label for="s-telepon">Nomor Telepon</label>
+              <input type="tel" id="s-telepon" placeholder="cth. 0812-3456-7890" />
+            </div>
+            <div class="form-field full">
+              <label for="s-kategori">Kategori</label>
+              <input type="text" id="s-kategori" placeholder="cth. Sembako" />
+            </div>
+            <div class="form-field full">
+              <label for="s-alamat">Alamat</label>
+              <input type="text" id="s-alamat" placeholder="cth. Jl. Raya No. 12, Bekasi" />
+            </div>
+          </div>
+          <p class="form-error" id="error-supplier"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn" data-tutup="overlay-supplier">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Supplier</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ MODAL KONFIRMASI HAPUS ============ -->
+    <div class="overlay" id="overlay-hapus" role="dialog" aria-modal="true" aria-labelledby="judul-modal-hapus">
+      <div class="modal" style="max-width:420px">
+        <h3 id="judul-modal-hapus">Hapus Data?</h3>
+        <p class="modal-sub" id="teks-modal-hapus">Data yang dihapus tidak dapat dikembalikan.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-tutup="overlay-hapus">Batal</button>
+          <button type="button" class="btn btn-danger" id="btn-konfirmasi-hapus" style="border-color:var(--danger)">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      "use strict";
+
+      /* ================= DATA CONTOH ================= */
+      var BARANG = [
+        "Beras Premium 5 kg",
+        "Minyak Goreng 2 L",
+        "Gula Pasir 1 kg",
+        "Tepung Terigu 1 kg",
+        "Telur Ayam 1 kg",
+        "Kopi Bubuk 200 g",
+        "Mie Instan 1 dus",
+        "Susu Kental Manis 370 g",
+        "Sabun Cuci Piring 800 ml",
+        "Air Mineral Galon 19 L"
+      ];
+
+      var suppliers = [
+        { id: 1, nama: "CV Sinar Abadi", kontak: "Pak Budi Santoso", telepon: "0812-3456-7890", kategori: "Sembako", alamat: "Jl. Raya Cikarang No. 12, Bekasi" },
+        { id: 2, nama: "PT Makmur Jaya", kontak: "Ibu Ratna", telepon: "0813-2233-4455", kategori: "Makanan & Minuman Kemasan", alamat: "Jl. Industri No. 8, Tangerang" },
+        { id: 3, nama: "UD Berkah Pangan", kontak: "Pak Haji Udin", telepon: "0857-1122-3344", kategori: "Sembako", alamat: "Pasar Induk Kramat Jati, Jakarta Timur" },
+        { id: 4, nama: "CV Tirta Segar", kontak: "Ibu Dewi Lestari", telepon: "0821-9988-7766", kategori: "Minuman", alamat: "Jl. Daan Mogot No. 45, Jakarta Barat" },
+        { id: 5, nama: "PT Sumber Protein", kontak: "Pak Andi Wijaya", telepon: "0819-3344-5566", kategori: "Telur & Protein", alamat: "Jl. Raya Bogor KM 30, Depok" },
+        { id: 6, nama: "Toko Grosir Melati", kontak: "Ibu Melati", telepon: "0852-6677-8899", kategori: "Kebutuhan Rumah Tangga", alamat: "Jl. Melati No. 3, Jakarta Selatan" }
+      ];
+
+      var purchases = [
+        { id: 1,  tanggal: "2026-10-03", supplierId: 1, barang: "Beras Premium 5 kg",     jumlah: 40, harga: 58000,  status: "Lunas", diterima: true },
+        { id: 2,  tanggal: "2026-10-05", supplierId: 3, barang: "Gula Pasir 1 kg",        jumlah: 50, harga: 14500,  status: "Lunas", diterima: true },
+        { id: 3,  tanggal: "2026-10-08", supplierId: 4, barang: "Air Mineral Galon 19 L", jumlah: 30, harga: 16000,  status: "Lunas", diterima: true },
+        { id: 4,  tanggal: "2026-10-12", supplierId: 5, barang: "Telur Ayam 1 kg",        jumlah: 60, harga: 26500,  status: "Utang", diterima: true },
+        { id: 5,  tanggal: "2026-10-15", supplierId: 2, barang: "Mie Instan 1 dus",       jumlah: 25, harga: 108000, status: "Lunas", diterima: true },
+        { id: 6,  tanggal: "2026-10-20", supplierId: 6, barang: "Sabun Cuci Piring 800 ml", jumlah: 36, harga: 13500, status: "Lunas", diterima: true },
+        { id: 7,  tanggal: "2026-10-27", supplierId: 1, barang: "Minyak Goreng 2 L",      jumlah: 48, harga: 33500,  status: "Utang", diterima: true },
+        { id: 8,  tanggal: "2026-11-02", supplierId: 1, barang: "Beras Premium 5 kg",     jumlah: 50, harga: 58500,  status: "Lunas", diterima: true },
+        { id: 9,  tanggal: "2026-11-04", supplierId: 3, barang: "Tepung Terigu 1 kg",     jumlah: 40, harga: 9800,   status: "Lunas", diterima: true },
+        { id: 10, tanggal: "2026-11-06", supplierId: 2, barang: "Kopi Bubuk 200 g",       jumlah: 30, harga: 18500,  status: "Utang", diterima: true },
+        { id: 11, tanggal: "2026-11-09", supplierId: 5, barang: "Telur Ayam 1 kg",        jumlah: 80, harga: 27000,  status: "Utang", diterima: true },
+        { id: 12, tanggal: "2026-11-12", supplierId: 4, barang: "Air Mineral Galon 19 L", jumlah: 40, harga: 16000,  status: "Lunas", diterima: true },
+        { id: 13, tanggal: "2026-11-14", supplierId: 6, barang: "Susu Kental Manis 370 g", jumlah: 48, harga: 10500, status: "Lunas", diterima: true },
+        { id: 14, tanggal: "2026-11-16", supplierId: 1, barang: "Minyak Goreng 2 L",      jumlah: 60, harga: 34000,  status: "Utang", diterima: false },
+        { id: 15, tanggal: "2026-11-18", supplierId: 3, barang: "Gula Pasir 1 kg",        jumlah: 60, harga: 14800,  status: "Utang", diterima: false }
+      ];
+
+      var nextPurchaseId = 16;
+      var nextSupplierId = 7;
+      var editPurchaseId = null;
+      var editSupplierId = null;
+      var pendingDelete = null; // {jenis: 'pembelian'|'supplier', id: number}
+
+      /* ================= PEMBANTU ================= */
+      var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      var fmtRp = new Intl.NumberFormat("id-ID");
+      function rp(n) { return "Rp" + fmtRp.format(Math.round(n) || 0); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function total(p) { return p.jumlah * p.harga; }
+      function supplierById(id) {
+        for (var i = 0; i < suppliers.length; i++) if (suppliers[i].id === id) return suppliers[i];
+        return null;
+      }
+      function supplierNama(id) {
+        var s = supplierById(id);
+        return s ? s.nama : "(supplier terhapus)";
+      }
+      function bulanKey(tanggal) { return tanggal.slice(0, 7); }
+      function labelBulan(key) {
+        var parts = key.split("-");
+        return NAMA_BULAN[parseInt(parts[1], 10) - 1] + " " + parts[0];
+      }
+      function labelTanggal(t) {
+        var parts = t.split("-");
+        return parseInt(parts[2], 10) + " " + NAMA_BULAN[parseInt(parts[1], 10) - 1] + " " + parts[0];
+      }
+      // "Bulan ini" = bulan dari pembelian terbaru di data (November 2026 pada data contoh),
+      // agar angka ringkasan selalu bermakna terhadap data yang tampil.
+      function bulanBerjalan() {
+        if (!purchases.length) {
+          var now = new Date();
+          return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+        }
+        var maks = purchases[0].tanggal;
+        purchases.forEach(function (p) { if (p.tanggal > maks) maks = p.tanggal; });
+        return bulanKey(maks);
+      }
+      function el(id) { return document.getElementById(id); }
+      var toastTimer = null;
+      function toast(pesan) {
+        var t = el("toast");
+        t.textContent = pesan;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+      }
+
+      /* ================= TAB ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.setAttribute("aria-selected", "false"); });
+          btn.setAttribute("aria-selected", "true");
+          document.querySelectorAll("section.panel").forEach(function (p) { p.classList.remove("active"); });
+          el("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      /* ================= RINGKASAN ================= */
+      function renderRingkasan() {
+        var bk = bulanBerjalan();
+        var bulanIni = purchases.filter(function (p) { return bulanKey(p.tanggal) === bk; });
+        var totalBulan = bulanIni.reduce(function (s, p) { return s + total(p); }, 0);
+        var utangList = purchases.filter(function (p) { return p.status === "Utang"; });
+        var totalUtang = utangList.reduce(function (s, p) { return s + total(p); }, 0);
+        var diterimaBulan = bulanIni.filter(function (p) { return p.diterima; });
+        var qtyDiterima = diterimaBulan.reduce(function (s, p) { return s + p.jumlah; }, 0);
+
+        el("ringkasan-sub").textContent = "Gambaran pembelian toko Anda untuk " + labelBulan(bk) + ".";
+        el("stat-bulan-ini").textContent = rp(totalBulan);
+        el("stat-bulan-ini-note").textContent = bulanIni.length + " transaksi di " + labelBulan(bk);
+        el("stat-utang").textContent = rp(totalUtang);
+        el("stat-utang-note").textContent = utangList.length ? utangList.length + " transaksi belum lunas" : "Tidak ada utang berjalan";
+        el("stat-diterima").textContent = fmtRp.format(qtyDiterima) + " barang";
+        el("stat-diterima-note").textContent = diterimaBulan.length + " dari " + bulanIni.length + " pesanan bulan ini sudah diterima";
+        el("stat-supplier").textContent = suppliers.length;
+
+        var terbaru = purchases.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); }).slice(0, 5);
+        el("ringkasan-terbaru").innerHTML = terbaru.length ? terbaru.map(function (p) {
+          return '<div class="mini-row"><div><div class="main">' + esc(p.barang) + '</div>' +
+            '<div class="sub">' + esc(supplierNama(p.supplierId)) + " · " + labelTanggal(p.tanggal) + '</div></div>' +
+            '<div class="amt">' + rp(total(p)) + '</div></div>';
+        }).join("") : '<p class="empty-note">Belum ada pembelian tercatat.</p>';
+
+        var perSupplier = {};
+        utangList.forEach(function (p) {
+          if (!perSupplier[p.supplierId]) perSupplier[p.supplierId] = 0;
+          perSupplier[p.supplierId] += total(p);
+        });
+        var utangRows = Object.keys(perSupplier).map(function (id) {
+          return { nama: supplierNama(parseInt(id, 10)), nilai: perSupplier[id] };
+        }).sort(function (a, b) { return b.nilai - a.nilai; });
+        el("ringkasan-utang").innerHTML = utangRows.length ? utangRows.map(function (r) {
+          return '<div class="mini-row"><div class="main">' + esc(r.nama) + '</div><div class="amt">' + rp(r.nilai) + '</div></div>';
+        }).join("") : '<p class="empty-note">Tidak ada utang ke supplier. Semua pembelian lunas.</p>';
+      }
+
+      /* ================= PEMBELIAN ================= */
+      function isiFilterSupplier() {
+        var sel = el("filter-supplier");
+        var nilaiLama = sel.value;
+        sel.innerHTML = '<option value="">Semua Supplier</option>' + suppliers.map(function (s) {
+          return '<option value="' + s.id + '">' + esc(s.nama) + "</option>";
+        }).join("");
+        sel.value = nilaiLama;
+      }
+      function isiFilterBulan() {
+        var sel = el("filter-bulan");
+        var nilaiLama = sel.value;
+        var bulan = {};
+        purchases.forEach(function (p) { bulan[bulanKey(p.tanggal)] = true; });
+        var keys = Object.keys(bulan).sort().reverse();
+        sel.innerHTML = '<option value="">Semua Bulan</option>' + keys.map(function (k) {
+          return '<option value="' + k + '">' + labelBulan(k) + "</option>";
+        }).join("");
+        sel.value = nilaiLama;
+      }
+      function pembelianTersaring() {
+        var q = el("cari-pembelian").value.trim().toLowerCase();
+        var fSup = el("filter-supplier").value;
+        var fStatus = el("filter-status").value;
+        var fBulan = el("filter-bulan").value;
+        return purchases.filter(function (p) {
+          if (q && p.barang.toLowerCase().indexOf(q) === -1 && supplierNama(p.supplierId).toLowerCase().indexOf(q) === -1) return false;
+          if (fSup && String(p.supplierId) !== fSup) return false;
+          if (fStatus && p.status !== fStatus) return false;
+          if (fBulan && bulanKey(p.tanggal) !== fBulan) return false;
+          return true;
+        }).sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+      }
+      function renderPembelian() {
+        isiFilterSupplier();
+        isiFilterBulan();
+        var list = pembelianTersaring();
+        var tbody = el("tbody-pembelian");
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--faint);padding:26px">Tidak ada pembelian yang cocok. Coba ubah kata kunci atau filter.</td></tr>';
+        } else {
+          tbody.innerHTML = list.map(function (p) {
+            return "<tr>" +
+              '<td data-label="Tanggal">' + labelTanggal(p.tanggal) + "</td>" +
+              '<td data-label="Barang" class="cell-plain"><span class="cell-main">' + esc(p.barang) + "</span>" +
+                (p.diterima ? "" : '<br><span class="cell-sub">Barang belum diterima</span>') + "</td>" +
+              '<td data-label="Supplier">' + esc(supplierNama(p.supplierId)) + "</td>" +
+              '<td data-label="Jumlah" class="num">' + fmtRp.format(p.jumlah) + "</td>" +
+              '<td data-label="Harga Satuan" class="num">' + rp(p.harga) + "</td>" +
+              '<td data-label="Total" class="num"><strong>' + rp(total(p)) + "</strong></td>" +
+              '<td data-label="Status"><span class="badge ' + (p.status === "Lunas" ? "badge-lunas" : "badge-utang") + '">' + p.status + "</span></td>" +
+              '<td data-label="Aksi"><div class="row-actions">' +
+                '<button type="button" class="btn btn-small" data-ubah-pembelian="' + p.id + '">Ubah</button>' +
+                '<button type="button" class="btn btn-small btn-danger" data-hapus-pembelian="' + p.id + '">Hapus</button>' +
+              "</div></td></tr>";
+          }).join("");
+        }
+        el("foot-pembelian-count").textContent = list.length + " transaksi tampil";
+        el("foot-pembelian-total").textContent = rp(list.reduce(function (s, p) { return s + total(p); }, 0));
+      }
+
+      function unduhCSV() {
+        var list = pembelianTersaring();
+        function csvCell(v) {
+          v = String(v == null ? "" : v);
+          return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+        }
+        var baris = [["Tanggal", "Supplier", "Barang", "Jumlah", "Harga Satuan", "Total", "Status Pembayaran", "Status Penerimaan"]];
+        list.forEach(function (p) {
+          baris.push([p.tanggal, supplierNama(p.supplierId), p.barang, p.jumlah, p.harga, total(p), p.status, p.diterima ? "Diterima" : "Belum Diterima"]);
+        });
+        var csv = baris.map(function (r) { return r.map(csvCell).join(","); }).join("\r\n");
+        var blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "daftar-pembelian.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+        toast("Berkas CSV diunduh (" + list.length + " transaksi).");
+      }
+
+      /* ================= SUPPLIER ================= */
+      function renderSupplier() {
+        var q = el("cari-supplier").value.trim().toLowerCase();
+        var list = suppliers.filter(function (s) {
+          if (!q) return true;
+          return s.nama.toLowerCase().indexOf(q) !== -1 || (s.kontak || "").toLowerCase().indexOf(q) !== -1;
+        });
+        el("supplier-empty").style.display = list.length ? "none" : "block";
+        el("supplier-grid").innerHTML = list.map(function (s) {
+          var milik = purchases.filter(function (p) { return p.supplierId === s.id; });
+          var totalBeli = milik.reduce(function (sum, p) { return sum + total(p); }, 0);
+          var totalUtangS = milik.filter(function (p) { return p.status === "Utang"; })
+                                 .reduce(function (sum, p) { return sum + total(p); }, 0);
+          return '<div class="card supplier-card">' +
+            "<h3>" + esc(s.nama) + "</h3>" +
+            '<p class="contact">' + esc(s.kontak || "-") + (s.telepon ? " · " + esc(s.telepon) : "") + "</p>" +
+            '<p class="addr">' + esc(s.kategori || "") + (s.kategori && s.alamat ? " — " : "") + esc(s.alamat || "") + "</p>" +
+            '<div class="supplier-stats">' +
+              '<div><div class="s-label">Transaksi</div><div class="s-value">' + milik.length + "</div></div>" +
+              '<div><div class="s-label">Total Pembelian</div><div class="s-value">' + rp(totalBeli) + "</div></div>" +
+              '<div><div class="s-label">Utang Berjalan</div><div class="s-value' + (totalUtangS ? " debt" : "") + '">' + rp(totalUtangS) + "</div></div>" +
+            "</div>" +
+            '<div class="card-actions">' +
+              '<button type="button" class="btn btn-small" data-ubah-supplier="' + s.id + '">Ubah</button>' +
+              '<button type="button" class="btn btn-small btn-danger" data-hapus-supplier="' + s.id + '">Hapus</button>' +
+            "</div></div>";
+        }).join("");
+      }
+
+      /* ================= PENERIMAAN ================= */
+      function renderPenerimaan() {
+        var list = purchases.slice().sort(function (a, b) {
+          if (a.diterima !== b.diterima) return a.diterima ? 1 : -1;
+          return b.tanggal.localeCompare(a.tanggal);
+        });
+        var sudah = purchases.filter(function (p) { return p.diterima; }).length;
+        el("recv-summary").innerHTML =
+          '<div class="recv-chip">' + sudah + " dari " + purchases.length + " <span>pesanan sudah diterima</span></div>" +
+          '<div class="recv-chip">' + (purchases.length - sudah) + " <span>pesanan masih menunggu</span></div>";
+        el("tbody-penerimaan").innerHTML = list.length ? list.map(function (p) {
+          var diterimaQty = p.diterima ? p.jumlah : 0;
+          var persen = p.jumlah ? Math.round(diterimaQty / p.jumlah * 100) : 0;
+          return "<tr>" +
+            '<td data-label="Barang" class="cell-plain"><span class="cell-main">' + esc(p.barang) + "</span></td>" +
+            '<td data-label="Supplier">' + esc(supplierNama(p.supplierId)) + "</td>" +
+            '<td data-label="Tanggal Pesan">' + labelTanggal(p.tanggal) + "</td>" +
+            '<td data-label="Dipesan" class="num">' + fmtRp.format(p.jumlah) + "</td>" +
+            '<td data-label="Diterima" class="num">' + fmtRp.format(diterimaQty) + "</td>" +
+            '<td data-label="Kemajuan"><div class="progress-wrap"><div class="progress-bar" style="width:' + persen + '%"></div></div></td>' +
+            '<td data-label="Status"><span class="badge ' + (p.diterima ? "badge-ok" : "badge-wait") + '">' + (p.diterima ? "Sudah Diterima" : "Menunggu") + "</span></td>" +
+            '<td data-label="Aksi"><div class="row-actions">' +
+              (p.diterima
+                ? '<span class="cell-sub">Selesai</span>'
+                : '<button type="button" class="btn btn-small btn-primary" data-terima="' + p.id + '">Tandai Diterima</button>') +
+            "</div></td></tr>";
+        }).join("") : '<tr><td colspan="8" style="text-align:center;color:var(--faint);padding:26px">Belum ada pesanan pembelian.</td></tr>';
+      }
+
+      function renderSemua() {
+        renderRingkasan();
+        renderPembelian();
+        renderSupplier();
+        renderPenerimaan();
+      }
+
+      /* ================= MODAL ================= */
+      function bukaOverlay(id) { el(id).classList.add("open"); }
+      function tutupOverlay(id) { el(id).classList.remove("open"); }
+      document.querySelectorAll("[data-tutup]").forEach(function (btn) {
+        btn.addEventListener("click", function () { tutupOverlay(btn.getAttribute("data-tutup")); });
+      });
+      document.querySelectorAll(".overlay").forEach(function (ov) {
+        ov.addEventListener("click", function (e) { if (e.target === ov) ov.classList.remove("open"); });
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") document.querySelectorAll(".overlay.open").forEach(function (ov) { ov.classList.remove("open"); });
+      });
+
+      /* ----- Formulir pembelian ----- */
+      function isiPilihanSupplierForm() {
+        el("f-supplier").innerHTML = suppliers.map(function (s) {
+          return '<option value="' + s.id + '">' + esc(s.nama) + "</option>";
+        }).join("");
+      }
+      function perbaruiTotalForm() {
+        var j = parseFloat(el("f-jumlah").value) || 0;
+        var h = parseFloat(el("f-harga").value) || 0;
+        el("f-total").textContent = rp(j * h);
+      }
+      el("f-jumlah").addEventListener("input", perbaruiTotalForm);
+      el("f-harga").addEventListener("input", perbaruiTotalForm);
+
+      function bukaFormPembelian(p) {
+        isiPilihanSupplierForm();
+        el("error-pembelian").classList.remove("show");
+        if (p) {
+          editPurchaseId = p.id;
+          el("judul-modal-pembelian").textContent = "Ubah Pembelian";
+          el("f-tanggal").value = p.tanggal;
+          el("f-supplier").value = p.supplierId;
+          el("f-barang").value = p.barang;
+          el("f-jumlah").value = p.jumlah;
+          el("f-harga").value = p.harga;
+          el("f-status").value = p.status;
+        } else {
+          editPurchaseId = null;
+          el("judul-modal-pembelian").textContent = "Tambah Pembelian";
+          el("form-pembelian").reset();
+          var bk = bulanBerjalan();
+          el("f-tanggal").value = bk + "-19";
+          if (suppliers.length) el("f-supplier").value = suppliers[0].id;
+        }
+        perbaruiTotalForm();
+        bukaOverlay("overlay-pembelian");
+      }
+      el("btn-tambah-pembelian").addEventListener("click", function () {
+        if (!suppliers.length) { toast("Tambahkan supplier terlebih dahulu di tab Supplier."); return; }
+        bukaFormPembelian(null);
+      });
+      el("form-pembelian").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var tanggal = el("f-tanggal").value;
+        var supplierId = parseInt(el("f-supplier").value, 10);
+        var barang = el("f-barang").value.trim();
+        var jumlah = parseInt(el("f-jumlah").value, 10);
+        var harga = parseInt(el("f-harga").value, 10);
+        var status = el("f-status").value;
+        var err = el("error-pembelian");
+        var pesan = "";
+        if (!tanggal) pesan = "Tanggal pembelian wajib diisi.";
+        else if (!supplierId) pesan = "Pilih supplier terlebih dahulu.";
+        else if (!barang) pesan = "Nama barang wajib diisi.";
+        else if (!jumlah || jumlah < 1) pesan = "Jumlah harus minimal 1.";
+        else if (isNaN(harga) || harga < 0) pesan = "Harga satuan tidak valid.";
+        if (pesan) { err.textContent = pesan; err.classList.add("show"); return; }
+        if (editPurchaseId) {
+          purchases.forEach(function (p) {
+            if (p.id === editPurchaseId) {
+              p.tanggal = tanggal; p.supplierId = supplierId; p.barang = barang;
+              p.jumlah = jumlah; p.harga = harga; p.status = status;
+            }
+          });
+          toast("Pembelian berhasil diubah.");
+        } else {
+          purchases.push({ id: nextPurchaseId++, tanggal: tanggal, supplierId: supplierId, barang: barang, jumlah: jumlah, harga: harga, status: status, diterima: false });
+          toast("Pembelian baru berhasil ditambahkan.");
+        }
+        tutupOverlay("overlay-pembelian");
+        renderSemua();
+      });
+
+      /* ----- Formulir supplier ----- */
+      function bukaFormSupplier(s) {
+        el("error-supplier").classList.remove("show");
+        if (s) {
+          editSupplierId = s.id;
+          el("judul-modal-supplier").textContent = "Ubah Supplier";
+          el("s-nama").value = s.nama;
+          el("s-kontak").value = s.kontak || "";
+          el("s-telepon").value = s.telepon || "";
+          el("s-kategori").value = s.kategori || "";
+          el("s-alamat").value = s.alamat || "";
+        } else {
+          editSupplierId = null;
+          el("judul-modal-supplier").textContent = "Tambah Supplier";
+          el("form-supplier").reset();
+        }
+        bukaOverlay("overlay-supplier");
+      }
+      el("btn-tambah-supplier").addEventListener("click", function () { bukaFormSupplier(null); });
+      el("form-supplier").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var nama = el("s-nama").value.trim();
+        var err = el("error-supplier");
+        if (!nama) { err.textContent = "Nama supplier wajib diisi."; err.classList.add("show"); return; }
+        var data = {
+          nama: nama,
+          kontak: el("s-kontak").value.trim(),
+          telepon: el("s-telepon").value.trim(),
+          kategori: el("s-kategori").value.trim(),
+          alamat: el("s-alamat").value.trim()
+        };
+        if (editSupplierId) {
+          suppliers.forEach(function (s) { if (s.id === editSupplierId) Object.assign(s, data); });
+          toast("Supplier berhasil diubah.");
+        } else {
+          data.id = nextSupplierId++;
+          suppliers.push(data);
+          toast("Supplier baru berhasil ditambahkan.");
+        }
+        tutupOverlay("overlay-supplier");
+        renderSemua();
+      });
+
+      /* ----- Konfirmasi hapus ----- */
+      function mintaHapus(jenis, id, teks) {
+        pendingDelete = { jenis: jenis, id: id };
+        el("teks-modal-hapus").textContent = teks;
+        bukaOverlay("overlay-hapus");
+      }
+      el("btn-konfirmasi-hapus").addEventListener("click", function () {
+        if (!pendingDelete) return;
+        if (pendingDelete.jenis === "pembelian") {
+          purchases = purchases.filter(function (p) { return p.id !== pendingDelete.id; });
+          toast("Pembelian berhasil dihapus.");
+        } else {
+          suppliers = suppliers.filter(function (s) { return s.id !== pendingDelete.id; });
+          toast("Supplier berhasil dihapus.");
+        }
+        pendingDelete = null;
+        tutupOverlay("overlay-hapus");
+        renderSemua();
+      });
+
+      /* ----- Aksi pada daftar (delegasi klik) ----- */
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-ubah-pembelian],[data-hapus-pembelian],[data-ubah-supplier],[data-hapus-supplier],[data-terima]");
+        if (!t) return;
+        var id;
+        if (t.hasAttribute("data-ubah-pembelian")) {
+          id = parseInt(t.getAttribute("data-ubah-pembelian"), 10);
+          purchases.forEach(function (p) { if (p.id === id) bukaFormPembelian(p); });
+        } else if (t.hasAttribute("data-hapus-pembelian")) {
+          id = parseInt(t.getAttribute("data-hapus-pembelian"), 10);
+          var p = null;
+          purchases.forEach(function (x) { if (x.id === id) p = x; });
+          mintaHapus("pembelian", id, "Hapus pembelian \"" + (p ? p.barang : "") + "\" senilai " + (p ? rp(total(p)) : "") + "? Data yang dihapus tidak dapat dikembalikan.");
+        } else if (t.hasAttribute("data-ubah-supplier")) {
+          id = parseInt(t.getAttribute("data-ubah-supplier"), 10);
+          suppliers.forEach(function (s) { if (s.id === id) bukaFormSupplier(s); });
+        } else if (t.hasAttribute("data-hapus-supplier")) {
+          id = parseInt(t.getAttribute("data-hapus-supplier"), 10);
+          var dipakai = purchases.some(function (x) { return x.supplierId === id; });
+          if (dipakai) {
+            toast("Supplier ini masih memiliki catatan pembelian dan tidak dapat dihapus.");
+            return;
+          }
+          var s = supplierById(id);
+          mintaHapus("supplier", id, "Hapus supplier \"" + (s ? s.nama : "") + "\"? Data yang dihapus tidak dapat dikembalikan.");
+        } else if (t.hasAttribute("data-terima")) {
+          id = parseInt(t.getAttribute("data-terima"), 10);
+          purchases.forEach(function (x) { if (x.id === id) x.diterima = true; });
+          toast("Barang ditandai sudah diterima.");
+          renderSemua();
+        }
+      });
+
+      /* ----- Pencarian & filter ----- */
+      ["cari-pembelian", "filter-supplier", "filter-status", "filter-bulan"].forEach(function (id) {
+        el(id).addEventListener("input", renderPembelian);
+        el(id).addEventListener("change", renderPembelian);
+      });
+      el("cari-supplier").addEventListener("input", renderSupplier);
+      el("btn-csv").addEventListener("click", unduhCSV);
+
+      /* ----- Datalist barang ----- */
+      el("daftar-barang").innerHTML = BARANG.map(function (b) {
+        return '<option value="' + esc(b) + '"></option>';
+      }).join("");
+
+      renderSemua();
+    </script>
+  </body>
+</html>
