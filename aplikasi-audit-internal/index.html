@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Audit Internal</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f0fdf4;
+        --bg-soft: #dcfce7;
+        --card: #ffffff;
+        --card-2: #f7fef9;
+        --ink: #14532d;
+        --ink-2: #3f6212;
+        --ink-3: #6b8f71;
+        --line: #d9eedd;
+        --accent: #16a34a;
+        --accent-dark: #15803d;
+        --accent-soft: #dcfce7;
+        --amber: #b45309;
+        --amber-soft: #fef3c7;
+        --blue: #1d6fb8;
+        --blue-soft: #e4f0fa;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --red: #b3372f;
+        --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(20, 83, 45, .06), 0 10px 30px rgba(20, 83, 45, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1f13;
+          --bg-soft: #132b1a;
+          --card: #14291b;
+          --card-2: #193322;
+          --ink: #e2f5e8;
+          --ink-2: #a9c4b8;
+          --ink-3: #7d978a;
+          --line: #24402e;
+          --accent: #4ade80;
+          --accent-dark: #86efac;
+          --accent-soft: #173a26;
+          --amber: #fbbf24;
+          --amber-soft: #3a2f14;
+          --blue: #5ea8e0;
+          --blue-soft: #17334a;
+          --green: #6fbf73;
+          --green-soft: #1e3a20;
+          --red: #e07a72;
+          --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1a14; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-amber { background: var(--amber-soft); color: var(--amber); }
+      .badge-blue { background: var(--blue-soft); color: var(--blue); }
+      .badge-green { background: var(--green-soft); color: var(--green); }
+      .badge-red { background: var(--red-soft); color: var(--red); }
+      .badge-teal { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: .92rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #0c1a14; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select, .item-actions input { width: auto; flex: 0 1 auto; }
+      .item-actions input[type="text"] { flex: 1 1 220px; }
+      .item-actions .spacer { flex: 1; }
+      .progress { height: 10px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+      .progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .progress.over > span { background: var(--red); }
+      .progress.warn > span { background: var(--amber); }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .callout.green { background: var(--accent-soft); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Audit Internal</h1>
+        <p>Checklist audit, temuan audit, tindak lanjut perbaikan, riwayat audit, dan laporan audit — untuk perusahaan kecil dan menengah.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="checklist" role="tab">Checklist</button><button class="tab-btn" data-tab="temuan" role="tab">Temuan</button><button class="tab-btn" data-tab="tindaklanjut" role="tab">Tindak Lanjut</button><button class="tab-btn" data-tab="riwayat" role="tab">Riwayat</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+
+      <section class="panel active" id="panel-ringkasan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Item Checklist</p><p class="value" id="stItem">0</p><p class="sub">Item yang diperiksa</p></div>
+          <div class="card stat"><p class="label">Sesuai</p><p class="value" id="stSesuai">0</p><p class="sub">Item yang dinyatakan sesuai</p></div>
+          <div class="card stat"><p class="label">Tidak Sesuai</p><p class="value" id="stTidak">0</p><p class="sub">Item yang perlu temuan</p></div>
+          <div class="card stat"><p class="label">Temuan Terbuka</p><p class="value" id="stTemuan">0</p><p class="sub">Temuan yang belum ditutup</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Temuan Terbaru</h2><p class="hint">Temuan audit yang masih terbuka.</p><div id="recentTemuan"></div></div>
+          <div class="card"><h2>Tindak Lanjut Berjalan</h2><p class="hint">Rencana perbaikan yang sedang dikerjakan.</p><div id="recentTindak"></div></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-checklist">
+        <div class="card form-card">
+          <h2>Tambah Item Checklist</h2>
+          <p class="hint">Tulis hal yang akan diperiksa beserta area dan auditornya. Status awal: <strong>Belum Diperiksa</strong>.</p>
+          <form id="checkForm">
+            <div class="form-grid">
+              <div class="field"><label for="cArea">Area audit</label><select id="cArea" required><option value="Keuangan">Keuangan</option><option value="Operasional">Operasional</option><option value="SDM">SDM</option><option value="Kepatuhan">Kepatuhan</option><option value="Aset & Inventaris">Aset &amp; Inventaris</option></select></div>
+              <div class="field"><label for="cAuditor">Auditor</label><input type="text" id="cAuditor" placeholder="cth. Rina Kartika" required /></div>
+              <div class="field full"><label for="cItem">Item yang diperiksa</label><input type="text" id="cItem" placeholder="cth. Kas kecil dicocokkan dengan buku kas setiap minggu" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Item</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="checkNote"></p>
+          </form>
+        </div>
+        <div id="checkList"></div>
+      </section>
+
+      <section class="panel" id="panel-temuan">
+        <div class="card form-card">
+          <h2>Tambah Temuan Audit</h2>
+          <p class="hint">Temuan adalah ketidaksesuaian yang ditemukan saat pemeriksaan. Tentukan tingkat keparahannya.</p>
+          <form id="temuanForm">
+            <div class="form-grid">
+              <div class="field"><label for="tArea">Area</label><select id="tArea" required><option value="Keuangan">Keuangan</option><option value="Operasional">Operasional</option><option value="SDM">SDM</option><option value="Kepatuhan">Kepatuhan</option><option value="Aset & Inventaris">Aset &amp; Inventaris</option></select></div>
+              <div class="field"><label for="tTingkat">Tingkat temuan</label><select id="tTingkat" required><option value="Minor">Minor — dampak kecil</option><option value="Mayor">Mayor — dampak cukup besar</option><option value="Kritis">Kritis — dampak besar / mendesak</option></select></div>
+              <div class="field full"><label for="tDesk">Deskripsi temuan</label><input type="text" id="tDesk" placeholder="cth. Pengeluaran Rp2.500.000 tanpa persetujuan tertulis" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Temuan</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="temuanNote"></p>
+          </form>
+        </div>
+        <div id="temuanList"></div>
+      </section>
+
+      <section class="panel" id="panel-tindaklanjut">
+        <div class="card form-card">
+          <h2>Tambah Tindak Lanjut</h2>
+          <p class="hint">Setiap temuan harus punya rencana perbaikan, penanggung jawab, dan tenggat. Bila tindak lanjut selesai, temuan terkait otomatis berubah menjadi <strong>Ditindaklanjuti</strong>.</p>
+          <form id="tindakForm">
+            <div class="form-grid">
+              <div class="field"><label for="tlTemuan">Temuan yang ditindaklanjuti</label><select id="tlTemuan" required></select></div>
+              <div class="field"><label for="tlPj">Penanggung jawab</label><input type="text" id="tlPj" placeholder="cth. Rudi Hartono" required /></div>
+              <div class="field full"><label for="tlRencana">Rencana perbaikan</label><input type="text" id="tlRencana" placeholder="cth. Wajibkan persetujuan tertulis untuk semua pengeluaran di atas Rp1.000.000" required /></div>
+              <div class="field"><label for="tlTenggat">Tenggat</label><input type="date" id="tlTenggat" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Tindak Lanjut</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="tindakNote"></p>
+          </form>
+        </div>
+        <div id="tindakList"></div>
+      </section>
+
+      <section class="panel" id="panel-riwayat">
+        <div class="toolbar"><div class="grow"><input type="search" id="riwayatSearch" placeholder="Cari berdasarkan area, deskripsi, atau auditor…" aria-label="Cari riwayat audit" /></div></div>
+        <div id="riwayatList"></div>
+        <p class="empty hidden" id="riwayatEmpty">Tidak ada riwayat yang cocok dengan pencarian ini.</p>
+      </section>
+
+      <section class="panel" id="panel-laporan">
+        <div class="card">
+          <h2>Laporan Audit Internal</h2>
+          <p class="hint">Ringkasan hasil pemeriksaan, temuan per tingkat dan per status, serta tindak lanjut. Klik <strong>Cetak Laporan</strong> untuk mencetak halaman ini.</p>
+          <div id="laporanBody"></div>
+          <div class="form-actions"><button class="btn btn-primary" id="cetakBtn" type="button">Cetak Laporan</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan &mdash; Aplikasi Audit Internal</h2>
+          <p>Selamat datang di aplikasi <strong>Audit Internal</strong>. Aplikasi ini membantu perusahaan kecil dan menengah menjalankan audit internal: menyusun checklist pemeriksaan, mencatat temuan audit, merencanakan tindak lanjut perbaikan, melihat riwayat audit, dan menyusun laporan audit — semuanya dari satu halaman di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+
+          <h2>1. Tab Ringkasan</h2>
+          <ul>
+            <li><strong>Item Checklist</strong> &mdash; jumlah seluruh item yang diperiksa.</li>
+            <li><strong>Sesuai</strong> &mdash; item yang dinyatakan sesuai saat pemeriksaan.</li>
+            <li><strong>Tidak Sesuai</strong> &mdash; item yang dinyatakan tidak sesuai dan perlu ditindaklanjuti.</li>
+            <li><strong>Temuan Terbuka</strong> &mdash; temuan yang statusnya masih Terbuka atau Ditindaklanjuti (belum Ditutup).</li>
+            <li>Di bawahnya tampil temuan terbaru yang masih terbuka dan tindak lanjut yang sedang berjalan.</li>
+          </ul>
+
+          <h2>2. Tab Checklist</h2>
+          <h3>Menambah item checklist</h3>
+          <ol>
+            <li>Pilih <strong>area audit</strong> (Keuangan, Operasional, SDM, Kepatuhan, atau Aset &amp; Inventaris).</li>
+            <li>Isi <strong>auditor</strong> dan <strong>item yang diperiksa</strong>, misalnya &ldquo;Kas kecil dicocokkan dengan buku kas setiap minggu&rdquo;.</li>
+            <li>Klik <strong>+ Tambah Item</strong>. Status awal item adalah <strong>Belum Diperiksa</strong>.</li>
+          </ol>
+          <h3>Memeriksa item</h3>
+          <ul>
+            <li>Ubah status item lewat pilihan status pada kartu item: <strong>Belum Diperiksa</strong>, <strong>Sesuai</strong>, atau <strong>Tidak Sesuai</strong>.</li>
+            <li>Bila item dinyatakan <strong>Tidak Sesuai</strong>, muncul tombol <strong>Buat Temuan</strong> — klik untuk membuat temuan audit dari item tersebut secara otomatis (tingkat awal: Mayor, bisa diubah di tab Temuan).</li>
+          </ul>
+
+          <h2>3. Tab Temuan</h2>
+          <ul>
+            <li><strong>Tambah temuan</strong> &mdash; isi area, deskripsi temuan, dan tingkatnya (<strong>Minor</strong>: dampak kecil; <strong>Mayor</strong>: dampak cukup besar; <strong>Kritis</strong>: dampak besar atau mendesak), lalu klik <strong>+ Tambah Temuan</strong>.</li>
+            <li><strong>Ubah status temuan</strong> lewat pilihan status: <strong>Terbuka</strong> (baru ditemukan), <strong>Ditindaklanjuti</strong> (perbaikan sedang berjalan), atau <strong>Ditutup</strong> (perbaikan selesai dan sudah diverifikasi).</li>
+            <li>Temuan yang sudah <strong>Ditutup</strong> sebaiknya tidak dibuka lagi — bila masalah muncul kembali, buat temuan baru.</li>
+          </ul>
+
+          <h2>4. Tab Tindak Lanjut</h2>
+          <ol>
+            <li>Pilih <strong>temuan yang ditindaklanjuti</strong> (hanya temuan yang belum Ditutup yang muncul).</li>
+            <li>Isi <strong>rencana perbaikan</strong>, <strong>penanggung jawab</strong>, dan <strong>tenggat</strong>.</li>
+            <li>Klik <strong>+ Tambah Tindak Lanjut</strong>.</li>
+            <li>Ubah status tindak lanjut lewat pilihan status: <strong>Belum Dimulai</strong>, <strong>Berjalan</strong>, atau <strong>Selesai</strong>. Bila tindak lanjut dinyatakan <strong>Selesai</strong>, temuan terkait otomatis berubah menjadi <strong>Ditindaklanjuti</strong>.</li>
+          </ol>
+
+          <h2>5. Tab Riwayat</h2>
+          <p>Menampilkan seluruh riwayat audit dalam satu daftar kronologis: hasil pemeriksaan checklist, temuan, dan tindak lanjut. Ketik di kolom <strong>pencarian</strong> untuk menyaring berdasarkan area, deskripsi, atau nama auditor.</p>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Menampilkan ringkasan hasil pemeriksaan, jumlah temuan per tingkat (Minor, Mayor, Kritis) dan per status, serta status tindak lanjut. Klik <strong>Cetak Laporan</strong> untuk mencetak laporan audit ini.</p>
+
+          <h2>7. Menghapus Data</h2>
+          <p>Tombol <strong>Hapus</strong> pada item checklist, temuan, atau tindak lanjut menghapus data tersebut. Klik sekali untuk memunculkan konfirmasi <strong>&ldquo;Yakin hapus?&rdquo;</strong>, klik lagi untuk benar-benar menghapus. Data yang sudah dihapus tidak bisa dikembalikan.</p>
+
+          <h2>8. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>tersimpan di perangkat ini</strong> (localStorage peramban). Data <strong>tidak sinkron antar-perangkat</strong>: data yang ditambahkan di HP tidak muncul di komputer, dan sebaliknya. Menghapus data peramban akan menghapus data aplikasi.</li>
+            <li>Aplikasi ini adalah alat <strong>pencatatan audit internal</strong> untuk perusahaan kecil dan menengah. Aplikasi ini <strong>bukan pengganti audit eksternal</strong> oleh auditor independen atau kantor akuntan publik, dan tidak menggantikan standar audit formal yang berlaku di perusahaan Anda.</li>
+            <li>Semua data adalah <strong>data contoh</strong> untuk keperluan demonstrasi.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo &mdash; <strong>gratis selama masa garansi</strong>.</li>
+          </ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali &mdash; Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp ke 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table>
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula adalah paket standar siap pakai. Profesional menambah penyesuaian merek dan APK Android. Bisnis menambah penyimpanan permanen, multi-user, dan dukungan penuh. Harga di atas adalah harga standar; penyesuaian khusus dibicarakan terlebih dahulu melalui WhatsApp.</p>
+
+        </div>
+      </section>
+      <footer>
+
+        <p><strong>Catatan kejujuran:</strong> semua data pada aplikasi ini adalah <strong>data contoh</strong> (6 item checklist, 3 temuan, dan 2 tindak lanjut contoh saat pertama dibuka) dan <strong>tersimpan di perangkat ini saja</strong> (localStorage) — data tidak sinkron antar-perangkat, dan menghapus data peramban akan menghapus data aplikasi.</p>
+        <p>Aplikasi ini adalah alat <strong>pencatatan audit internal</strong>. Aplikasi ini <strong>bukan pengganti audit eksternal</strong> oleh auditor independen atau kantor akuntan publik.</p>
+      </footer>
+    </div>
+
+    <script>
+
+      "use strict";
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function fmtRp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function fmtDate(iso) {
+        if (!iso) return "-";
+        var p = String(iso).split("-");
+        if (p.length !== 3) return iso;
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        return parseInt(p[2], 10) + " " + B[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+      function loadState(key, seed) {
+        try { var raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
+        return seed;
+      }
+      function saveState(key, state) {
+        try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {}
+      }
+      function showNote(id, text) {
+        var n = $(id);
+        if (!n) return;
+        n.textContent = text;
+        n.classList.add("show");
+      }
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action='hapus']");
+        if (!btn) return;
+        if (btn.getAttribute("data-confirm") !== "1") {
+          btn.setAttribute("data-confirm", "1");
+          btn.textContent = "Yakin hapus?";
+          setTimeout(function () {
+            if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; }
+          }, 3000);
+          return;
+        }
+        if (typeof onDelete === "function") onDelete(btn.getAttribute("data-kind"), btn.getAttribute("data-id"));
+      });
+
+      var KEY = "aud-v1";
+      var state = loadState(KEY, {
+        checklist: [
+          { id: "c1", area: "Keuangan", item: "Kas kecil dicocokkan dengan buku kas setiap minggu", status: "Sesuai", auditor: "Rina Kartika", tgl: "2026-11-18" },
+          { id: "c2", area: "Keuangan", item: "Setiap pengeluaran di atas Rp1.000.000 memiliki persetujuan tertulis", status: "Tidak Sesuai", auditor: "Rina Kartika", tgl: "2026-11-18" },
+          { id: "c3", area: "Operasional", item: "Stok gudang dihitung (stock opname) setiap akhir bulan", status: "Sesuai", auditor: "Budi Santoso", tgl: "2026-11-17" },
+          { id: "c4", area: "Operasional", item: "Barang keluar gudang selalu disertai surat jalan", status: "Belum Diperiksa", auditor: "Budi Santoso", tgl: "2026-11-17" },
+          { id: "c5", area: "SDM", item: "Daftar hadir karyawan direkap setiap minggu", status: "Tidak Sesuai", auditor: "Dewi Lestari", tgl: "2026-11-16" },
+          { id: "c6", area: "Kepatuhan", item: "Izin usaha dan dokumen legal masih berlaku", status: "Sesuai", auditor: "Dewi Lestari", tgl: "2026-11-16" }
+        ],
+        temuan: [
+          { id: "t1", area: "Keuangan", desk: "Pengeluaran Rp2.500.000 tanpa persetujuan tertulis pada 12 Nov 2026", tingkat: "Mayor", status: "Terbuka", tgl: "2026-11-18" },
+          { id: "t2", area: "SDM", desk: "Rekap daftar hadir minggu kedua November belum dibuat", tingkat: "Minor", status: "Ditindaklanjuti", tgl: "2026-11-16" },
+          { id: "t3", area: "Keuangan", desk: "Selisih kas kecil Rp150.000 belum dijelaskan", tingkat: "Mayor", status: "Terbuka", tgl: "2026-11-18" }
+        ],
+        tindak: [
+          { id: "tl1", temuanId: "t1", rencana: "Wajibkan persetujuan tertulis untuk semua pengeluaran di atas Rp1.000.000", pj: "Rudi Hartono", tenggat: "2026-11-30", status: "Berjalan" },
+          { id: "tl2", temuanId: "t2", rencana: "Buat rekap daftar hadir yang tertinggal dan serahkan ke HRD", pj: "Andi Pratama", tenggat: "2026-11-25", status: "Selesai" }
+        ]
+      });
+
+      function save() { saveState(KEY, state); }
+      function temuanById(id) { var f = null; state.temuan.forEach(function (t) { if (t.id === id) f = t; }); return f; }
+      function tingkatBadge(t) {
+        var map = { "Minor": "badge-teal", "Mayor": "badge-amber", "Kritis": "badge-red" };
+        return '<span class="badge ' + (map[t] || "badge-teal") + '">' + esc(t) + "</span>";
+      }
+      function statusBadgeCheck(s) {
+        var map = { "Sesuai": "badge-green", "Tidak Sesuai": "badge-red", "Belum Diperiksa": "badge-amber" };
+        return '<span class="badge ' + (map[s] || "badge-amber") + '">' + esc(s) + "</span>";
+      }
+      function statusBadgeTemuan(s) {
+        var map = { "Terbuka": "badge-red", "Ditindaklanjuti": "badge-amber", "Ditutup": "badge-green" };
+        return '<span class="badge ' + (map[s] || "badge-amber") + '">' + esc(s) + "</span>";
+      }
+      function renderSummary() {
+        $("stItem").textContent = state.checklist.length;
+        $("stSesuai").textContent = state.checklist.filter(function (c) { return c.status === "Sesuai"; }).length;
+        $("stTidak").textContent = state.checklist.filter(function (c) { return c.status === "Tidak Sesuai"; }).length;
+        $("stTemuan").textContent = state.temuan.filter(function (t) { return t.status !== "Ditutup"; }).length;
+        var rt = state.temuan.filter(function (t) { return t.status !== "Ditutup"; }).slice(0, 3);
+        $("recentTemuan").innerHTML = rt.length ? rt.map(function (t) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(t.desk) + '</div><div class="meta">' + esc(t.area) + " • " + esc(fmtDate(t.tgl)) + "</div></div>" + tingkatBadge(t.tingkat) + "</div>";
+        }).join("") : '<p class="empty">Tidak ada temuan terbuka.</p>';
+        var rj = state.tindak.filter(function (x) { return x.status === "Berjalan" || x.status === "Belum Dimulai"; }).slice(0, 3);
+        $("recentTindak").innerHTML = rj.length ? rj.map(function (x) {
+          var t = temuanById(x.temuanId);
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(x.rencana) + '</div><div class="meta">' + esc(x.pj) + " • tenggat " + esc(fmtDate(x.tenggat)) + (t ? " • temuan: " + esc(t.desk.slice(0, 40)) + "…" : "") + "</div></div>" +
+            '<span class="badge ' + (x.status === "Berjalan" ? "badge-amber" : "badge-blue") + '">' + esc(x.status) + "</span></div>";
+        }).join("") : '<p class="empty">Tidak ada tindak lanjut yang berjalan.</p>';
+      }
+      function renderChecklist() {
+        $("checkList").innerHTML = state.checklist.map(function (c) {
+          var opts = ["Belum Diperiksa", "Sesuai", "Tidak Sesuai"].map(function (s) {
+            return '<option value="' + s + '"' + (s === c.status ? " selected" : "") + ">" + s + "</option>";
+          }).join("");
+          var buat = c.status === "Tidak Sesuai"
+            ? '<button class="btn btn-primary btn-small" data-aksi="buat-temuan" data-id="' + c.id + '">Buat Temuan</button>' : "";
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(c.item) + '</div>' +
+            '<div class="meta">' + esc(c.area) + " • Auditor: " + esc(c.auditor) + " • " + esc(fmtDate(c.tgl)) + "</div></div>" + statusBadgeCheck(c.status) + "</div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-ubah="check-status" data-id="' + c.id + '">' + opts + "</select>" + buat +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="checklist" data-id="' + c.id + '">Hapus</button></div></div>';
+        }).join("");
+      }
+      function renderTemuan() {
+        $("temuanList").innerHTML = state.temuan.length ? state.temuan.map(function (t) {
+          var opts = ["Terbuka", "Ditindaklanjuti", "Ditutup"].map(function (s) {
+            return '<option value="' + s + '"' + (s === t.status ? " selected" : "") + ">" + s + "</option>";
+          }).join("");
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(t.desk) + '</div>' +
+            '<div class="meta">' + esc(t.area) + " • " + esc(fmtDate(t.tgl)) + "</div></div>" + tingkatBadge(t.tingkat) + " " + statusBadgeTemuan(t.status) + "</div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-ubah="temuan-status" data-id="' + t.id + '">' + opts + "</select>" +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="temuan" data-id="' + t.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada temuan. Tambahkan lewat formulir di atas.</p>';
+      }
+      function fillTemuanSelect() {
+        var open = state.temuan.filter(function (t) { return t.status !== "Ditutup"; });
+        $("tlTemuan").innerHTML = open.length ? open.map(function (t) {
+          return '<option value="' + t.id + '">' + esc(t.desk) + " (" + esc(t.tingkat) + ")</option>";
+        }).join("") : '<option value="">(Tidak ada temuan terbuka)</option>';
+      }
+      function renderTindak() {
+        fillTemuanSelect();
+        $("tindakList").innerHTML = state.tindak.length ? state.tindak.map(function (x) {
+          var t = temuanById(x.temuanId);
+          var opts = ["Belum Dimulai", "Berjalan", "Selesai"].map(function (s) {
+            return '<option value="' + s + '"' + (s === x.status ? " selected" : "") + ">" + s + "</option>";
+          }).join("");
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(x.rencana) + '</div>' +
+            '<div class="meta">Temuan: ' + esc(t ? t.desk : "(temuan dihapus)") + '</div>' +
+            '<div class="meta">Penanggung jawab: ' + esc(x.pj) + " • Tenggat " + esc(fmtDate(x.tenggat)) + "</div></div>" +
+            '<span class="badge ' + (x.status === "Selesai" ? "badge-green" : (x.status === "Berjalan" ? "badge-amber" : "badge-blue")) + '">' + esc(x.status) + "</span></div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-ubah="tindak-status" data-id="' + x.id + '">' + opts + "</select>" +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="tindak" data-id="' + x.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada tindak lanjut. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderRiwayat() {
+        var q = $("riwayatSearch").value.trim().toLowerCase();
+        var items = [];
+        state.checklist.forEach(function (c) { items.push({ tgl: c.tgl, kind: "Pemeriksaan", text: c.item, meta: c.area + " • Auditor: " + c.auditor + " • Status: " + c.status }); });
+        state.temuan.forEach(function (t) { items.push({ tgl: t.tgl, kind: "Temuan", text: t.desk, meta: t.area + " • Tingkat: " + t.tingkat + " • Status: " + t.status }); });
+        state.tindak.forEach(function (x) { items.push({ tgl: x.tenggat, kind: "Tindak Lanjut", text: x.rencana, meta: "Penanggung jawab: " + x.pj + " • Tenggat: " + fmtDate(x.tenggat) + " • Status: " + x.status }); });
+        items.sort(function (a, b) { return b.tgl.localeCompare(a.tgl); });
+        if (q) items = items.filter(function (it) { return (it.text + " " + it.meta).toLowerCase().indexOf(q) >= 0; });
+        $("riwayatEmpty").classList.toggle("hidden", items.length > 0);
+        $("riwayatList").innerHTML = items.map(function (it) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(it.text) + '</div><div class="meta">' + esc(it.meta) + " • " + esc(fmtDate(it.tgl)) + "</div></div>" +
+            '<span class="badge badge-teal">' + esc(it.kind) + "</span></div>";
+        }).join("");
+      }
+      function renderLaporan() {
+        function count(list, fn) { var m = {}; list.forEach(function (x) { var k = fn(x); m[k] = (m[k] || 0) + 1; }); return m; }
+        var perTingkat = count(state.temuan, function (t) { return t.tingkat; });
+        var perStatus = count(state.temuan, function (t) { return t.status; });
+        var perCheck = count(state.checklist, function (c) { return c.status; });
+        var perTindak = count(state.tindak, function (x) { return x.status; });
+        function rows(m) {
+          return Object.keys(m).map(function (k) { return "<tr><td><strong>" + esc(k) + "</strong></td><td>" + m[k] + "</td></tr>"; }).join("");
+        }
+        $("laporanBody").innerHTML =
+          "<h3 style='margin:0 0 6px;'>Hasil Pemeriksaan Checklist</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;"><tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Status</th><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Jumlah</th></tr>' + rows(perCheck) + "</table>" +
+          "<h3 style='margin:18px 0 6px;'>Temuan per Tingkat</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;"><tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Tingkat</th><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Jumlah</th></tr>' + rows(perTingkat) + "</table>" +
+          "<h3 style='margin:18px 0 6px;'>Temuan per Status</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;"><tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Status</th><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Jumlah</th></tr>' + rows(perStatus) + "</table>" +
+          "<h3 style='margin:18px 0 6px;'>Tindak Lanjut per Status</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;"><tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Status</th><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Jumlah</th></tr>' + rows(perTindak) + "</table>";
+      }
+      function renderAll() {
+        renderSummary(); renderChecklist(); renderTemuan(); renderTindak(); renderRiwayat(); renderLaporan();
+      }
+      function onDelete(kind, id) {
+        if (kind === "checklist") state.checklist = state.checklist.filter(function (c) { return c.id !== id; });
+        if (kind === "temuan") state.temuan = state.temuan.filter(function (t) { return t.id !== id; });
+        if (kind === "tindak") state.tindak = state.tindak.filter(function (x) { return x.id !== id; });
+        save(); renderAll();
+      }
+      $("checkForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.checklist.push({ id: uid("c"), area: $("cArea").value, item: $("cItem").value.trim(), status: "Belum Diperiksa", auditor: $("cAuditor").value.trim(), tgl: new Date().toISOString().slice(0, 10) });
+        showNote("checkNote", "Item checklist berhasil ditambahkan dengan status Belum Diperiksa.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("temuanForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.temuan.push({ id: uid("t"), area: $("tArea").value, desk: $("tDesk").value.trim(), tingkat: $("tTingkat").value, status: "Terbuka", tgl: new Date().toISOString().slice(0, 10) });
+        showNote("temuanNote", "Temuan tingkat " + $("tTingkat").value + " berhasil ditambahkan dengan status Terbuka.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("tindakForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var t = temuanById($("tlTemuan").value);
+        if (!t) { alert("Pilih temuan yang belum ditutup terlebih dahulu."); return; }
+        state.tindak.push({ id: uid("tl"), temuanId: t.id, rencana: $("tlRencana").value.trim(), pj: $("tlPj").value.trim(), tenggat: $("tlTenggat").value, status: "Belum Dimulai" });
+        showNote("tindakNote", "Tindak lanjut untuk temuan tersebut berhasil ditambahkan.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("riwayatSearch").addEventListener("input", renderRiwayat);
+      $("cetakBtn").addEventListener("click", function () { window.print(); });
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest("select[data-ubah]");
+        if (!sel) return;
+        var kind = sel.getAttribute("data-ubah");
+        var id = sel.getAttribute("data-id");
+        if (kind === "check-status") {
+          state.checklist.forEach(function (c) { if (c.id === id) c.status = sel.value; });
+        }
+        if (kind === "temuan-status") {
+          state.temuan.forEach(function (t) { if (t.id === id) t.status = sel.value; });
+        }
+        if (kind === "tindak-status") {
+          state.tindak.forEach(function (x) {
+            if (x.id === id) {
+              x.status = sel.value;
+              if (sel.value === "Selesai") {
+                var t = temuanById(x.temuanId);
+                if (t && t.status === "Terbuka") t.status = "Ditindaklanjuti";
+              }
+            }
+          });
+        }
+        save(); renderAll();
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-aksi='buat-temuan']");
+        if (!btn) return;
+        var c = null;
+        state.checklist.forEach(function (x) { if (x.id === btn.getAttribute("data-id")) c = x; });
+        if (!c) return;
+        state.temuan.push({ id: uid("t"), area: c.area, desk: "Ketidaksesuaian: " + c.item, tingkat: "Mayor", status: "Terbuka", tgl: new Date().toISOString().slice(0, 10) });
+        save(); renderAll();
+        alert("Temuan dibuat dari item checklist tersebut (tingkat Mayor, status Terbuka). Lihat di tab Temuan.");
+      });
+      (function () {
+        var d = new Date();
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        var H = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        $("todayText").textContent = H[d.getDay()] + ", " + d.getDate() + " " + B[d.getMonth()] + " " + d.getFullYear();
+        renderAll();
+      })();
+    </script>
+  </body>
+</html>

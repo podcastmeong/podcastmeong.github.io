@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Apotek</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f2f7f4; --bg-soft: #e8f1ea; --card: #ffffff; --card-2: #f7faf8;
+        --ink: #17352c; --ink-2: #47635a; --ink-3: #7d948b; --line: #dce8e2;
+        --accent: #16a34a; --accent-dark: #15803d; --accent-soft: #dcfce7;
+        --amber: #b97e10; --amber-soft: #fdf3dd; --blue: #1d6fb8; --blue-soft: #e4f0fa;
+        --green: #2e7d32; --green-soft: #e6f3e4; --red: #b3372f; --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(23, 53, 44, .06), 0 10px 30px rgba(23, 53, 44, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1a15; --bg-soft: #16241d; --card: #182620; --card-2: #1d2e26;
+          --ink: #e6f2ec; --ink-2: #a9c4b8; --ink-3: #7d978a; --line: #2a3f36;
+          --accent: #4ade80; --accent-dark: #86efac; --accent-soft: #14532d;
+          --amber: #e0aa3e; --amber-soft: #3a2f14; --blue: #5ea8e0; --blue-soft: #17334a;
+          --green: #6fbf73; --green-soft: #1e3a20; --red: #e07a72; --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #052e16; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 2rem; font-weight: 800; line-height: 1.1; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .avatar { width: 42px; height: 42px; border-radius: 50%; flex: 0 0 auto; background: var(--accent-soft); color: var(--accent-dark); display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-aman { background: var(--green-soft); color: var(--green); }
+      .badge-menipis { background: var(--amber-soft); color: var(--amber); }
+      .badge-habis { background: var(--red-soft); color: var(--red); }
+      .badge-kedaluwarsa { background: var(--red-soft); color: var(--red); }
+      .badge-segera { background: var(--amber-soft); color: var(--amber); }
+      .badge-menunggu { background: var(--amber-soft); color: var(--amber); }
+      .badge-dilayani { background: var(--blue-soft); color: var(--blue); }
+      .badge-dipesan { background: var(--blue-soft); color: var(--blue); }
+      .badge-diterima { background: var(--green-soft); color: var(--green); }
+      .badge-dibatalkan { background: var(--red-soft); color: var(--red); }
+      .qnum { font-weight: 800; font-size: 1rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #052e16; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-ghost:hover { border-color: var(--ink-3); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .form-note.warn { color: var(--red); background: var(--red-soft); }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select { width: auto; flex: 0 1 auto; }
+      .item-actions .spacer { flex: 1; }
+      .bar { height: 10px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 8px; }
+      .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .price-table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .price-table th, .price-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .price-table th { color: var(--ink); font-weight: 700; }
+      .price-table td { color: var(--ink-2); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Apotek</h1>
+        <p>Stok obat dan tanggal kedaluwarsa, penjualan, resep dokter, pembelian ke distributor, dan laporan penjualan — dalam satu aplikasi.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="stok" role="tab">Stok</button>
+        <button class="tab-btn" data-tab="penjualan" role="tab">Penjualan</button>
+        <button class="tab-btn" data-tab="resep" role="tab">Resep</button>
+        <button class="tab-btn" data-tab="pembelian" role="tab">Pembelian</button>
+        <button class="tab-btn" data-tab="kedaluwarsa" role="tab">Kedaluwarsa</button>
+        <button class="tab-btn" data-tab="laporan" role="tab">Laporan</button>
+        <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- ============ STOK ============ -->
+      <section class="panel active" id="panel-stok">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Jenis Obat</p><p class="value" id="statJenis">0</p><p class="sub">Tercatat di stok</p></div>
+          <div class="card stat"><p class="label">Total Unit</p><p class="value" id="statUnit">0</p><p class="sub">Seluruh obat</p></div>
+          <div class="card stat"><p class="label">Stok Menipis</p><p class="value" id="statMenipis">0</p><p class="sub">Di bawah stok minimum</p></div>
+          <div class="card stat"><p class="label">Segera Kedaluwarsa</p><p class="value" id="statExp">0</p><p class="sub">Kurang dari 90 hari</p></div>
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <h2 id="obatFormTitle">Tambah Obat</h2>
+          <p class="hint">Catat obat beserta stok, stok minimum, harga jual, dan tanggal kedaluwarsa.</p>
+          <form id="obatForm">
+            <input type="hidden" id="oId" />
+            <div class="form-grid">
+              <div class="field"><label for="oNama">Nama obat</label><input type="text" id="oNama" placeholder="cth. Paracetamol 500 mg" required /></div>
+              <div class="field"><label for="oKategori">Kategori</label><select id="oKategori" required><option value="Obat Bebas">Obat Bebas</option><option value="Obat Bebas Terbatas">Obat Bebas Terbatas</option><option value="Obat Keras (Resep)">Obat Keras (Resep)</option><option value="Vitamin &amp; Suplemen">Vitamin &amp; Suplemen</option><option value="Alat Kesehatan">Alat Kesehatan</option></select></div>
+              <div class="field"><label for="oStok">Stok (unit)</label><input type="number" id="oStok" min="0" placeholder="cth. 120" required /></div>
+              <div class="field"><label for="oMin">Stok minimum</label><input type="number" id="oMin" min="0" placeholder="cth. 20" required /></div>
+              <div class="field"><label for="oHarga">Harga jual (Rp / unit)</label><input type="number" id="oHarga" min="0" step="100" placeholder="cth. 5000" required /></div>
+              <div class="field"><label for="oExp">Tanggal kedaluwarsa</label><input type="date" id="oExp" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="obatSubmit">+ Tambah Obat</button>
+              <button type="button" class="btn btn-ghost hidden" id="obatCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="obatNote"></p>
+          </form>
+        </div>
+
+        <div class="toolbar"><div class="grow"><input type="search" id="searchObat" placeholder="Cari nama obat atau kategori…" aria-label="Cari obat" /></div></div>
+        <div id="obatList"></div>
+        <p class="empty hidden" id="obatEmpty">Tidak ada obat yang cocok dengan pencarian ini.</p>
+      </section>
+
+      <!-- ============ PENJUALAN ============ -->
+      <section class="panel" id="panel-penjualan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Penjualan</p><p class="value" id="jualTotal" style="font-size:1.5rem;">Rp0</p><p class="sub">Semua transaksi</p></div>
+          <div class="card stat"><p class="label">Transaksi</p><p class="value" id="jualJml">0</p><p class="sub">Penjualan tercatat</p></div>
+          <div class="card stat"><p class="label">Unit Terjual</p><p class="value" id="jualUnit">0</p><p class="sub">Seluruh obat</p></div>
+          <div class="card stat"><p class="label">Pembeli</p><p class="value" id="jualPembeli">0</p><p class="sub">Nama berbeda</p></div>
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <h2>Jual Obat</h2>
+          <p class="hint">Pilih obat, isi jumlah dan nama pembeli. Stok berkurang otomatis. Obat keras hanya boleh dijual dengan resep dokter.</p>
+          <form id="jualForm">
+            <div class="form-grid">
+              <div class="field"><label for="jObat">Obat</label><select id="jObat" required></select></div>
+              <div class="field"><label for="jJumlah">Jumlah (unit)</label><input type="number" id="jJumlah" min="1" value="1" required /></div>
+              <div class="field"><label for="jPembeli">Nama pembeli</label><input type="text" id="jPembeli" placeholder="cth. Siti Rahmawati" required /></div>
+              <div class="field"><label for="jTanggal">Tanggal</label><input type="date" id="jTanggal" required /></div>
+              <div class="field"><label for="jBayar">Cara bayar</label><select id="jBayar" required><option value="Tunai">Tunai</option><option value="QRIS">QRIS</option><option value="Transfer">Transfer</option></select></div>
+              <div class="field"><label>Total harga</label><input type="text" id="jTotal" readonly value="Rp0" /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Catat Penjualan</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="jualNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Riwayat Penjualan</h2>
+        <div id="jualList"></div>
+      </section>
+
+      <!-- ============ RESEP ============ -->
+      <section class="panel" id="panel-resep">
+        <div class="card form-card">
+          <h2>Tambah Resep Dokter</h2>
+          <p class="hint">Catat resep dari dokter: pasien, dokter, obat, dan aturan pakai. Resep yang sudah dilayani menandai obatnya diambil.</p>
+          <form id="resepForm">
+            <div class="form-grid">
+              <div class="field"><label for="rsPasien">Nama pasien</label><input type="text" id="rsPasien" placeholder="cth. Agus Salim" required /></div>
+              <div class="field"><label for="rsDokter">Dokter peresep</label><input type="text" id="rsDokter" placeholder="cth. dr. Ratna Wijaya" required /></div>
+              <div class="field"><label for="rsObat">Obat</label><select id="rsObat" required></select></div>
+              <div class="field"><label for="rsJumlah">Jumlah (unit)</label><input type="number" id="rsJumlah" min="1" value="1" required /></div>
+              <div class="field"><label for="rsTanggal">Tanggal resep</label><input type="date" id="rsTanggal" required /></div>
+              <div class="field"><label for="rsAturan">Aturan pakai</label><input type="text" id="rsAturan" placeholder="cth. 3 x 1 tablet sesudah makan" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Resep</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="resepNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Resep</h2>
+        <div id="resepList"></div>
+      </section>
+
+      <!-- ============ PEMBELIAN ============ -->
+      <section class="panel" id="panel-pembelian">
+        <div class="card form-card">
+          <h2>Tambah Pembelian ke Distributor</h2>
+          <p class="hint">Catat pesanan obat ke distributor. Saat status diubah menjadi Diterima, stok obat bertambah otomatis.</p>
+          <form id="beliForm">
+            <div class="form-grid">
+              <div class="field"><label for="bDistributor">Distributor obat</label><input type="text" id="bDistributor" placeholder="cth. PT Sehat Farma" required /></div>
+              <div class="field"><label for="bObat">Obat</label><select id="bObat" required></select></div>
+              <div class="field"><label for="bJumlah">Jumlah (unit)</label><input type="number" id="bJumlah" min="1" placeholder="cth. 100" required /></div>
+              <div class="field"><label for="bHargaBeli">Harga beli (Rp / unit)</label><input type="number" id="bHargaBeli" min="0" step="100" placeholder="cth. 3500" required /></div>
+              <div class="field"><label for="bTanggal">Tanggal pesan</label><input type="date" id="bTanggal" required /></div>
+              <div class="field"><label for="bStatus">Status</label><select id="bStatus" required><option value="Dipesan">Dipesan</option><option value="Diterima">Diterima</option><option value="Dibatalkan">Dibatalkan</option></select></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Pembelian</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="beliNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Pembelian</h2>
+        <div id="beliList"></div>
+      </section>
+
+      <!-- ============ KEDALUWARSA ============ -->
+      <section class="panel" id="panel-kedaluwarsa">
+        <p style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Obat diurutkan dari tanggal kedaluwarsa terdekat. Obat yang sudah kedaluwarsa <strong>tidak boleh dijual</strong> — segera pisahkan dan musnahkan sesuai aturan yang berlaku.</p>
+        <div class="stat-grid" style="margin-bottom:16px;">
+          <div class="card stat"><p class="label">Sudah Kedaluwarsa</p><p class="value" id="expHabis">0</p><p class="sub">Jangan dijual</p></div>
+          <div class="card stat"><p class="label">Kurang dari 90 Hari</p><p class="value" id="expSegera">0</p><p class="sub">Segera perhatikan</p></div>
+          <div class="card stat"><p class="label">90–180 Hari</p><p class="value" id="expSedang">0</p><p class="sub">Masih cukup waktu</p></div>
+          <div class="card stat"><p class="label">Lebih dari 180 Hari</p><p class="value" id="expAman">0</p><p class="sub">Aman</p></div>
+        </div>
+        <div id="expList"></div>
+      </section>
+
+      <!-- ============ LAPORAN ============ -->
+      <section class="panel" id="panel-laporan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Penjualan</p><p class="value" id="lapTotal" style="font-size:1.5rem;">Rp0</p><p class="sub">Semua transaksi</p></div>
+          <div class="card stat"><p class="label">Transaksi</p><p class="value" id="lapJml">0</p><p class="sub">Penjualan tercatat</p></div>
+          <div class="card stat"><p class="label">Total Pembelian</p><p class="value" id="lapBeli" style="font-size:1.5rem;">Rp0</p><p class="sub">Ke distributor</p></div>
+          <div class="card stat"><p class="label">Resep Dilayani</p><p class="value" id="lapResep">0</p><p class="sub">Dari total resep</p></div>
+        </div>
+        <h2 class="section-title">Obat Terlaris</h2>
+        <div class="card"><div id="lapTerlaris"></div></div>
+        <h2 class="section-title">Stok Menipis — Perlu Dipesan</h2>
+        <div class="card"><div id="lapMenipis"></div></div>
+        <h2 class="section-title">Penjualan per Kategori</h2>
+        <div class="card"><div id="lapKategori"></div></div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan — Aplikasi Apotek</h2>
+          <p>Selamat datang di <strong>Aplikasi Apotek</strong>. Aplikasi ini membantu apotek mandiri mengelola stok obat dan tanggal kedaluwarsanya, mencatat penjualan, menindaklanjuti resep dokter, memesan obat ke distributor, dan menyusun laporan penjualan — semua dari satu halaman, tanpa perlu memasang program tambahan. Cukup buka file aplikasi di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+          <div class="callout"><p><strong>Penting — batas pemakaian demo:</strong> aplikasi ini memakai <strong>data contoh</strong>. Obat keras hanya boleh dijual dengan resep dokter, dan obat yang sudah kedaluwarsa tidak boleh dijual. Penerapan nyata membutuhkan pencatatan yang tertib sesuai aturan kefarmasian yang berlaku serta perlindungan data pelanggan sesuai UU Perlindungan Data Pribadi (UU PDP).</p></div>
+
+          <h2>1. Tab Stok</h2>
+          <p>Di atas ada empat angka ringkasan: jumlah jenis obat, total unit, jumlah obat yang stoknya menipis, dan jumlah obat yang segera kedaluwarsa (kurang dari 90 hari).</p>
+          <ul>
+            <li><strong>Tambah obat</strong> — isi nama obat, kategori (Obat Bebas, Obat Bebas Terbatas, Obat Keras (Resep), Vitamin &amp; Suplemen, atau Alat Kesehatan), stok awal, stok minimum, harga jual per unit, dan tanggal kedaluwarsa, lalu klik <strong>+ Tambah Obat</strong>.</li>
+            <li><strong>Stok minimum</strong> adalah batas peringatan: begitu stok turun sampai atau di bawah angka ini, obat tersebut berlabel <strong>Menipis</strong> dan muncul di laporan sebagai obat yang perlu dipesan.</li>
+            <li><strong>Ubah</strong> — klik tombol Ubah pada kartu obat; formulir terisi data obat itu. Perbaiki yang perlu, lalu klik <strong>Simpan Perubahan</strong>. Klik <strong>Batal Ubah</strong> untuk membatalkan.</li>
+            <li><strong>Hapus</strong> — klik Hapus, lalu konfirmasi "Yakin hapus?".</li>
+            <li>Kolom pencarian di atas daftar membantu menemukan obat berdasarkan nama atau kategori.</li>
+          </ul>
+
+          <h2>2. Tab Penjualan</h2>
+          <ol>
+            <li>Pilih <strong>obat</strong> yang dibeli pelanggan.</li>
+            <li>Isi <strong>jumlah</strong> unit — total harga dihitung otomatis dari harga jual obat.</li>
+            <li>Isi <strong>nama pembeli</strong> dan <strong>tanggal</strong>, pilih <strong>cara bayar</strong> (Tunai, QRIS, atau Transfer).</li>
+            <li>Klik <strong>+ Catat Penjualan</strong>. Stok obat berkurang otomatis sejumlah yang terjual.</li>
+          </ol>
+          <p>Bila stok tidak mencukupi, penjualan ditolak dengan pesan yang jelas. Bila obat sudah kedaluwarsa, penjualan juga ditolak. Obat keras hanya boleh dijual bila ada resep dokter — catat dulu resepnya di tab Resep.</p>
+
+          <h2>3. Tab Resep</h2>
+          <p>Isi nama pasien, dokter peresep, pilih obat, isi jumlah dan tanggal resep, lalu tulis aturan pakai (misalnya "3 x 1 tablet sesudah makan") dan klik <strong>+ Tambah Resep</strong>. Resep baru berstatus <strong>Menunggu</strong>. Setelah obat diserahkan ke pasien, klik <strong>Tandai Dilayani</strong> — stok obat berkurang otomatis sejumlah yang ada di resep. Resep bisa dibatalkan bila tidak jadi ditebus.</p>
+
+          <h2>4. Tab Pembelian</h2>
+          <p>Isi nama distributor, pilih obat, isi jumlah dan harga beli per unit, isi tanggal pesan, dan pilih status (<strong>Dipesan</strong>, <strong>Diterima</strong>, atau <strong>Dibatalkan</strong>), lalu klik <strong>+ Tambah Pembelian</strong>. Saat status pembelian diubah menjadi <strong>Diterima</strong>, stok obat bertambah otomatis sejumlah yang dibeli. Total nilai pembelian (jumlah × harga beli) tampil di daftar.</p>
+
+          <h2>5. Tab Kedaluwarsa</h2>
+          <p>Tab ini menampilkan semua obat yang diurutkan dari tanggal kedaluwarsa terdekat, lengkap dengan sisa hari dan labelnya:</p>
+          <ul>
+            <li><strong>Kedaluwarsa</strong> (merah) — tanggal sudah lewat; obat <strong>tidak boleh dijual</strong>, segera pisahkan dan musnahkan sesuai aturan.</li>
+            <li><strong>Segera</strong> (kuning) — kedaluwarsa kurang dari 90 hari; utamakan penjualan obat ini (prinsip FEFO: yang kedaluwarsa lebih dulu dijual lebih dulu) atau kembalikan ke distributor bila memungkinkan.</li>
+            <li><strong>Aman</strong> (hijau) — kedaluwarsa masih lebih dari 90 hari.</li>
+          </ul>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Ringkasan yang diperbarui otomatis:</p>
+          <ul>
+            <li><strong>Total Penjualan</strong> dan jumlah transaksi penjualan.</li>
+            <li><strong>Total Pembelian</strong> — nilai pembelian ke distributor yang sudah diterima.</li>
+            <li><strong>Resep Dilayani</strong> — jumlah resep yang sudah dilayani dari total resep.</li>
+            <li><strong>Obat Terlaris</strong> — obat dengan unit terjual terbanyak.</li>
+            <li><strong>Stok Menipis</strong> — obat yang stoknya sudah di bawah batas minimum dan perlu dipesan.</li>
+            <li><strong>Penjualan per Kategori</strong> — total penjualan dikelompokkan menurut kategori obat.</li>
+          </ul>
+
+          <h2>7. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi demo ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>hanya tersimpan selama aplikasi dibuka</strong>. Menutup atau memuat ulang halaman mengembalikan aplikasi ke keadaan awal.</li>
+            <li><strong>Obat keras hanya boleh diserahkan dengan resep dokter.</strong> Aplikasi ini membantu mencatat, tetapi keputusan penyerahan obat tetap menjadi tanggung jawab apoteker/petugas yang berwenang.</li>
+            <li><strong>Obat kedaluwarsa tidak boleh dijual.</strong> Pisahkan dari stok yang masih baik dan musnahkan sesuai aturan yang berlaku.</li>
+            <li>Data pelanggan adalah data pribadi — lindungi sesuai UU PDP dan jangan menyimpan data medis pasien sungguhan di aplikasi demo ini.</li>
+          </ul>
+
+          <h2>8. Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul><li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo — <strong>gratis selama masa garansi</strong>.</li></ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali — Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>9. Daftar Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table class="price-table">
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td><strong>Pemula</strong></td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td><strong>Profesional</strong></td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td><strong>Bisnis</strong></td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula: aplikasi standar siap pakai. Profesional: ditambah penyesuaian merek dan APK Android. Bisnis: ditambah penyimpanan permanen, multi-user, dan dukungan penuh. Pemesanan dan konsultasi melalui WhatsApp 0812-4798-6994.</p>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (10 obat, 6 penjualan, 4 resep, 5 pembelian) hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p>
+        <p>Aplikasi ini adalah alat <strong>pencatatan apotek</strong>. <strong>Obat keras hanya boleh diserahkan dengan resep dokter</strong> dan <strong>obat kedaluwarsa tidak boleh dijual</strong>. Data pelanggan adalah data pribadi — lindungi sesuai UU PDP dan jangan menyimpan data medis pasien sungguhan di aplikasi demo ini.</p>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+      var DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+      var state = {
+        obat: [
+          { id: "ob1", nama: "Paracetamol 500 mg", kategori: "Obat Bebas", stok: 120, min: 20, harga: 5000, exp: "2027-06-30" },
+          { id: "ob2", nama: "Amoxicillin 500 mg", kategori: "Obat Keras (Resep)", stok: 45, min: 15, harga: 12000, exp: "2027-03-15" },
+          { id: "ob3", nama: "Vitamin C 500 mg", kategori: "Vitamin & Suplemen", stok: 200, min: 30, harga: 8000, exp: "2027-09-20" },
+          { id: "ob4", nama: "Obat Batuk Sirup 100 ml", kategori: "Obat Bebas Terbatas", stok: 18, min: 20, harga: 25000, exp: "2027-01-10" },
+          { id: "ob5", nama: "Antasida Tablet Kunyah", kategori: "Obat Bebas", stok: 60, min: 15, harga: 7000, exp: "2026-12-05" },
+          { id: "ob6", nama: "Cetirizine 10 mg", kategori: "Obat Bebas Terbatas", stok: 0, min: 10, harga: 9000, exp: "2027-05-25" },
+          { id: "ob7", nama: "Salep Antijamur 10 g", kategori: "Obat Bebas", stok: 35, min: 10, harga: 18000, exp: "2026-11-15" },
+          { id: "ob8", nama: "Oralit Sachet", kategori: "Obat Bebas", stok: 150, min: 25, harga: 3000, exp: "2027-11-30" },
+          { id: "ob9", nama: "Ibuprofen 400 mg", kategori: "Obat Keras (Resep)", stok: 80, min: 20, harga: 10000, exp: "2027-08-12" },
+          { id: "ob10", nama: "Masker Medis (isi 50)", kategori: "Alat Kesehatan", stok: 90, min: 20, harga: 35000, exp: "2028-02-28" }
+        ],
+        penjualan: [
+          { id: "jl1", obatId: "ob1", jumlah: 10, pembeli: "Siti Rahmawati", tanggal: "2026-11-20", bayar: "Tunai", total: 50000 },
+          { id: "jl2", obatId: "ob3", jumlah: 5, pembeli: "Agus Salim", tanggal: "2026-11-20", bayar: "QRIS", total: 40000 },
+          { id: "jl3", obatId: "ob4", jumlah: 2, pembeli: "Maria Ulfa", tanggal: "2026-11-19", bayar: "Tunai", total: 50000 },
+          { id: "jl4", obatId: "ob8", jumlah: 10, pembeli: "Budi Hartono", tanggal: "2026-11-19", bayar: "Transfer", total: 30000 },
+          { id: "jl5", obatId: "ob1", jumlah: 20, pembeli: "Rina Kartika", tanggal: "2026-11-18", bayar: "Tunai", total: 100000 },
+          { id: "jl6", obatId: "ob10", jumlah: 1, pembeli: "Joko Prasetyo", tanggal: "2026-11-18", bayar: "QRIS", total: 35000 }
+        ],
+        resep: [
+          { id: "rs1", pasien: "Agus Salim", dokter: "dr. Ratna Wijaya", obatId: "ob2", jumlah: 10, tanggal: "2026-11-20", aturan: "3 x 1 kapsul sesudah makan", status: "Menunggu" },
+          { id: "rs2", pasien: "Siti Rahmawati", dokter: "dr. Budi Santoso", obatId: "ob9", jumlah: 6, tanggal: "2026-11-19", aturan: "2 x 1 tablet sesudah makan", status: "Dilayani" },
+          { id: "rs3", pasien: "Maria Ulfa", dokter: "dr. Ratna Wijaya", obatId: "ob2", jumlah: 15, tanggal: "2026-11-18", aturan: "3 x 1 kapsul sesudah makan, habiskan", status: "Dilayani" },
+          { id: "rs4", pasien: "Budi Hartono", dokter: "dr. Andi Pratama", obatId: "ob9", jumlah: 10, tanggal: "2026-11-20", aturan: "3 x 1 tablet sesudah makan bila nyeri", status: "Menunggu" }
+        ],
+        pembelian: [
+          { id: "bl1", distributor: "PT Sehat Farma", obatId: "ob1", jumlah: 100, hargaBeli: 3500, tanggal: "2026-11-15", status: "Diterima" },
+          { id: "bl2", distributor: "PT Sehat Farma", obatId: "ob3", jumlah: 150, hargaBeli: 5000, tanggal: "2026-11-15", status: "Diterima" },
+          { id: "bl3", distributor: "CV Medika Jaya", obatId: "ob4", jumlah: 50, hargaBeli: 18000, tanggal: "2026-11-18", status: "Dipesan" },
+          { id: "bl4", distributor: "PT Sehat Farma", obatId: "ob8", jumlah: 200, hargaBeli: 2000, tanggal: "2026-11-10", status: "Diterima" },
+          { id: "bl5", distributor: "CV Medika Jaya", obatId: "ob6", jumlah: 60, hargaBeli: 6000, tanggal: "2026-11-19", status: "Dibatalkan" }
+        ],
+        seq: 100
+      };
+
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function nextId(p) { state.seq += 1; return p + state.seq; }
+      function obatById(id) { for (var i = 0; i < state.obat.length; i++) if (state.obat[i].id === id) return state.obat[i]; return null; }
+      function obatName(id) { var o = obatById(id); return o ? o.nama : "Obat tidak tersedia"; }
+      function formatDate(iso) {
+        if (!iso) return "-";
+        var p = iso.split("-");
+        if (p.length !== 3) return iso;
+        return parseInt(p[2], 10) + " " + MONTH_NAMES[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function formatRupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function daysToExp(iso) {
+        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var exp = new Date(iso + "T00:00:00");
+        return Math.round((exp.getTime() - today.getTime()) / 86400000);
+      }
+      function stokStatus(o) {
+        if (o.stok <= 0) return { label: "Habis", cls: "habis" };
+        if (o.stok <= o.min) return { label: "Menipis", cls: "menipis" };
+        return { label: "Aman", cls: "aman" };
+      }
+      function expStatus(o) {
+        var d = daysToExp(o.exp);
+        if (d < 0) return { label: "Kedaluwarsa", cls: "kedaluwarsa", days: d };
+        if (d < 90) return { label: "Segera", cls: "segera", days: d };
+        return { label: "Aman", cls: "aman", days: d };
+      }
+      function badgeFor(v) { return '<span class="badge badge-' + String(v).toLowerCase().replace(/\s+/g, "-") + '">' + esc(v) + "</span>"; }
+
+      /* ================= RENDER: STOK ================= */
+      function renderStok() {
+        $("statJenis").textContent = state.obat.length;
+        $("statUnit").textContent = state.obat.reduce(function (s, o) { return s + o.stok; }, 0);
+        $("statMenipis").textContent = state.obat.filter(function (o) { return o.stok <= o.min; }).length;
+        $("statExp").textContent = state.obat.filter(function (o) { var d = daysToExp(o.exp); return d >= 0 && d < 90; }).length;
+        var q = $("searchObat").value.trim().toLowerCase();
+        var list = state.obat.filter(function (o) {
+          if (!q) return true;
+          return o.nama.toLowerCase().indexOf(q) >= 0 || o.kategori.toLowerCase().indexOf(q) >= 0;
+        });
+        $("obatEmpty").classList.toggle("hidden", list.length > 0);
+        $("obatList").innerHTML = list.map(function (o) {
+          var st = stokStatus(o);
+          var ex = expStatus(o);
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(o.nama.charAt(0)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(o.nama) + "</div>" +
+            '<div class="meta">' + esc(o.kategori) + " • " + formatRupiah(o.harga) + " / unit • Stok " + o.stok + " (min. " + o.min + ")</div>" +
+            '<div class="meta">Kedaluwarsa ' + esc(formatDate(o.exp)) + (ex.days < 0 ? " • sudah lewat " + Math.abs(ex.days) + " hari" : " • sisa " + ex.days + " hari") + "</div></div>" +
+            badgeFor(st.label) + " " + badgeFor(ex.label) + "</div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-obat" data-id="' + o.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-obat" data-id="' + o.id + '">Hapus</button></div></div>';
+        }).join("");
+      }
+
+      /* ================= RENDER: PENJUALAN ================= */
+      function renderObatSelects() {
+        var opts = state.obat.map(function (o) { return '<option value="' + o.id + '">' + esc(o.nama) + " — " + formatRupiah(o.harga) + " (stok " + o.stok + ")</option>"; }).join("");
+        $("jObat").innerHTML = opts;
+        $("rsObat").innerHTML = opts;
+        $("bObat").innerHTML = opts;
+        updateJualTotal();
+      }
+      function updateJualTotal() {
+        var o = obatById($("jObat").value);
+        var jml = parseInt($("jJumlah").value, 10) || 0;
+        $("jTotal").value = o ? formatRupiah(o.harga * jml) : "Rp0";
+      }
+      function renderPenjualan() {
+        var total = state.penjualan.reduce(function (s, t) { return s + t.total; }, 0);
+        $("jualTotal").textContent = formatRupiah(total);
+        $("jualJml").textContent = state.penjualan.length;
+        $("jualUnit").textContent = state.penjualan.reduce(function (s, t) { return s + t.jumlah; }, 0);
+        var buyers = {};
+        state.penjualan.forEach(function (t) { buyers[t.pembeli] = true; });
+        $("jualPembeli").textContent = Object.keys(buyers).length;
+        $("jualList").innerHTML = state.penjualan.length ? state.penjualan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); }).map(function (t) {
+          return '<div class="card item-card"><div class="item-top"><div class="row-main"><div class="name">' + esc(obatName(t.obatId)) + " × " + t.jumlah + " — " + formatRupiah(t.total) + "</div>" +
+            '<div class="meta">Pembeli: ' + esc(t.pembeli) + " • " + esc(formatDate(t.tanggal)) + " • " + esc(t.bayar) + "</div></div></div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-jual" data-id="' + t.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada penjualan.</p>';
+      }
+
+      /* ================= RENDER: RESEP ================= */
+      function renderResep() {
+        $("resepList").innerHTML = state.resep.length ? state.resep.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); }).map(function (r) {
+          var o = obatById(r.obatId);
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(r.pasien.charAt(0)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(r.pasien) + " — " + esc(obatName(r.obatId)) + " × " + r.jumlah + "</div>" +
+            '<div class="meta">Dokter: ' + esc(r.dokter) + " • " + esc(formatDate(r.tanggal)) + "</div>" +
+            '<div class="meta">Aturan pakai: ' + esc(r.aturan) + (o && o.kategori === "Obat Keras (Resep)" ? " • Obat keras — wajib resep" : "") + "</div></div>" + badgeFor(r.status) + "</div>" +
+            '<div class="item-actions">' +
+            (r.status === "Menunggu" ? '<button class="btn btn-primary btn-small" data-action="serve-resep" data-id="' + r.id + '">Tandai Dilayani</button>' : "") +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-resep" data-id="' + r.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada resep. Tambahkan lewat formulir di atas.</p>';
+      }
+
+      /* ================= RENDER: PEMBELIAN ================= */
+      function renderPembelian() {
+        $("beliList").innerHTML = state.pembelian.length ? state.pembelian.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); }).map(function (b) {
+          return '<div class="card item-card"><div class="item-top"><div class="row-main"><div class="name">' + esc(b.distributor) + " — " + esc(obatName(b.obatId)) + " × " + b.jumlah + "</div>" +
+            '<div class="meta">' + esc(formatDate(b.tanggal)) + " • " + formatRupiah(b.hargaBeli) + " / unit • Total " + formatRupiah(b.hargaBeli * b.jumlah) + "</div></div>" + badgeFor(b.status) + "</div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-action="status-beli" data-id="' + b.id + '" aria-label="Ubah status pembelian">' +
+            ["Dipesan", "Diterima", "Dibatalkan"].map(function (s) { return '<option value="' + s + '"' + (s === b.status ? " selected" : "") + ">" + s + "</option>"; }).join("") + "</select>" +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-beli" data-id="' + b.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada pembelian. Tambahkan lewat formulir di atas.</p>';
+      }
+
+      /* ================= RENDER: KEDALUWARSA ================= */
+      function renderExp() {
+        var sorted = state.obat.slice().sort(function (a, b) { return a.exp.localeCompare(b.exp); });
+        var habis = 0, segera = 0, sedang = 0, aman = 0;
+        sorted.forEach(function (o) {
+          var d = daysToExp(o.exp);
+          if (d < 0) habis++;
+          else if (d < 90) segera++;
+          else if (d <= 180) sedang++;
+          else aman++;
+        });
+        $("expHabis").textContent = habis;
+        $("expSegera").textContent = segera;
+        $("expSedang").textContent = sedang;
+        $("expAman").textContent = aman;
+        $("expList").innerHTML = sorted.map(function (o) {
+          var ex = expStatus(o);
+          var ket = ex.days < 0 ? "Sudah kedaluwarsa " + Math.abs(ex.days) + " hari lalu — jangan dijual" :
+            ex.days < 90 ? "Kedaluwarsa dalam " + ex.days + " hari — segera perhatikan" :
+            "Kedaluwarsa dalam " + ex.days + " hari";
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(o.nama.charAt(0)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(o.nama) + "</div>" +
+            '<div class="meta">' + esc(o.kategori) + " • Stok " + o.stok + " unit • " + esc(formatDate(o.exp)) + "</div>" +
+            '<div class="meta">' + esc(ket) + "</div></div>" + badgeFor(ex.label) + "</div></div>";
+        }).join("");
+      }
+
+      /* ================= RENDER: LAPORAN ================= */
+      function renderReport() {
+        var total = state.penjualan.reduce(function (s, t) { return s + t.total; }, 0);
+        $("lapTotal").textContent = formatRupiah(total);
+        $("lapJml").textContent = state.penjualan.length;
+        var totalBeli = state.pembelian.filter(function (b) { return b.status === "Diterima"; }).reduce(function (s, b) { return s + b.hargaBeli * b.jumlah; }, 0);
+        $("lapBeli").textContent = formatRupiah(totalBeli);
+        $("lapResep").textContent = state.resep.filter(function (r) { return r.status === "Dilayani"; }).length + " dari " + state.resep.length;
+        var sold = {};
+        state.penjualan.forEach(function (t) { sold[t.obatId] = (sold[t.obatId] || 0) + t.jumlah; });
+        var ranked = Object.keys(sold).map(function (id) { return { id: id, n: sold[id] }; }).sort(function (a, b) { return b.n - a.n; });
+        var maxSold = ranked.length ? ranked[0].n : 0;
+        $("lapTerlaris").innerHTML = ranked.length ? ranked.map(function (r) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(obatName(r.id)) + "</div>" +
+            '<div class="meta">' + r.n + ' unit terjual</div><div class="bar"><span style="width:' + (maxSold ? Math.round(r.n / maxSold * 100) : 0) + '%"></span></div></div><span class="qnum">' + r.n + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada penjualan.</p>';
+        var menipis = state.obat.filter(function (o) { return o.stok <= o.min; });
+        $("lapMenipis").innerHTML = menipis.length ? menipis.map(function (o) {
+          return '<div class="row-item"><div class="avatar">' + esc(o.nama.charAt(0)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(o.nama) + "</div>" +
+            '<div class="meta">Stok ' + o.stok + " unit, batas minimum " + o.min + " unit</div></div>" + badgeFor(stokStatus(o).label) + "</div>";
+        }).join("") : '<p class="empty">Tidak ada obat yang stoknya menipis. Semua stok masih di atas batas minimum.</p>';
+        var byKat = {};
+        state.penjualan.forEach(function (t) {
+          var o = obatById(t.obatId);
+          var k = o ? o.kategori : "Lainnya";
+          byKat[k] = (byKat[k] || 0) + t.total;
+        });
+        var keys = Object.keys(byKat);
+        $("lapKategori").innerHTML = keys.length ? keys.map(function (k) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(k) + "</div>" +
+            '<div class="meta">Total penjualan</div></div><span class="qnum">' + formatRupiah(byKat[k]) + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada penjualan.</p>';
+      }
+
+      function renderAll() {
+        renderStok();
+        renderObatSelects();
+        renderPenjualan();
+        renderResep();
+        renderPembelian();
+        renderExp();
+        renderReport();
+      }
+
+      /* ================= TABS ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ================= FORM OBAT ================= */
+      function resetObatForm() {
+        $("obatForm").reset();
+        $("oId").value = "";
+        $("obatFormTitle").textContent = "Tambah Obat";
+        $("obatSubmit").textContent = "+ Tambah Obat";
+        $("obatCancel").classList.add("hidden");
+      }
+      $("obatCancel").addEventListener("click", function () { resetObatForm(); $("obatNote").classList.remove("show"); });
+      $("obatForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("oId").value;
+        var data = { nama: $("oNama").value.trim(), kategori: $("oKategori").value, stok: parseInt($("oStok").value, 10) || 0, min: parseInt($("oMin").value, 10) || 0, harga: parseInt($("oHarga").value, 10) || 0, exp: $("oExp").value };
+        var note = $("obatNote");
+        if (id) {
+          var o = obatById(id);
+          if (o) { o.nama = data.nama; o.kategori = data.kategori; o.stok = data.stok; o.min = data.min; o.harga = data.harga; o.exp = data.exp; }
+          note.textContent = "Data obat " + data.nama + " berhasil diperbarui.";
+        } else {
+          data.id = nextId("ob");
+          state.obat.push(data);
+          note.textContent = "Obat " + data.nama + " berhasil ditambahkan ke stok.";
+        }
+        note.classList.add("show");
+        resetObatForm();
+        renderAll();
+      });
+
+      /* ================= FORM PENJUALAN ================= */
+      $("jObat").addEventListener("change", updateJualTotal);
+      $("jJumlah").addEventListener("input", updateJualTotal);
+      $("jualForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var o = obatById($("jObat").value);
+        var note = $("jualNote");
+        var jml = parseInt($("jJumlah").value, 10) || 0;
+        if (!o) return;
+        if (daysToExp(o.exp) < 0) {
+          note.textContent = "Obat " + o.nama + " sudah kedaluwarsa dan tidak boleh dijual.";
+          note.classList.add("show"); note.classList.add("warn");
+          return;
+        }
+        if (jml > o.stok) {
+          note.textContent = "Stok " + o.nama + " tidak mencukupi (tersisa " + o.stok + " unit).";
+          note.classList.add("show"); note.classList.add("warn");
+          return;
+        }
+        o.stok -= jml;
+        state.penjualan.push({ id: nextId("jl"), obatId: o.id, jumlah: jml, pembeli: $("jPembeli").value.trim(), tanggal: $("jTanggal").value, bayar: $("jBayar").value, total: o.harga * jml });
+        note.textContent = "Penjualan " + o.nama + " × " + jml + " seharga " + formatRupiah(o.harga * jml) + " berhasil dicatat. Stok tersisa " + o.stok + " unit.";
+        note.classList.add("show"); note.classList.remove("warn");
+        e.target.reset();
+        $("jJumlah").value = 1;
+        renderAll();
+      });
+      $("jualForm").addEventListener("reset", function () { $("jualNote").classList.remove("show"); $("jualNote").classList.remove("warn"); });
+
+      /* ================= FORM RESEP ================= */
+      $("resepForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.resep.push({ id: nextId("rs"), pasien: $("rsPasien").value.trim(), dokter: $("rsDokter").value.trim(), obatId: $("rsObat").value, jumlah: parseInt($("rsJumlah").value, 10) || 1, tanggal: $("rsTanggal").value, aturan: $("rsAturan").value.trim(), status: "Menunggu" });
+        var note = $("resepNote");
+        note.textContent = "Resep untuk " + $("rsPasien").value.trim() + " berhasil ditambahkan.";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("resepForm").addEventListener("reset", function () { $("resepNote").classList.remove("show"); });
+
+      /* ================= FORM PEMBELIAN ================= */
+      $("beliForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var o = obatById($("bObat").value);
+        var jml = parseInt($("bJumlah").value, 10) || 0;
+        var status = $("bStatus").value;
+        if (o && status === "Diterima") o.stok += jml;
+        state.pembelian.push({ id: nextId("bl"), distributor: $("bDistributor").value.trim(), obatId: $("bObat").value, jumlah: jml, hargaBeli: parseInt($("bHargaBeli").value, 10) || 0, tanggal: $("bTanggal").value, status: status });
+        var note = $("beliNote");
+        note.textContent = "Pembelian " + (o ? o.nama : "") + " × " + jml + " dari " + $("bDistributor").value.trim() + " berhasil dicatat" + (status === "Diterima" ? " — stok bertambah menjadi " + (o ? o.stok : 0) + " unit." : ".");
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("beliForm").addEventListener("reset", function () { $("beliNote").classList.remove("show"); });
+
+      /* ================= AKSI DELEGASI ================= */
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest('select[data-action="status-beli"]');
+        if (!sel) return;
+        var b = state.pembelian.find(function (x) { return x.id === sel.getAttribute("data-id"); });
+        if (!b) return;
+        var old = b.status;
+        b.status = sel.value;
+        var o = obatById(b.obatId);
+        if (o && old !== "Diterima" && b.status === "Diterima") o.stok += b.jumlah;
+        if (o && old === "Diterima" && b.status !== "Diterima") o.stok = Math.max(0, o.stok - b.jumlah);
+        renderAll();
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        var action = btn.getAttribute("data-action");
+        if (action === "delete-obat" || action === "delete-jual" || action === "delete-resep" || action === "delete-beli") {
+          if (btn.getAttribute("data-confirm") !== "1") {
+            btn.setAttribute("data-confirm", "1");
+            btn.textContent = "Yakin hapus?";
+            setTimeout(function () { if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; } }, 3000);
+            return;
+          }
+          var id = btn.getAttribute("data-id");
+          if (action === "delete-obat") state.obat = state.obat.filter(function (x) { return x.id !== id; });
+          if (action === "delete-jual") {
+            var t = state.penjualan.find(function (x) { return x.id === id; });
+            if (t) { var o = obatById(t.obatId); if (o) o.stok += t.jumlah; }
+            state.penjualan = state.penjualan.filter(function (x) { return x.id !== id; });
+          }
+          if (action === "delete-resep") state.resep = state.resep.filter(function (x) { return x.id !== id; });
+          if (action === "delete-beli") state.pembelian = state.pembelian.filter(function (x) { return x.id !== id; });
+          renderAll();
+          return;
+        }
+        if (action === "serve-resep") {
+          var r = state.resep.find(function (x) { return x.id === btn.getAttribute("data-id"); });
+          if (!r) return;
+          var ob = obatById(r.obatId);
+          if (ob && r.jumlah > ob.stok) {
+            alert("Stok " + ob.nama + " tidak mencukupi (tersisa " + ob.stok + " unit). Pesan dulu ke distributor.");
+            return;
+          }
+          if (ob) ob.stok -= r.jumlah;
+          r.status = "Dilayani";
+          renderAll();
+          return;
+        }
+        if (action === "edit-obat") {
+          var ob2 = obatById(btn.getAttribute("data-id"));
+          if (!ob2) return;
+          $("oId").value = ob2.id;
+          $("oNama").value = ob2.nama;
+          $("oKategori").value = ob2.kategori;
+          $("oStok").value = ob2.stok;
+          $("oMin").value = ob2.min;
+          $("oHarga").value = ob2.harga;
+          $("oExp").value = ob2.exp;
+          $("obatFormTitle").textContent = "Ubah Obat";
+          $("obatSubmit").textContent = "Simpan Perubahan";
+          $("obatCancel").classList.remove("hidden");
+          $("obatForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+      $("searchObat").addEventListener("input", renderStok);
+
+      /* ================= INIT ================= */
+      var now = new Date();
+      $("todayText").textContent = DAY_NAMES[now.getDay()] + ", " + now.getDate() + " " + MONTH_NAMES[now.getMonth()] + " " + now.getFullYear() + " — apotek buka, stok terpantau";
+      renderAll();
+    </script>
+  </body>
+</html>

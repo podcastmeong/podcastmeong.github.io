@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Rekam Medis Elektronik</title>
+<style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f0f7f2; --bg-soft: #e4f1e8; --card: #ffffff; --card-2: #f6faf7;
+        --ink: #16352a; --ink-2: #46604f; --ink-3: #7d9484; --line: #d8e8dc;
+        --accent: #16a34a; --accent-dark: #15803d; --accent-soft: #dcfce7;
+        --amber: #b97e10; --amber-soft: #fdf3dd; --blue: #1d6fb8; --blue-soft: #e4f0fa;
+        --green: #2e7d32; --green-soft: #e6f3e4; --red: #b3372f; --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(22, 53, 42, .06), 0 10px 30px rgba(22, 53, 42, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1a14; --bg-soft: #16241d; --card: #182620; --card-2: #1d2e27;
+          --ink: #e6f2ec; --ink-2: #a9c4b8; --ink-3: #7d978a; --line: #2a3f36;
+          --accent: #4ade80; --accent-dark: #86efac; --accent-soft: #173a2a;
+          --amber: #e0aa3e; --amber-soft: #3a2f14; --blue: #5ea8e0; --blue-soft: #17334a;
+          --green: #6fbf73; --green-soft: #1e3a20; --red: #e07a72; --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .notice { background: var(--amber-soft); border: 1px solid #ead9a8; border-radius: 14px; padding: 12px 16px; margin: 0 0 18px; font-size: .9rem; color: var(--ink); }
+      .notice strong { color: var(--ink); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1a14; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 0; word-break: break-word; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-green { background: var(--green-soft); color: var(--green); }
+      .badge-amber { background: var(--amber-soft); color: var(--amber); }
+      .badge-blue { background: var(--blue-soft); color: var(--blue); }
+      .badge-red { background: var(--red-soft); color: var(--red); }
+      .badge-teal { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: .92rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #0c1a14; } .btn-primary:hover { color: #0c1a14; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .form-note.err { color: var(--red); background: var(--red-soft); }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions .spacer { flex: 1; }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      table.data { width: 100%; border-collapse: collapse; font-size: .9rem; }
+      table.data th, table.data td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      table.data th { color: var(--ink); font-weight: 700; }
+      table.data td { color: var(--ink-2); }
+      table.data td:first-child { color: var(--ink); font-weight: 600; }
+      .table-wrap { overflow-x: auto; }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="page-head"><h1>Rekam Medis Elektronik</h1><p>Riwayat penyakit, diagnosis, pemeriksaan, resep, dan tindakan pasien dalam satu tempat — rapi dan mudah dicari.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span></header>
+<div class="notice"><strong>Demo — data contoh:</strong> semua nama pasien, diagnosis, dan obat di aplikasi ini adalah <strong>data contoh</strong>, bukan data pasien sungguhan. <strong>Data medis sungguhan tidak boleh disimpan di demo ini</strong> (UU PDP). Penerapan nyata butuh perlindungan data, kontrol akses per peran, dan jejak audit.</div>
+<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="riwayat" role="tab">Riwayat Penyakit</button><button class="tab-btn" data-tab="diagnosis" role="tab">Diagnosis</button><button class="tab-btn" data-tab="pemeriksaan" role="tab">Pemeriksaan</button><button class="tab-btn" data-tab="resep" role="tab">Resep</button><button class="tab-btn" data-tab="tindakan" role="tab">Tindakan</button><button class="tab-btn" data-tab="pencarian" role="tab">Pencarian</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
+
+      <section class="panel active" id="panel-ringkasan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Pasien</p><p class="value" id="stPasien">0</p><p class="sub">Pasien dengan rekam medis</p></div>
+          <div class="card stat"><p class="label">Diagnosis Tercatat</p><p class="value" id="stDiag">0</p><p class="sub">Termasuk yang sudah selesai</p></div>
+          <div class="card stat"><p class="label">Resep Aktif</p><p class="value" id="stResep">0</p><p class="sub">Resep berstatus Aktif</p></div>
+          <div class="card stat"><p class="label">Tindakan Tercatat</p><p class="value" id="stTindakan">0</p><p class="sub">Semua tindakan medis</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Diagnosis Terbaru</h2><p class="hint">Lima diagnosis terakhir yang dicatat.</p><div id="recentDiag"></div></div>
+          <div class="card"><h2>Resep Aktif</h2><p class="hint">Resep yang masih berlaku dan belum ditandai selesai.</p><div id="activeResep"></div></div>
+        </div>
+      </section>
+<section class="panel" id="panel-riwayat"><div class="card form-card"><h2>Tambah Riwayat Penyakit</h2><p class="hint">Catat penyakit yang pernah atau sedang diderita pasien. Data contoh saja.</p><form id="riwayatForm"><div class="form-grid"><div class="field"><label for="rPasien">Nama pasien</label><input type="text" id="rPasien" placeholder="cth. Siti Rahmawati" required /></div><div class="field"><label for="rPenyakit">Nama penyakit</label><input type="text" id="rPenyakit" placeholder="cth. Hipertensi" required /></div><div class="field"><label for="rSejak">Sejak tahun</label><input type="number" id="rSejak" min="1900" max="2100" placeholder="cth. 2021" required /></div><div class="field"><label for="rStatus">Status</label><select id="rStatus"><option>Aktif</option><option>Terkendali</option><option>Sembuh</option></select></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Riwayat</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="riwayatFormNote"></p></form></div><div id="riwayatList"></div></section>
+<section class="panel" id="panel-diagnosis"><div class="card form-card"><h2>Tambah Diagnosis</h2><p class="hint">Diagnosis yang ditegakkan dokter, lengkap dengan kode diagnosis.</p><form id="diagForm"><div class="form-grid"><div class="field"><label for="dPasien">Nama pasien</label><input type="text" id="dPasien" placeholder="cth. Agus Salim" required /></div><div class="field"><label for="dKode">Kode diagnosis</label><input type="text" id="dKode" placeholder="cth. J06.9" required /></div><div class="field"><label for="dDiag">Diagnosis</label><input type="text" id="dDiag" placeholder="cth. Infeksi saluran pernapasan atas akut" required /></div><div class="field"><label for="dDokter">Dokter</label><input type="text" id="dDokter" placeholder="cth. dr. Ratna Wijaya" required /></div><div class="field"><label for="dTanggal">Tanggal diagnosis</label><input type="date" id="dTanggal" required /></div><div class="field"><label for="dStatus">Status</label><select id="dStatus"><option>Aktif</option><option>Selesai</option></select></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Diagnosis</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="diagFormNote"></p></form></div><div id="diagList"></div></section>
+<section class="panel" id="panel-pemeriksaan"><div class="card form-card"><h2>Catat Pemeriksaan</h2><p class="hint">Catatan pemeriksaan fisik dan tanda vital pasien.</p><form id="periksaForm"><div class="form-grid"><div class="field"><label for="pPasien">Nama pasien</label><input type="text" id="pPasien" placeholder="cth. Siti Rahmawati" required /></div><div class="field"><label for="pTanggal">Tanggal pemeriksaan</label><input type="date" id="pTanggal" required /></div><div class="field"><label for="pTD">Tekanan darah</label><input type="text" id="pTD" placeholder="cth. 120/80 mmHg" required /></div><div class="field"><label for="pSuhu">Suhu tubuh</label><input type="text" id="pSuhu" placeholder="cth. 36,8 °C" required /></div><div class="field"><label for="pNadi">Nadi</label><input type="text" id="pNadi" placeholder="cth. 78 x/menit" required /></div><div class="field full"><label for="pCatatan">Catatan pemeriksaan</label><input type="text" id="pCatatan" placeholder="cth. Tenggorokan tampak kemerahan" required /></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Simpan Pemeriksaan</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="periksaFormNote"></p></form></div><div id="periksaList"></div></section>
+<section class="panel" id="panel-resep"><div class="card form-card"><h2>Tambah Resep Obat</h2><p class="hint">Resep obat dari dokter. Resep di sini hanya catatan demo, bukan resep elektronik resmi.</p><form id="resepForm"><div class="form-grid"><div class="field"><label for="rsPasien">Nama pasien</label><input type="text" id="rsPasien" placeholder="cth. Agus Salim" required /></div><div class="field"><label for="rsObat">Nama obat</label><input type="text" id="rsObat" placeholder="cth. Amoxicillin 500 mg" required /></div><div class="field"><label for="rsDosis">Dosis / aturan pakai</label><input type="text" id="rsDosis" placeholder="cth. 3 x 1 kapsul sesudah makan" required /></div><div class="field"><label for="rsJumlah">Jumlah</label><input type="text" id="rsJumlah" placeholder="cth. 10 kapsul" required /></div><div class="field"><label for="rsDokter">Dokter</label><input type="text" id="rsDokter" placeholder="cth. dr. Ratna Wijaya" required /></div><div class="field"><label for="rsTanggal">Tanggal resep</label><input type="date" id="rsTanggal" required /></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Resep</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="resepFormNote"></p></form></div><div id="resepList"></div></section>
+<section class="panel" id="panel-tindakan"><div class="card form-card"><h2>Tambah Tindakan Medis</h2><p class="hint">Riwayat tindakan yang dilakukan pada pasien.</p><form id="tindakanForm"><div class="form-grid"><div class="field"><label for="tPasien">Nama pasien</label><input type="text" id="tPasien" placeholder="cth. Maria Ulfa" required /></div><div class="field"><label for="tNama">Nama tindakan</label><input type="text" id="tNama" placeholder="cth. Jahit luka" required /></div><div class="field"><label for="tTanggal">Tanggal tindakan</label><input type="date" id="tTanggal" required /></div><div class="field"><label for="tPelaksana">Pelaksana</label><input type="text" id="tPelaksana" placeholder="cth. dr. Budi Santoso" required /></div><div class="field"><label for="tBiaya">Biaya (Rp)</label><input type="number" id="tBiaya" min="0" step="1000" placeholder="cth. 150000" /></div><div class="field full"><label for="tCatatan">Catatan</label><input type="text" id="tCatatan" placeholder="cth. Luka di jari telunjuk kiri, 3 jahitan" /></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Tindakan</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="tindakanFormNote"></p></form></div><div id="tindakanList"></div></section>
+
+      <section class="panel" id="panel-pencarian">
+        <div class="card form-card"><h2>Pencarian Riwayat Pasien</h2>
+        <p class="hint">Cari nama pasien, penyakit, diagnosis, atau obat — hasil ditampilkan per kelompok supaya riwayat lengkap satu pasien terlihat sekaligus.</p>
+        <div class="toolbar"><div class="grow"><input type="search" id="searchAll" placeholder="Cari nama pasien, penyakit, diagnosis, atau obat…" aria-label="Cari riwayat" /></div></div>
+        <p class="form-note" id="searchNote">Ketik kata kunci di atas untuk mencari di seluruh rekam medis.</p></div>
+        <div id="searchResults"></div>
+      </section>
+<section class="panel" id="panel-panduan"><div class="card guide"><h2>Buku Panduan — Rekam Medis Elektronik</h2><p>Aplikasi <strong>Rekam Medis Elektronik (EMR)</strong> membantu klinik mencatat riwayat penyakit, diagnosis, pemeriksaan, resep, dan tindakan pasien dalam satu tempat — cepat dicari dan rapi. Semua yang tampil adalah <strong>data contoh untuk demo</strong>. Aplikasi ini <strong>bukan pengganti sistem rekam medis resmi</strong> fasilitas kesehatan.</p>
+          <h2>1. Tab Ringkasan</h2>
+          <p>Gambaran keadaan rekam medis: jumlah pasien, diagnosis tercatat, resep aktif, dan tindakan tercatat. Di bawahnya ada daftar diagnosis terbaru dan resep aktif.</p>
+          <h2>2. Tab Riwayat Penyakit</h2>
+          <p>Catatan penyakit yang pernah atau sedang diderita pasien. Untuk menambah: isi nama pasien, nama penyakit, tahun mulai, dan status (Aktif/Sembuh/Terkendali), lalu klik <strong>+ Tambah Riwayat</strong>. Data contoh saja — jangan memasukkan riwayat penyakit pasien nyata ke demo ini.</p>
+          <h2>3. Tab Diagnosis</h2>
+          <p>Diagnosis yang ditegakkan dokter. Isi nama pasien, kode diagnosis (misalnya kode ICD-10 seperti J06.9), diagnosis, nama dokter, dan tanggal, lalu klik <strong>+ Tambah Diagnosis</strong>. Ubah status menjadi Selesai bila episode penyakit sudah tuntas.</p>
+          <h2>4. Tab Pemeriksaan</h2>
+          <p>Catatan hasil pemeriksaan fisik: tekanan darah, suhu, nadi, dan catatan pemeriksaan. Isi formulir lalu klik <strong>+ Simpan Pemeriksaan</strong>.</p>
+          <h2>5. Tab Resep</h2>
+          <p>Resep obat dari dokter: nama pasien, nama obat, dosis, jumlah, dan nama dokter. Resep berstatus <strong>Aktif</strong> sampai ditandai <strong>Selesai</strong>. Resep di sini hanya catatan demo — bukan resep elektronik resmi.</p>
+          <h2>6. Tab Tindakan</h2>
+          <p>Riwayat tindakan medis yang dilakukan pada pasien: nama tindakan, tanggal, pelaksana, dan biaya (bila ada). Klik <strong>+ Tambah Tindakan</strong> untuk mencatat tindakan baru.</p>
+          <h2>7. Tab Pencarian</h2>
+          <p>Ketik nama pasien, penyakit, diagnosis, atau obat di kolom pencarian. Hasil ditampilkan per kelompok: Riwayat Penyakit, Diagnosis, Pemeriksaan, Resep, dan Tindakan — supaya riwayat lengkap satu pasien bisa dilihat sekaligus.</p>
+          <h2>8. Menghapus Data</h2>
+          <p>Setiap kartu data punya tombol <strong>Hapus</strong>. Klik sekali untuk memunculkan konfirmasi <strong>"Yakin hapus?"</strong>, klik lagi untuk benar-benar menghapus. Data yang sudah dihapus tidak bisa dikembalikan.</p>
+
+          <h2>Batas Jujur — Data Medis dan Perlindungan Data (UU PDP)</h2>
+          <ul>
+            <li>Aplikasi ini adalah <strong>demo dengan data contoh</strong>. Semua nama pasien, diagnosis, obat, dan angka yang tampil adalah <strong>data contoh yang dibuat untuk keperluan demo</strong>, bukan data pasien sungguhan.</li>
+            <li><strong>Data medis sungguhan tidak boleh disimpan di aplikasi demo ini.</strong> Jangan memasukkan data pasien nyata — nama asli, nomor rekam medis asli, diagnosis, hasil laboratorium, atau resep pasien nyata — ke dalam demo ini.</li>
+            <li>Data medis adalah <strong>data pribadi yang bersifat spesifik</strong> menurut Undang-Undang Pelindungan Data Pribadi (UU PDP). Penerapan nyata di fasilitas kesehatan membutuhkan: perlindungan data yang memadai, <strong>kontrol akses berdasarkan peran</strong> (hanya petugas berwenang yang boleh melihat data tertentu), dan <strong>jejak audit</strong> (catatan siapa mengakses dan mengubah data, dan kapan).</li>
+            <li>Data pada aplikasi demo ini <strong>hanya tersimpan selama aplikasi dibuka</strong>. Menutup atau memuat ulang halaman mengembalikan aplikasi ke keadaan awal dengan data contoh.</li>
+            <li>Untuk pemakaian resmi jangka panjang dengan penyimpanan data permanen, gunakan versi sesuai paket yang dipesan atau sistem resmi fasilitas kesehatan Anda, dengan persetujuan dan pendampingan yang sesuai aturan yang berlaku.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo — <strong>gratis selama masa garansi</strong>.</li>
+          </ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali — Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp ke 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>Daftar Harga</h2>
+          <p>Harga standar aplikasi ini (harga dapat berubah mengikuti penawaran yang berlaku saat pemesanan; harga yang disepakati saat pemesanan adalah yang berlaku):</p>
+          <table>
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan / bulan</th></tr>
+            <tr><td><strong>Pemula</strong></td><td>Rp499.000</td><td>Rp49.000</td></tr>
+            <tr><td><strong>Profesional</strong></td><td>Rp999.000</td><td>Rp99.000</td></tr>
+            <tr><td><strong>Bisnis</strong></td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+          </table>
+          <p>Untuk pemesanan, pertanyaan harga, atau penyesuaian kebutuhan, hubungi penjual melalui <strong>WhatsApp 0812-4798-6994</strong>.</p>
+</div></section><footer><p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (5 pasien contoh, 5 riwayat penyakit, 4 diagnosis, 4 pemeriksaan, 4 resep, 4 tindakan) Data pada aplikasi demo ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p><p>Aplikasi ini adalah <strong>alat pencatatan rekam medis demo</strong>. Aplikasi ini <strong>bukan sistem rekam medis resmi</strong> fasilitas kesehatan dan <strong>bukan sistem BPJS</strong> — tidak terhubung ke BPJS Kesehatan. Data medis pasien adalah data sensitif; aplikasi ini <strong>tidak menyimpan data medis secara permanen</strong> — jangan memasukkan data pasien nyata ke dalamnya.</p></footer></div>
+<script>
+      "use strict";
+      var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      function $(id) { return document.getElementById(id); }
+      function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+      function fmtRp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function formatDate(iso) { if (!iso) return "-"; var p = String(iso).split("-"); if (p.length !== 3) return iso; return parseInt(p[2], 10) + " " + MONTH_NAMES[parseInt(p[1], 10) - 1] + " " + p[0]; }
+      function todayStr() { var d = new Date(); return d.getDate() + " " + MONTH_NAMES[d.getMonth()] + " " + d.getFullYear(); }
+      function nextId(prefix) { state.seq += 1; return prefix + state.seq; }
+      function showNote(el, msg, isErr) { el.textContent = msg; el.classList.add("show"); el.classList.toggle("err", !!isErr); }
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-del]");
+        if (!btn) return;
+        if (btn.getAttribute("data-confirm") !== "1") {
+          btn.setAttribute("data-confirm", "1");
+          btn.textContent = "Yakin hapus?";
+          setTimeout(function () { if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; } }, 3000);
+          return;
+        }
+        var parts = btn.getAttribute("data-del").split(":");
+        deleteItem(parts[0], parts[1]);
+      });
+      document.addEventListener("DOMContentLoaded", function () { var t = $("todayText"); if (t) t.textContent = "Hari ini, " + todayStr(); });
+
+      var state = {
+        seq: 100,
+        pasien: ["Siti Rahmawati", "Agus Salim", "Maria Ulfa", "Slamet Riyadi", "Nadia Putri Ramadhani"],
+        riwayat: [
+          { id: "rw1", pasien: "Siti Rahmawati", penyakit: "Hipertensi", sejak: "2021", status: "Terkendali" },
+          { id: "rw2", pasien: "Siti Rahmawati", penyakit: "Diabetes melitus tipe 2", sejak: "2023", status: "Aktif" },
+          { id: "rw3", pasien: "Agus Salim", penyakit: "Asma", sejak: "2019", status: "Terkendali" },
+          { id: "rw4", pasien: "Slamet Riyadi", penyakit: "Hipertensi", sejak: "2020", status: "Aktif" },
+          { id: "rw5", pasien: "Maria Ulfa", penyakit: "Gastritis", sejak: "2024", status: "Sembuh" }
+        ],
+        diagnosis: [
+          { id: "dg1", pasien: "Siti Rahmawati", kode: "J06.9", diagnosis: "Infeksi saluran pernapasan atas akut", dokter: "dr. Ratna Wijaya", tanggal: "2026-11-18", status: "Aktif" },
+          { id: "dg2", pasien: "Agus Salim", kode: "M54.5", diagnosis: "Nyeri punggung bawah", dokter: "dr. Budi Santoso", tanggal: "2026-11-17", status: "Aktif" },
+          { id: "dg3", pasien: "Maria Ulfa", kode: "K29.7", diagnosis: "Gastritis", dokter: "dr. Ratna Wijaya", tanggal: "2026-11-15", status: "Selesai" },
+          { id: "dg4", pasien: "Slamet Riyadi", kode: "I10", diagnosis: "Hipertensi esensial", dokter: "dr. Budi Santoso", tanggal: "2026-11-12", status: "Aktif" }
+        ],
+        pemeriksaan: [
+          { id: "px1", pasien: "Siti Rahmawati", tanggal: "2026-11-18", td: "130/85 mmHg", suhu: "37,2 °C", nadi: "82 x/menit", catatan: "Tenggorokan tampak kemerahan, batuk berdahak." },
+          { id: "px2", pasien: "Agus Salim", tanggal: "2026-11-17", td: "120/80 mmHg", suhu: "36,8 °C", nadi: "76 x/menit", catatan: "Nyeri tekan pada punggung bawah, gerak terbatas." },
+          { id: "px3", pasien: "Maria Ulfa", tanggal: "2026-11-15", td: "110/70 mmHg", suhu: "36,5 °C", nadi: "72 x/menit", catatan: "Nyeri ulu hati berkurang, nafsu makan membaik." },
+          { id: "px4", pasien: "Nadia Putri Ramadhani", tanggal: "2026-11-14", td: "100/60 mmHg", suhu: "36,9 °C", nadi: "88 x/menit", catatan: "Imunisasi lanjutan, tidak ada keluhan." }
+        ],
+        resep: [
+          { id: "rs1", pasien: "Siti Rahmawati", obat: "Amoxicillin 500 mg", dosis: "3 x 1 kapsul sesudah makan", jumlah: "10 kapsul", dokter: "dr. Ratna Wijaya", tanggal: "2026-11-18", status: "Aktif" },
+          { id: "rs2", pasien: "Agus Salim", obat: "Paracetamol 500 mg", dosis: "3 x 1 tablet bila nyeri", jumlah: "10 tablet", dokter: "dr. Budi Santoso", tanggal: "2026-11-17", status: "Aktif" },
+          { id: "rs3", pasien: "Maria Ulfa", obat: "Omeprazole 20 mg", dosis: "1 x 1 kapsul sebelum makan", jumlah: "14 kapsul", dokter: "dr. Ratna Wijaya", tanggal: "2026-11-15", status: "Selesai" },
+          { id: "rs4", pasien: "Slamet Riyadi", obat: "Amlodipine 5 mg", dosis: "1 x 1 tablet pagi hari", jumlah: "30 tablet", dokter: "dr. Budi Santoso", tanggal: "2026-11-12", status: "Aktif" }
+        ],
+        tindakan: [
+          { id: "td1", pasien: "Maria Ulfa", tindakan: "Jahit luka", tanggal: "2026-11-10", pelaksana: "dr. Budi Santoso", biaya: 150000, catatan: "Luka di jari telunjuk kiri, 3 jahitan." },
+          { id: "td2", pasien: "Slamet Riyadi", tindakan: "Pemeriksaan EKG", tanggal: "2026-11-12", pelaksana: "dr. Ratna Wijaya", biaya: 120000, catatan: "Irama sinus normal." },
+          { id: "td3", pasien: "Nadia Putri Ramadhani", tindakan: "Imunisasi", tanggal: "2026-11-14", pelaksana: "Bidan Sari, A.Md.Keb.", biaya: 75000, catatan: "Imunisasi lanjutan sesuai jadwal." },
+          { id: "td4", pasien: "Agus Salim", tindakan: "Fisioterapi punggung", tanggal: "2026-11-17", pelaksana: "Fisio Dewi, S.Ft.", biaya: 100000, catatan: "Sesi pertama, latihan peregangan." }
+        ]
+      };
+      function badgeFor(s) {
+        if (s === "Aktif") return '<span class="badge badge-green">Aktif</span>';
+        if (s === "Terkendali") return '<span class="badge badge-blue">Terkendali</span>';
+        if (s === "Sembuh" || s === "Selesai") return '<span class="badge badge-teal">Selesai</span>';
+        return '<span class="badge badge-amber">' + esc(s) + "</span>";
+      }
+      function delBtn(kind, id) { return '<button class="btn btn-danger btn-small" data-del="' + kind + ":" + id + '">Hapus</button>'; }
+      function cardTop(name, meta, badgeHtml, extra) {
+        return '<div class="card item-card"><div class="item-top"><div class="row-main"><div class="name">' + esc(name) + "</div>" +
+          '<div class="meta">' + meta + "</div>" + (extra || "") + "</div>" + badgeHtml + "</div>";
+      }
+      function renderSummary() {
+        var pasienSet = {};
+        ["riwayat", "diagnosis", "pemeriksaan", "resep", "tindakan"].forEach(function (k) {
+          state[k].forEach(function (x) { pasienSet[x.pasien] = true; });
+        });
+        $("stPasien").textContent = Object.keys(pasienSet).length;
+        $("stDiag").textContent = state.diagnosis.length;
+        $("stResep").textContent = state.resep.filter(function (r) { return r.status === "Aktif"; }).length;
+        $("stTindakan").textContent = state.tindakan.length;
+        var dg = state.diagnosis.slice(-5).reverse();
+        $("recentDiag").innerHTML = dg.length ? dg.map(function (d) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(d.diagnosis) + '</div><div class="meta">' + esc(d.pasien) + " • " + esc(d.kode) + " • " + esc(d.dokter) + " • " + esc(formatDate(d.tanggal)) + "</div></div>" + badgeFor(d.status) + "</div>";
+        }).join("") : '<p class="empty">Belum ada diagnosis.</p>';
+        var rs = state.resep.filter(function (r) { return r.status === "Aktif"; });
+        $("activeResep").innerHTML = rs.length ? rs.map(function (r) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(r.obat) + '</div><div class="meta">' + esc(r.pasien) + " • " + esc(r.dosis) + " • " + esc(r.jumlah) + "</div></div>" + badgeFor(r.status) + "</div>";
+        }).join("") : '<p class="empty">Tidak ada resep aktif.</p>';
+      }
+      function renderRiwayat() {
+        $("riwayatList").innerHTML = state.riwayat.length ? state.riwayat.map(function (r) {
+          return cardTop(r.penyakit, esc(r.pasien) + " • Sejak " + esc(r.sejak), badgeFor(r.status), "") +
+            '<div class="item-actions"><span class="spacer"></span>' + delBtn("riwayat", r.id) + "</div></div>";
+        }).join("") : '<p class="empty">Belum ada riwayat penyakit.</p>';
+      }
+      function renderDiag() {
+        $("diagList").innerHTML = state.diagnosis.length ? state.diagnosis.map(function (d) {
+          return cardTop(d.diagnosis, esc(d.pasien) + " • Kode " + esc(d.kode) + " • " + esc(d.dokter) + " • " + esc(formatDate(d.tanggal)), badgeFor(d.status), "") +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-dstatus="' + d.id + '"><option' + (d.status === "Aktif" ? " selected" : "") + '>Aktif</option><option' + (d.status === "Selesai" ? " selected" : "") + '>Selesai</option></select>' +
+            '<span class="spacer"></span>' + delBtn("diagnosis", d.id) + "</div></div>";
+        }).join("") : '<p class="empty">Belum ada diagnosis.</p>';
+      }
+      function renderPeriksa() {
+        $("periksaList").innerHTML = state.pemeriksaan.length ? state.pemeriksaan.map(function (p) {
+          return cardTop("Pemeriksaan — " + p.pasien, "Tanggal " + esc(formatDate(p.tanggal)) + " • TD " + esc(p.td) + " • Suhu " + esc(p.suhu) + " • Nadi " + esc(p.nadi), "", '<div class="meta">Catatan: ' + esc(p.catatan) + "</div>") +
+            '<div class="item-actions"><span class="spacer"></span>' + delBtn("pemeriksaan", p.id) + "</div></div>";
+        }).join("") : '<p class="empty">Belum ada pemeriksaan.</p>';
+      }
+      function renderResep() {
+        $("resepList").innerHTML = state.resep.length ? state.resep.map(function (r) {
+          return cardTop(r.obat, esc(r.pasien) + " • " + esc(r.dosis) + " • " + esc(r.jumlah) + " • " + esc(r.dokter) + " • " + esc(formatDate(r.tanggal)), badgeFor(r.status), "") +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-rstatus="' + r.id + '"><option' + (r.status === "Aktif" ? " selected" : "") + '>Aktif</option><option' + (r.status === "Selesai" ? " selected" : "") + '>Selesai</option></select>' +
+            '<span class="spacer"></span>' + delBtn("resep", r.id) + "</div></div>";
+        }).join("") : '<p class="empty">Belum ada resep.</p>';
+      }
+      function renderTindakan() {
+        $("tindakanList").innerHTML = state.tindakan.length ? state.tindakan.map(function (t) {
+          return cardTop(t.tindakan, esc(t.pasien) + " • " + esc(formatDate(t.tanggal)) + " • " + esc(t.pelaksana) + (t.biaya ? " • " + fmtRp(t.biaya) : ""), "", '<div class="meta">Catatan: ' + esc(t.catatan) + "</div>") +
+            '<div class="item-actions"><span class="spacer"></span>' + delBtn("tindakan", t.id) + "</div></div>";
+        }).join("") : '<p class="empty">Belum ada tindakan.</p>';
+      }
+      function renderSearch() {
+        var q = $("searchAll").value.trim().toLowerCase();
+        var box = $("searchResults");
+        if (!q) { box.innerHTML = ""; $("searchNote").classList.add("show"); return; }
+        $("searchNote").classList.remove("show");
+        function match(v) { return String(v == null ? "" : v).toLowerCase().indexOf(q) >= 0; }
+        var groups = [
+          ["Riwayat Penyakit", state.riwayat.filter(function (r) { return match(r.pasien) || match(r.penyakit); }).map(function (r) { return r.penyakit + " — " + r.pasien + " (sejak " + r.sejak + ", " + r.status + ")"; })],
+          ["Diagnosis", state.diagnosis.filter(function (d) { return match(d.pasien) || match(d.diagnosis) || match(d.kode); }).map(function (d) { return d.diagnosis + " — " + d.pasien + " (" + d.kode + ", " + d.status + ")"; })],
+          ["Pemeriksaan", state.pemeriksaan.filter(function (p) { return match(p.pasien) || match(p.catatan); }).map(function (p) { return "Pemeriksaan " + p.pasien + " — " + formatDate(p.tanggal) + " (" + p.catatan + ")"; })],
+          ["Resep", state.resep.filter(function (r) { return match(r.pasien) || match(r.obat); }).map(function (r) { return r.obat + " — " + r.pasien + " (" + r.dosis + ")"; })],
+          ["Tindakan", state.tindakan.filter(function (t) { return match(t.pasien) || match(t.tindakan); }).map(function (t) { return t.tindakan + " — " + t.pasien + " (" + formatDate(t.tanggal) + ")"; })]
+        ];
+        var total = 0; groups.forEach(function (g) { total += g[1].length; });
+        if (!total) { box.innerHTML = '<p class="empty">Tidak ada hasil untuk "' + esc($("searchAll").value.trim()) + '".</p>'; return; }
+        box.innerHTML = groups.filter(function (g) { return g[1].length; }).map(function (g) {
+          return '<h2 class="section-title">' + g[0] + ' (' + g[1].length + ')</h2><div class="card">' +
+            g[1].map(function (s) { return '<div class="row-item"><div class="row-main"><div class="name" style="font-weight:600;">' + esc(s) + "</div></div></div>"; }).join("") + "</div>";
+        }).join("");
+      }
+      function renderAll() { renderSummary(); renderRiwayat(); renderDiag(); renderPeriksa(); renderResep(); renderTindakan(); renderSearch(); }
+      function deleteItem(kind, id) {
+        state[kind] = state[kind].filter(function (x) { return x.id !== id; });
+        renderAll();
+      }
+      document.addEventListener("change", function (e) {
+        var dsel = e.target.closest("[data-dstatus]");
+        if (dsel) { var d = state.diagnosis.find(function (x) { return x.id === dsel.getAttribute("data-dstatus"); }); if (d) { d.status = dsel.value; renderAll(); } return; }
+        var rsel = e.target.closest("[data-rstatus]");
+        if (rsel) { var r = state.resep.find(function (x) { return x.id === rsel.getAttribute("data-rstatus"); }); if (r) { r.status = rsel.value; renderAll(); } }
+      });
+      $("searchAll").addEventListener("input", renderSearch);
+      $("riwayatForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.riwayat.push({ id: nextId("rw"), pasien: $("rPasien").value.trim(), penyakit: $("rPenyakit").value.trim(), sejak: $("rSejak").value.trim(), status: $("rStatus").value });
+        showNote($("riwayatFormNote"), "Riwayat penyakit " + $("rPenyakit").value.trim() + " untuk " + $("rPasien").value.trim() + " berhasil ditambahkan.");
+        e.target.reset(); renderAll();
+      });
+      $("diagForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.diagnosis.push({ id: nextId("dg"), pasien: $("dPasien").value.trim(), kode: $("dKode").value.trim(), diagnosis: $("dDiag").value.trim(), dokter: $("dDokter").value.trim(), tanggal: $("dTanggal").value, status: $("dStatus").value });
+        showNote($("diagFormNote"), "Diagnosis " + $("dDiag").value.trim() + " untuk " + $("dPasien").value.trim() + " berhasil ditambahkan.");
+        e.target.reset(); renderAll();
+      });
+      $("periksaForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.pemeriksaan.push({ id: nextId("px"), pasien: $("pPasien").value.trim(), tanggal: $("pTanggal").value, td: $("pTD").value.trim(), suhu: $("pSuhu").value.trim(), nadi: $("pNadi").value.trim(), catatan: $("pCatatan").value.trim() });
+        showNote($("periksaFormNote"), "Pemeriksaan untuk " + $("pPasien").value.trim() + " berhasil disimpan.");
+        e.target.reset(); renderAll();
+      });
+      $("resepForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.resep.push({ id: nextId("rs"), pasien: $("rsPasien").value.trim(), obat: $("rsObat").value.trim(), dosis: $("rsDosis").value.trim(), jumlah: $("rsJumlah").value.trim(), dokter: $("rsDokter").value.trim(), tanggal: $("rsTanggal").value, status: "Aktif" });
+        showNote($("resepFormNote"), "Resep " + $("rsObat").value.trim() + " untuk " + $("rsPasien").value.trim() + " berhasil ditambahkan.");
+        e.target.reset(); renderAll();
+      });
+      $("tindakanForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.tindakan.push({ id: nextId("td"), pasien: $("tPasien").value.trim(), tindakan: $("tNama").value.trim(), tanggal: $("tTanggal").value, pelaksana: $("tPelaksana").value.trim(), biaya: Number($("tBiaya").value || 0), catatan: $("tCatatan").value.trim() });
+        showNote($("tindakanFormNote"), "Tindakan " + $("tNama").value.trim() + " untuk " + $("tPasien").value.trim() + " berhasil ditambahkan.");
+        e.target.reset(); renderAll();
+      });
+      renderAll();
+</script>
+</body>
+</html>

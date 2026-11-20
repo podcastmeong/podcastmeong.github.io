@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Klinik</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f2f7f4; --bg-soft: #e8f1ea; --card: #ffffff; --card-2: #f7faf8;
+        --ink: #17352c; --ink-2: #47635a; --ink-3: #7d948b; --line: #dce8e2;
+        --accent: #16a34a; --accent-dark: #15803d; --accent-soft: #dcfce7;
+        --amber: #b97e10; --amber-soft: #fdf3dd; --blue: #1d6fb8; --blue-soft: #e4f0fa;
+        --green: #2e7d32; --green-soft: #e6f3e4; --red: #b3372f; --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(23, 53, 44, .06), 0 10px 30px rgba(23, 53, 44, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1a15; --bg-soft: #16241d; --card: #182620; --card-2: #1d2e26;
+          --ink: #e6f2ec; --ink-2: #a9c4b8; --ink-3: #7d978a; --line: #2a3f36;
+          --accent: #4ade80; --accent-dark: #86efac; --accent-soft: #14532d;
+          --amber: #e0aa3e; --amber-soft: #3a2f14; --blue: #5ea8e0; --blue-soft: #17334a;
+          --green: #6fbf73; --green-soft: #1e3a20; --red: #e07a72; --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #052e16; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 2rem; font-weight: 800; line-height: 1.1; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .avatar { width: 42px; height: 42px; border-radius: 50%; flex: 0 0 auto; background: var(--accent-soft); color: var(--accent-dark); display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-menunggu { background: var(--amber-soft); color: var(--amber); }
+      .badge-dilayani { background: var(--blue-soft); color: var(--blue); }
+      .badge-selesai { background: var(--green-soft); color: var(--green); }
+      .badge-batal { background: var(--red-soft); color: var(--red); }
+      .badge-lunas { background: var(--green-soft); color: var(--green); }
+      .badge-belum-lunas { background: var(--amber-soft); color: var(--amber); }
+      .badge-terkirim { background: var(--green-soft); color: var(--green); }
+      .badge-belum-terkirim { background: var(--amber-soft); color: var(--amber); }
+      .badge-poli { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: 1rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #052e16; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-ghost:hover { border-color: var(--ink-3); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select { width: auto; flex: 0 1 auto; }
+      .item-actions .spacer { flex: 1; }
+      .bar { height: 10px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 8px; }
+      .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .price-table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .price-table th, .price-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .price-table th { color: var(--ink); font-weight: 700; }
+      .price-table td { color: var(--ink-2); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Klinik</h1>
+        <p>Pendaftaran pasien, jadwal dokter, rekam medis sederhana, kasir, pengingat kontrol, dan laporan kunjungan — dalam satu aplikasi.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="pendaftaran" role="tab">Pendaftaran</button>
+        <button class="tab-btn" data-tab="jadwal" role="tab">Jadwal</button>
+        <button class="tab-btn" data-tab="rekam" role="tab">Rekam Medis</button>
+        <button class="tab-btn" data-tab="kasir" role="tab">Kasir</button>
+        <button class="tab-btn" data-tab="pengingat" role="tab">Pengingat</button>
+        <button class="tab-btn" data-tab="laporan" role="tab">Laporan</button>
+        <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- ============ PENDAFTARAN ============ -->
+      <section class="panel active" id="panel-pendaftaran">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Pasien Terdaftar</p><p class="value" id="statTotal">0</p><p class="sub">Semua status</p></div>
+          <div class="card stat"><p class="label">Menunggu</p><p class="value" id="statMenunggu">0</p><p class="sub">Di ruang tunggu</p></div>
+          <div class="card stat"><p class="label">Sedang Dilayani</p><p class="value" id="statDilayani">0</p><p class="sub">Di ruang periksa</p></div>
+          <div class="card stat"><p class="label">Selesai Hari Ini</p><p class="value" id="statSelesai">0</p><p class="sub">Pemeriksaan tuntas</p></div>
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <h2>Daftar Pasien Baru</h2>
+          <p class="hint">Isi data pasien, lalu klik <strong>Tambah Pasien</strong>. Nomor antrean dibuat otomatis mengikuti poli tujuan. Data contoh saja.</p>
+          <form id="patientForm">
+            <div class="form-grid">
+              <div class="field"><label for="fNama">Nama lengkap pasien</label><input type="text" id="fNama" placeholder="cth. Siti Rahmawati" required /></div>
+              <div class="field"><label for="fLahir">Tanggal lahir</label><input type="date" id="fLahir" required /></div>
+              <div class="field"><label for="fTelp">Nomor telepon / WhatsApp</label><input type="tel" id="fTelp" placeholder="cth. 0812-3456-7890" required /></div>
+              <div class="field"><label for="fPoli">Poli tujuan</label><select id="fPoli" required></select></div>
+              <div class="field full"><label for="fKeluhan">Keluhan singkat</label><input type="text" id="fKeluhan" placeholder="cth. Demam dan batuk sejak 2 hari lalu" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Pasien</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="patientNote"></p>
+          </form>
+        </div>
+
+        <div class="toolbar"><div class="grow"><input type="search" id="searchPasien" placeholder="Cari nama pasien, nomor antrean, atau keluhan…" aria-label="Cari pasien" /></div></div>
+        <div id="patientList"></div>
+        <p class="empty hidden" id="patientEmpty">Tidak ada pasien yang cocok dengan pencarian ini.</p>
+      </section>
+
+      <!-- ============ JADWAL ============ -->
+      <section class="panel" id="panel-jadwal">
+        <div class="card form-card">
+          <h2 id="doctorFormTitle">Tambah Dokter</h2>
+          <p class="hint">Kelola dokter yang praktik beserta poli dan jadwalnya.</p>
+          <form id="doctorForm">
+            <input type="hidden" id="dId" />
+            <div class="form-grid">
+              <div class="field"><label for="dNama">Nama dokter</label><input type="text" id="dNama" placeholder="cth. dr. Ratna Wijaya" required /></div>
+              <div class="field"><label for="dPoli">Poli</label><select id="dPoli" required></select></div>
+              <div class="field"><label for="dHari">Hari praktik</label><input type="text" id="dHari" placeholder="cth. Senin – Jumat" required /></div>
+              <div class="field"><label for="dJam">Jam praktik</label><input type="text" id="dJam" placeholder="cth. 08.00 – 14.00" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="doctorSubmit">+ Tambah Dokter</button>
+              <button type="button" class="btn btn-ghost hidden" id="doctorCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="doctorNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Dokter</h2>
+        <div id="doctorList"></div>
+
+        <div class="card form-card" style="margin-top:26px;">
+          <h2 id="poliFormTitle">Tambah Poli</h2>
+          <p class="hint">Kode antrean (satu huruf) dibuat dari huruf pertama nama poli dan dipakai sebagai awalan nomor antrean.</p>
+          <form id="poliForm">
+            <input type="hidden" id="pId" />
+            <div class="form-grid">
+              <div class="field"><label for="pNama">Nama poli</label><input type="text" id="pNama" placeholder="cth. Poli Umum" required /></div>
+              <div class="field"><label for="pRuang">Ruang / lokasi</label><input type="text" id="pRuang" placeholder="cth. Ruang 1, Lantai 1" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="poliSubmit">+ Tambah Poli</button>
+              <button type="button" class="btn btn-ghost hidden" id="poliCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="poliNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Poli</h2>
+        <div id="poliList"></div>
+      </section>
+
+      <!-- ============ REKAM MEDIS ============ -->
+      <section class="panel" id="panel-rekam">
+        <div class="card form-card">
+          <h2>Catat Rekam Medis Sederhana</h2>
+          <p class="hint">Catatan kunjungan singkat per pasien: keluhan, pemeriksaan, dan tindakan. Ini rekam medis sederhana untuk keperluan demo — bukan rekam medis elektronik resmi.</p>
+          <form id="rekamForm">
+            <div class="form-grid">
+              <div class="field"><label for="rmPasien">Pasien</label><select id="rmPasien" required></select></div>
+              <div class="field"><label for="rmTanggal">Tanggal kunjungan</label><input type="date" id="rmTanggal" required /></div>
+              <div class="field"><label for="rmDokter">Dokter pemeriksa</label><select id="rmDokter" required></select></div>
+              <div class="field"><label for="rmTekanan">Tekanan darah (opsional)</label><input type="text" id="rmTekanan" placeholder="cth. 120/80" /></div>
+              <div class="field full"><label for="rmKeluhan">Keluhan</label><input type="text" id="rmKeluhan" placeholder="cth. Demam dan batuk" required /></div>
+              <div class="field full"><label for="rmTindakan">Pemeriksaan / tindakan</label><input type="text" id="rmTindakan" placeholder="cth. Periksa suhu dan tenggorokan, resep obat batuk" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Simpan Rekam Medis</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="rekamNote"></p>
+          </form>
+        </div>
+        <div class="toolbar"><div class="grow"><select id="filterRekam" aria-label="Saring rekam medis per pasien"><option value="Semua">Semua pasien</option></select></div></div>
+        <div id="rekamList"></div>
+        <p class="empty hidden" id="rekamEmpty">Belum ada rekam medis untuk pasien ini.</p>
+      </section>
+
+      <!-- ============ KASIR ============ -->
+      <section class="panel" id="panel-kasir">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Pemasukan</p><p class="value" id="kasTotal" style="font-size:1.5rem;">Rp0</p><p class="sub">Semua transaksi lunas</p></div>
+          <div class="card stat"><p class="label">Transaksi Lunas</p><p class="value" id="kasLunas">0</p><p class="sub">Sudah dibayar</p></div>
+          <div class="card stat"><p class="label">Belum Lunas</p><p class="value" id="kasBelum">0</p><p class="sub">Menunggu pembayaran</p></div>
+          <div class="card stat"><p class="label">Total Transaksi</p><p class="value" id="kasJml">0</p><p class="sub">Semua status</p></div>
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <h2>Tambah Transaksi Kasir</h2>
+          <p class="hint">Catat pembayaran layanan klinik: konsultasi, tindakan, atau obat. Harga dalam Rupiah.</p>
+          <form id="kasirForm">
+            <div class="form-grid">
+              <div class="field"><label for="kPasien">Pasien</label><select id="kPasien" required></select></div>
+              <div class="field"><label for="kTanggal">Tanggal</label><input type="date" id="kTanggal" required /></div>
+              <div class="field"><label for="kLayanan">Layanan</label><select id="kLayanan" required><option value="Konsultasi dokter">Konsultasi dokter</option><option value="Konsultasi dokter gigi">Konsultasi dokter gigi</option><option value="Tindakan medis ringan">Tindakan medis ringan</option><option value="Pemeriksaan laboratorium sederhana">Pemeriksaan laboratorium sederhana</option><option value="Obat">Obat</option><option value="Imunisasi">Imunisasi</option></select></div>
+              <div class="field"><label for="kBiaya">Biaya (Rp)</label><input type="number" id="kBiaya" min="0" step="1000" placeholder="cth. 75000" required /></div>
+              <div class="field"><label for="kBayar">Cara bayar</label><select id="kBayar" required><option value="Tunai">Tunai</option><option value="QRIS">QRIS</option><option value="Transfer">Transfer</option></select></div>
+              <div class="field"><label for="kStatus">Status bayar</label><select id="kStatus" required><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Transaksi</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="kasirNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Transaksi</h2>
+        <div id="kasirList"></div>
+      </section>
+
+      <!-- ============ PENGINGAT ============ -->
+      <section class="panel" id="panel-pengingat">
+        <div class="card form-card">
+          <h2>Tambah Pengingat Jadwal Kontrol</h2>
+          <p class="hint">Pengingat jadwal kontrol pasien berikutnya. Pengingat di sini berupa daftar yang bisa disalin ke WhatsApp secara manual — pengiriman otomatis bukan bagian dari versi ini.</p>
+          <form id="remindForm">
+            <div class="form-grid">
+              <div class="field"><label for="rPasien">Pasien</label><select id="rPasien" required></select></div>
+              <div class="field"><label for="rTanggal">Tanggal kontrol</label><input type="date" id="rTanggal" required /></div>
+              <div class="field"><label for="rDokter">Dokter</label><select id="rDokter" required></select></div>
+              <div class="field"><label for="rJam">Jam kontrol</label><input type="text" id="rJam" placeholder="cth. 09.00" required /></div>
+              <div class="field full"><label for="rPesan">Isi pesan pengingat</label><input type="text" id="rPesan" placeholder="cth. Jangan lupa kontrol tekanan darah dan bawa obat yang sedang diminum." required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Pengingat</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="remindNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Pengingat Kontrol</h2>
+        <div id="remindList"></div>
+      </section>
+
+      <!-- ============ LAPORAN ============ -->
+      <section class="panel" id="panel-laporan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Kunjungan</p><p class="value" id="lapKunjungan">0</p><p class="sub">Pasien terdaftar</p></div>
+          <div class="card stat"><p class="label">Kunjungan Selesai</p><p class="value" id="lapSelesai">0</p><p class="sub">Status Selesai</p></div>
+          <div class="card stat"><p class="label">Total Pemasukan</p><p class="value" id="lapPemasukan" style="font-size:1.5rem;">Rp0</p><p class="sub">Transaksi lunas</p></div>
+          <div class="card stat"><p class="label">Pengingat Aktif</p><p class="value" id="lapPengingat">0</p><p class="sub">Belum terkirim</p></div>
+        </div>
+        <h2 class="section-title">Kunjungan per Poli</h2>
+        <div class="card"><div id="lapPoli"></div></div>
+        <h2 class="section-title">Kunjungan per Dokter</h2>
+        <div class="card"><div id="lapDokter"></div></div>
+        <h2 class="section-title">Pemasukan per Layanan</h2>
+        <div class="card"><div id="lapLayanan"></div></div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan — Aplikasi Klinik</h2>
+          <p>Selamat datang di <strong>Aplikasi Klinik</strong>. Aplikasi ini membantu klinik kecil mengelola pendaftaran pasien, jadwal dokter, rekam medis sederhana, kasir, pengingat jadwal kontrol, dan laporan kunjungan — semua dari satu halaman, tanpa perlu memasang program tambahan. Cukup buka file aplikasi di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+          <div class="callout"><p><strong>Penting — batas pemakaian demo:</strong> aplikasi ini memakai <strong>data contoh</strong>. Data medis sungguhan <strong>tidak boleh disimpan</strong> di aplikasi demo ini. Penerapan nyata di fasilitas kesehatan membutuhkan perlindungan data sesuai UU Perlindungan Data Pribadi (UU PDP), kontrol akses berdasarkan peran (misalnya hanya dokter dan perawat yang boleh melihat rekam medis), dan jejak audit (catatan siapa mengakses atau mengubah data dan kapan).</p></div>
+
+          <h2>1. Tab Pendaftaran</h2>
+          <ol>
+            <li>Isi <strong>nama lengkap pasien</strong>, <strong>tanggal lahir</strong>, dan <strong>nomor telepon / WhatsApp</strong>.</li>
+            <li>Pilih <strong>poli tujuan</strong> (daftar poli diatur di tab Jadwal).</li>
+            <li>Tulis <strong>keluhan singkat</strong>, misalnya "Demam dan batuk sejak 2 hari lalu". Cukup garis besarnya saja.</li>
+            <li>Klik <strong>+ Tambah Pasien</strong>. Pasien langsung muncul di daftar dengan status <strong>Menunggu</strong> dan <strong>nomor antrean otomatis</strong>, misalnya <strong>U-05</strong> untuk Poli Umum.</li>
+          </ol>
+          <p>Di setiap kartu pasien ada pilihan status — ubah menjadi <strong>Dilayani</strong> saat pasien masuk ruang periksa, lalu <strong>Selesai</strong> setelah pemeriksaan tuntas, atau <strong>Batal</strong> bila pasien membatalkan kunjungan. Kolom pencarian membantu menemukan pasien berdasarkan nama, nomor antrean, atau keluhan. Tombol <strong>Hapus</strong> menghapus data pasien (klik sekali untuk konfirmasi "Yakin hapus?", klik lagi untuk benar-benar menghapus).</p>
+
+          <h2>2. Tab Jadwal</h2>
+          <h3>Dokter</h3>
+          <ul>
+            <li><strong>Tambah dokter</strong> — isi nama dokter, poli tempat praktik, hari praktik (misalnya "Senin – Jumat"), dan jam praktik (misalnya "08.00 – 14.00"), lalu klik <strong>+ Tambah Dokter</strong>.</li>
+            <li><strong>Ubah / Hapus</strong> — melalui tombol pada kartu dokter. Ubah mengisi formulir dengan data dokter tersebut; simpan dengan <strong>Simpan Perubahan</strong>.</li>
+          </ul>
+          <h3>Poli</h3>
+          <ul>
+            <li><strong>Tambah poli</strong> — isi nama poli dan ruang/lokasinya, lalu klik <strong>+ Tambah Poli</strong>. Poli baru langsung bisa dipilih saat mendaftarkan pasien.</li>
+            <li>Kode antrean diambil dari huruf pertama nama poli (misalnya <strong>U</strong> untuk Poli Umum). Bila dua poli berawalan huruf sama, kode poli kedua memakai huruf berikutnya yang belum terpakai.</li>
+          </ul>
+
+          <h2>3. Tab Rekam Medis</h2>
+          <p>Pilih pasien, isi tanggal kunjungan dan dokter pemeriksa, isi tekanan darah bila ada, lalu tulis keluhan dan pemeriksaan/tindakan, dan klik <strong>+ Simpan Rekam Medis</strong>. Gunakan saringan di atas daftar untuk melihat rekam medis satu pasien saja. Rekam medis di sini <strong>sederhana</strong> — catatan kunjungan singkat — dan <strong>bukan rekam medis elektronik resmi</strong>. Jangan menuliskan diagnosis lengkap atau hasil laboratorium rinci di aplikasi demo ini.</p>
+
+          <h2>4. Tab Kasir</h2>
+          <p>Pilih pasien, isi tanggal, pilih layanan, isi biaya dalam Rupiah, pilih cara bayar (Tunai, QRIS, atau Transfer), dan pilih status bayar (Lunas atau Belum Lunas), lalu klik <strong>+ Tambah Transaksi</strong>. Angka ringkasan di atas — total pemasukan, transaksi lunas, belum lunas, dan total transaksi — berubah otomatis. Status bayar bisa diubah dari daftar transaksi, dan transaksi bisa dihapus.</p>
+
+          <h2>5. Tab Pengingat</h2>
+          <p>Pilih pasien, isi tanggal dan jam kontrol, pilih dokter, dan tulis isi pesan pengingat, lalu klik <strong>+ Tambah Pengingat</strong>. Tombol <strong>Tandai Terkirim</strong> mengubah status pengingat menjadi Terkirim setelah pesan benar-benar dikirim ke pasien. Tombol <strong>Salin Pesan</strong> menyalin isi pesan pengingat ke clipboard supaya bisa ditempel ke WhatsApp. Pengingat di aplikasi ini <strong>tidak mengirim pesan otomatis</strong> — pengiriman dilakukan manual oleh petugas.</p>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Ringkasan yang diperbarui otomatis:</p>
+          <ul>
+            <li><strong>Total Kunjungan</strong> dan <strong>Kunjungan Selesai</strong> dari data pendaftaran.</li>
+            <li><strong>Total Pemasukan</strong> dari transaksi kasir yang berstatus Lunas.</li>
+            <li><strong>Pengingat Aktif</strong> — pengingat yang belum terkirim.</li>
+            <li><strong>Kunjungan per Poli</strong> dan <strong>Kunjungan per Dokter</strong> — jumlah pasien di tiap poli dan dokter.</li>
+            <li><strong>Pemasukan per Layanan</strong> — total pemasukan lunas dikelompokkan menurut jenis layanan.</li>
+          </ul>
+
+          <h2>7. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi demo ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>hanya tersimpan selama aplikasi dibuka</strong>. Menutup atau memuat ulang halaman mengembalikan aplikasi ke keadaan awal.</li>
+            <li>Aplikasi ini adalah alat <strong>pencatatan klinik</strong>. Aplikasi ini <strong>bukan rekam medis elektronik</strong> dan <strong>bukan sistem BPJS</strong> — tidak terhubung ke BPJS Kesehatan dan tidak menggantikan sistem rekam medis resmi fasilitas kesehatan.</li>
+            <li><strong>Data medis pasien adalah data sensitif.</strong> Jangan menuliskan diagnosis lengkap, hasil laboratorium, atau data medis rinci di aplikasi ini. Untuk pemakaian resmi, gunakan versi sesuai paket yang dipesan atau sistem resmi fasilitas kesehatan Anda, dengan perlindungan data sesuai UU PDP.</li>
+          </ul>
+
+          <h2>8. Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul><li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo — <strong>gratis selama masa garansi</strong>.</li></ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali — Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>9. Daftar Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table class="price-table">
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td><strong>Pemula</strong></td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td><strong>Profesional</strong></td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td><strong>Bisnis</strong></td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula: aplikasi standar siap pakai. Profesional: ditambah penyesuaian merek dan APK Android. Bisnis: ditambah penyimpanan permanen, multi-user, dan dukungan penuh. Pemesanan dan konsultasi melalui WhatsApp 0812-4798-6994.</p>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (10 pasien, 4 poli, 5 dokter, 4 rekam medis, 6 transaksi kasir, 4 pengingat) hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p>
+        <p>Aplikasi ini adalah alat <strong>pencatatan klinik</strong>. Aplikasi ini <strong>bukan rekam medis elektronik</strong> dan <strong>bukan sistem BPJS</strong>. Data medis pasien adalah data sensitif dan <strong>tidak boleh disimpan</strong> di aplikasi demo ini; penerapan nyata membutuhkan perlindungan data sesuai UU PDP, kontrol akses per peran, dan jejak audit.</p>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+      var DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+      var state = {
+        polis: [
+          { id: "p1", nama: "Poli Umum", ruang: "Ruang 1, Lantai 1", kode: "U" },
+          { id: "p2", nama: "Poli Gigi", ruang: "Ruang 2, Lantai 1", kode: "G" },
+          { id: "p3", nama: "Poli Anak", ruang: "Ruang 3, Lantai 1", kode: "A" },
+          { id: "p4", nama: "Poli Kandungan", ruang: "Ruang 4, Lantai 2", kode: "K" }
+        ],
+        doctors: [
+          { id: "d1", nama: "dr. Ratna Wijaya", poliId: "p1", hari: "Senin – Jumat", jam: "08.00 – 14.00" },
+          { id: "d2", nama: "dr. Budi Santoso", poliId: "p1", hari: "Senin – Sabtu", jam: "14.00 – 20.00" },
+          { id: "d3", nama: "drg. Sari Maheswari", poliId: "p2", hari: "Senin, Rabu, Jumat", jam: "09.00 – 15.00" },
+          { id: "d4", nama: "dr. Andi Pratama, Sp.A", poliId: "p3", hari: "Senin – Jumat", jam: "08.00 – 12.00" },
+          { id: "d5", nama: "dr. Dewi Lestari, Sp.OG", poliId: "p4", hari: "Selasa, Kamis, Sabtu", jam: "10.00 – 16.00" }
+        ],
+        patients: [
+          { id: "pt1", no: "U-01", nama: "Slamet Riyadi", lahir: "1978-03-12", telp: "0812-3401-2287", poliId: "p1", keluhan: "Kontrol tekanan darah rutin", status: "Selesai" },
+          { id: "pt2", no: "U-02", nama: "Siti Rahmawati", lahir: "1990-07-25", telp: "0813-5520-9143", poliId: "p1", keluhan: "Demam dan batuk sejak 2 hari lalu", status: "Dilayani" },
+          { id: "pt3", no: "U-03", nama: "Agus Salim", lahir: "1985-11-02", telp: "0821-7745-3310", poliId: "p1", keluhan: "Nyeri punggung bawah", status: "Menunggu" },
+          { id: "pt4", no: "U-04", nama: "Maria Ulfa", lahir: "1996-01-19", telp: "0857-9012-6654", poliId: "p1", keluhan: "Pusing dan mual sejak pagi", status: "Menunggu" },
+          { id: "pt5", no: "G-01", nama: "Rina Kartika", lahir: "1993-05-30", telp: "0812-8876-1029", poliId: "p2", keluhan: "Gigi geraham berlubang, nyeri", status: "Dilayani" },
+          { id: "pt6", no: "G-02", nama: "Joko Prasetyo", lahir: "1988-09-14", telp: "0819-3345-7812", poliId: "p2", keluhan: "Membersihkan karang gigi", status: "Menunggu" },
+          { id: "pt7", no: "A-01", nama: "Nadia Putri Ramadhani", lahir: "2019-06-08", telp: "0813-2210-5548", poliId: "p3", keluhan: "Imunisasi lanjutan", status: "Menunggu" },
+          { id: "pt8", no: "A-02", nama: "Fajar Nugroho", lahir: "2017-12-21", telp: "0822-6109-4473", poliId: "p3", keluhan: "Batuk pilek dan tidak nafsu makan", status: "Menunggu" },
+          { id: "pt9", no: "K-01", nama: "Dewi Anggraini", lahir: "1995-04-17", telp: "0856-7734-2091", poliId: "p4", keluhan: "Kontrol kehamilan trimester kedua", status: "Selesai" },
+          { id: "pt10", no: "K-02", nama: "Fitri Handayani", lahir: "1992-08-09", telp: "0815-9920-3367", poliId: "p4", keluhan: "Konsultasi program hamil", status: "Batal" }
+        ],
+        rekam: [
+          { id: "rm1", pasienId: "pt1", tanggal: "2026-11-20", dokterId: "d1", tekanan: "130/85", keluhan: "Kontrol tekanan darah rutin", tindakan: "Periksa tekanan darah, anjuran kurangi garam dan kontrol 1 bulan lagi" },
+          { id: "rm2", pasienId: "pt2", tanggal: "2026-11-20", dokterId: "d1", tekanan: "110/70", keluhan: "Demam dan batuk sejak 2 hari lalu", tindakan: "Periksa suhu dan tenggorokan, resep obat batuk dan penurun panas" },
+          { id: "rm3", pasienId: "pt5", tanggal: "2026-11-19", dokterId: "d3", tekanan: "-", keluhan: "Gigi geraham berlubang, nyeri", tindakan: "Periksa gigi, tambal sementara, jadwal kontrol 1 minggu" },
+          { id: "rm4", pasienId: "pt9", tanggal: "2026-11-18", dokterId: "d5", tekanan: "115/75", keluhan: "Kontrol kehamilan trimester kedua", tindakan: "Periksa detak jantung janin, anjuran vitamin dan kontrol 2 minggu lagi" }
+        ],
+        kasir: [
+          { id: "k1", pasienId: "pt1", tanggal: "2026-11-20", layanan: "Konsultasi dokter", biaya: 75000, bayar: "Tunai", status: "Lunas" },
+          { id: "k2", pasienId: "pt2", tanggal: "2026-11-20", layanan: "Konsultasi dokter", biaya: 75000, bayar: "QRIS", status: "Lunas" },
+          { id: "k3", pasienId: "pt2", tanggal: "2026-11-20", layanan: "Obat", biaya: 45000, bayar: "QRIS", status: "Lunas" },
+          { id: "k4", pasienId: "pt5", tanggal: "2026-11-19", layanan: "Konsultasi dokter gigi", biaya: 100000, bayar: "Transfer", status: "Lunas" },
+          { id: "k5", pasienId: "pt5", tanggal: "2026-11-19", layanan: "Tindakan medis ringan", biaya: 150000, bayar: "Transfer", status: "Belum Lunas" },
+          { id: "k6", pasienId: "pt9", tanggal: "2026-11-18", layanan: "Konsultasi dokter", biaya: 75000, bayar: "Tunai", status: "Lunas" }
+        ],
+        pengingat: [
+          { id: "pg1", pasienId: "pt1", tanggal: "2026-12-20", dokterId: "d1", jam: "09.00", pesan: "Jangan lupa kontrol tekanan darah dan bawa obat yang sedang diminum.", status: "Belum Terkirim" },
+          { id: "pg2", pasienId: "pt5", tanggal: "2026-11-26", dokterId: "d3", jam: "10.00", pesan: "Kontrol tambalan gigi, jangan makan yang terlalu keras sebelum kontrol.", status: "Belum Terkirim" },
+          { id: "pg3", pasienId: "pt9", tanggal: "2026-12-02", dokterId: "d5", jam: "10.00", pesan: "Kontrol kehamilan, bawa buku KIA dan hasil pemeriksaan sebelumnya.", status: "Belum Terkirim" },
+          { id: "pg4", pasienId: "pt7", tanggal: "2026-12-08", dokterId: "d4", jam: "08.00", pesan: "Imunisasi lanjutan, bawa buku KIA dan pastikan anak dalam keadaan sehat.", status: "Terkirim" }
+        ],
+        counters: { p1: 4, p2: 2, p3: 2, p4: 2 },
+        seq: 100
+      };
+
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function nextId(p) { state.seq += 1; return p + state.seq; }
+      function poliById(id) { for (var i = 0; i < state.polis.length; i++) if (state.polis[i].id === id) return state.polis[i]; return null; }
+      function poliName(id) { var p = poliById(id); return p ? p.nama : "Poli tidak tersedia"; }
+      function doctorById(id) { for (var i = 0; i < state.doctors.length; i++) if (state.doctors[i].id === id) return state.doctors[i]; return null; }
+      function doctorName(id) { var d = doctorById(id); return d ? d.nama : "Dokter tidak tersedia"; }
+      function patientById(id) { for (var i = 0; i < state.patients.length; i++) if (state.patients[i].id === id) return state.patients[i]; return null; }
+      function initials(name) {
+        var parts = String(name).replace(/^(drg?\.|dr\.)\s*/i, "").split(/\s+/);
+        var s = parts[0].charAt(0);
+        if (parts.length > 1) s += parts[1].charAt(0);
+        return s.toUpperCase();
+      }
+      function formatDate(iso) {
+        if (!iso) return "-";
+        var p = iso.split("-");
+        if (p.length !== 3) return iso;
+        return parseInt(p[2], 10) + " " + MONTH_NAMES[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function formatRupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function badgeFor(v) { return '<span class="badge badge-' + String(v).toLowerCase().replace(/\s+/g, "-") + '">' + esc(v) + "</span>"; }
+
+      /* ================= RENDER: PENDAFTARAN ================= */
+      function renderPoliSelects() {
+        var opts = state.polis.map(function (p) { return '<option value="' + p.id + '">' + esc(p.nama) + "</option>"; }).join("");
+        $("fPoli").innerHTML = opts;
+        $("dPoli").innerHTML = opts;
+      }
+      function renderPatients() {
+        $("statTotal").textContent = state.patients.length;
+        $("statMenunggu").textContent = state.patients.filter(function (p) { return p.status === "Menunggu"; }).length;
+        $("statDilayani").textContent = state.patients.filter(function (p) { return p.status === "Dilayani"; }).length;
+        $("statSelesai").textContent = state.patients.filter(function (p) { return p.status === "Selesai"; }).length;
+        var q = $("searchPasien").value.trim().toLowerCase();
+        var list = state.patients.filter(function (p) {
+          if (!q) return true;
+          return p.nama.toLowerCase().indexOf(q) >= 0 || p.no.toLowerCase().indexOf(q) >= 0 || p.keluhan.toLowerCase().indexOf(q) >= 0;
+        });
+        $("patientEmpty").classList.toggle("hidden", list.length > 0);
+        $("patientList").innerHTML = list.map(function (p) {
+          var statuses = ["Menunggu", "Dilayani", "Selesai", "Batal"];
+          var opts = statuses.map(function (s) { return '<option value="' + s + '"' + (s === p.status ? " selected" : "") + ">" + s + "</option>"; }).join("");
+          return '<div class="card item-card"><div class="item-top"><span class="qnum">' + esc(p.no) + "</span>" +
+            '<div class="row-main"><div class="name">' + esc(p.nama) + "</div>" +
+            '<div class="meta">' + esc(poliName(p.poliId)) + " • " + esc(p.telp) + "</div>" +
+            '<div class="meta">Keluhan: ' + esc(p.keluhan) + "</div></div>" + badgeFor(p.status) + "</div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-action="status-pasien" data-id="' + p.id + '" aria-label="Ubah status ' + esc(p.nama) + '">' + opts + "</select>" +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-pasien" data-id="' + p.id + '">Hapus</button></div></div>';
+        }).join("");
+      }
+
+      /* ================= RENDER: JADWAL ================= */
+      function renderDoctors() {
+        $("doctorList").innerHTML = state.doctors.length ? state.doctors.map(function (d) {
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(initials(d.nama)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + "</div>" +
+            '<div class="meta">' + esc(poliName(d.poliId)) + " • " + esc(d.hari) + " • Pukul " + esc(d.jam) + " WIB</div></div>" +
+            '<span class="badge badge-poli">' + esc(poliName(d.poliId).replace(/^Poli\s+/i, "")) + "</span></div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-doctor" data-id="' + d.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-doctor" data-id="' + d.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada dokter. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderPolis() {
+        $("poliList").innerHTML = state.polis.length ? state.polis.map(function (p) {
+          var count = state.patients.filter(function (x) { return x.poliId === p.id; }).length;
+          return '<div class="card item-card"><div class="item-top"><span class="qnum">' + esc(p.kode) + "</span>" +
+            '<div class="row-main"><div class="name">' + esc(p.nama) + "</div>" +
+            '<div class="meta">' + esc(p.ruang) + " • Kode antrean " + esc(p.kode) + " • " + count + ' pasien terdaftar</div></div></div>' +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-poli" data-id="' + p.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-poli" data-id="' + p.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada poli. Tambahkan lewat formulir di atas.</p>';
+      }
+
+      /* ================= RENDER: REKAM MEDIS ================= */
+      function renderRekamSelects() {
+        $("rmPasien").innerHTML = state.patients.map(function (p) { return '<option value="' + p.id + '">' + esc(p.nama) + " (" + esc(p.no) + ")</option>"; }).join("");
+        $("rmDokter").innerHTML = state.doctors.map(function (d) { return '<option value="' + d.id + '">' + esc(d.nama) + "</option>"; }).join("");
+        $("kPasien").innerHTML = $("rmPasien").innerHTML;
+        $("rPasien").innerHTML = $("rmPasien").innerHTML;
+        $("rDokter").innerHTML = $("rmDokter").innerHTML;
+        var f = $("filterRekam");
+        var cur = f.value;
+        f.innerHTML = '<option value="Semua">Semua pasien</option>' + state.patients.map(function (p) { return '<option value="' + p.id + '">' + esc(p.nama) + "</option>"; }).join("");
+        f.value = cur || "Semua";
+      }
+      function renderRekam() {
+        var f = $("filterRekam").value;
+        var list = state.rekam.filter(function (r) { return f === "Semua" || r.pasienId === f; })
+          .slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+        $("rekamEmpty").classList.toggle("hidden", list.length > 0);
+        $("rekamList").innerHTML = list.map(function (r) {
+          var p = patientById(r.pasienId);
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(p ? initials(p.nama) : "?") + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(p ? p.nama : "Pasien tidak tersedia") + '</div>' +
+            '<div class="meta">' + esc(formatDate(r.tanggal)) + " • " + esc(doctorName(r.dokterId)) + (r.tekanan && r.tekanan !== "-" ? " • Tekanan darah " + esc(r.tekanan) : "") + "</div>" +
+            '<div class="meta">Keluhan: ' + esc(r.keluhan) + "</div>" +
+            '<div class="meta">Pemeriksaan / tindakan: ' + esc(r.tindakan) + "</div></div></div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-rekam" data-id="' + r.id + '">Hapus</button></div></div>';
+        }).join("");
+      }
+
+      /* ================= RENDER: KASIR ================= */
+      function renderKasir() {
+        var lunas = state.kasir.filter(function (t) { return t.status === "Lunas"; });
+        var total = lunas.reduce(function (s, t) { return s + t.biaya; }, 0);
+        $("kasTotal").textContent = formatRupiah(total);
+        $("kasLunas").textContent = lunas.length;
+        $("kasBelum").textContent = state.kasir.filter(function (t) { return t.status === "Belum Lunas"; }).length;
+        $("kasJml").textContent = state.kasir.length;
+        $("kasirList").innerHTML = state.kasir.length ? state.kasir.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); }).map(function (t) {
+          var p = patientById(t.pasienId);
+          return '<div class="card item-card"><div class="item-top"><div class="row-main"><div class="name">' + esc(t.layanan) + " — " + formatRupiah(t.biaya) + "</div>" +
+            '<div class="meta">' + esc(p ? p.nama : "Pasien tidak tersedia") + " • " + esc(formatDate(t.tanggal)) + " • " + esc(t.bayar) + "</div></div>" + badgeFor(t.status) + "</div>" +
+            '<div class="item-actions"><label style="font-size:.83rem;font-weight:600;color:var(--ink-2);">Status:</label>' +
+            '<select data-action="status-kasir" data-id="' + t.id + '" aria-label="Ubah status bayar"><option value="Lunas"' + (t.status === "Lunas" ? " selected" : "") + '>Lunas</option><option value="Belum Lunas"' + (t.status === "Belum Lunas" ? " selected" : "") + ">Belum Lunas</option></select>" +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-kasir" data-id="' + t.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada transaksi kasir.</p>';
+      }
+
+      /* ================= RENDER: PENGINGAT ================= */
+      function renderPengingat() {
+        $("remindList").innerHTML = state.pengingat.length ? state.pengingat.slice().sort(function (a, b) { return a.tanggal.localeCompare(b.tanggal); }).map(function (g) {
+          var p = patientById(g.pasienId);
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(p ? initials(p.nama) : "?") + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(p ? p.nama : "Pasien tidak tersedia") + " — kontrol " + esc(formatDate(g.tanggal)) + " pukul " + esc(g.jam) + "</div>" +
+            '<div class="meta">' + esc(doctorName(g.dokterId)) + "</div>" +
+            '<div class="meta">Pesan: "' + esc(g.pesan) + '"</div></div>' + badgeFor(g.status) + "</div>" +
+            '<div class="item-actions">' +
+            '<button class="btn btn-ghost btn-small" data-action="copy-remind" data-id="' + g.id + '">Salin Pesan</button>' +
+            (g.status === "Belum Terkirim" ? '<button class="btn btn-primary btn-small" data-action="send-remind" data-id="' + g.id + '">Tandai Terkirim</button>' : "") +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-remind" data-id="' + g.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada pengingat kontrol. Tambahkan lewat formulir di atas.</p>';
+      }
+
+      /* ================= RENDER: LAPORAN ================= */
+      function renderReport() {
+        $("lapKunjungan").textContent = state.patients.length;
+        $("lapSelesai").textContent = state.patients.filter(function (p) { return p.status === "Selesai"; }).length;
+        var total = state.kasir.filter(function (t) { return t.status === "Lunas"; }).reduce(function (s, t) { return s + t.biaya; }, 0);
+        $("lapPemasukan").textContent = formatRupiah(total);
+        $("lapPengingat").textContent = state.pengingat.filter(function (g) { return g.status === "Belum Terkirim"; }).length;
+        $("lapPoli").innerHTML = state.polis.map(function (p) {
+          var n = state.patients.filter(function (x) { return x.poliId === p.id; }).length;
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(p.nama) + "</div>" +
+            '<div class="meta">' + n + ' kunjungan</div><div class="bar"><span style="width:' + (state.patients.length ? Math.round(n / state.patients.length * 100) : 0) + '%"></span></div></div><span class="qnum">' + n + "</span></div>";
+        }).join("");
+        $("lapDokter").innerHTML = state.doctors.map(function (d) {
+          var n = state.rekam.filter(function (r) { return r.dokterId === d.id; }).length;
+          return '<div class="row-item"><div class="avatar">' + esc(initials(d.nama)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + "</div>" +
+            '<div class="meta">' + esc(poliName(d.poliId)) + " • " + n + ' kunjungan tercatat di rekam medis</div></div><span class="qnum">' + n + "</span></div>";
+        }).join("");
+        var byLayanan = {};
+        state.kasir.filter(function (t) { return t.status === "Lunas"; }).forEach(function (t) {
+          byLayanan[t.layanan] = (byLayanan[t.layanan] || 0) + t.biaya;
+        });
+        var keys = Object.keys(byLayanan);
+        $("lapLayanan").innerHTML = keys.length ? keys.map(function (k) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(k) + "</div>" +
+            '<div class="meta">Pemasukan lunas</div></div><span class="qnum">' + formatRupiah(byLayanan[k]) + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada pemasukan lunas.</p>';
+      }
+
+      function renderAll() {
+        renderPoliSelects();
+        renderPatients();
+        renderDoctors();
+        renderPolis();
+        renderRekamSelects();
+        renderRekam();
+        renderKasir();
+        renderPengingat();
+        renderReport();
+      }
+
+      /* ================= TABS ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ================= FORM PASIEN ================= */
+      $("patientForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var poliId = $("fPoli").value;
+        var poli = poliById(poliId);
+        if (!poli) return;
+        state.counters[poliId] = (state.counters[poliId] || 0) + 1;
+        var no = poli.kode + "-" + String(state.counters[poliId]).padStart(2, "0");
+        state.patients.push({ id: nextId("pt"), no: no, nama: $("fNama").value.trim(), lahir: $("fLahir").value, telp: $("fTelp").value.trim(), poliId: poliId, keluhan: $("fKeluhan").value.trim(), status: "Menunggu" });
+        var note = $("patientNote");
+        note.textContent = "Pasien " + $("fNama").value.trim() + " berhasil didaftarkan ke " + poli.nama + " dengan nomor antrean " + no + ".";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("patientForm").addEventListener("reset", function () { $("patientNote").classList.remove("show"); });
+      $("searchPasien").addEventListener("input", renderPatients);
+
+      /* ================= FORM DOKTER ================= */
+      function resetDoctorForm() {
+        $("doctorForm").reset();
+        $("dId").value = "";
+        $("doctorFormTitle").textContent = "Tambah Dokter";
+        $("doctorSubmit").textContent = "+ Tambah Dokter";
+        $("doctorCancel").classList.add("hidden");
+      }
+      $("doctorCancel").addEventListener("click", function () { resetDoctorForm(); $("doctorNote").classList.remove("show"); });
+      $("doctorForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("dId").value;
+        var data = { nama: $("dNama").value.trim(), poliId: $("dPoli").value, hari: $("dHari").value.trim(), jam: $("dJam").value.trim() };
+        var note = $("doctorNote");
+        if (id) {
+          var d = doctorById(id);
+          if (d) { d.nama = data.nama; d.poliId = data.poliId; d.hari = data.hari; d.jam = data.jam; }
+          note.textContent = "Data dokter " + data.nama + " berhasil diperbarui.";
+        } else {
+          data.id = nextId("d");
+          state.doctors.push(data);
+          note.textContent = "Dokter " + data.nama + " berhasil ditambahkan.";
+        }
+        note.classList.add("show");
+        resetDoctorForm();
+        renderAll();
+      });
+
+      /* ================= FORM POLI ================= */
+      function freeKode(nama, exceptId) {
+        var base = (nama.replace(/^poli\s+/i, "").trim().charAt(0) || "P").toUpperCase();
+        var used = state.polis.filter(function (p) { return p.id !== exceptId; }).map(function (p) { return p.kode; });
+        if (used.indexOf(base) < 0) return base;
+        var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (var i = 0; i < letters.length; i++) if (used.indexOf(letters[i]) < 0) return letters[i];
+        return base;
+      }
+      function resetPoliForm() {
+        $("poliForm").reset();
+        $("pId").value = "";
+        $("poliFormTitle").textContent = "Tambah Poli";
+        $("poliSubmit").textContent = "+ Tambah Poli";
+        $("poliCancel").classList.add("hidden");
+      }
+      $("poliCancel").addEventListener("click", function () { resetPoliForm(); $("poliNote").classList.remove("show"); });
+      $("poliForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("pId").value;
+        var nama = $("pNama").value.trim();
+        var ruang = $("pRuang").value.trim();
+        var note = $("poliNote");
+        if (id) {
+          var p = poliById(id);
+          if (p) { p.nama = nama; p.ruang = ruang; p.kode = freeKode(nama, id); }
+          note.textContent = "Data " + nama + " berhasil diperbarui.";
+        } else {
+          var newId = nextId("p");
+          state.polis.push({ id: newId, nama: nama, ruang: ruang, kode: freeKode(nama, null) });
+          state.counters[newId] = 0;
+          note.textContent = nama + " berhasil ditambahkan.";
+        }
+        note.classList.add("show");
+        resetPoliForm();
+        renderAll();
+      });
+
+      /* ================= FORM REKAM MEDIS ================= */
+      $("rekamForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.rekam.push({ id: nextId("rm"), pasienId: $("rmPasien").value, tanggal: $("rmTanggal").value, dokterId: $("rmDokter").value, tekanan: $("rmTekanan").value.trim() || "-", keluhan: $("rmKeluhan").value.trim(), tindakan: $("rmTindakan").value.trim() });
+        var note = $("rekamNote");
+        var p = patientById($("rmPasien").value);
+        note.textContent = "Rekam medis untuk " + (p ? p.nama : "pasien") + " berhasil disimpan.";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("rekamForm").addEventListener("reset", function () { $("rekamNote").classList.remove("show"); });
+      $("filterRekam").addEventListener("change", renderRekam);
+
+      /* ================= FORM KASIR ================= */
+      $("kasirForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.kasir.push({ id: nextId("k"), pasienId: $("kPasien").value, tanggal: $("kTanggal").value, layanan: $("kLayanan").value, biaya: parseInt($("kBiaya").value, 10) || 0, bayar: $("kBayar").value, status: $("kStatus").value });
+        var note = $("kasirNote");
+        note.textContent = "Transaksi " + $("kLayanan").value + " sebesar " + formatRupiah(parseInt($("kBiaya").value, 10) || 0) + " berhasil dicatat.";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("kasirForm").addEventListener("reset", function () { $("kasirNote").classList.remove("show"); });
+
+      /* ================= FORM PENGINGAT ================= */
+      $("remindForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.pengingat.push({ id: nextId("pg"), pasienId: $("rPasien").value, tanggal: $("rTanggal").value, dokterId: $("rDokter").value, jam: $("rJam").value.trim(), pesan: $("rPesan").value.trim(), status: "Belum Terkirim" });
+        var note = $("remindNote");
+        var p = patientById($("rPasien").value);
+        note.textContent = "Pengingat kontrol untuk " + (p ? p.nama : "pasien") + " berhasil ditambahkan.";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("remindForm").addEventListener("reset", function () { $("remindNote").classList.remove("show"); });
+
+      /* ================= AKSI DELEGASI ================= */
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest('select[data-action="status-pasien"]');
+        if (sel) {
+          var p = patientById(sel.getAttribute("data-id"));
+          if (p) { p.status = sel.value; renderAll(); }
+          return;
+        }
+        var selK = e.target.closest('select[data-action="status-kasir"]');
+        if (selK) {
+          var t = state.kasir.find(function (x) { return x.id === selK.getAttribute("data-id"); });
+          if (t) { t.status = selK.value; renderAll(); }
+        }
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        var action = btn.getAttribute("data-action");
+        if (action === "delete-pasien" || action === "delete-doctor" || action === "delete-poli" || action === "delete-rekam" || action === "delete-kasir" || action === "delete-remind") {
+          if (btn.getAttribute("data-confirm") !== "1") {
+            btn.setAttribute("data-confirm", "1");
+            btn.textContent = "Yakin hapus?";
+            setTimeout(function () { if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; } }, 3000);
+            return;
+          }
+          var id = btn.getAttribute("data-id");
+          if (action === "delete-pasien") state.patients = state.patients.filter(function (x) { return x.id !== id; });
+          if (action === "delete-doctor") state.doctors = state.doctors.filter(function (x) { return x.id !== id; });
+          if (action === "delete-poli") state.polis = state.polis.filter(function (x) { return x.id !== id; });
+          if (action === "delete-rekam") state.rekam = state.rekam.filter(function (x) { return x.id !== id; });
+          if (action === "delete-kasir") state.kasir = state.kasir.filter(function (x) { return x.id !== id; });
+          if (action === "delete-remind") state.pengingat = state.pengingat.filter(function (x) { return x.id !== id; });
+          renderAll();
+          return;
+        }
+        if (action === "send-remind") {
+          var g = state.pengingat.find(function (x) { return x.id === btn.getAttribute("data-id"); });
+          if (g) { g.status = "Terkirim"; renderAll(); }
+          return;
+        }
+        if (action === "copy-remind") {
+          var g2 = state.pengingat.find(function (x) { return x.id === btn.getAttribute("data-id"); });
+          if (g2) {
+            var p2 = patientById(g2.pasienId);
+            var text = "Halo " + (p2 ? p2.nama : "") + ", pengingat jadwal kontrol pada " + formatDate(g2.tanggal) + " pukul " + g2.jam + " dengan " + doctorName(g2.dokterId) + ". " + g2.pesan;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { btn.textContent = "Disalin!"; setTimeout(function () { if (btn.isConnected) btn.textContent = "Salin Pesan"; }, 2000); });
+            } else {
+              btn.textContent = "Disalin!";
+              setTimeout(function () { if (btn.isConnected) btn.textContent = "Salin Pesan"; }, 2000);
+            }
+          }
+          return;
+        }
+        if (action === "edit-doctor") {
+          var d = doctorById(btn.getAttribute("data-id"));
+          if (!d) return;
+          $("dId").value = d.id;
+          $("dNama").value = d.nama;
+          $("dPoli").value = d.poliId;
+          $("dHari").value = d.hari;
+          $("dJam").value = d.jam;
+          $("doctorFormTitle").textContent = "Ubah Dokter";
+          $("doctorSubmit").textContent = "Simpan Perubahan";
+          $("doctorCancel").classList.remove("hidden");
+          $("doctorForm").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (action === "edit-poli") {
+          var p3 = poliById(btn.getAttribute("data-id"));
+          if (!p3) return;
+          $("pId").value = p3.id;
+          $("pNama").value = p3.nama;
+          $("pRuang").value = p3.ruang;
+          $("poliFormTitle").textContent = "Ubah Poli";
+          $("poliSubmit").textContent = "Simpan Perubahan";
+          $("poliCancel").classList.remove("hidden");
+          $("poliForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      /* ================= INIT ================= */
+      var now = new Date();
+      $("todayText").textContent = DAY_NAMES[now.getDay()] + ", " + now.getDate() + " " + MONTH_NAMES[now.getMonth()] + " " + now.getFullYear() + " — klinik buka, layanan berjalan";
+      renderAll();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Piutang & Hutang (UMKM)</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f0fdf4;
+        --bg-soft: #dcfce7;
+        --card: #ffffff;
+        --card-2: #f7fef9;
+        --ink: #14532d;
+        --ink-2: #3f6212;
+        --ink-3: #6b8f71;
+        --line: #d9eedd;
+        --accent: #16a34a;
+        --accent-dark: #15803d;
+        --accent-soft: #dcfce7;
+        --amber: #b45309;
+        --amber-soft: #fef3c7;
+        --blue: #1d6fb8;
+        --blue-soft: #e4f0fa;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --red: #b3372f;
+        --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(20, 83, 45, .06), 0 10px 30px rgba(20, 83, 45, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1f13;
+          --bg-soft: #132b1a;
+          --card: #14291b;
+          --card-2: #193322;
+          --ink: #e2f5e8;
+          --ink-2: #a9c4b8;
+          --ink-3: #7d978a;
+          --line: #24402e;
+          --accent: #4ade80;
+          --accent-dark: #86efac;
+          --accent-soft: #173a26;
+          --amber: #fbbf24;
+          --amber-soft: #3a2f14;
+          --blue: #5ea8e0;
+          --blue-soft: #17334a;
+          --green: #6fbf73;
+          --green-soft: #1e3a20;
+          --red: #e07a72;
+          --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1a14; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-amber { background: var(--amber-soft); color: var(--amber); }
+      .badge-blue { background: var(--blue-soft); color: var(--blue); }
+      .badge-green { background: var(--green-soft); color: var(--green); }
+      .badge-red { background: var(--red-soft); color: var(--red); }
+      .badge-teal { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: .92rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #0c1a14; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select, .item-actions input { width: auto; flex: 0 1 auto; }
+      .item-actions input[type="text"] { flex: 1 1 220px; }
+      .item-actions .spacer { flex: 1; }
+      .progress { height: 10px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+      .progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .progress.over > span { background: var(--red); }
+      .progress.warn > span { background: var(--amber); }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .callout.green { background: var(--accent-soft); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Piutang & Hutang (UMKM)</h1>
+        <p>Piutang pelanggan dan hutang supplier, jatuh tempo, pembayaran cicil atau lunas, pengingat, dan laporan piutang-hutang — untuk usaha kecil.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="piutang" role="tab">Piutang</button><button class="tab-btn" data-tab="hutang" role="tab">Hutang</button><button class="tab-btn" data-tab="tempo" role="tab">Jatuh Tempo</button><button class="tab-btn" data-tab="pembayaran" role="tab">Pembayaran</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+
+      <section class="panel active" id="panel-ringkasan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Sisa Piutang</p><p class="value" id="stPiutang">Rp0</p><p class="sub">Uang pelanggan yang belum dibayar</p></div>
+          <div class="card stat"><p class="label">Sisa Hutang</p><p class="value" id="stHutang">Rp0</p><p class="sub">Uang ke supplier yang belum dibayar</p></div>
+          <div class="card stat"><p class="label">Jatuh Tempo &le; 7 Hari</p><p class="value" id="stTempo">0</p><p class="sub">Tagihan yang segera jatuh tempo</p></div>
+          <div class="card stat"><p class="label">Total Pembayaran</p><p class="value" id="stBayar">0</p><p class="sub">Pembayaran tercatat</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Piutang Terbaru</h2><p class="hint">Tagihan pelanggan yang belum lunas.</p><div id="recentPiutang"></div></div>
+          <div class="card"><h2>Hutang Terbaru</h2><p class="hint">Tagihan ke supplier yang belum lunas.</p><div id="recentHutang"></div></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-piutang">
+        <div class="card form-card">
+          <h2>Tambah Piutang Pelanggan</h2>
+          <p class="hint">Catat tagihan ke pelanggan. Pembayaran dicatat lewat tab <strong>Pembayaran</strong>.</p>
+          <form id="piutangForm">
+            <div class="form-grid">
+              <div class="field"><label for="pPelanggan">Nama pelanggan</label><input type="text" id="pPelanggan" placeholder="cth. Toko Berkah Jaya" required /></div>
+              <div class="field"><label for="pKet">Keterangan</label><input type="text" id="pKet" placeholder="cth. Penjualan barang dagang — Invoice INV-004" required /></div>
+              <div class="field"><label for="pJumlah">Jumlah tagihan (Rp)</label><input type="number" id="pJumlah" min="1" placeholder="cth. 1500000" required /></div>
+              <div class="field"><label for="pTempo">Jatuh tempo</label><input type="date" id="pTempo" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Piutang</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="piutangNote"></p>
+          </form>
+        </div>
+        <div id="piutangList"></div>
+      </section>
+
+      <section class="panel" id="panel-hutang">
+        <div class="card form-card">
+          <h2>Tambah Hutang Supplier</h2>
+          <p class="hint">Catat tagihan ke supplier. Pembayaran dicatat lewat tab <strong>Pembayaran</strong>.</p>
+          <form id="hutangForm">
+            <div class="form-grid">
+              <div class="field"><label for="hSupplier">Nama supplier</label><input type="text" id="hSupplier" placeholder="cth. PT Sinar Abadi" required /></div>
+              <div class="field"><label for="hKet">Keterangan</label><input type="text" id="hKet" placeholder="cth. Pembelian stok — PO-104" required /></div>
+              <div class="field"><label for="hJumlah">Jumlah tagihan (Rp)</label><input type="number" id="hJumlah" min="1" placeholder="cth. 2000000" required /></div>
+              <div class="field"><label for="hTempo">Jatuh tempo</label><input type="date" id="hTempo" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Hutang</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="hutangNote"></p>
+          </form>
+        </div>
+        <div id="hutangList"></div>
+      </section>
+
+      <section class="panel" id="panel-tempo">
+        <p class="hint" style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Daftar tagihan yang sudah lewat jatuh tempo atau akan jatuh tempo dalam 7 hari ke depan, diurutkan dari yang paling mendesak. Segera tindak lanjuti tagihan yang terlambat.</p>
+        <div class="card"><div id="tempoList"></div></div>
+      </section>
+
+      <section class="panel" id="panel-pembayaran">
+        <div class="card form-card">
+          <h2>Catat Pembayaran</h2>
+          <p class="hint">Pembayaran bisa dicicil berkali-kali sampai lunas. Jumlah pembayaran tidak boleh melebihi sisa tagihan.</p>
+          <form id="bayarForm">
+            <div class="form-grid">
+              <div class="field"><label for="bJenis">Jenis tagihan</label><select id="bJenis" required><option value="piutang">Piutang (pelanggan membayar ke kita)</option><option value="hutang">Hutang (kita membayar ke supplier)</option></select></div>
+              <div class="field"><label for="bItem">Pilih tagihan</label><select id="bItem" required></select></div>
+              <div class="field"><label for="bJumlah">Jumlah dibayar (Rp)</label><input type="number" id="bJumlah" min="1" placeholder="cth. 500000" required /></div>
+              <div class="field"><label for="bTanggal">Tanggal pembayaran</label><input type="date" id="bTanggal" required /></div>
+              <div class="field full"><label for="bKet">Keterangan</label><input type="text" id="bKet" placeholder="cth. Cicilan pertama via transfer" /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Catat Pembayaran</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="bayarNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Riwayat Pembayaran</h2>
+        <div class="card"><div id="bayarList"></div></div>
+      </section>
+
+      <section class="panel" id="panel-laporan">
+        <div class="card">
+          <h2>Laporan Piutang &amp; Hutang</h2>
+          <p class="hint">Total tagihan, total yang sudah dibayar, dan sisa per jenis. Klik <strong>Cetak Laporan</strong> untuk mencetak halaman ini.</p>
+          <div id="laporanBody"></div>
+          <div class="form-actions"><button class="btn btn-primary" id="cetakBtn" type="button">Cetak Laporan</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan &mdash; Aplikasi Piutang &amp; Hutang (UMKM)</h2>
+          <p>Selamat datang di aplikasi <strong>Piutang &amp; Hutang</strong> untuk UMKM. Aplikasi ini membantu usaha kecil mencatat piutang pelanggan dan hutang ke supplier, memantau jatuh tempo, mencatat pembayaran cicilan sampai lunas, dan melihat laporan piutang-hutang — semuanya dari satu halaman di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+
+          <h2>1. Tab Ringkasan</h2>
+          <ul>
+            <li><strong>Sisa Piutang</strong> &mdash; total uang pelanggan yang belum dibayar ke kita.</li>
+            <li><strong>Sisa Hutang</strong> &mdash; total uang yang belum kita bayar ke supplier.</li>
+            <li><strong>Jatuh Tempo &le; 7 Hari</strong> &mdash; jumlah tagihan yang jatuh tempo dalam 7 hari ke depan atau sudah lewat.</li>
+            <li><strong>Total Pembayaran</strong> &mdash; jumlah pembayaran yang tercatat.</li>
+            <li>Di bawahnya tampil piutang dan hutang terbaru yang belum lunas.</li>
+          </ul>
+
+          <h2>2. Tab Piutang</h2>
+          <ol>
+            <li>Isi <strong>nama pelanggan</strong>, <strong>keterangan</strong> (misalnya nomor invoice), <strong>jumlah tagihan</strong>, dan <strong>tanggal jatuh tempo</strong>.</li>
+            <li>Klik <strong>+ Tambah Piutang</strong>. Tagihan muncul dengan status <strong>Belum Lunas</strong> dan sisa sama dengan jumlah tagihan.</li>
+            <li>Setiap tagihan menampilkan jumlah total, jumlah yang sudah dibayar, dan <strong>sisa</strong>. Bila sisa sudah nol, status berubah menjadi <strong>Lunas</strong> secara otomatis.</li>
+          </ol>
+
+          <h2>3. Tab Hutang</h2>
+          <p>Sama seperti Piutang, tetapi untuk tagihan ke <strong>supplier</strong>: isi nama supplier, keterangan (misalnya nomor PO), jumlah tagihan, dan tanggal jatuh tempo, lalu klik <strong>+ Tambah Hutang</strong>.</p>
+
+          <h2>4. Tab Jatuh Tempo</h2>
+          <p>Menampilkan semua tagihan yang <strong>sudah lewat jatuh tempo</strong> (ditandai &ldquo;Terlambat&rdquo; beserta jumlah harinya) dan yang <strong>akan jatuh tempo dalam 7 hari</strong>, diurutkan dari yang paling mendesak. Tagihan yang sudah lunas tidak tampil di sini.</p>
+
+          <h2>5. Tab Pembayaran</h2>
+          <h3>Mencatat pembayaran (cicil atau lunas)</h3>
+          <ol>
+            <li>Pilih <strong>jenis tagihan</strong>: Piutang atau Hutang.</li>
+            <li>Pilih <strong>tagihan</strong> yang dibayar — hanya tagihan yang belum lunas yang muncul.</li>
+            <li>Isi <strong>jumlah dibayar</strong> dan <strong>tanggal pembayaran</strong>, plus keterangan bila perlu (misalnya &ldquo;Cicilan pertama via transfer&rdquo;).</li>
+            <li>Klik <strong>+ Catat Pembayaran</strong>. Sisa tagihan berkurang otomatis; bila sisa menjadi nol, status berubah menjadi <strong>Lunas</strong>.</li>
+          </ol>
+          <p>Jumlah pembayaran <strong>tidak boleh melebihi sisa tagihan</strong> — aplikasi akan menolak dan menampilkan peringatan. Di bawah formulir ada <strong>Riwayat Pembayaran</strong> yang mencatat semua pembayaran.</p>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Menampilkan total piutang (tagihan, terbayar, sisa), total hutang (tagihan, terbayar, sisa), dan daftar lengkap tiap tagihan beserta statusnya. Klik <strong>Cetak Laporan</strong> untuk mencetak laporan ini.</p>
+
+          <h2>7. Menghapus Data</h2>
+          <p>Tombol <strong>Hapus</strong> pada setiap tagihan menghapus tagihan tersebut. Klik sekali untuk memunculkan konfirmasi <strong>&ldquo;Yakin hapus?&rdquo;</strong>, klik lagi untuk benar-benar menghapus. Data yang sudah dihapus tidak bisa dikembalikan. Menghapus tagihan tidak menghapus riwayat pembayarannya.</p>
+
+          <h2>8. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>tersimpan di perangkat ini</strong> (localStorage peramban). Data <strong>tidak sinkron antar-perangkat</strong>: data yang ditambahkan di HP tidak muncul di komputer, dan sebaliknya. Menghapus data peramban akan menghapus data aplikasi.</li>
+            <li>Aplikasi ini adalah alat <strong>pencatatan piutang dan hutang</strong> untuk usaha kecil. Aplikasi ini <strong>bukan sistem akuntansi lengkap</strong> dan tidak menggantikan pembukuan resmi atau jasa akuntan.</li>
+            <li>Semua angka adalah <strong>data contoh</strong> untuk keperluan demonstrasi. Periksa kembali angka Anda sebelum dipakai untuk keputusan keuangan.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo &mdash; <strong>gratis selama masa garansi</strong>.</li>
+          </ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali &mdash; Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp ke 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table>
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula adalah paket standar siap pakai. Profesional menambah penyesuaian merek dan APK Android. Bisnis menambah penyimpanan permanen, multi-user, dan dukungan penuh. Harga di atas adalah harga standar; penyesuaian khusus dibicarakan terlebih dahulu melalui WhatsApp.</p>
+
+        </div>
+      </section>
+      <footer>
+
+        <p><strong>Catatan kejujuran:</strong> semua data pada aplikasi ini adalah <strong>data contoh</strong> (3 piutang dan 3 hutang contoh saat pertama dibuka) dan <strong>tersimpan di perangkat ini saja</strong> (localStorage) — data tidak sinkron antar-perangkat, dan menghapus data peramban akan menghapus data aplikasi.</p>
+        <p>Aplikasi ini adalah alat <strong>pencatatan piutang dan hutang</strong> untuk usaha kecil. Aplikasi ini <strong>bukan sistem akuntansi lengkap</strong> dan tidak menggantikan pembukuan resmi atau jasa akuntan.</p>
+      </footer>
+    </div>
+
+    <script>
+
+      "use strict";
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function fmtRp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function fmtDate(iso) {
+        if (!iso) return "-";
+        var p = String(iso).split("-");
+        if (p.length !== 3) return iso;
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        return parseInt(p[2], 10) + " " + B[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+      function loadState(key, seed) {
+        try { var raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
+        return seed;
+      }
+      function saveState(key, state) {
+        try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {}
+      }
+      function showNote(id, text) {
+        var n = $(id);
+        if (!n) return;
+        n.textContent = text;
+        n.classList.add("show");
+      }
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action='hapus']");
+        if (!btn) return;
+        if (btn.getAttribute("data-confirm") !== "1") {
+          btn.setAttribute("data-confirm", "1");
+          btn.textContent = "Yakin hapus?";
+          setTimeout(function () {
+            if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; }
+          }, 3000);
+          return;
+        }
+        if (typeof onDelete === "function") onDelete(btn.getAttribute("data-kind"), btn.getAttribute("data-id"));
+      });
+
+      var KEY = "ph-v1";
+      var state = loadState(KEY, {
+        piutang: [
+          { id: "p1", pelanggan: "Toko Berkah Jaya", ket: "Penjualan barang dagang — Invoice INV-001", total: 2500000, dibayar: 1000000, tempo: "2026-11-25", tgl: "2026-11-10" },
+          { id: "p2", pelanggan: "CV Maju Bersama", ket: "Penjualan grosir — Invoice INV-002", total: 1750000, dibayar: 1750000, tempo: "2026-11-15", tgl: "2026-11-05" },
+          { id: "p3", pelanggan: "Warung Sederhana", ket: "Penjualan barang dagang — Invoice INV-003", total: 900000, dibayar: 0, tempo: "2026-11-18", tgl: "2026-11-12" }
+        ],
+        hutang: [
+          { id: "h1", supplier: "PT Sinar Abadi", ket: "Pembelian stok — PO-101", total: 3200000, dibayar: 1200000, tempo: "2026-11-28", tgl: "2026-11-08" },
+          { id: "h2", supplier: "UD Sumber Rezeki", ket: "Pembelian bahan baku — PO-102", total: 1500000, dibayar: 1500000, tempo: "2026-11-12", tgl: "2026-11-02" },
+          { id: "h3", supplier: "CV Berkah Plastik", ket: "Pembelian kemasan — PO-103", total: 750000, dibayar: 0, tempo: "2026-11-21", tgl: "2026-11-14" }
+        ],
+        bayar: [
+          { id: "b1", jenis: "piutang", itemId: "p1", nama: "Toko Berkah Jaya", jumlah: 1000000, tanggal: "2026-11-14", ket: "Cicilan pertama via transfer" },
+          { id: "b2", jenis: "hutang", itemId: "h1", nama: "PT Sinar Abadi", jumlah: 1200000, tanggal: "2026-11-12", ket: "Pembayaran sebagian via transfer" }
+        ]
+      });
+
+      function save() { saveState(KEY, state); }
+      function sisa(x) { return x.total - x.dibayar; }
+      function statusBadge(x) {
+        return sisa(x) <= 0
+          ? '<span class="badge badge-green">Lunas</span>'
+          : '<span class="badge badge-amber">Belum Lunas</span>';
+      }
+      function daysUntil(iso) {
+        var a = new Date(); a.setHours(0, 0, 0, 0);
+        var b = new Date(iso + "T00:00:00");
+        return Math.round((b.getTime() - a.getTime()) / 86400000);
+      }
+      function itemCard(x, isPiutang) {
+        var nama = isPiutang ? x.pelanggan : x.supplier;
+        var d = daysUntil(x.tempo);
+        var tempoTxt = d < 0 ? "Terlambat " + (-d) + " hari" : (d === 0 ? "Jatuh tempo hari ini" : "Jatuh tempo dalam " + d + " hari");
+        return '<div class="card item-card"><div class="item-top">' +
+          '<div class="row-main"><div class="name">' + esc(nama) + '</div>' +
+          '<div class="meta">' + esc(x.ket) + " • Jatuh tempo " + esc(fmtDate(x.tempo)) + " (" + tempoTxt + ")</div>" +
+          '<div class="meta">Total ' + fmtRp(x.total) + " • Dibayar " + fmtRp(x.dibayar) + " • <strong>Sisa " + fmtRp(sisa(x)) + "</strong></div></div>" +
+          statusBadge(x) + "</div>" +
+          '<div class="item-actions"><span class="spacer"></span>' +
+          '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="' + (isPiutang ? "piutang" : "hutang") + '" data-id="' + x.id + '">Hapus</button></div></div>';
+      }
+      function sumSisa(list) { var t = 0; list.forEach(function (x) { t += sisa(x); }); return t; }
+      function renderSummary() {
+        $("stPiutang").textContent = fmtRp(sumSisa(state.piutang));
+        $("stHutang").textContent = fmtRp(sumSisa(state.hutang));
+        var all = state.piutang.concat(state.hutang);
+        $("stTempo").textContent = all.filter(function (x) { return sisa(x) > 0 && daysUntil(x.tempo) <= 7; }).length;
+        $("stBayar").textContent = state.bayar.length;
+        var rp = state.piutang.filter(function (x) { return sisa(x) > 0; }).slice(0, 3);
+        $("recentPiutang").innerHTML = rp.length ? rp.map(function (x) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(x.pelanggan) + '</div><div class="meta">Sisa ' + fmtRp(sisa(x)) + " • tempo " + esc(fmtDate(x.tempo)) + "</div></div>" + statusBadge(x) + "</div>";
+        }).join("") : '<p class="empty">Semua piutang sudah lunas.</p>';
+        var rh = state.hutang.filter(function (x) { return sisa(x) > 0; }).slice(0, 3);
+        $("recentHutang").innerHTML = rh.length ? rh.map(function (x) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(x.supplier) + '</div><div class="meta">Sisa ' + fmtRp(sisa(x)) + " • tempo " + esc(fmtDate(x.tempo)) + "</div></div>" + statusBadge(x) + "</div>";
+        }).join("") : '<p class="empty">Semua hutang sudah lunas.</p>';
+      }
+      function renderPiutang() {
+        $("piutangList").innerHTML = state.piutang.length ? state.piutang.map(function (x) { return itemCard(x, true); }).join("") : '<p class="empty">Belum ada piutang. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderHutang() {
+        $("hutangList").innerHTML = state.hutang.length ? state.hutang.map(function (x) { return itemCard(x, false); }).join("") : '<p class="empty">Belum ada hutang. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderTempo() {
+        var all = [];
+        state.piutang.forEach(function (x) { if (sisa(x) > 0) all.push({ x: x, isP: true }); });
+        state.hutang.forEach(function (x) { if (sisa(x) > 0) all.push({ x: x, isP: false }); });
+        all = all.filter(function (o) { return daysUntil(o.x.tempo) <= 7; });
+        all.sort(function (a, b) { return a.x.tempo.localeCompare(b.x.tempo); });
+        $("tempoList").innerHTML = all.length ? all.map(function (o) {
+          var x = o.x, d = daysUntil(x.tempo);
+          var nama = o.isP ? x.pelanggan : x.supplier;
+          var tag = d < 0 ? '<span class="badge badge-red">Terlambat ' + (-d) + " hari</span>"
+            : (d === 0 ? '<span class="badge badge-red">Jatuh tempo hari ini</span>'
+            : '<span class="badge badge-amber">Dalam ' + d + " hari</span>");
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(nama) + " <span style='font-weight:400;color:var(--ink-3);'>(" + (o.isP ? "Piutang" : "Hutang") + ")</span></div>" +
+            '<div class="meta">' + esc(x.ket) + " • Sisa " + fmtRp(sisa(x)) + " • tempo " + esc(fmtDate(x.tempo)) + "</div></div>" + tag + "</div>";
+        }).join("") : '<p class="empty">Tidak ada tagihan yang jatuh tempo dalam 7 hari ke depan.</p>';
+      }
+      function fillBayarItems() {
+        var jenis = $("bJenis").value;
+        var list = jenis === "piutang" ? state.piutang : state.hutang;
+        var open = list.filter(function (x) { return sisa(x) > 0; });
+        $("bItem").innerHTML = open.length ? open.map(function (x) {
+          var nama = jenis === "piutang" ? x.pelanggan : x.supplier;
+          return '<option value="' + x.id + '">' + esc(nama) + " — sisa " + fmtRp(sisa(x)) + "</option>";
+        }).join("") : '<option value="">(Semua tagihan sudah lunas)</option>';
+      }
+      function renderBayar() {
+        fillBayarItems();
+        var list = state.bayar.slice().reverse();
+        $("bayarList").innerHTML = list.length ? list.map(function (b) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(b.nama) + " — " + fmtRp(b.jumlah) + '</div><div class="meta">' + (b.jenis === "piutang" ? "Piutang diterima" : "Hutang dibayar") + " • " + esc(fmtDate(b.tanggal)) + (b.ket ? " • " + esc(b.ket) : "") + "</div></div>" +
+            '<span class="badge badge-teal">' + (b.jenis === "piutang" ? "Piutang" : "Hutang") + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada pembayaran tercatat.</p>';
+      }
+      function renderLaporan() {
+        function tot(list) {
+          var t = 0, d = 0;
+          list.forEach(function (x) { t += x.total; d += x.dibayar; });
+          return { total: t, dibayar: d, sisa: t - d };
+        }
+        var p = tot(state.piutang), h = tot(state.hutang);
+        var rows = state.piutang.map(function (x) {
+          return "<tr><td>Piutang — " + esc(x.pelanggan) + "</td><td>" + fmtRp(x.total) + "</td><td>" + fmtRp(x.dibayar) + "</td><td>" + fmtRp(sisa(x)) + "</td><td>" + (sisa(x) <= 0 ? "Lunas" : "Belum Lunas") + "</td></tr>";
+        }).join("") + state.hutang.map(function (x) {
+          return "<tr><td>Hutang — " + esc(x.supplier) + "</td><td>" + fmtRp(x.total) + "</td><td>" + fmtRp(x.dibayar) + "</td><td>" + fmtRp(sisa(x)) + "</td><td>" + (sisa(x) <= 0 ? "Lunas" : "Belum Lunas") + "</td></tr>";
+        }).join("");
+        $("laporanBody").innerHTML =
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;">' +
+          "<tr><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Jenis</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Total Tagihan</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Terbayar</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Sisa</th></tr>" +
+          "<tr><td><strong>Piutang</strong></td><td>" + fmtRp(p.total) + "</td><td>" + fmtRp(p.dibayar) + "</td><td><strong>" + fmtRp(p.sisa) + "</strong></td></tr>" +
+          "<tr><td><strong>Hutang</strong></td><td>" + fmtRp(h.total) + "</td><td>" + fmtRp(h.dibayar) + "</td><td><strong>" + fmtRp(h.sisa) + "</strong></td></tr></table>" +
+          "<h3 style='margin:18px 0 6px;'>Rincian Tagihan</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;">' +
+          "<tr><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Tagihan</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Total</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Dibayar</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Sisa</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Status</th></tr>" +
+          rows + "</table>";
+      }
+      function renderAll() {
+        renderSummary(); renderPiutang(); renderHutang(); renderTempo(); renderBayar(); renderLaporan();
+      }
+      function onDelete(kind, id) {
+        if (kind === "piutang") state.piutang = state.piutang.filter(function (x) { return x.id !== id; });
+        if (kind === "hutang") state.hutang = state.hutang.filter(function (x) { return x.id !== id; });
+        save(); renderAll();
+      }
+      $("piutangForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.piutang.push({ id: uid("p"), pelanggan: $("pPelanggan").value.trim(), ket: $("pKet").value.trim(), total: Number($("pJumlah").value), dibayar: 0, tempo: $("pTempo").value, tgl: new Date().toISOString().slice(0, 10) });
+        showNote("piutangNote", "Piutang untuk " + $("pPelanggan").value.trim() + " sebesar " + fmtRp(Number($("pJumlah").value)) + " berhasil ditambahkan.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("hutangForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.hutang.push({ id: uid("h"), supplier: $("hSupplier").value.trim(), ket: $("hKet").value.trim(), total: Number($("hJumlah").value), dibayar: 0, tempo: $("hTempo").value, tgl: new Date().toISOString().slice(0, 10) });
+        showNote("hutangNote", "Hutang ke " + $("hSupplier").value.trim() + " sebesar " + fmtRp(Number($("hJumlah").value)) + " berhasil ditambahkan.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("bJenis").addEventListener("change", fillBayarItems);
+      $("bayarForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var jenis = $("bJenis").value;
+        var list = jenis === "piutang" ? state.piutang : state.hutang;
+        var item = null;
+        list.forEach(function (x) { if (x.id === $("bItem").value) item = x; });
+        if (!item) { alert("Pilih tagihan yang belum lunas terlebih dahulu."); return; }
+        var jml = Number($("bJumlah").value);
+        if (jml > sisa(item)) { alert("Jumlah pembayaran melebihi sisa tagihan (" + fmtRp(sisa(item)) + ")."); return; }
+        item.dibayar += jml;
+        var nama = jenis === "piutang" ? item.pelanggan : item.supplier;
+        state.bayar.push({ id: uid("b"), jenis: jenis, itemId: item.id, nama: nama, jumlah: jml, tanggal: $("bTanggal").value, ket: $("bKet").value.trim() });
+        showNote("bayarNote", "Pembayaran " + fmtRp(jml) + " untuk " + nama + " berhasil dicatat. Sisa tagihan: " + fmtRp(sisa(item)) + (sisa(item) <= 0 ? " — LUNAS." : "."));
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("cetakBtn").addEventListener("click", function () { window.print(); });
+      (function () {
+        var d = new Date();
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        var H = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        $("todayText").textContent = H[d.getDay()] + ", " + d.getDate() + " " + B[d.getMonth()] + " " + d.getFullYear();
+        renderAll();
+      })();
+    </script>
+  </body>
+</html>

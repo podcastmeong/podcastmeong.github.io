@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Sistem Informasi Laboratorium (LIS)</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f0fdf4;
+        --bg-soft: #dcfce7;
+        --card: #ffffff;
+        --card-2: #f7fef9;
+        --ink: #14532d;
+        --ink-2: #3f6212;
+        --ink-3: #6b8f71;
+        --line: #d9eedd;
+        --accent: #16a34a;
+        --accent-dark: #15803d;
+        --accent-soft: #dcfce7;
+        --amber: #b45309;
+        --amber-soft: #fef3c7;
+        --blue: #1d6fb8;
+        --blue-soft: #e4f0fa;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --red: #b3372f;
+        --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(20, 83, 45, .06), 0 10px 30px rgba(20, 83, 45, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1f13;
+          --bg-soft: #132b1a;
+          --card: #14291b;
+          --card-2: #193322;
+          --ink: #e2f5e8;
+          --ink-2: #a9c4b8;
+          --ink-3: #7d978a;
+          --line: #24402e;
+          --accent: #4ade80;
+          --accent-dark: #86efac;
+          --accent-soft: #173a26;
+          --amber: #fbbf24;
+          --amber-soft: #3a2f14;
+          --blue: #5ea8e0;
+          --blue-soft: #17334a;
+          --green: #6fbf73;
+          --green-soft: #1e3a20;
+          --red: #e07a72;
+          --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1a14; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-amber { background: var(--amber-soft); color: var(--amber); }
+      .badge-blue { background: var(--blue-soft); color: var(--blue); }
+      .badge-green { background: var(--green-soft); color: var(--green); }
+      .badge-red { background: var(--red-soft); color: var(--red); }
+      .badge-teal { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: .92rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #0c1a14; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select, .item-actions input { width: auto; flex: 0 1 auto; }
+      .item-actions input[type="text"] { flex: 1 1 220px; }
+      .item-actions .spacer { flex: 1; }
+      .progress { height: 10px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+      .progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .progress.over > span { background: var(--red); }
+      .progress.warn > span { background: var(--amber); }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .callout.green { background: var(--accent-soft); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Sistem Informasi Laboratorium (LIS)</h1>
+        <p>Pendaftaran sampel, alur pemeriksaan, hasil dan validasi, riwayat pasien, laporan otomatis, dan arsip hasil — untuk laboratorium kecil.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="sampel" role="tab">Sampel</button><button class="tab-btn" data-tab="pemeriksaan" role="tab">Pemeriksaan</button><button class="tab-btn" data-tab="hasil" role="tab">Hasil</button><button class="tab-btn" data-tab="riwayat" role="tab">Riwayat</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="arsip" role="tab">Arsip</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+
+      <section class="panel active" id="panel-ringkasan">
+        <div class="callout"><p><strong>Demo dengan data contoh.</strong> Aplikasi ini adalah demonstrasi Sistem Informasi Laboratorium. Semua data yang tampil adalah <strong>data contoh</strong> — bukan data pasien sungguhan. <strong>Data medis sungguhan tidak boleh disimpan di demo ini.</strong> Penerapan nyata membutuhkan perlindungan data pribadi (UU PDP), kontrol akses per peran, dan jejak audit.</p></div>
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Sampel</p><p class="value" id="stTotal">0</p><p class="sub">Semua sampel tercatat</p></div>
+          <div class="card stat"><p class="label">Perlu Diproses</p><p class="value" id="stProses">0</p><p class="sub">Diterima + sedang diproses</p></div>
+          <div class="card stat"><p class="label">Menunggu Validasi</p><p class="value" id="stValidasi">0</p><p class="sub">Hasil selesai, belum divalidasi</p></div>
+          <div class="card stat"><p class="label">Sudah Divalidasi</p><p class="value" id="stSelesai">0</p><p class="sub">Hasil resmi, siap diserahkan</p></div>
+        </div>
+        <h2 class="section-title">Sampel Terbaru</h2>
+        <div class="card"><div id="recentList"></div></div>
+      </section>
+
+      <section class="panel" id="panel-sampel">
+        <div class="card form-card">
+          <h2>Daftarkan Sampel Baru</h2>
+          <p class="hint">Isi data pasien contoh dan jenis pemeriksaan, lalu klik <strong>Tambah Sampel</strong>. Kode sampel dibuat otomatis.</p>
+          <form id="sampelForm">
+            <div class="form-grid">
+              <div class="field"><label for="sPasien">Nama pasien (contoh)</label><input type="text" id="sPasien" placeholder="cth. Budi Santoso" required /></div>
+              <div class="field"><label for="sJenis">Jenis pemeriksaan</label><select id="sJenis" required><option value="Darah Lengkap">Darah Lengkap</option><option value="Gula Darah Puasa">Gula Darah Puasa</option><option value="Kolesterol Total">Kolesterol Total</option><option value="Urine Lengkap">Urine Lengkap</option><option value="Fungsi Hati (SGOT/SGPT)">Fungsi Hati (SGOT/SGPT)</option><option value="Fungsi Ginjal (Ureum/Kreatinin)">Fungsi Ginjal (Ureum/Kreatinin)</option></select></div>
+              <div class="field"><label for="sTanggal">Tanggal pengambilan sampel</label><input type="date" id="sTanggal" required /></div>
+              <div class="field"><label for="sCatatan">Catatan</label><input type="text" id="sCatatan" placeholder="cth. Puasa 10 jam" /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Sampel</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="sampelNote"></p>
+          </form>
+        </div>
+        <div class="toolbar"><div class="grow"><input type="search" id="sampelSearch" placeholder="Cari nama pasien, kode sampel, atau jenis pemeriksaan…" aria-label="Cari sampel" /></div></div>
+        <div id="sampelList"></div>
+        <p class="empty hidden" id="sampelEmpty">Tidak ada sampel yang cocok dengan pencarian ini.</p>
+      </section>
+
+      <section class="panel" id="panel-pemeriksaan">
+        <p class="hint" style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Sampel berstatus <strong>Diterima</strong> bisa dimulai pemeriksaannya, lalu analis menulis hasil pemeriksaan dan menyimpannya. Hasil yang disimpan berstatus <strong>Selesai</strong> dan menunggu validasi di tab Hasil.</p>
+        <div id="periksaList"></div>
+        <p class="empty hidden" id="periksaEmpty">Tidak ada sampel yang perlu diproses saat ini.</p>
+      </section>
+
+      <section class="panel" id="panel-hasil">
+        <p class="hint" style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Hasil yang sudah selesai diperiksa harus <strong>divalidasi</strong> oleh penanggung jawab sebelum diserahkan ke pasien. Tulis nama validator, lalu klik <strong>Validasi Hasil</strong>.</p>
+        <div id="hasilList"></div>
+        <p class="empty hidden" id="hasilEmpty">Belum ada hasil pemeriksaan yang selesai.</p>
+      </section>
+
+      <section class="panel" id="panel-riwayat">
+        <div class="toolbar"><div class="grow"><input type="search" id="riwayatSearch" placeholder="Cari berdasarkan nama pasien…" aria-label="Cari riwayat pasien" /></div></div>
+        <div id="riwayatList"></div>
+        <p class="empty hidden" id="riwayatEmpty">Tidak ada riwayat yang cocok dengan pencarian ini.</p>
+      </section>
+
+      <section class="panel" id="panel-laporan">
+        <div class="card">
+          <h2>Laporan Hasil Laboratorium</h2>
+          <p class="hint">Ringkasan jumlah sampel per status dan daftar hasil yang sudah divalidasi. Klik <strong>Cetak Laporan</strong> untuk mencetak halaman ini.</p>
+          <div id="laporanBody"></div>
+          <div class="form-actions"><button class="btn btn-primary" id="cetakBtn" type="button">Cetak Laporan</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-arsip">
+        <p class="hint" style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Hasil yang sudah divalidasi bisa <strong>diarsipkan</strong> supaya tidak bercampur dengan hasil aktif. Arsip tetap bisa dicari lewat tab Riwayat.</p>
+        <h2 class="section-title">Siap Diarsipkan (Sudah Divalidasi)</h2>
+        <div id="arsipSiap"></div>
+        <h2 class="section-title">Arsip Hasil</h2>
+        <div id="arsipList"></div>
+        <p class="empty hidden" id="arsipEmpty">Belum ada hasil yang diarsipkan.</p>
+      </section>
+
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan &mdash; Sistem Informasi Laboratorium (LIS)</h2>
+          <p>Selamat datang di aplikasi <strong>Sistem Informasi Laboratorium (LIS)</strong>. Aplikasi ini membantu laboratorium kecil mencatat pendaftaran sampel, mengikuti alur pemeriksaan, menulis dan memvalidasi hasil, melihat riwayat hasil pasien, mencetak laporan hasil, dan mengarsipkan hasil lama — semuanya dari satu halaman di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+          <div class="callout"><p><strong>Penting &mdash; data contoh saja.</strong> Semua data di aplikasi ini adalah <strong>data contoh</strong>. <strong>Data medis sungguhan tidak boleh disimpan di demo ini.</strong> Data medis adalah data pribadi yang dilindungi Undang-Undang Perlindungan Data Pribadi (UU PDP). Penerapan nyata membutuhkan perlindungan data, kontrol akses per peran (hanya petugas berwenang yang boleh melihat hasil pasien), dan jejak audit (catatan siapa mengakses atau mengubah apa dan kapan).</p></div>
+
+          <h2>1. Tab Ringkasan</h2>
+          <ul>
+            <li><strong>Total Sampel</strong> &mdash; jumlah seluruh sampel yang tercatat.</li>
+            <li><strong>Perlu Diproses</strong> &mdash; sampel berstatus Diterima atau sedang Diproses.</li>
+            <li><strong>Menunggu Validasi</strong> &mdash; hasil sudah selesai diperiksa tetapi belum divalidasi.</li>
+            <li><strong>Sudah Divalidasi</strong> &mdash; hasil resmi yang siap diserahkan ke pasien.</li>
+            <li><strong>Sampel Terbaru</strong> &mdash; lima sampel terakhir yang didaftarkan.</li>
+          </ul>
+
+          <h2>2. Tab Sampel</h2>
+          <h3>Mendaftarkan sampel baru</h3>
+          <ol>
+            <li>Isi <strong>nama pasien</strong> (data contoh).</li>
+            <li>Pilih <strong>jenis pemeriksaan</strong>, misalnya Darah Lengkap atau Gula Darah Puasa.</li>
+            <li>Isi <strong>tanggal pengambilan sampel</strong> dan <strong>catatan</strong> bila ada (misalnya &ldquo;Puasa 10 jam&rdquo;).</li>
+            <li>Klik <strong>+ Tambah Sampel</strong>. Sampel mendapat kode otomatis (misalnya LAB-006) dan status <strong>Diterima</strong>.</li>
+          </ol>
+          <h3>Mencari dan menghapus sampel</h3>
+          <ul>
+            <li>Ketik di kolom <strong>pencarian</strong> untuk mencari berdasarkan nama pasien, kode sampel, atau jenis pemeriksaan.</li>
+            <li>Tombol <strong>Hapus</strong> menghapus sampel dari daftar. Klik sekali untuk memunculkan konfirmasi <strong>&ldquo;Yakin hapus?&rdquo;</strong>, klik lagi untuk benar-benar menghapus. Data yang sudah dihapus tidak bisa dikembalikan.</li>
+          </ul>
+
+          <h2>3. Tab Pemeriksaan</h2>
+          <ul>
+            <li>Sampel berstatus <strong>Diterima</strong>: klik <strong>Mulai Periksa</strong> untuk mengubahnya menjadi <strong>Diproses</strong>.</li>
+            <li>Sampel berstatus <strong>Diproses</strong>: tulis <strong>hasil pemeriksaan</strong> pada kolom yang tersedia (misalnya &ldquo;Hemoglobin 14,2 g/dL (Normal)&rdquo;), lalu klik <strong>Simpan Hasil</strong>. Status berubah menjadi <strong>Selesai</strong>.</li>
+          </ul>
+
+          <h2>4. Tab Hasil</h2>
+          <ul>
+            <li>Menampilkan hasil berstatus <strong>Selesai</strong> dan <strong>Divalidasi</strong>.</li>
+            <li>Untuk memvalidasi: tulis <strong>nama validator</strong> (penanggung jawab), lalu klik <strong>Validasi Hasil</strong>. Status berubah menjadi <strong>Divalidasi</strong> dan hasil siap diserahkan atau diarsipkan.</li>
+            <li>Hasil yang sudah divalidasi tidak bisa diubah lagi dari tab ini — ini menjaga keabsahan hasil.</li>
+          </ul>
+
+          <h2>5. Tab Riwayat</h2>
+          <p>Ketik <strong>nama pasien</strong> di kolom pencarian untuk melihat seluruh riwayat hasil pasien tersebut: semua sampel, jenis pemeriksaan, tanggal, status, dan hasilnya — dari yang masih diproses sampai yang sudah diarsipkan.</p>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Menampilkan jumlah sampel per status dan daftar hasil yang sudah divalidasi beserta validatornya. Klik <strong>Cetak Laporan</strong> untuk mencetak laporan hasil otomatis ini.</p>
+
+          <h2>7. Tab Arsip</h2>
+          <p>Hasil yang sudah divalidasi bisa dipindahkan ke arsip dengan tombol <strong>Arsipkan</strong>. Arsip tetap tersimpan dan tetap bisa ditemukan lewat tab Riwayat.</p>
+
+          <h2>8. Arti Status Sampel</h2>
+          <table>
+            <tr><th>Status</th><th>Arti</th></tr>
+            <tr><td><strong>Diterima</strong></td><td>Sampel sudah didaftarkan dan diterima laboratorium.</td></tr>
+            <tr><td><strong>Diproses</strong></td><td>Sampel sedang diperiksa oleh analis.</td></tr>
+            <tr><td><strong>Selesai</strong></td><td>Hasil pemeriksaan sudah ditulis, menunggu validasi.</td></tr>
+            <tr><td><strong>Divalidasi</strong></td><td>Hasil sudah disahkan penanggung jawab, siap diserahkan.</td></tr>
+            <tr><td><strong>Diarsipkan</strong></td><td>Hasil sudah selesai dan dipindahkan ke arsip.</td></tr>
+          </table>
+
+          <h2>9. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>tersimpan di perangkat ini</strong> (localStorage peramban). Data <strong>tidak sinkron antar-perangkat</strong>: data yang ditambahkan di HP tidak muncul di komputer, dan sebaliknya. Menghapus data peramban akan menghapus data aplikasi.</li>
+            <li>Aplikasi ini adalah <strong>demo alur laboratorium</strong>. Aplikasi ini <strong>bukan sistem rekam medis elektronik</strong> dan <strong>bukan pengganti sistem LIS resmi</strong> fasilitas kesehatan.</li>
+            <li><strong>Data medis sungguhan tidak boleh disimpan di demo ini.</strong> Jangan memasukkan data pasien asli, diagnosis, atau hasil laboratorium asli ke aplikasi ini.</li>
+            <li>Untuk pemakaian resmi, dibutuhkan: perlindungan data pribadi sesuai UU PDP, kontrol akses per peran, jejak audit, pencadangan data, dan persetujuan fasilitas kesehatan Anda.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo &mdash; <strong>gratis selama masa garansi</strong>.</li>
+          </ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali &mdash; Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp ke 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table>
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula adalah paket standar siap pakai. Profesional menambah penyesuaian merek dan APK Android. Bisnis menambah penyimpanan permanen, multi-user, dan dukungan penuh. Harga di atas adalah harga standar; penyesuaian khusus dibicarakan terlebih dahulu melalui WhatsApp.</p>
+
+        </div>
+      </section>
+      <footer>
+
+        <p><strong>Catatan kejujuran:</strong> semua data pada aplikasi ini adalah <strong>data contoh</strong> (5 sampel contoh saat pertama dibuka) dan <strong>tersimpan di perangkat ini saja</strong> (localStorage) — data tidak sinkron antar-perangkat, dan menghapus data peramban akan menghapus data aplikasi.</p>
+        <p><strong>Batas jujur medis (UU PDP):</strong> aplikasi ini adalah <strong>demo alur laboratorium</strong>, bukan sistem rekam medis elektronik dan bukan pengganti sistem LIS resmi. <strong>Data medis sungguhan tidak boleh disimpan di demo ini.</strong> Penerapan nyata butuh perlindungan data, kontrol akses per peran, dan jejak audit.</p>
+      </footer>
+    </div>
+
+    <script>
+
+      "use strict";
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function fmtRp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function fmtDate(iso) {
+        if (!iso) return "-";
+        var p = String(iso).split("-");
+        if (p.length !== 3) return iso;
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        return parseInt(p[2], 10) + " " + B[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+      function loadState(key, seed) {
+        try { var raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
+        return seed;
+      }
+      function saveState(key, state) {
+        try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {}
+      }
+      function showNote(id, text) {
+        var n = $(id);
+        if (!n) return;
+        n.textContent = text;
+        n.classList.add("show");
+      }
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action='hapus']");
+        if (!btn) return;
+        if (btn.getAttribute("data-confirm") !== "1") {
+          btn.setAttribute("data-confirm", "1");
+          btn.textContent = "Yakin hapus?";
+          setTimeout(function () {
+            if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; }
+          }, 3000);
+          return;
+        }
+        if (typeof onDelete === "function") onDelete(btn.getAttribute("data-kind"), btn.getAttribute("data-id"));
+      });
+
+      var KEY = "lis-v1";
+      var state = loadState(KEY, {
+        seq: 6,
+        samples: [
+          { id: "s1", kode: "LAB-001", pasien: "Budi Santoso", jenis: "Darah Lengkap", tgl: "2026-11-20", status: "Divalidasi", hasil: "Hemoglobin 14,2 g/dL (Normal)", validator: "dr. Ratna Wijaya", catatan: "Puasa 10 jam" },
+          { id: "s2", kode: "LAB-002", pasien: "Siti Rahmawati", jenis: "Gula Darah Puasa", tgl: "2026-11-20", status: "Selesai", hasil: "Gula darah puasa 98 mg/dL (Normal)", validator: "", catatan: "" },
+          { id: "s3", kode: "LAB-003", pasien: "Agus Salim", jenis: "Kolesterol Total", tgl: "2026-11-19", status: "Diproses", hasil: "", validator: "", catatan: "" },
+          { id: "s4", kode: "LAB-004", pasien: "Maria Ulfa", jenis: "Urine Lengkap", tgl: "2026-11-19", status: "Diterima", hasil: "", validator: "", catatan: "" },
+          { id: "s5", kode: "LAB-005", pasien: "Rina Kartika", jenis: "Darah Lengkap", tgl: "2026-11-18", status: "Diarsipkan", hasil: "Hemoglobin 13,8 g/dL (Normal)", validator: "dr. Budi Santoso", catatan: "" }
+        ]
+      });
+
+      function save() { saveState(KEY, state); }
+      function statusBadge(s) {
+        var map = { "Diterima": "badge-blue", "Diproses": "badge-amber", "Selesai": "badge-teal", "Divalidasi": "badge-green", "Diarsipkan": "badge-amber" };
+        return '<span class="badge ' + (map[s] || "badge-teal") + '">' + esc(s) + "</span>";
+      }
+      function sampleCard(s, extra) {
+        return '<div class="card item-card"><div class="item-top"><span class="qnum">' + esc(s.kode) + '</span>' +
+          '<div class="row-main"><div class="name">' + esc(s.pasien) + '</div>' +
+          '<div class="meta">' + esc(s.jenis) + " • " + esc(fmtDate(s.tgl)) + (s.catatan ? " • " + esc(s.catatan) : "") + "</div>" +
+          (s.hasil ? '<div class="meta"><strong>Hasil:</strong> ' + esc(s.hasil) + "</div>" : "") +
+          (s.validator ? '<div class="meta"><strong>Divalidasi oleh:</strong> ' + esc(s.validator) + "</div>" : "") +
+          "</div>" + statusBadge(s.status) + "</div>" +
+          '<div class="item-actions">' + (extra || "") +
+          '<span class="spacer"></span>' +
+          '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="sampel" data-id="' + s.id + '">Hapus</button></div></div>';
+      }
+      function renderSummary() {
+        var all = state.samples;
+        $("stTotal").textContent = all.length;
+        $("stProses").textContent = all.filter(function (x) { return x.status === "Diterima" || x.status === "Diproses"; }).length;
+        $("stValidasi").textContent = all.filter(function (x) { return x.status === "Selesai"; }).length;
+        $("stSelesai").textContent = all.filter(function (x) { return x.status === "Divalidasi" || x.status === "Diarsipkan"; }).length;
+        var recent = all.slice(-5).reverse();
+        $("recentList").innerHTML = recent.length ? recent.map(function (s) {
+          return '<div class="row-item"><span class="qnum">' + esc(s.kode) + '</span><div class="row-main"><div class="name">' + esc(s.pasien) + '</div><div class="meta">' + esc(s.jenis) + " • " + esc(fmtDate(s.tgl)) + "</div></div>" + statusBadge(s.status) + "</div>";
+        }).join("") : '<p class="empty">Belum ada sampel.</p>';
+      }
+      function renderSampel() {
+        var q = $("sampelSearch").value.trim().toLowerCase();
+        var list = state.samples.filter(function (s) {
+          if (!q) return true;
+          return s.pasien.toLowerCase().indexOf(q) >= 0 || s.kode.toLowerCase().indexOf(q) >= 0 || s.jenis.toLowerCase().indexOf(q) >= 0;
+        });
+        $("sampelEmpty").classList.toggle("hidden", list.length > 0);
+        $("sampelList").innerHTML = list.map(function (s) { return sampleCard(s, ""); }).join("");
+      }
+      function renderPeriksa() {
+        var list = state.samples.filter(function (s) { return s.status === "Diterima" || s.status === "Diproses"; });
+        $("periksaEmpty").classList.toggle("hidden", list.length > 0);
+        $("periksaList").innerHTML = list.map(function (s) {
+          var extra = "";
+          if (s.status === "Diterima") {
+            extra = '<button class="btn btn-primary btn-small" data-aksi="mulai" data-id="' + s.id + '">Mulai Periksa</button>';
+          } else {
+            extra = '<input type="text" id="hasil-' + s.id + '" placeholder="Tulis hasil pemeriksaan, cth. Hemoglobin 14,2 g/dL (Normal)" />' +
+              '<button class="btn btn-primary btn-small" data-aksi="simpan-hasil" data-id="' + s.id + '">Simpan Hasil</button>';
+          }
+          return sampleCard(s, extra);
+        }).join("");
+      }
+      function renderHasil() {
+        var list = state.samples.filter(function (s) { return s.status === "Selesai" || s.status === "Divalidasi"; });
+        $("hasilEmpty").classList.toggle("hidden", list.length > 0);
+        $("hasilList").innerHTML = list.map(function (s) {
+          var extra = "";
+          if (s.status === "Selesai") {
+            extra = '<input type="text" id="val-' + s.id + '" placeholder="Nama validator, cth. dr. Ratna Wijaya" />' +
+              '<button class="btn btn-primary btn-small" data-aksi="validasi" data-id="' + s.id + '">Validasi Hasil</button>';
+          }
+          return sampleCard(s, extra);
+        }).join("");
+      }
+      function renderRiwayat() {
+        var q = $("riwayatSearch").value.trim().toLowerCase();
+        var list = state.samples.filter(function (s) {
+          if (!q) return true;
+          return s.pasien.toLowerCase().indexOf(q) >= 0;
+        });
+        $("riwayatEmpty").classList.toggle("hidden", list.length > 0);
+        $("riwayatList").innerHTML = list.map(function (s) { return sampleCard(s, ""); }).join("");
+      }
+      function renderLaporan() {
+        var counts = {};
+        state.samples.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
+        var rows = Object.keys(counts).map(function (k) {
+          return "<tr><td><strong>" + esc(k) + "</strong></td><td>" + counts[k] + " sampel</td></tr>";
+        }).join("");
+        var valid = state.samples.filter(function (s) { return s.status === "Divalidasi" || s.status === "Diarsipkan"; });
+        var vrows = valid.length ? valid.map(function (s) {
+          return '<div class="row-item"><span class="qnum">' + esc(s.kode) + '</span><div class="row-main"><div class="name">' + esc(s.pasien) + " — " + esc(s.jenis) + '</div><div class="meta">' + esc(s.hasil || "-") + " • Divalidasi oleh " + esc(s.validator || "-") + "</div></div>" + statusBadge(s.status) + "</div>";
+        }).join("") : '<p class="empty">Belum ada hasil yang divalidasi.</p>';
+        $("laporanBody").innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:.9rem;"><tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Status</th><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);">Jumlah</th></tr>' + rows + "</table><h3 style='margin:18px 0 6px;'>Hasil yang Sudah Divalidasi</h3>" + vrows;
+      }
+      function renderArsip() {
+        var siap = state.samples.filter(function (s) { return s.status === "Divalidasi"; });
+        $("arsipSiap").innerHTML = siap.length ? siap.map(function (s) {
+          return sampleCard(s, '<button class="btn btn-primary btn-small" data-aksi="arsipkan" data-id="' + s.id + '">Arsipkan</button>');
+        }).join("") : '<p class="empty">Tidak ada hasil yang siap diarsipkan.</p>';
+        var arch = state.samples.filter(function (s) { return s.status === "Diarsipkan"; });
+        $("arsipEmpty").classList.toggle("hidden", arch.length > 0);
+        $("arsipList").innerHTML = arch.map(function (s) { return sampleCard(s, ""); }).join("");
+      }
+      function renderAll() {
+        renderSummary(); renderSampel(); renderPeriksa(); renderHasil(); renderRiwayat(); renderLaporan(); renderArsip();
+      }
+      function onDelete(kind, id) {
+        if (kind !== "sampel") return;
+        state.samples = state.samples.filter(function (s) { return s.id !== id; });
+        save(); renderAll();
+      }
+      $("sampelForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var kode = "LAB-" + String(state.seq).padStart(3, "0");
+        state.seq += 1;
+        state.samples.push({
+          id: uid("s"), kode: kode, pasien: $("sPasien").value.trim(), jenis: $("sJenis").value,
+          tgl: $("sTanggal").value, status: "Diterima", hasil: "", validator: "", catatan: $("sCatatan").value.trim()
+        });
+        showNote("sampelNote", "Sampel " + kode + " untuk " + $("sPasien").value.trim() + " berhasil didaftarkan dengan status Diterima.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("sampelForm").addEventListener("reset", function () { $("sampelNote").classList.remove("show"); });
+      $("sampelSearch").addEventListener("input", renderSampel);
+      $("riwayatSearch").addEventListener("input", renderRiwayat);
+      $("cetakBtn").addEventListener("click", function () { window.print(); });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-aksi]");
+        if (!btn) return;
+        var aksi = btn.getAttribute("data-aksi");
+        var s = null;
+        state.samples.forEach(function (x) { if (x.id === btn.getAttribute("data-id")) s = x; });
+        if (!s) return;
+        if (aksi === "mulai") { s.status = "Diproses"; }
+        if (aksi === "simpan-hasil") {
+          var h = $("hasil-" + s.id);
+          if (!h || !h.value.trim()) { alert("Tulis hasil pemeriksaan terlebih dahulu."); return; }
+          s.hasil = h.value.trim(); s.status = "Selesai";
+        }
+        if (aksi === "validasi") {
+          var v = $("val-" + s.id);
+          if (!v || !v.value.trim()) { alert("Tulis nama validator terlebih dahulu."); return; }
+          s.validator = v.value.trim(); s.status = "Divalidasi";
+        }
+        if (aksi === "arsipkan") { s.status = "Diarsipkan"; }
+        save(); renderAll();
+      });
+      (function () {
+        var d = new Date();
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        var H = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        $("todayText").textContent = H[d.getDay()] + ", " + d.getDate() + " " + B[d.getMonth()] + " " + d.getFullYear();
+        renderAll();
+      })();
+    </script>
+  </body>
+</html>

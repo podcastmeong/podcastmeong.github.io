@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Aplikasi Anggaran Perusahaan</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f0fdf4;
+        --bg-soft: #dcfce7;
+        --card: #ffffff;
+        --card-2: #f7fef9;
+        --ink: #14532d;
+        --ink-2: #3f6212;
+        --ink-3: #6b8f71;
+        --line: #d9eedd;
+        --accent: #16a34a;
+        --accent-dark: #15803d;
+        --accent-soft: #dcfce7;
+        --amber: #b45309;
+        --amber-soft: #fef3c7;
+        --blue: #1d6fb8;
+        --blue-soft: #e4f0fa;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --red: #b3372f;
+        --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(20, 83, 45, .06), 0 10px 30px rgba(20, 83, 45, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1f13;
+          --bg-soft: #132b1a;
+          --card: #14291b;
+          --card-2: #193322;
+          --ink: #e2f5e8;
+          --ink-2: #a9c4b8;
+          --ink-3: #7d978a;
+          --line: #24402e;
+          --accent: #4ade80;
+          --accent-dark: #86efac;
+          --accent-soft: #173a26;
+          --amber: #fbbf24;
+          --amber-soft: #3a2f14;
+          --blue: #5ea8e0;
+          --blue-soft: #17334a;
+          --green: #6fbf73;
+          --green-soft: #1e3a20;
+          --red: #e07a72;
+          --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #0c1a14; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 1.7rem; font-weight: 800; line-height: 1.15; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-amber { background: var(--amber-soft); color: var(--amber); }
+      .badge-blue { background: var(--blue-soft); color: var(--blue); }
+      .badge-green { background: var(--green-soft); color: var(--green); }
+      .badge-red { background: var(--red-soft); color: var(--red); }
+      .badge-teal { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: .92rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #0c1a14; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select, .item-actions input { width: auto; flex: 0 1 auto; }
+      .item-actions input[type="text"] { flex: 1 1 220px; }
+      .item-actions .spacer { flex: 1; }
+      .progress { height: 10px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+      .progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .progress.over > span { background: var(--red); }
+      .progress.warn > span { background: var(--amber); }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .callout.green { background: var(--accent-soft); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Aplikasi Anggaran Perusahaan</h1>
+        <p>Anggaran per divisi, realisasi vs anggaran, peringatan melewati anggaran, anggaran tahunan, dan laporan — untuk perusahaan kecil dan menengah.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="anggaran" role="tab">Anggaran</button><button class="tab-btn" data-tab="divisi" role="tab">Divisi</button><button class="tab-btn" data-tab="realisasi" role="tab">Realisasi</button><button class="tab-btn" data-tab="peringatan" role="tab">Peringatan</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+
+      <section class="panel active" id="panel-ringkasan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Anggaran 2026</p><p class="value" id="stAnggaran">Rp0</p><p class="sub">Semua divisi, semua kategori</p></div>
+          <div class="card stat"><p class="label">Total Realisasi</p><p class="value" id="stRealisasi">Rp0</p><p class="sub">Pengeluaran yang tercatat</p></div>
+          <div class="card stat"><p class="label">Sisa Anggaran</p><p class="value" id="stSisa">Rp0</p><p class="sub">Anggaran yang belum terpakai</p></div>
+          <div class="card stat"><p class="label">Melewati Anggaran</p><p class="value" id="stLewat">0</p><p class="sub">Pos anggaran yang sudah lewat batas</p></div>
+        </div>
+        <h2 class="section-title">Penggunaan Anggaran per Divisi</h2>
+        <div class="card"><div id="divisiSummary"></div></div>
+      </section>
+
+      <section class="panel" id="panel-anggaran">
+        <div class="card form-card">
+          <h2>Tambah Anggaran</h2>
+          <p class="hint">Tetapkan anggaran per divisi dan kategori untuk satu tahun anggaran.</p>
+          <form id="anggaranForm">
+            <div class="form-grid">
+              <div class="field"><label for="aDivisi">Divisi</label><select id="aDivisi" required></select></div>
+              <div class="field"><label for="aKategori">Kategori anggaran</label><input type="text" id="aKategori" placeholder="cth. Iklan Digital" required /></div>
+              <div class="field"><label for="aTahun">Tahun anggaran</label><input type="number" id="aTahun" min="2020" max="2100" value="2026" required /></div>
+              <div class="field"><label for="aJumlah">Jumlah anggaran (Rp)</label><input type="number" id="aJumlah" min="1" placeholder="cth. 40000000" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Anggaran</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="anggaranNote"></p>
+          </form>
+        </div>
+        <div id="anggaranList"></div>
+      </section>
+
+      <section class="panel" id="panel-divisi">
+        <div class="card form-card">
+          <h2>Tambah Divisi</h2>
+          <p class="hint">Kelola divisi perusahaan beserta penanggung jawabnya.</p>
+          <form id="divisiForm">
+            <div class="form-grid">
+              <div class="field"><label for="dvNama">Nama divisi</label><input type="text" id="dvNama" placeholder="cth. Pemasaran" required /></div>
+              <div class="field"><label for="dvPj">Penanggung jawab</label><input type="text" id="dvPj" placeholder="cth. Sari Dewi" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Divisi</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="divisiNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Divisi</h2>
+        <div id="divisiList"></div>
+      </section>
+
+      <section class="panel" id="panel-realisasi">
+        <div class="card form-card">
+          <h2>Catat Realisasi (Pengeluaran)</h2>
+          <p class="hint">Setiap pengeluaran dicatat ke pos anggaran tertentu. Penggunaan anggaran diperbarui otomatis.</p>
+          <form id="realisasiForm">
+            <div class="form-grid">
+              <div class="field"><label for="rAnggaran">Pos anggaran</label><select id="rAnggaran" required></select></div>
+              <div class="field"><label for="rKet">Keterangan pengeluaran</label><input type="text" id="rKet" placeholder="cth. Iklan media sosial November" required /></div>
+              <div class="field"><label for="rJumlah">Jumlah (Rp)</label><input type="number" id="rJumlah" min="1" placeholder="cth. 5000000" required /></div>
+              <div class="field"><label for="rTanggal">Tanggal</label><input type="date" id="rTanggal" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">+ Catat Realisasi</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div>
+            <p class="form-note" id="realisasiNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Riwayat Realisasi</h2>
+        <div id="realisasiList"></div>
+      </section>
+
+      <section class="panel" id="panel-peringatan">
+        <p class="hint" style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Pos anggaran yang pemakaiannya sudah mencapai <strong>80%</strong> atau lebih akan muncul di sini. Pos yang sudah <strong>melewati 100%</strong> harus segera ditinjau — hentikan pengeluaran atau ajukan revisi anggaran.</p>
+        <div id="peringatanList"></div>
+        <p class="empty hidden" id="peringatanEmpty">Semua pos anggaran masih di bawah 80% pemakaian. Bagus!</p>
+      </section>
+
+      <section class="panel" id="panel-laporan">
+        <div class="card">
+          <h2>Laporan Anggaran Tahunan</h2>
+          <p class="hint">Perbandingan anggaran dan realisasi per divisi dan per pos. Klik <strong>Cetak Laporan</strong> untuk mencetak halaman ini.</p>
+          <div id="laporanBody"></div>
+          <div class="form-actions"><button class="btn btn-primary" id="cetakBtn" type="button">Cetak Laporan</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan &mdash; Aplikasi Anggaran Perusahaan</h2>
+          <p>Selamat datang di aplikasi <strong>Anggaran Perusahaan</strong>. Aplikasi ini membantu perusahaan menyusun anggaran per divisi, mencatat realisasi pengeluaran, membandingkan realisasi dengan anggaran, memberi peringatan bila anggaran hampir atau sudah terlampaui, dan melihat laporan anggaran tahunan — semuanya dari satu halaman di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+
+          <h2>1. Tab Ringkasan</h2>
+          <ul>
+            <li><strong>Total Anggaran 2026</strong> &mdash; jumlah seluruh anggaran yang ditetapkan.</li>
+            <li><strong>Total Realisasi</strong> &mdash; jumlah seluruh pengeluaran yang tercatat.</li>
+            <li><strong>Sisa Anggaran</strong> &mdash; anggaran yang belum terpakai.</li>
+            <li><strong>Melewati Anggaran</strong> &mdash; jumlah pos anggaran yang realisasinya sudah melebihi 100%.</li>
+            <li><strong>Penggunaan Anggaran per Divisi</strong> &mdash; tiap divisi beserta total anggaran, realisasi, dan persentase pemakaiannya.</li>
+          </ul>
+
+          <h2>2. Tab Anggaran</h2>
+          <ol>
+            <li>Pilih <strong>divisi</strong> (daftar divisi diatur di tab Divisi).</li>
+            <li>Isi <strong>kategori anggaran</strong>, misalnya &ldquo;Iklan Digital&rdquo; atau &ldquo;Peralatan Kantor&rdquo;.</li>
+            <li>Isi <strong>tahun anggaran</strong> dan <strong>jumlah anggaran</strong> dalam rupiah.</li>
+            <li>Klik <strong>+ Tambah Anggaran</strong>. Setiap pos anggaran menampilkan jumlah anggaran, realisasi, sisa, dan persentase pemakaian.</li>
+          </ol>
+
+          <h2>3. Tab Divisi</h2>
+          <ul>
+            <li><strong>Tambah divisi</strong> &mdash; isi nama divisi dan penanggung jawabnya, lalu klik <strong>+ Tambah Divisi</strong>.</li>
+            <li><strong>Hapus</strong> &mdash; klik Hapus, lalu konfirmasi &ldquo;Yakin hapus?&rdquo;. Divisi yang masih memiliki pos anggaran <strong>tidak bisa dihapus</strong> — hapus dulu pos anggarannya.</li>
+          </ul>
+
+          <h2>4. Tab Realisasi</h2>
+          <ol>
+            <li>Pilih <strong>pos anggaran</strong> yang dipakai untuk pengeluaran tersebut.</li>
+            <li>Isi <strong>keterangan pengeluaran</strong>, <strong>jumlah</strong>, dan <strong>tanggal</strong>.</li>
+            <li>Klik <strong>+ Catat Realisasi</strong>. Penggunaan pos anggaran dan divisi terkait diperbarui otomatis, dan pengeluaran muncul di <strong>Riwayat Realisasi</strong>.</li>
+          </ol>
+
+          <h2>5. Tab Peringatan</h2>
+          <p>Tab ini menampilkan pos anggaran yang pemakaiannya sudah <strong>80% atau lebih</strong>:</p>
+          <ul>
+            <li><strong>Mendekati batas</strong> (80% sampai di bawah 100%) &mdash; pengeluaran masih di bawah anggaran, tetapi hampir habis. Pertimbangkan untuk menahan pengeluaran yang tidak mendesak.</li>
+            <li><strong>Melewati anggaran</strong> (100% atau lebih) &mdash; realisasi sudah melebihi anggaran. Segera tinjau dan ajukan revisi anggaran bila pengeluaran memang diperlukan.</li>
+          </ul>
+
+          <h2>6. Tab Laporan</h2>
+          <p>Menampilkan tabel anggaran tahunan: tiap divisi beserta total anggaran, total realisasi, sisa, dan persentase pemakaian, dilanjutkan rincian per pos anggaran. Klik <strong>Cetak Laporan</strong> untuk mencetak laporan ini.</p>
+
+          <h2>7. Menghapus Data</h2>
+          <p>Tombol <strong>Hapus</strong> pada pos anggaran atau realisasi menghapus data tersebut. Klik sekali untuk memunculkan konfirmasi <strong>&ldquo;Yakin hapus?&rdquo;</strong>, klik lagi untuk benar-benar menghapus. Data yang sudah dihapus tidak bisa dikembalikan. Menghapus pos anggaran tidak menghapus realisasi yang sudah tercatat ke pos itu — realisasi tersebut tetap tampil di riwayat dengan keterangan pos yang sudah dihapus.</p>
+
+          <h2>8. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>tersimpan di perangkat ini</strong> (localStorage peramban). Data <strong>tidak sinkron antar-perangkat</strong>: data yang ditambahkan di HP tidak muncul di komputer, dan sebaliknya. Menghapus data peramban akan menghapus data aplikasi.</li>
+            <li>Aplikasi ini adalah alat <strong>perencana dan pemantau anggaran</strong> untuk perusahaan kecil dan menengah. Aplikasi ini <strong>bukan sistem akuntansi lengkap</strong> dan tidak menggantikan pembukuan resmi atau jasa akuntan.</li>
+            <li>Semua angka adalah <strong>data contoh</strong> untuk keperluan demonstrasi. Periksa kembali angka Anda sebelum dipakai untuk keputusan keuangan.</li>
+          </ul>
+
+          <h2>Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul>
+            <li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo &mdash; <strong>gratis selama masa garansi</strong>.</li>
+          </ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali &mdash; Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali &mdash; Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp ke 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table>
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula adalah paket standar siap pakai. Profesional menambah penyesuaian merek dan APK Android. Bisnis menambah penyimpanan permanen, multi-user, dan dukungan penuh. Harga di atas adalah harga standar; penyesuaian khusus dibicarakan terlebih dahulu melalui WhatsApp.</p>
+
+        </div>
+      </section>
+      <footer>
+
+        <p><strong>Catatan kejujuran:</strong> semua data pada aplikasi ini adalah <strong>data contoh</strong> (4 divisi, 6 pos anggaran, dan 5 realisasi contoh saat pertama dibuka) dan <strong>tersimpan di perangkat ini saja</strong> (localStorage) — data tidak sinkron antar-perangkat, dan menghapus data peramban akan menghapus data aplikasi.</p>
+        <p>Aplikasi ini adalah alat <strong>perencana dan pemantau anggaran</strong> perusahaan. Aplikasi ini <strong>bukan sistem akuntansi lengkap</strong> dan tidak menggantikan pembukuan resmi atau jasa akuntan.</p>
+      </footer>
+    </div>
+
+    <script>
+
+      "use strict";
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function fmtRp(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+      function fmtDate(iso) {
+        if (!iso) return "-";
+        var p = String(iso).split("-");
+        if (p.length !== 3) return iso;
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        return parseInt(p[2], 10) + " " + B[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+      function loadState(key, seed) {
+        try { var raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
+        return seed;
+      }
+      function saveState(key, state) {
+        try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {}
+      }
+      function showNote(id, text) {
+        var n = $(id);
+        if (!n) return;
+        n.textContent = text;
+        n.classList.add("show");
+      }
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action='hapus']");
+        if (!btn) return;
+        if (btn.getAttribute("data-confirm") !== "1") {
+          btn.setAttribute("data-confirm", "1");
+          btn.textContent = "Yakin hapus?";
+          setTimeout(function () {
+            if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; }
+          }, 3000);
+          return;
+        }
+        if (typeof onDelete === "function") onDelete(btn.getAttribute("data-kind"), btn.getAttribute("data-id"));
+      });
+
+      var KEY = "ang-v1";
+      var state = loadState(KEY, {
+        divisi: [
+          { id: "d1", nama: "Operasional", pj: "Rudi Hartono" },
+          { id: "d2", nama: "Pemasaran", pj: "Sari Dewi" },
+          { id: "d3", nama: "SDM", pj: "Andi Pratama" },
+          { id: "d4", nama: "Keuangan", pj: "Dewi Lestari" }
+        ],
+        anggaran: [
+          { id: "a1", divisiId: "d1", kategori: "Gaji & Tunjangan", tahun: 2026, jumlah: 120000000 },
+          { id: "a2", divisiId: "d1", kategori: "Peralatan Kantor", tahun: 2026, jumlah: 25000000 },
+          { id: "a3", divisiId: "d2", kategori: "Iklan Digital", tahun: 2026, jumlah: 40000000 },
+          { id: "a4", divisiId: "d2", kategori: "Acara & Promosi", tahun: 2026, jumlah: 15000000 },
+          { id: "a5", divisiId: "d3", kategori: "Pelatihan", tahun: 2026, jumlah: 20000000 },
+          { id: "a6", divisiId: "d4", kategori: "Perangkat Lunak", tahun: 2026, jumlah: 10000000 }
+        ],
+        realisasi: [
+          { id: "r1", anggaranId: "a1", ket: "Gaji November", jumlah: 10000000, tanggal: "2026-11-05" },
+          { id: "r2", anggaranId: "a2", ket: "Pembelian printer", jumlah: 8500000, tanggal: "2026-11-08" },
+          { id: "r3", anggaranId: "a3", ket: "Iklan media sosial November", jumlah: 34000000, tanggal: "2026-11-10" },
+          { id: "r4", anggaranId: "a4", ket: "Bazar akhir tahun", jumlah: 16200000, tanggal: "2026-11-12" },
+          { id: "r5", anggaranId: "a5", ket: "Pelatihan layanan pelanggan", jumlah: 8000000, tanggal: "2026-11-15" }
+        ]
+      });
+
+      function save() { saveState(KEY, state); }
+      function divisiById(id) { var f = null; state.divisi.forEach(function (d) { if (d.id === id) f = d; }); return f; }
+      function anggaranById(id) { var f = null; state.anggaran.forEach(function (a) { if (a.id === id) f = a; }); return f; }
+      function usedOf(anggaranId) { var t = 0; state.realisasi.forEach(function (r) { if (r.anggaranId === anggaranId) t += r.jumlah; }); return t; }
+      function pctOf(a) { return a.jumlah > 0 ? Math.round((usedOf(a.id) / a.jumlah) * 100) : 0; }
+      function pctBadge(p) {
+        if (p >= 100) return '<span class="badge badge-red">Melewati anggaran</span>';
+        if (p >= 80) return '<span class="badge badge-amber">Mendekati batas</span>';
+        return '<span class="badge badge-green">Aman</span>';
+      }
+      function progressBar(p) {
+        var cls = p >= 100 ? "progress over" : (p >= 80 ? "progress warn" : "progress");
+        return '<div class="' + cls + '"><span style="width:' + Math.min(p, 100) + '%"></span></div>';
+      }
+      function renderSummary() {
+        var totA = 0, totR = 0;
+        state.anggaran.forEach(function (a) { totA += a.jumlah; });
+        state.realisasi.forEach(function (r) { totR += r.jumlah; });
+        $("stAnggaran").textContent = fmtRp(totA);
+        $("stRealisasi").textContent = fmtRp(totR);
+        $("stSisa").textContent = fmtRp(totA - totR);
+        $("stLewat").textContent = state.anggaran.filter(function (a) { return pctOf(a) >= 100; }).length;
+        $("divisiSummary").innerHTML = state.divisi.map(function (d) {
+          var list = state.anggaran.filter(function (a) { return a.divisiId === d.id; });
+          var ta = 0, tr = 0;
+          list.forEach(function (a) { ta += a.jumlah; tr += usedOf(a.id); });
+          var p = ta > 0 ? Math.round((tr / ta) * 100) : 0;
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(d.nama) + " <span style='font-weight:400;color:var(--ink-3);'>— " + esc(d.pj) + "</span></div>" +
+            '<div class="meta">Anggaran ' + fmtRp(ta) + " • Realisasi " + fmtRp(tr) + " • Sisa " + fmtRp(ta - tr) + " • " + p + "% terpakai</div>" + progressBar(p) + "</div>" + pctBadge(p) + "</div>";
+        }).join("");
+      }
+      function fillDivisiSelect() {
+        $("aDivisi").innerHTML = state.divisi.map(function (d) { return '<option value="' + d.id + '">' + esc(d.nama) + "</option>"; }).join("");
+      }
+      function fillAnggaranSelect() {
+        $("rAnggaran").innerHTML = state.anggaran.map(function (a) {
+          var d = divisiById(a.divisiId);
+          return '<option value="' + a.id + '">' + esc(d ? d.nama : "-") + " — " + esc(a.kategori) + " (" + a.tahun + ")</option>";
+        }).join("");
+      }
+      function renderAnggaran() {
+        fillDivisiSelect();
+        $("anggaranList").innerHTML = state.anggaran.length ? state.anggaran.map(function (a) {
+          var d = divisiById(a.divisiId);
+          var p = pctOf(a), u = usedOf(a.id);
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(a.kategori) + " <span style='font-weight:400;color:var(--ink-3);'>(" + esc(d ? d.nama : "Divisi dihapus") + " • " + a.tahun + ")</span></div>" +
+            '<div class="meta">Anggaran ' + fmtRp(a.jumlah) + " • Realisasi " + fmtRp(u) + " • Sisa " + fmtRp(a.jumlah - u) + " • " + p + "% terpakai</div>" + progressBar(p) + "</div>" + pctBadge(p) + "</div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="anggaran" data-id="' + a.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada anggaran. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderDivisi() {
+        $("divisiList").innerHTML = state.divisi.map(function (d) {
+          var n = state.anggaran.filter(function (a) { return a.divisiId === d.id; }).length;
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + '</div><div class="meta">Penanggung jawab: ' + esc(d.pj) + " • " + n + ' pos anggaran</div></div></div>' +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="divisi" data-id="' + d.id + '">Hapus</button></div></div>';
+        }).join("");
+      }
+      function renderRealisasi() {
+        fillAnggaranSelect();
+        var list = state.realisasi.slice().reverse();
+        $("realisasiList").innerHTML = list.length ? list.map(function (r) {
+          var a = anggaranById(r.anggaranId);
+          var d = a ? divisiById(a.divisiId) : null;
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(r.ket) + '</div>' +
+            '<div class="meta">' + esc(a ? (d ? d.nama : "-") + " — " + a.kategori : "Pos anggaran dihapus") + " • " + esc(fmtDate(r.tanggal)) + "</div></div>" +
+            '<span class="qnum">' + fmtRp(r.jumlah) + "</span></div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="hapus" data-kind="realisasi" data-id="' + r.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada realisasi tercatat.</p>';
+      }
+      function renderPeringatan() {
+        var list = state.anggaran.filter(function (a) { return pctOf(a) >= 80; });
+        list.sort(function (a, b) { return pctOf(b) - pctOf(a); });
+        $("peringatanEmpty").classList.toggle("hidden", list.length > 0);
+        $("peringatanList").innerHTML = list.map(function (a) {
+          var d = divisiById(a.divisiId);
+          var p = pctOf(a), u = usedOf(a.id);
+          return '<div class="card item-card"><div class="item-top">' +
+            '<div class="row-main"><div class="name">' + esc(a.kategori) + " <span style='font-weight:400;color:var(--ink-3);'>(" + esc(d ? d.nama : "-") + " • " + a.tahun + ")</span></div>" +
+            '<div class="meta">Anggaran ' + fmtRp(a.jumlah) + " • Realisasi " + fmtRp(u) + " • Sisa " + fmtRp(a.jumlah - u) + " • " + p + "% terpakai</div>" + progressBar(p) + "</div>" + pctBadge(p) + "</div></div>";
+        }).join("");
+      }
+      function renderLaporan() {
+        var rows = state.divisi.map(function (d) {
+          var list = state.anggaran.filter(function (a) { return a.divisiId === d.id; });
+          var ta = 0, tr = 0;
+          list.forEach(function (a) { ta += a.jumlah; tr += usedOf(a.id); });
+          var p = ta > 0 ? Math.round((tr / ta) * 100) : 0;
+          return "<tr><td><strong>" + esc(d.nama) + "</strong></td><td>" + fmtRp(ta) + "</td><td>" + fmtRp(tr) + "</td><td>" + fmtRp(ta - tr) + "</td><td>" + p + "%</td><td>" + (p >= 100 ? "Melewati" : (p >= 80 ? "Mendekati batas" : "Aman")) + "</td></tr>";
+        }).join("");
+        var detail = state.anggaran.map(function (a) {
+          var d = divisiById(a.divisiId);
+          var p = pctOf(a);
+          return "<tr><td>" + esc(d ? d.nama : "-") + " — " + esc(a.kategori) + " (" + a.tahun + ")</td><td>" + fmtRp(a.jumlah) + "</td><td>" + fmtRp(usedOf(a.id)) + "</td><td>" + fmtRp(a.jumlah - usedOf(a.id)) + "</td><td>" + p + "%</td></tr>";
+        }).join("");
+        var totA = 0, totR = 0;
+        state.anggaran.forEach(function (a) { totA += a.jumlah; });
+        state.realisasi.forEach(function (r) { totR += r.jumlah; });
+        $("laporanBody").innerHTML =
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;">' +
+          "<tr><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Divisi</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Anggaran</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Realisasi</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Sisa</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>%</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Status</th></tr>" +
+          rows +
+          "<tr><td><strong>TOTAL</strong></td><td><strong>" + fmtRp(totA) + "</strong></td><td><strong>" + fmtRp(totR) + "</strong></td><td><strong>" + fmtRp(totA - totR) + "</strong></td><td><strong>" + (totA > 0 ? Math.round((totR / totA) * 100) : 0) + "%</strong></td><td></td></tr></table>" +
+          "<h3 style='margin:18px 0 6px;'>Rincian per Pos Anggaran</h3>" +
+          '<table style="width:100%;border-collapse:collapse;font-size:.9rem;">' +
+          "<tr><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Pos Anggaran</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Anggaran</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Realisasi</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>Sisa</th><th style='text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);'>%</th></tr>" +
+          detail + "</table>";
+      }
+      function renderAll() {
+        renderSummary(); renderAnggaran(); renderDivisi(); renderRealisasi(); renderPeringatan(); renderLaporan();
+      }
+      function onDelete(kind, id) {
+        if (kind === "anggaran") state.anggaran = state.anggaran.filter(function (a) { return a.id !== id; });
+        if (kind === "realisasi") state.realisasi = state.realisasi.filter(function (r) { return r.id !== id; });
+        if (kind === "divisi") {
+          var used = state.anggaran.some(function (a) { return a.divisiId === id; });
+          if (used) { alert("Divisi ini masih memiliki pos anggaran. Hapus dulu pos anggarannya."); return; }
+          state.divisi = state.divisi.filter(function (d) { return d.id !== id; });
+        }
+        save(); renderAll();
+      }
+      $("anggaranForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.anggaran.push({ id: uid("a"), divisiId: $("aDivisi").value, kategori: $("aKategori").value.trim(), tahun: Number($("aTahun").value), jumlah: Number($("aJumlah").value) });
+        showNote("anggaranNote", "Anggaran " + $("aKategori").value.trim() + " sebesar " + fmtRp(Number($("aJumlah").value)) + " berhasil ditambahkan.");
+        e.target.reset(); $("aTahun").value = "2026";
+        save(); renderAll();
+      });
+      $("divisiForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        state.divisi.push({ id: uid("d"), nama: $("dvNama").value.trim(), pj: $("dvPj").value.trim() });
+        showNote("divisiNote", "Divisi " + $("dvNama").value.trim() + " berhasil ditambahkan.");
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("realisasiForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var a = anggaranById($("rAnggaran").value);
+        if (!a) { alert("Pilih pos anggaran terlebih dahulu."); return; }
+        state.realisasi.push({ id: uid("r"), anggaranId: a.id, ket: $("rKet").value.trim(), jumlah: Number($("rJumlah").value), tanggal: $("rTanggal").value });
+        var p = pctOf(a);
+        showNote("realisasiNote", "Realisasi " + fmtRp(Number($("rJumlah").value)) + " untuk " + a.kategori + " berhasil dicatat. Pemakaian pos ini sekarang " + p + "%." + (p >= 100 ? " Pos ini sudah MELEWATI anggaran." : (p >= 80 ? " Pos ini mendekati batas anggaran." : "")));
+        e.target.reset();
+        save(); renderAll();
+      });
+      $("cetakBtn").addEventListener("click", function () { window.print(); });
+      (function () {
+        var d = new Date();
+        var B = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        var H = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        $("todayText").textContent = H[d.getDay()] + ", " + d.getDate() + " " + B[d.getMonth()] + " " + d.getFullYear();
+        renderAll();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Manajemen Janji Temu Dokter</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #f2f7f4; --bg-soft: #e8f1ea; --card: #ffffff; --card-2: #f7faf8;
+        --ink: #17352c; --ink-2: #47635a; --ink-3: #7d948b; --line: #dce8e2;
+        --accent: #16a34a; --accent-dark: #15803d; --accent-soft: #dcfce7;
+        --amber: #b97e10; --amber-soft: #fdf3dd; --blue: #1d6fb8; --blue-soft: #e4f0fa;
+        --green: #2e7d32; --green-soft: #e6f3e4; --red: #b3372f; --red-soft: #fbe9e7;
+        --shadow: 0 2px 10px rgba(23, 53, 44, .06), 0 10px 30px rgba(23, 53, 44, .05);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1a15; --bg-soft: #16241d; --card: #182620; --card-2: #1d2e26;
+          --ink: #e6f2ec; --ink-2: #a9c4b8; --ink-3: #7d978a; --line: #2a3f36;
+          --accent: #4ade80; --accent-dark: #86efac; --accent-soft: #14532d;
+          --amber: #e0aa3e; --amber-soft: #3a2f14; --blue: #5ea8e0; --blue-soft: #17334a;
+          --green: #6fbf73; --green-soft: #1e3a20; --red: #e07a72; --red-soft: #42211e;
+          --shadow: 0 2px 10px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+        }
+      }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px 40px; }
+      .page-head { margin: 6px 0 18px; }
+      .page-head h1 { font-size: 1.65rem; margin: 0 0 4px; letter-spacing: -.01em; }
+      .page-head p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+      .today-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; font-size: .85rem; padding: 6px 14px; border-radius: 999px; }
+      .today-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); position: sticky; top: 10px; z-index: 20; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { flex: 1 0 auto; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; font-size: .92rem; padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; min-height: 2.5rem; }
+      .tab-btn:hover { color: var(--ink); }
+      .tab-btn.active { background: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .tab-btn.active { color: #052e16; } }
+      .panel { display: none; margin-top: 20px; }
+      .panel.active { display: block; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      .stat { padding: 18px; }
+      .stat .label { font-size: .82rem; color: var(--ink-2); font-weight: 600; margin: 0 0 6px; }
+      .stat .value { font-size: 2rem; font-weight: 800; line-height: 1.1; margin: 0; }
+      .stat .sub { font-size: .8rem; color: var(--ink-3); margin: 4px 0 0; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+      .card .hint { color: var(--ink-2); font-size: .87rem; margin: 0 0 14px; }
+      .section-title { font-size: 1.15rem; margin: 26px 0 12px; }
+      .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row-item:first-of-type { padding-top: 4px; }
+      .avatar { width: 42px; height: 42px; border-radius: 50%; flex: 0 0 auto; background: var(--accent-soft); color: var(--accent-dark); display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+      .row-main { flex: 1 1 auto; min-width: 0; }
+      .row-main .name { font-weight: 700; font-size: .95rem; }
+      .row-main .meta { color: var(--ink-2); font-size: .83rem; }
+      .empty { color: var(--ink-3); font-size: .9rem; padding: 10px 0; margin: 0; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+      .badge-terjadwal { background: var(--blue-soft); color: var(--blue); }
+      .badge-selesai { background: var(--green-soft); color: var(--green); }
+      .badge-dibatalkan { background: var(--red-soft); color: var(--red); }
+      .badge-terkirim { background: var(--green-soft); color: var(--green); }
+      .badge-belum-terkirim { background: var(--amber-soft); color: var(--amber); }
+      .badge-poli { background: var(--accent-soft); color: var(--accent-dark); }
+      .qnum { font-weight: 800; font-size: 1rem; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; white-space: nowrap; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      .toolbar .grow { flex: 1 1 200px; }
+      input[type="text"], input[type="tel"], input[type="date"], input[type="number"], input[type="search"], select, textarea { font: inherit; font-size: .93rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; width: 100%; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+      .btn { font: inherit; font-weight: 700; font-size: .9rem; border: 0; cursor: pointer; border-radius: 12px; padding: 10px 18px; min-height: 2.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary { color: #052e16; } }
+      .btn-ghost { background: var(--card-2); color: var(--ink); border: 1px solid var(--line); }
+      .btn-ghost:hover { border-color: var(--ink-3); }
+      .btn-danger { background: var(--red-soft); color: var(--red); }
+      .btn-small { padding: 7px 13px; min-height: 2.25rem; font-size: .83rem; border-radius: 10px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+      .form-card { margin-bottom: 16px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+      .field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .form-note { font-size: .85rem; color: var(--accent-dark); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 12px 0 0; display: none; }
+      .form-note.show { display: block; }
+      .form-note.warn { color: var(--red); background: var(--red-soft); }
+      .hidden { display: none !important; }
+      .item-card { padding: 16px 20px; margin-bottom: 12px; }
+      .item-top { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+      .item-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+      .item-actions select { width: auto; flex: 0 1 auto; }
+      .item-actions .spacer { flex: 1; }
+      .bar { height: 10px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 8px; }
+      .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      .guide h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+      .guide h2:first-child { margin-top: 0; }
+      .guide h3 { font-size: 1rem; margin: 18px 0 6px; }
+      .guide p, .guide li { color: var(--ink-2); font-size: .94rem; }
+      .guide ul, .guide ol { padding-left: 22px; margin: 6px 0 10px; }
+      .guide li { margin-bottom: 5px; }
+      .guide strong { color: var(--ink); }
+      .guide table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .guide th, .guide td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .guide th { color: var(--ink); font-weight: 700; }
+      .guide td { color: var(--ink-2); }
+      .callout { background: var(--amber-soft); border-radius: 14px; padding: 14px 18px; margin: 12px 0; }
+      .callout p { margin: 0; color: var(--ink); font-size: .92rem; }
+      .price-table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: .9rem; }
+      .price-table th, .price-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .price-table th { color: var(--ink); font-weight: 700; }
+      .price-table td { color: var(--ink-2); }
+      footer { margin-top: 34px; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-2); font-size: .85rem; box-shadow: var(--shadow); }
+      footer p { margin: 0 0 8px; }
+      footer p:last-child { margin-bottom: 0; }
+      footer strong { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Manajemen Janji Temu Dokter</h1>
+        <p>Jadwal dokter, janji temu pasien, pengingat, riwayat, dan laporan kunjungan — dalam satu aplikasi.</p>
+        <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
+        <button class="tab-btn active" data-tab="jadwal-dokter" role="tab">Jadwal Dokter</button>
+        <button class="tab-btn" data-tab="janji" role="tab">Janji Temu</button>
+        <button class="tab-btn" data-tab="pengingat" role="tab">Pengingat</button>
+        <button class="tab-btn" data-tab="riwayat" role="tab">Riwayat</button>
+        <button class="tab-btn" data-tab="laporan" role="tab">Laporan</button>
+        <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
+      </nav>
+
+      <!-- ============ JADWAL DOKTER ============ -->
+      <section class="panel active" id="panel-jadwal-dokter">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Dokter Terdaftar</p><p class="value" id="statDokter">0</p><p class="sub">Semua poli</p></div>
+          <div class="card stat"><p class="label">Dokter Bertugas Hari Ini</p><p class="value" id="statBertugas">0</p><p class="sub">Sesuai jadwal praktik</p></div>
+          <div class="card stat"><p class="label">Janji Terjadwal</p><p class="value" id="statJanji">0</p><p class="sub">Belum dilaksanakan</p></div>
+          <div class="card stat"><p class="label">Janji Hari Ini</p><p class="value" id="statHariIni">0</p><p class="sub">Terjadwal hari ini</p></div>
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <h2 id="doctorFormTitle">Tambah Dokter</h2>
+          <p class="hint">Kelola dokter yang praktik beserta poli dan jadwalnya.</p>
+          <form id="doctorForm">
+            <input type="hidden" id="dId" />
+            <div class="form-grid">
+              <div class="field"><label for="dNama">Nama dokter</label><input type="text" id="dNama" placeholder="cth. dr. Ratna Wijaya" required /></div>
+              <div class="field"><label for="dPoli">Poli</label><select id="dPoli" required></select></div>
+              <div class="field"><label for="dHari">Hari praktik</label><input type="text" id="dHari" placeholder="cth. Senin – Jumat" required /></div>
+              <div class="field"><label for="dJam">Jam praktik</label><input type="text" id="dJam" placeholder="cth. 08.00 – 14.00" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="doctorSubmit">+ Tambah Dokter</button>
+              <button type="button" class="btn btn-ghost hidden" id="doctorCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="doctorNote"></p>
+          </form>
+        </div>
+
+        <h2 class="section-title">Dokter Bertugas Hari Ini</h2>
+        <div class="card"><div id="dutyList"></div></div>
+
+        <h2 class="section-title">Daftar Dokter</h2>
+        <div id="doctorList"></div>
+
+        <div class="card form-card" style="margin-top:26px;">
+          <h2 id="poliFormTitle">Tambah Poli</h2>
+          <p class="hint">Poli dipakai untuk mengelompokkan dokter dan janji temu.</p>
+          <form id="poliForm">
+            <input type="hidden" id="pId" />
+            <div class="form-grid">
+              <div class="field"><label for="pNama">Nama poli</label><input type="text" id="pNama" placeholder="cth. Poli Umum" required /></div>
+              <div class="field"><label for="pRuang">Ruang / lokasi</label><input type="text" id="pRuang" placeholder="cth. Ruang 1, Lantai 1" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="poliSubmit">+ Tambah Poli</button>
+              <button type="button" class="btn btn-ghost hidden" id="poliCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="poliNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Daftar Poli</h2>
+        <div id="poliList"></div>
+      </section>
+
+      <!-- ============ JANJI TEMU ============ -->
+      <section class="panel" id="panel-janji">
+        <div class="card form-card">
+          <h2 id="janjiFormTitle">Buat Janji Temu Baru</h2>
+          <p class="hint">Isi data pasien dan pilih dokter, tanggal, dan jam. Satu jam hanya bisa dipakai satu pasien per dokter — bila bentrok, aplikasi akan menolaknya.</p>
+          <form id="janjiForm">
+            <input type="hidden" id="jId" />
+            <div class="form-grid">
+              <div class="field"><label for="jPasien">Nama pasien</label><input type="text" id="jPasien" placeholder="cth. Siti Rahmawati" required /></div>
+              <div class="field"><label for="jTelp">Nomor telepon / WhatsApp</label><input type="tel" id="jTelp" placeholder="cth. 0812-3456-7890" required /></div>
+              <div class="field"><label for="jDokter">Dokter</label><select id="jDokter" required></select></div>
+              <div class="field"><label for="jTanggal">Tanggal janji temu</label><input type="date" id="jTanggal" required /></div>
+              <div class="field"><label for="jJam">Jam janji temu</label><input type="text" id="jJam" placeholder="cth. 09.00" required /></div>
+              <div class="field"><label for="jKeluhan">Keluhan singkat</label><input type="text" id="jKeluhan" placeholder="cth. Demam dan batuk" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="janjiSubmit">+ Buat Janji Temu</button>
+              <button type="button" class="btn btn-ghost hidden" id="janjiCancel">Batal Ubah</button>
+            </div>
+            <p class="form-note" id="janjiNote"></p>
+          </form>
+        </div>
+
+        <div class="toolbar">
+          <div class="grow"><input type="search" id="searchJanji" placeholder="Cari nama pasien atau dokter…" aria-label="Cari janji temu" /></div>
+          <select id="filterStatus" style="width:auto;" aria-label="Saring status janji temu">
+            <option value="Semua">Semua status</option>
+            <option value="Terjadwal">Terjadwal</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Dibatalkan">Dibatalkan</option>
+          </select>
+        </div>
+        <div id="janjiList"></div>
+        <p class="empty hidden" id="janjiEmpty">Tidak ada janji temu yang cocok dengan pencarian atau filter ini.</p>
+      </section>
+
+      <!-- ============ PENGINGAT ============ -->
+      <section class="panel" id="panel-pengingat">
+        <div class="callout"><p><strong>Catatan:</strong> pengingat di aplikasi ini berupa <strong>daftar pengingat</strong> yang dibuat otomatis dari janji temu yang masih terjadwal. <strong>Pengiriman otomatis via WhatsApp bukan bagian dari versi ini (v1)</strong> — petugas mengirim pengingat secara manual, misalnya dengan tombol <strong>Salin Pesan</strong> lalu menempelkannya ke WhatsApp pasien.</p></div>
+        <div class="card form-card">
+          <h2>Tambah Pengingat Manual</h2>
+          <p class="hint">Selain pengingat otomatis dari janji temu, petugas bisa menambahkan pengingat manual untuk pasien tertentu.</p>
+          <form id="remindForm">
+            <div class="form-grid">
+              <div class="field"><label for="rJanji">Janji temu</label><select id="rJanji" required></select></div>
+              <div class="field"><label for="rKirim">Ingatkan pada tanggal</label><input type="date" id="rKirim" required /></div>
+              <div class="field full"><label for="rPesan">Isi pesan pengingat</label><input type="text" id="rPesan" placeholder="cth. Jangan lupa janji temu besok pukul 09.00, bawa kartu berobat." required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">+ Tambah Pengingat</button>
+              <button type="reset" class="btn btn-ghost">Bersihkan Formulir</button>
+            </div>
+            <p class="form-note" id="remindNote"></p>
+          </form>
+        </div>
+        <h2 class="section-title">Pengingat Janji Temu</h2>
+        <div id="remindList"></div>
+      </section>
+
+      <!-- ============ RIWAYAT ============ -->
+      <section class="panel" id="panel-riwayat">
+        <p style="color:var(--ink-2); margin:0 0 14px; font-size:.92rem;">Semua janji temu yang sudah selesai atau dibatalkan tercatat di sini, diurutkan dari yang terbaru.</p>
+        <div class="stat-grid" style="margin-bottom:16px;">
+          <div class="card stat"><p class="label">Total Riwayat</p><p class="value" id="riwTotal">0</p><p class="sub">Selesai + dibatalkan</p></div>
+          <div class="card stat"><p class="label">Selesai</p><p class="value" id="riwSelesai">0</p><p class="sub">Kunjungan terlaksana</p></div>
+          <div class="card stat"><p class="label">Dibatalkan</p><p class="value" id="riwBatal">0</p><p class="sub">Tidak jadi berobat</p></div>
+          <div class="card stat"><p class="label">Tingkat Kehadiran</p><p class="value" id="riwHadir">0%</p><p class="sub">Selesai dari total riwayat</p></div>
+        </div>
+        <div id="riwayatList"></div>
+        <p class="empty hidden" id="riwayatEmpty">Belum ada riwayat janji temu. Janji temu yang selesai atau dibatalkan akan tercatat di sini.</p>
+      </section>
+
+      <!-- ============ LAPORAN ============ -->
+      <section class="panel" id="panel-laporan">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Total Janji Temu</p><p class="value" id="lapTotal">0</p><p class="sub">Semua status</p></div>
+          <div class="card stat"><p class="label">Kunjungan Selesai</p><p class="value" id="lapSelesai">0</p><p class="sub">Terlaksana</p></div>
+          <div class="card stat"><p class="label">Dibatalkan</p><p class="value" id="lapBatal">0</p><p class="sub">Tidak jadi</p></div>
+          <div class="card stat"><p class="label">Pengingat Terkirim</p><p class="value" id="lapIngat">0</p><p class="sub">Dari total pengingat</p></div>
+        </div>
+        <h2 class="section-title">Kunjungan per Dokter</h2>
+        <div class="card"><div id="lapDokter"></div></div>
+        <h2 class="section-title">Kunjungan per Poli</h2>
+        <div class="card"><div id="lapPoli"></div></div>
+        <h2 class="section-title">Kunjungan per Status</h2>
+        <div class="card"><div id="lapStatus"></div></div>
+      </section>
+
+      <!-- ============ PANDUAN ============ -->
+      <section class="panel" id="panel-panduan">
+        <div class="card guide">
+          <h2>Buku Panduan — Manajemen Janji Temu Dokter</h2>
+          <p>Selamat datang di aplikasi <strong>Manajemen Janji Temu Dokter</strong>. Aplikasi ini membantu klinik mengelola jadwal dokter, mencatat janji temu pasien, mengingatkan pasien sebelum waktunya, mengubah atau membatalkan janji, melihat riwayat janji temu, dan menyusun laporan kunjungan — semua dari satu halaman, tanpa perlu memasang program tambahan. Cukup buka file aplikasi di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
+          <div class="callout"><p><strong>Penting — batas pemakaian demo:</strong> aplikasi ini memakai <strong>data contoh</strong>. Pengingat di sini berupa daftar pengingat — <strong>pengiriman otomatis via WhatsApp bukan bagian dari versi ini (v1)</strong>; petugas mengirim pengingat secara manual. Data pasien sungguhan tidak boleh disimpan di aplikasi demo ini; penerapan nyata membutuhkan perlindungan data sesuai UU Perlindungan Data Pribadi (UU PDP), kontrol akses per peran, dan jejak audit.</p></div>
+
+          <h2>1. Tab Jadwal Dokter</h2>
+          <p>Di atas ada empat angka ringkasan: jumlah dokter, dokter yang bertugas hari ini, janji yang masih terjadwal, dan janji yang jatuh pada hari ini.</p>
+          <h3>Dokter</h3>
+          <ul>
+            <li><strong>Tambah dokter</strong> — isi nama dokter, poli tempat praktik, hari praktik (misalnya "Senin – Jumat"), dan jam praktik (misalnya "08.00 – 14.00"), lalu klik <strong>+ Tambah Dokter</strong>.</li>
+            <li><strong>Ubah / Hapus</strong> — melalui tombol pada kartu dokter. Ubah mengisi formulir dengan data dokter tersebut; simpan dengan <strong>Simpan Perubahan</strong>.</li>
+            <li><strong>Dokter Bertugas Hari Ini</strong> — daftar dokter yang jadwal praktiknya jatuh pada hari ini, dihitung otomatis dari hari praktik yang ditulis.</li>
+          </ul>
+          <h3>Poli</h3>
+          <ul>
+            <li><strong>Tambah poli</strong> — isi nama poli dan ruang/lokasinya, lalu klik <strong>+ Tambah Poli</strong>. Poli baru langsung bisa dipilih saat menambah dokter.</li>
+          </ul>
+
+          <h2>2. Tab Janji Temu</h2>
+          <ol>
+            <li>Isi <strong>nama pasien</strong> dan <strong>nomor telepon / WhatsApp</strong>.</li>
+            <li>Pilih <strong>dokter</strong>, <strong>tanggal</strong>, dan <strong>jam</strong> janji temu.</li>
+            <li>Tulis <strong>keluhan singkat</strong>, misalnya "Demam dan batuk".</li>
+            <li>Klik <strong>+ Buat Janji Temu</strong>. Janji temu langsung muncul di daftar dengan status <strong>Terjadwal</strong>, dan pengingatnya dibuat otomatis di tab Pengingat.</li>
+          </ol>
+          <p><strong>Aturan bentrok:</strong> satu dokter hanya bisa menerima satu pasien pada satu jam yang sama. Bila jam tersebut sudah dipakai pasien lain, aplikasi menolak janji temu baru dengan pesan yang jelas — pilih jam lain.</p>
+          <p><strong>Mengubah janji temu:</strong> klik tombol <strong>Ubah</strong> pada kartu janji temu; formulir terisi data janji itu. Perbaiki tanggal, jam, atau dokter, lalu klik <strong>Simpan Perubahan</strong>. Aturan bentrok tetap berlaku saat mengubah.</p>
+          <p><strong>Membatalkan janji temu:</strong> klik tombol <strong>Batalkan</strong>; status berubah menjadi <strong>Dibatalkan</strong> dan janji itu pindah ke tab Riwayat. Janji yang sudah <strong>Selesai</strong> tidak bisa diubah lagi.</p>
+          <p><strong>Menandai selesai:</strong> klik <strong>Tandai Selesai</strong> setelah pasien selesai diperiksa. Janji itu pindah ke tab Riwayat dan terhitung sebagai kunjungan di tab Laporan.</p>
+          <p>Kolom pencarian dan saringan status di atas daftar membantu menemukan janji temu berdasarkan nama pasien atau dokter.</p>
+
+          <h2>3. Tab Pengingat</h2>
+          <p>Setiap janji temu yang dibuat otomatis mendapat satu pengingat (diingatkan sehari sebelum tanggal janji temu). Selain itu petugas bisa menambah <strong>pengingat manual</strong>: pilih janji temu, isi tanggal pengingat, tulis isi pesan, lalu klik <strong>+ Tambah Pengingat</strong>.</p>
+          <ul>
+            <li><strong>Salin Pesan</strong> — menyalin isi pesan pengingat ke clipboard supaya bisa ditempel ke WhatsApp pasien.</li>
+            <li><strong>Tandai Terkirim</strong> — mengubah status pengingat menjadi Terkirim setelah pesan benar-benar dikirim ke pasien.</li>
+            <li>Pengingat yang janji temunya dibatalkan ikut ditandai sebagai pengingat yang tidak perlu dikirim lagi.</li>
+          </ul>
+          <p>Pengingat di aplikasi ini <strong>tidak mengirim pesan otomatis via WhatsApp</strong>. Pengiriman otomatis adalah pengembangan di luar versi ini (v1).</p>
+
+          <h2>4. Tab Riwayat</h2>
+          <p>Semua janji temu yang sudah <strong>Selesai</strong> atau <strong>Dibatalkan</strong> tercatat di sini, diurutkan dari yang terbaru, lengkap dengan dokter, tanggal, jam, dan keluhannya. Di atas ada ringkasan: total riwayat, jumlah selesai, jumlah dibatalkan, dan tingkat kehadiran (persentase janji yang terlaksana dari seluruh riwayat).</p>
+
+          <h2>5. Tab Laporan</h2>
+          <p>Ringkasan yang diperbarui otomatis:</p>
+          <ul>
+            <li><strong>Total Janji Temu</strong>, <strong>Kunjungan Selesai</strong>, dan <strong>Dibatalkan</strong>.</li>
+            <li><strong>Pengingat Terkirim</strong> — jumlah pengingat yang sudah ditandai terkirim.</li>
+            <li><strong>Kunjungan per Dokter</strong> — jumlah janji temu yang sudah selesai di tiap dokter.</li>
+            <li><strong>Kunjungan per Poli</strong> — jumlah janji temu yang sudah selesai di tiap poli.</li>
+            <li><strong>Kunjungan per Status</strong> — perbandingan Terjadwal, Selesai, dan Dibatalkan.</li>
+          </ul>
+
+          <h2>6. Hal yang Perlu Diketahui</h2>
+          <ul>
+            <li>Data pada aplikasi demo ini — termasuk data contoh yang tampil saat pertama dibuka — <strong>hanya tersimpan selama aplikasi dibuka</strong>. Menutup atau memuat ulang halaman mengembalikan aplikasi ke keadaan awal.</li>
+            <li>Aplikasi ini adalah alat <strong>pencatatan janji temu</strong>. Aplikasi ini <strong>bukan rekam medis elektronik</strong> dan <strong>bukan sistem BPJS</strong>.</li>
+            <li><strong>Data pasien adalah data sensitif.</strong> Jangan menuliskan diagnosis lengkap atau data medis rinci di aplikasi ini. Untuk pemakaian resmi, gunakan versi sesuai paket yang dipesan atau sistem resmi fasilitas kesehatan Anda, dengan perlindungan data sesuai UU PDP.</li>
+          </ul>
+
+          <h2>7. Garansi</h2>
+          <p>Setiap pembelian aplikasi ini dilengkapi <strong>garansi perbaikan bug/error</strong> dengan ketentuan berikut:</p>
+          <h3>Yang ditanggung garansi</h3>
+          <ul><li>Perbaikan bug atau error pada fitur yang dijelaskan dalam buku panduan ini dan yang tampil pada aplikasi demo — <strong>gratis selama masa garansi</strong>.</li></ul>
+          <h3>Masa garansi</h3>
+          <table>
+            <tr><th>Cara pembelian</th><th>Masa garansi</th></tr>
+            <tr><td>Beli Sekali — Pemula</td><td>30 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Profesional</td><td>60 hari sejak pembelian</td></tr>
+            <tr><td>Beli Sekali — Bisnis</td><td>90 hari sejak pembelian</td></tr>
+            <tr><td>Berlangganan</td><td>Selama masa langganan aktif</td></tr>
+          </table>
+          <h3>Yang tidak termasuk garansi</h3>
+          <ul>
+            <li>Permintaan <strong>fitur baru</strong> di luar buku panduan dan demo.</li>
+            <li><strong>Perubahan desain</strong> atau perubahan data/isi aplikasi.</li>
+            <li>Kerusakan yang timbul karena <strong>pembeli mengubah file aplikasi sendiri</strong>.</li>
+            <li>Gangguan yang berasal dari <strong>layanan pihak ketiga</strong> (misalnya layanan internet, hosting, atau peramban yang dipakai pembeli).</li>
+          </ul>
+          <h3>Cara klaim garansi</h3>
+          <ol>
+            <li>Rekam <strong>video atau ambil screenshot</strong> yang menunjukkan bug/error-nya dengan jelas.</li>
+            <li>Kirimkan video/screenshot tersebut melalui <strong>WhatsApp 0812-4798-6994</strong>, disertai penjelasan singkat: fitur apa yang bermasalah dan langkah apa saja yang dilakukan sebelum error muncul.</li>
+            <li>Penjual akan memeriksa dan memperbaiki bug yang termasuk cakupan garansi tanpa biaya tambahan selama masa garansi masih berlaku.</li>
+          </ol>
+          <p>Di luar masa garansi, perbaikan dan penyesuaian tetap bisa dipesan sebagai layanan terpisah sesuai kesepakatan melalui WhatsApp.</p>
+
+          <h2>8. Daftar Harga</h2>
+          <p>Harga standar aplikasi ini:</p>
+          <table class="price-table">
+            <tr><th>Paket</th><th>Beli Sekali</th><th>Berlangganan</th></tr>
+            <tr><td><strong>Pemula</strong></td><td>Rp499.000</td><td>Rp49.000 / bulan</td></tr>
+            <tr><td><strong>Profesional</strong></td><td>Rp999.000</td><td>Rp99.000 / bulan</td></tr>
+            <tr><td><strong>Bisnis</strong></td><td>Rp1.999.000</td><td>Rp199.000 / bulan</td></tr>
+          </table>
+          <p>Pemula: aplikasi standar siap pakai. Profesional: ditambah penyesuaian merek dan APK Android. Bisnis: ditambah penyimpanan permanen, multi-user, dan dukungan penuh. Pemesanan dan konsultasi melalui WhatsApp 0812-4798-6994.</p>
+        </div>
+      </section>
+
+      <footer>
+        <p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (5 dokter, 4 poli, 8 janji temu, 7 pengingat) hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p>
+        <p>Aplikasi ini adalah alat <strong>pencatatan janji temu</strong>. Pengingat di sini berupa daftar pengingat — <strong>pengiriman otomatis via WhatsApp bukan bagian dari versi ini (v1)</strong>. Data pasien adalah data sensitif dan <strong>tidak boleh disimpan</strong> di aplikasi demo ini; penerapan nyata membutuhkan perlindungan data sesuai UU PDP, kontrol akses per peran, dan jejak audit.</p>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+      var DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+      var state = {
+        polis: [
+          { id: "p1", nama: "Poli Umum", ruang: "Ruang 1, Lantai 1" },
+          { id: "p2", nama: "Poli Gigi", ruang: "Ruang 2, Lantai 1" },
+          { id: "p3", nama: "Poli Anak", ruang: "Ruang 3, Lantai 1" },
+          { id: "p4", nama: "Poli Kandungan", ruang: "Ruang 4, Lantai 2" }
+        ],
+        doctors: [
+          { id: "d1", nama: "dr. Ratna Wijaya", poliId: "p1", hari: "Senin – Jumat", jam: "08.00 – 14.00", hariIdx: [1, 2, 3, 4, 5] },
+          { id: "d2", nama: "dr. Budi Santoso", poliId: "p1", hari: "Senin – Sabtu", jam: "14.00 – 20.00", hariIdx: [1, 2, 3, 4, 5, 6] },
+          { id: "d3", nama: "drg. Sari Maheswari", poliId: "p2", hari: "Senin, Rabu, Jumat", jam: "09.00 – 15.00", hariIdx: [1, 3, 5] },
+          { id: "d4", nama: "dr. Andi Pratama, Sp.A", poliId: "p3", hari: "Senin – Jumat", jam: "08.00 – 12.00", hariIdx: [1, 2, 3, 4, 5] },
+          { id: "d5", nama: "dr. Dewi Lestari, Sp.OG", poliId: "p4", hari: "Selasa, Kamis, Sabtu", jam: "10.00 – 16.00", hariIdx: [2, 4, 6] }
+        ],
+        janji: [
+          { id: "j1", pasien: "Siti Rahmawati", telp: "0813-5520-9143", dokterId: "d1", tanggal: "2026-11-21", jam: "09.00", keluhan: "Demam dan batuk sejak 2 hari lalu", status: "Terjadwal" },
+          { id: "j2", pasien: "Agus Salim", telp: "0821-7745-3310", dokterId: "d1", tanggal: "2026-11-21", jam: "10.00", keluhan: "Nyeri punggung bawah", status: "Terjadwal" },
+          { id: "j3", pasien: "Rina Kartika", telp: "0812-8876-1029", dokterId: "d3", tanggal: "2026-11-21", jam: "09.00", keluhan: "Gigi geraham berlubang, nyeri", status: "Terjadwal" },
+          { id: "j4", pasien: "Dewi Anggraini", telp: "0856-7734-2091", dokterId: "d5", tanggal: "2026-11-22", jam: "10.00", keluhan: "Kontrol kehamilan trimester kedua", status: "Terjadwal" },
+          { id: "j5", pasien: "Slamet Riyadi", telp: "0812-3401-2287", dokterId: "d1", tanggal: "2026-11-20", jam: "08.30", keluhan: "Kontrol tekanan darah rutin", status: "Selesai" },
+          { id: "j6", pasien: "Nadia Putri Ramadhani", telp: "0813-2210-5548", dokterId: "d4", tanggal: "2026-11-19", jam: "09.00", keluhan: "Imunisasi lanjutan", status: "Selesai" },
+          { id: "j7", pasien: "Joko Prasetyo", telp: "0819-3345-7812", dokterId: "d3", tanggal: "2026-11-19", jam: "11.00", keluhan: "Membersihkan karang gigi", status: "Dibatalkan" },
+          { id: "j8", pasien: "Fitri Handayani", telp: "0815-9920-3367", dokterId: "d5", tanggal: "2026-11-18", jam: "10.00", keluhan: "Konsultasi program hamil", status: "Selesai" }
+        ],
+        pengingat: [
+          { id: "pg1", janjiId: "j1", kirim: "2026-11-20", pesan: "Jangan lupa janji temu besok pukul 09.00 dengan dr. Ratna Wijaya, bawa kartu berobat.", status: "Terkirim" },
+          { id: "pg2", janjiId: "j2", kirim: "2026-11-20", pesan: "Jangan lupa janji temu besok pukul 10.00 dengan dr. Ratna Wijaya, bawa kartu berobat.", status: "Belum Terkirim" },
+          { id: "pg3", janjiId: "j3", kirim: "2026-11-20", pesan: "Jangan lupa janji temu besok pukul 09.00 dengan drg. Sari Maheswari, bawa kartu berobat.", status: "Belum Terkirim" },
+          { id: "pg4", janjiId: "j4", kirim: "2026-11-21", pesan: "Jangan lupa janji temu besok pukul 10.00 dengan dr. Dewi Lestari, Sp.OG, bawa buku KIA.", status: "Belum Terkirim" },
+          { id: "pg5", janjiId: "j5", kirim: "2026-11-19", pesan: "Jangan lupa janji temu besok pukul 08.30 dengan dr. Ratna Wijaya, bawa kartu berobat.", status: "Terkirim" },
+          { id: "pg6", janjiId: "j6", kirim: "2026-11-18", pesan: "Jangan lupa janji temu besok pukul 09.00 dengan dr. Andi Pratama, Sp.A, bawa buku KIA.", status: "Terkirim" },
+          { id: "pg7", janjiId: "j7", kirim: "2026-11-18", pesan: "Jangan lupa janji temu besok pukul 11.00 dengan drg. Sari Maheswari, bawa kartu berobat.", status: "Dibatalkan" }
+        ],
+        seq: 100
+      };
+
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function nextId(p) { state.seq += 1; return p + state.seq; }
+      function poliById(id) { for (var i = 0; i < state.polis.length; i++) if (state.polis[i].id === id) return state.polis[i]; return null; }
+      function poliName(id) { var p = poliById(id); return p ? p.nama : "Poli tidak tersedia"; }
+      function doctorById(id) { for (var i = 0; i < state.doctors.length; i++) if (state.doctors[i].id === id) return state.doctors[i]; return null; }
+      function doctorName(id) { var d = doctorById(id); return d ? d.nama : "Dokter tidak tersedia"; }
+      function janjiById(id) { for (var i = 0; i < state.janji.length; i++) if (state.janji[i].id === id) return state.janji[i]; return null; }
+      function initials(name) {
+        var parts = String(name).replace(/^(drg?\.|dr\.)\s*/i, "").split(/\s+/);
+        var s = parts[0].charAt(0);
+        if (parts.length > 1) s += parts[1].charAt(0);
+        return s.toUpperCase();
+      }
+      function formatDate(iso) {
+        if (!iso) return "-";
+        var p = iso.split("-");
+        if (p.length !== 3) return iso;
+        return parseInt(p[2], 10) + " " + MONTH_NAMES[parseInt(p[1], 10) - 1] + " " + p[0];
+      }
+      function todayIso() {
+        var n = new Date();
+        return n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
+      }
+      function dayBefore(iso) {
+        var d = new Date(iso + "T00:00:00");
+        d.setDate(d.getDate() - 1);
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      }
+      function parseDays(text) {
+        var t = " " + String(text || "").toLowerCase().replace(/[-–—,]/g, " ") + " ";
+        var names = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
+        var found = [];
+        for (var i = 0; i < names.length; i++) if (t.indexOf(" " + names[i] + " ") >= 0) found.push(i);
+        if (found.length === 2) {
+          var a = found[0], b = found[1], out = [], d = a;
+          while (true) { out.push(d); if (d === b) break; d = (d + 1) % 7; if (out.length > 7) break; }
+          return out;
+        }
+        return found;
+      }
+      function doctorsToday() {
+        var today = new Date().getDay();
+        return state.doctors.filter(function (d) {
+          var idx = (d.hariIdx && d.hariIdx.length) ? d.hariIdx : parseDays(d.hari);
+          return idx.indexOf(today) >= 0;
+        });
+      }
+      function badgeFor(v) { return '<span class="badge badge-' + String(v).toLowerCase().replace(/\s+/g, "-") + '">' + esc(v) + "</span>"; }
+      function isBentrok(dokterId, tanggal, jam, exceptId) {
+        return state.janji.some(function (j) {
+          return j.id !== exceptId && j.dokterId === dokterId && j.tanggal === tanggal && j.jam === jam && j.status === "Terjadwal";
+        });
+      }
+
+      /* ================= RENDER: JADWAL DOKTER ================= */
+      function renderDokterStats() {
+        $("statDokter").textContent = state.doctors.length;
+        var duty = doctorsToday();
+        $("statBertugas").textContent = duty.length;
+        $("statJanji").textContent = state.janji.filter(function (j) { return j.status === "Terjadwal"; }).length;
+        $("statHariIni").textContent = state.janji.filter(function (j) { return j.status === "Terjadwal" && j.tanggal === todayIso(); }).length;
+        $("dutyList").innerHTML = duty.length ? duty.map(function (d) {
+          return '<div class="row-item"><div class="avatar">' + esc(initials(d.nama)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + '</div>' +
+            '<div class="meta">' + esc(poliName(d.poliId)) + " • " + esc(d.jam) + " WIB</div></div>" +
+            '<span class="badge badge-poli">' + esc(poliName(d.poliId).replace(/^Poli\s+/i, "")) + "</span></div>";
+        }).join("") : '<p class="empty">Tidak ada dokter yang jadwal praktiknya jatuh pada hari ini.</p>';
+      }
+      function renderDoctors() {
+        $("doctorList").innerHTML = state.doctors.length ? state.doctors.map(function (d) {
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(initials(d.nama)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + "</div>" +
+            '<div class="meta">' + esc(poliName(d.poliId)) + " • " + esc(d.hari) + " • Pukul " + esc(d.jam) + " WIB</div></div>" +
+            '<span class="badge badge-poli">' + esc(poliName(d.poliId).replace(/^Poli\s+/i, "")) + "</span></div>" +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-doctor" data-id="' + d.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-doctor" data-id="' + d.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada dokter. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderPolis() {
+        $("poliList").innerHTML = state.polis.length ? state.polis.map(function (p) {
+          var count = state.doctors.filter(function (x) { return x.poliId === p.id; }).length;
+          return '<div class="card item-card"><div class="item-top"><div class="row-main"><div class="name">' + esc(p.nama) + "</div>" +
+            '<div class="meta">' + esc(p.ruang) + " • " + count + ' dokter</div></div></div>' +
+            '<div class="item-actions"><span class="spacer"></span>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-poli" data-id="' + p.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-poli" data-id="' + p.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada poli. Tambahkan lewat formulir di atas.</p>';
+      }
+      function renderDoctorSelects() {
+        var opts = state.polis.map(function (p) { return '<option value="' + p.id + '">' + esc(p.nama) + "</option>"; }).join("");
+        $("dPoli").innerHTML = opts;
+        $("jDokter").innerHTML = state.doctors.map(function (d) { return '<option value="' + d.id + '">' + esc(d.nama) + " — " + esc(poliName(d.poliId)) + "</option>"; }).join("");
+      }
+
+      /* ================= RENDER: JANJI TEMU ================= */
+      function janjiCard(j) {
+        var actions = "";
+        if (j.status === "Terjadwal") {
+          actions = '<button class="btn btn-primary btn-small" data-action="done-janji" data-id="' + j.id + '">Tandai Selesai</button>' +
+            '<button class="btn btn-ghost btn-small" data-action="edit-janji" data-id="' + j.id + '">Ubah</button>' +
+            '<button class="btn btn-danger btn-small" data-action="cancel-janji" data-id="' + j.id + '">Batalkan</button>';
+        }
+        return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(j.pasien.charAt(0)) + "</div>" +
+          '<div class="row-main"><div class="name">' + esc(j.pasien) + " — " + esc(doctorName(j.dokterId)) + "</div>" +
+          '<div class="meta">' + esc(formatDate(j.tanggal)) + " pukul " + esc(j.jam) + " • " + esc(j.telp) + "</div>" +
+          '<div class="meta">Keluhan: ' + esc(j.keluhan) + "</div></div>" + badgeFor(j.status) + "</div>" +
+          (actions ? '<div class="item-actions">' + actions + '<span class="spacer"></span>' +
+          '<button class="btn btn-danger btn-small" data-action="delete-janji" data-id="' + j.id + '">Hapus</button></div>' : "") + "</div>";
+      }
+      function renderJanji() {
+        var q = $("searchJanji").value.trim().toLowerCase();
+        var f = $("filterStatus").value;
+        var list = state.janji.filter(function (j) {
+          if (f !== "Semua" && j.status !== f) return false;
+          if (!q) return true;
+          return j.pasien.toLowerCase().indexOf(q) >= 0 || doctorName(j.dokterId).toLowerCase().indexOf(q) >= 0;
+        }).slice().sort(function (a, b) { return (a.tanggal + a.jam).localeCompare(b.tanggal + b.jam); });
+        $("janjiEmpty").classList.toggle("hidden", list.length > 0);
+        $("janjiList").innerHTML = list.map(janjiCard).join("");
+      }
+
+      /* ================= RENDER: PENGINGAT ================= */
+      function renderRemindSelects() {
+        $("rJanji").innerHTML = state.janji.filter(function (j) { return j.status === "Terjadwal"; }).map(function (j) {
+          return '<option value="' + j.id + '">' + esc(j.pasien) + " — " + esc(doctorName(j.dokterId)) + ", " + esc(formatDate(j.tanggal)) + " " + esc(j.jam) + "</option>";
+        }).join("");
+      }
+      function renderPengingat() {
+        $("remindList").innerHTML = state.pengingat.length ? state.pengingat.slice().sort(function (a, b) { return a.kirim.localeCompare(b.kirim); }).map(function (g) {
+          var j = janjiById(g.janjiId);
+          return '<div class="card item-card"><div class="item-top"><div class="avatar">' + esc(j ? j.pasien.charAt(0) : "?") + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(j ? j.pasien : "Pasien tidak tersedia") + " — janji " + esc(j ? formatDate(j.tanggal) : "-") + " " + esc(j ? j.jam : "") + "</div>" +
+            '<div class="meta">Ingatkan pada ' + esc(formatDate(g.kirim)) + " • " + esc(j ? doctorName(j.dokterId) : "") + "</div>" +
+            '<div class="meta">Pesan: "' + esc(g.pesan) + '"</div></div>' + badgeFor(g.status) + "</div>" +
+            '<div class="item-actions">' +
+            '<button class="btn btn-ghost btn-small" data-action="copy-remind" data-id="' + g.id + '">Salin Pesan</button>' +
+            (g.status === "Belum Terkirim" ? '<button class="btn btn-primary btn-small" data-action="send-remind" data-id="' + g.id + '">Tandai Terkirim</button>' : "") +
+            '<span class="spacer"></span>' +
+            '<button class="btn btn-danger btn-small" data-action="delete-remind" data-id="' + g.id + '">Hapus</button></div></div>';
+        }).join("") : '<p class="empty">Belum ada pengingat. Pengingat dibuat otomatis saat janji temu dibuat.</p>';
+      }
+
+      /* ================= RENDER: RIWAYAT ================= */
+      function renderRiwayat() {
+        var list = state.janji.filter(function (j) { return j.status !== "Terjadwal"; })
+          .slice().sort(function (a, b) { return (b.tanggal + b.jam).localeCompare(a.tanggal + a.jam); });
+        var selesai = list.filter(function (j) { return j.status === "Selesai"; }).length;
+        var batal = list.filter(function (j) { return j.status === "Dibatalkan"; }).length;
+        $("riwTotal").textContent = list.length;
+        $("riwSelesai").textContent = selesai;
+        $("riwBatal").textContent = batal;
+        $("riwHadir").textContent = list.length ? Math.round(selesai / list.length * 100) + "%" : "0%";
+        $("riwayatEmpty").classList.toggle("hidden", list.length > 0);
+        $("riwayatList").innerHTML = list.map(janjiCard).join("");
+      }
+
+      /* ================= RENDER: LAPORAN ================= */
+      function renderReport() {
+        $("lapTotal").textContent = state.janji.length;
+        $("lapSelesai").textContent = state.janji.filter(function (j) { return j.status === "Selesai"; }).length;
+        $("lapBatal").textContent = state.janji.filter(function (j) { return j.status === "Dibatalkan"; }).length;
+        $("lapIngat").textContent = state.pengingat.filter(function (g) { return g.status === "Terkirim"; }).length + " dari " + state.pengingat.length;
+        $("lapDokter").innerHTML = state.doctors.map(function (d) {
+          var n = state.janji.filter(function (j) { return j.dokterId === d.id && j.status === "Selesai"; }).length;
+          var total = state.janji.filter(function (j) { return j.dokterId === d.id; }).length;
+          return '<div class="row-item"><div class="avatar">' + esc(initials(d.nama)) + "</div>" +
+            '<div class="row-main"><div class="name">' + esc(d.nama) + "</div>" +
+            '<div class="meta">' + esc(poliName(d.poliId)) + " • " + n + " kunjungan selesai dari " + total + ' janji temu</div>' +
+            '<div class="bar"><span style="width:' + (total ? Math.round(n / total * 100) : 0) + '%"></span></div></div><span class="qnum">' + n + "</span></div>";
+        }).join("");
+        $("lapPoli").innerHTML = state.polis.map(function (p) {
+          var dokIds = state.doctors.filter(function (d) { return d.poliId === p.id; }).map(function (d) { return d.id; });
+          var n = state.janji.filter(function (j) { return dokIds.indexOf(j.dokterId) >= 0 && j.status === "Selesai"; }).length;
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(p.nama) + "</div>" +
+            '<div class="meta">' + n + ' kunjungan selesai</div></div><span class="qnum">' + n + "</span></div>";
+        }).join("");
+        var statuses = ["Terjadwal", "Selesai", "Dibatalkan"];
+        $("lapStatus").innerHTML = statuses.map(function (s) {
+          var n = state.janji.filter(function (j) { return j.status === s; }).length;
+          return '<div class="row-item"><div class="row-main"><div class="name">' + s + "</div>" +
+            '<div class="meta">' + n + " dari " + state.janji.length + ' janji temu</div>' +
+            '<div class="bar"><span style="width:' + (state.janji.length ? Math.round(n / state.janji.length * 100) : 0) + '%"></span></div></div><span class="qnum">' + n + "</span></div>";
+        }).join("");
+      }
+
+      function renderAll() {
+        renderDokterStats();
+        renderDoctors();
+        renderPolis();
+        renderDoctorSelects();
+        renderJanji();
+        renderRemindSelects();
+        renderPengingat();
+        renderRiwayat();
+        renderReport();
+      }
+
+      /* ================= TABS ================= */
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+          $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        });
+      });
+
+      /* ================= FORM DOKTER ================= */
+      function resetDoctorForm() {
+        $("doctorForm").reset();
+        $("dId").value = "";
+        $("doctorFormTitle").textContent = "Tambah Dokter";
+        $("doctorSubmit").textContent = "+ Tambah Dokter";
+        $("doctorCancel").classList.add("hidden");
+      }
+      $("doctorCancel").addEventListener("click", function () { resetDoctorForm(); $("doctorNote").classList.remove("show"); });
+      $("doctorForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("dId").value;
+        var data = { nama: $("dNama").value.trim(), poliId: $("dPoli").value, hari: $("dHari").value.trim(), jam: $("dJam").value.trim(), hariIdx: parseDays($("dHari").value) };
+        var note = $("doctorNote");
+        if (id) {
+          var d = doctorById(id);
+          if (d) { d.nama = data.nama; d.poliId = data.poliId; d.hari = data.hari; d.jam = data.jam; d.hariIdx = data.hariIdx; }
+          note.textContent = "Data dokter " + data.nama + " berhasil diperbarui.";
+        } else {
+          data.id = nextId("d");
+          state.doctors.push(data);
+          note.textContent = "Dokter " + data.nama + " berhasil ditambahkan.";
+        }
+        note.classList.add("show");
+        resetDoctorForm();
+        renderAll();
+      });
+
+      /* ================= FORM POLI ================= */
+      function resetPoliForm() {
+        $("poliForm").reset();
+        $("pId").value = "";
+        $("poliFormTitle").textContent = "Tambah Poli";
+        $("poliSubmit").textContent = "+ Tambah Poli";
+        $("poliCancel").classList.add("hidden");
+      }
+      $("poliCancel").addEventListener("click", function () { resetPoliForm(); $("poliNote").classList.remove("show"); });
+      $("poliForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("pId").value;
+        var nama = $("pNama").value.trim();
+        var ruang = $("pRuang").value.trim();
+        var note = $("poliNote");
+        if (id) {
+          var p = poliById(id);
+          if (p) { p.nama = nama; p.ruang = ruang; }
+          note.textContent = "Data " + nama + " berhasil diperbarui.";
+        } else {
+          state.polis.push({ id: nextId("p"), nama: nama, ruang: ruang });
+          note.textContent = nama + " berhasil ditambahkan.";
+        }
+        note.classList.add("show");
+        resetPoliForm();
+        renderAll();
+      });
+
+      /* ================= FORM JANJI TEMU ================= */
+      function resetJanjiForm() {
+        $("janjiForm").reset();
+        $("jId").value = "";
+        $("janjiFormTitle").textContent = "Buat Janji Temu Baru";
+        $("janjiSubmit").textContent = "+ Buat Janji Temu";
+        $("janjiCancel").classList.add("hidden");
+      }
+      $("janjiCancel").addEventListener("click", function () { resetJanjiForm(); $("janjiNote").classList.remove("show"); });
+      $("janjiForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = $("jId").value;
+        var dokterId = $("jDokter").value;
+        var tanggal = $("jTanggal").value;
+        var jam = $("jJam").value.trim();
+        var note = $("janjiNote");
+        if (isBentrok(dokterId, tanggal, jam, id || null)) {
+          note.textContent = "Jam " + jam + " pada " + formatDate(tanggal) + " sudah dipakai pasien lain untuk " + doctorName(dokterId) + ". Pilih jam lain.";
+          note.classList.add("show"); note.classList.add("warn");
+          return;
+        }
+        note.classList.remove("warn");
+        if (id) {
+          var j = janjiById(id);
+          if (j) { j.pasien = $("jPasien").value.trim(); j.telp = $("jTelp").value.trim(); j.dokterId = dokterId; j.tanggal = tanggal; j.jam = jam; j.keluhan = $("jKeluhan").value.trim(); }
+          note.textContent = "Janji temu " + $("jPasien").value.trim() + " berhasil diperbarui.";
+        } else {
+          var newId = nextId("j");
+          state.janji.push({ id: newId, pasien: $("jPasien").value.trim(), telp: $("jTelp").value.trim(), dokterId: dokterId, tanggal: tanggal, jam: jam, keluhan: $("jKeluhan").value.trim(), status: "Terjadwal" });
+          state.pengingat.push({ id: nextId("pg"), janjiId: newId, kirim: dayBefore(tanggal), pesan: "Jangan lupa janji temu besok pukul " + jam + " dengan " + doctorName(dokterId) + ", bawa kartu berobat.", status: "Belum Terkirim" });
+          note.textContent = "Janji temu " + $("jPasien").value.trim() + " dengan " + doctorName(dokterId) + " pada " + formatDate(tanggal) + " pukul " + jam + " berhasil dibuat. Pengingat otomatis ditambahkan.";
+        }
+        note.classList.add("show");
+        resetJanjiForm();
+        renderAll();
+      });
+      $("searchJanji").addEventListener("input", renderJanji);
+      $("filterStatus").addEventListener("change", renderJanji);
+
+      /* ================= FORM PENGINGAT ================= */
+      $("remindForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var j = janjiById($("rJanji").value);
+        state.pengingat.push({ id: nextId("pg"), janjiId: $("rJanji").value, kirim: $("rKirim").value, pesan: $("rPesan").value.trim(), status: "Belum Terkirim" });
+        var note = $("remindNote");
+        note.textContent = "Pengingat manual untuk " + (j ? j.pasien : "pasien") + " berhasil ditambahkan.";
+        note.classList.add("show");
+        e.target.reset();
+        renderAll();
+      });
+      $("remindForm").addEventListener("reset", function () { $("remindNote").classList.remove("show"); });
+
+      /* ================= AKSI DELEGASI ================= */
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        var action = btn.getAttribute("data-action");
+        var id = btn.getAttribute("data-id");
+
+        if (action === "delete-doctor" || action === "delete-poli" || action === "delete-janji" || action === "delete-remind") {
+          if (btn.getAttribute("data-confirm") !== "1") {
+            btn.setAttribute("data-confirm", "1");
+            btn.textContent = "Yakin hapus?";
+            setTimeout(function () { if (btn.isConnected) { btn.removeAttribute("data-confirm"); btn.textContent = "Hapus"; } }, 3000);
+            return;
+          }
+          if (action === "delete-doctor") state.doctors = state.doctors.filter(function (x) { return x.id !== id; });
+          if (action === "delete-poli") state.polis = state.polis.filter(function (x) { return x.id !== id; });
+          if (action === "delete-janji") {
+            state.janji = state.janji.filter(function (x) { return x.id !== id; });
+            state.pengingat = state.pengingat.filter(function (g) { return g.janjiId !== id; });
+          }
+          if (action === "delete-remind") state.pengingat = state.pengingat.filter(function (x) { return x.id !== id; });
+          renderAll();
+          return;
+        }
+        if (action === "done-janji") {
+          var j = janjiById(id);
+          if (j) { j.status = "Selesai"; renderAll(); }
+          return;
+        }
+        if (action === "cancel-janji") {
+          var j2 = janjiById(id);
+          if (j2) {
+            j2.status = "Dibatalkan";
+            state.pengingat.forEach(function (g) { if (g.janjiId === id && g.status === "Belum Terkirim") g.status = "Dibatalkan"; });
+            renderAll();
+          }
+          return;
+        }
+        if (action === "edit-janji") {
+          var j3 = janjiById(id);
+          if (!j3 || j3.status !== "Terjadwal") return;
+          $("jId").value = j3.id;
+          $("jPasien").value = j3.pasien;
+          $("jTelp").value = j3.telp;
+          $("jDokter").value = j3.dokterId;
+          $("jTanggal").value = j3.tanggal;
+          $("jJam").value = j3.jam;
+          $("jKeluhan").value = j3.keluhan;
+          $("janjiFormTitle").textContent = "Ubah Janji Temu";
+          $("janjiSubmit").textContent = "Simpan Perubahan";
+          $("janjiCancel").classList.remove("hidden");
+          $("janjiForm").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (action === "send-remind") {
+          var g = state.pengingat.find(function (x) { return x.id === id; });
+          if (g) { g.status = "Terkirim"; renderAll(); }
+          return;
+        }
+        if (action === "copy-remind") {
+          var g2 = state.pengingat.find(function (x) { return x.id === id; });
+          if (g2) {
+            var jj = janjiById(g2.janjiId);
+            var text = "Halo " + (jj ? jj.pasien : "") + ", " + g2.pesan;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { btn.textContent = "Disalin!"; setTimeout(function () { if (btn.isConnected) btn.textContent = "Salin Pesan"; }, 2000); });
+            } else {
+              btn.textContent = "Disalin!";
+              setTimeout(function () { if (btn.isConnected) btn.textContent = "Salin Pesan"; }, 2000);
+            }
+          }
+          return;
+        }
+        if (action === "edit-doctor") {
+          var d = doctorById(id);
+          if (!d) return;
+          $("dId").value = d.id;
+          $("dNama").value = d.nama;
+          $("dPoli").value = d.poliId;
+          $("dHari").value = d.hari;
+          $("dJam").value = d.jam;
+          $("doctorFormTitle").textContent = "Ubah Dokter";
+          $("doctorSubmit").textContent = "Simpan Perubahan";
+          $("doctorCancel").classList.remove("hidden");
+          $("doctorForm").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (action === "edit-poli") {
+          var p = poliById(id);
+          if (!p) return;
+          $("pId").value = p.id;
+          $("pNama").value = p.nama;
+          $("pRuang").value = p.ruang;
+          $("poliFormTitle").textContent = "Ubah Poli";
+          $("poliSubmit").textContent = "Simpan Perubahan";
+          $("poliCancel").classList.remove("hidden");
+          $("poliForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      /* ================= INIT ================= */
+      var now = new Date();
+      $("todayText").textContent = DAY_NAMES[now.getDay()] + ", " + now.getDate() + " " + MONTH_NAMES[now.getMonth()] + " " + now.getFullYear() + " — janji temu berjalan";
+      renderAll();
+    </script>
+  </body>
+</html>
