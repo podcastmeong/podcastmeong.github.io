@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Manajemen Meja</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f4ce82; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-kosong { background: var(--green-soft); color: var(--green); }
+  .st-terisi { background: var(--blue-soft); color: var(--blue); }
+  .st-dipesan { background: var(--amber-soft); color: var(--amber); }
+  .st-selesai { background: var(--green-soft); color: var(--green); }
+  .st-batal { background: var(--red-soft); color: var(--red); }
+  .st-aktif { background: var(--blue-soft); color: var(--blue); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* --- Denah meja --- */
+  .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .legenda .titik { display: inline-block; width: 12px; height: 12px; border-radius: 999px; margin-right: 5px; vertical-align: -1px; }
+  .denah-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .denah-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 520px) { .denah-grid { grid-template-columns: repeat(2, 1fr); } }
+  .meja-kartu {
+    border: 2px solid var(--line); border-radius: var(--radius); padding: 14px;
+    background: var(--surface); cursor: pointer; text-align: left; min-height: 118px;
+    display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow);
+  }
+  .meja-kartu:hover { border-color: var(--soft); }
+  .meja-kartu .no { font-size: 19px; font-weight: 800; }
+  .meja-kartu .zona { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .meja-kartu .nama { font-size: 13.5px; font-weight: 700; }
+  .meja-kartu .info { font-size: 12.5px; color: var(--muted); }
+  .meja-kartu .timer { font-size: 17px; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .meja-kartu.kosong { border-top: 6px solid var(--green); }
+  .meja-kartu.terisi { border-top: 6px solid var(--blue); background: #f3f8fd; }
+  .meja-kartu.dipesan { border-top: 6px solid #d9a521; background: #fdf9ec; }
+  .meja-kartu .kap { font-size: 12px; color: var(--muted); }
+
+  .grid-menu-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .grid-menu-pos { grid-template-columns: 1fr; } }
+  .pos-item {
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    background: var(--surface); display: flex; flex-direction: column; gap: 6px;
+  }
+  .pos-item .nm { font-weight: 800; font-size: 14.5px; }
+  .pos-item .ds { color: var(--muted); font-size: 12.5px; }
+  .pos-item .bawah { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; }
+  .pos-item .hg { font-weight: 800; color: var(--blue); }
+  .pos-item.habis { opacity: .6; }
+  .qty { display: inline-flex; align-items: center; gap: 2px; }
+  .qty button {
+    width: 28px; height: 28px; min-height: 28px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface-2); font-weight: 800; font-size: 15px;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .qty .jml { min-width: 26px; text-align: center; font-weight: 800; }
+  .krj-baris {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 14px;
+  }
+  .krj-baris:last-child { border-bottom: 0; }
+  .krj-baris .nm { font-weight: 700; }
+  .krj-baris .hg { color: var(--muted); font-size: 13px; }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 520px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; background: var(--bg); padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow);
+  }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 10px; font: inherit; background: var(--surface-2);
+  }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+
+  body[data-role="kasir"] .hanya-admin { display: none !important; }
+
+  .bar-pengguna {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    margin-bottom: 12px; font-size: 13.5px; color: var(--muted);
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; font-weight: 700; color: var(--ink);
+  }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <header class="hero">
+    <span class="demo-badge">CONTOH DEMO</span>
+    <h1>Manajemen Meja</h1>
+    <p>Denah dan status meja untuk restoran dan rumah makan: lihat meja kosong, terisi, dan dipesan; pesan meja untuk pelanggan; pindahkan pelanggan antar meja; dan lihat perputaran tiap meja.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="denah">Denah Meja <span class="badge" id="badgeDenah">0</span></button>
+    <button class="tab-btn" data-tab="pemesanan">Pemesanan</button>
+    <button class="tab-btn" data-tab="riwayat">Riwayat</button>
+    <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dashboard</h2>
+      <p>Status meja saat ini, meja yang paling lama terisi, dan kelola pengguna aplikasi.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Meja Kosong</div><div class="angka" id="dKosong">0</div></div>
+      <div class="stat"><div class="label">Meja Terisi</div><div class="angka" id="dTerisi">0</div></div>
+      <div class="stat"><div class="label">Meja Dipesan</div><div class="angka" id="dDipesan">0</div></div>
+      <div class="stat"><div class="label">Sesi Selesai Hari Ini</div><div class="angka" id="dSesi">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Rata-rata Durasi Duduk</h3>
+      <p class="sub">Dari sesi meja yang selesai hari ini (duduk → selesai).</p>
+      <div class="stat" style="box-shadow:none"><div class="angka" id="dRataDurasi">—</div></div>
+    </div>
+    <div class="card">
+      <h3>Meja Paling Lama Terisi</h3>
+      <p class="sub">Meja terisi yang paling lama diduduki. Batas pengingat: lebih dari 60 menit.</p>
+      <div id="daftarLama"></div>
+    </div>
+    <div class="card hanya-admin">
+      <h3>Pengguna Aplikasi</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
+      <div id="daftarPengguna"></div>
+      <div style="margin-top:14px">
+        <h3 style="font-size:15px">Tambah Pengguna Baru</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="nuNama">Nama *</label>
+            <input type="text" id="nuNama" placeholder="Contoh: Dewi">
+          </div>
+          <div class="field">
+            <label for="nuUser">Nama pengguna *</label>
+            <input type="text" id="nuUser" placeholder="Contoh: dewi">
+          </div>
+          <div class="field">
+            <label for="nuPass">Kata sandi *</label>
+            <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+          </div>
+          <div class="field">
+            <label for="nuPeran">Peran *</label>
+            <select id="nuPeran"><option value="kasir">Kasir</option><option value="admin">Admin</option></select>
+          </div>
+        </div>
+        <button class="btn kecil" id="btnTambahPengguna" type="button">+ Tambah Pengguna</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ganti kata sandi akun Anda sendiri (<span id="namaAkunSaya">—</span>).</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fSandiLama">Kata sandi lama *</label>
+            <input type="password" id="fSandiLama" required>
+          </div>
+          <div class="field">
+            <label for="fSandiBaru">Kata sandi baru *</label>
+            <input type="password" id="fSandiBaru" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil">Simpan Kata Sandi Baru</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-denah">
+    <div class="page-head">
+      <h2>Denah Meja</h2>
+      <p>Klik meja untuk melihat detailnya: duduki meja kosong, selesaikan meja terisi, pindahkan pelanggan, atau pesan meja. Timer menunjukkan lama meja diduduki.</p>
+    </div>
+    <div class="legenda">
+      <span><span class="titik" style="background:var(--green)"></span>Kosong</span>
+      <span><span class="titik" style="background:var(--blue)"></span>Terisi</span>
+      <span><span class="titik" style="background:#d9a521"></span>Dipesan</span>
+    </div>
+    <div class="chips" id="denahChips"></div>
+    <div class="denah-grid" id="denahGrid"></div>
+  </section>
+
+  <section class="panel" id="panel-pemesanan">
+    <div class="page-head">
+      <h2>Pemesanan Meja</h2>
+      <p>Buat pemesanan meja untuk pelanggan. Saat pelanggan datang, klik <b>Check-in</b> agar meja menjadi terisi.</p>
+    </div>
+    <div class="card">
+      <h3>Pemesanan Baru</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label for="psNama">Nama pelanggan *</label>
+          <input type="text" id="psNama" placeholder="Contoh: Andi">
+        </div>
+        <div class="field">
+          <label for="psTelp">No. HP / WhatsApp</label>
+          <input type="text" id="psTelp" placeholder="Contoh: 0812-3456-7890">
+        </div>
+        <div class="field">
+          <label for="psMeja">Meja *</label>
+          <select id="psMeja"></select>
+        </div>
+        <div class="field">
+          <label for="psOrang">Jumlah orang *</label>
+          <input type="number" id="psOrang" min="1" max="12" value="2">
+        </div>
+        <div class="field">
+          <label for="psTanggal">Tanggal *</label>
+          <input type="date" id="psTanggal">
+        </div>
+        <div class="field">
+          <label for="psWaktu">Waktu *</label>
+          <input type="time" id="psWaktu" value="19:00">
+        </div>
+      </div>
+      <div class="field">
+        <label for="psCatatan">Catatan (opsional)</label>
+        <input type="text" id="psCatatan" placeholder="Contoh: Ulang tahun, minta kursi bayi.">
+      </div>
+      <button class="btn" id="btnBuatPemesanan" type="button">Simpan Pemesanan</button>
+    </div>
+    <div class="card">
+      <h3>Pemesanan Aktif</h3>
+      <p class="sub">Pemesanan yang belum check-in atau dibatalkan.</p>
+      <div id="daftarReservasi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head">
+      <h2>Riwayat Pemakaian Meja</h2>
+      <p>Semua sesi meja yang sudah selesai dan pemesanan yang sudah selesai atau dibatalkan.</p>
+    </div>
+    <div class="chips" id="riwayatChips"></div>
+    <div id="riwayatDaftar"></div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Perputaran Meja</h2>
+      <p>Berapa kali tiap meja dipakai hari ini, rata-rata durasi duduk, dan meja paling laris.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Sesi Hari Ini</div><div class="angka" id="lSesi">0</div></div>
+      <div class="stat"><div class="label">Rata-rata Durasi Duduk</div><div class="angka" id="lRata">—</div></div>
+      <div class="stat"><div class="label">Meja Paling Laris</div><div class="angka" id="lLaris" style="font-size:20px">—</div></div>
+      <div class="stat"><div class="label">Reservasi Hari Ini</div><div class="angka" id="lReservasi">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Perputaran per Meja (Hari Ini)</h3>
+      <p class="sub">Jumlah sesi dan rata-rata durasi duduk tiap meja.</p>
+      <div id="laporanPerMeja"></div>
+    </div>
+    <div class="card">
+      <h3>Sesi Selesai Hari Ini</h3>
+      <p class="sub">Sesi meja yang sudah selesai, terbaru di atas.</p>
+      <div id="laporanSelesai"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai Manajemen Meja, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur pengguna, atau sebagai <b>Kasir</b> untuk mengelola meja.</li>
+        <li>Di tab <b>Denah Meja</b>, klik meja untuk melihat detailnya. Meja <b>Kosong</b> bisa diduduki (isi nama pelanggan dan jumlah orang, tambahkan pesanan dari menu bila ada); meja <b>Terisi</b> bisa diselesaikan (meja kembali kosong dan masuk riwayat) atau dipindahkan ke meja kosong lain; meja <b>Dipesan</b> menunggu pelanggan datang.</li>
+        <li>Di tab <b>Pemesanan</b>, buat pemesanan meja (nama, jumlah orang, tanggal, waktu). Saat pelanggan datang, klik <b>Check-in</b> agar meja menjadi terisi.</li>
+        <li>Timer di tiap meja menunjukkan lama meja diduduki. Meja yang terisi <b>lebih dari 60 menit</b> ditandai di Dashboard — segera tanyakan apakah pelanggan sudah selesai.</li>
+        <li>Di tab <b>Riwayat</b>, lihat semua sesi meja yang selesai dan pemesanan yang sudah selesai atau dibatalkan. Di tab <b>Laporan</b>, lihat perputaran tiap meja, rata-rata durasi duduk, dan meja paling laris.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+      <p class="sub">Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (10 meja di 3 zona, 4 kategori, 12 item menu, 2 pemesanan contoh, 4 sesi selesai contoh). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p class="sub">Aplikasi ini mengatur denah, status, pemesanan, dan perputaran meja — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem reservasi online yang terhubung ke pelanggan. Data meja dan pemesanan <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh kasir dan pelayan di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, dan Aplikasi Pemesanan Makanan kami.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Manajemen Meja v1.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Warung Kopi Oyen, bukan data penjualan sungguhan.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Manajemen%20Meja." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi" id="modalAksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Manajemen Meja</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk mengelola meja. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (denah meja, pemesanan, riwayat, laporan)</p>
+    <p class="login-note">Akun baru dibuat admin di tab Dasbor (Pengguna Aplikasi). Setelah masuk pertama kali, segera ganti kata sandi Anda di Dasbor agar hanya Anda yang tahu.</p>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Pembantu ----------
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    var d = new Date();
+    return d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function hariIniKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function jamDari(waktu) {
+    var d = new Date(waktu);
+    return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  }
+  function menitKeTeks(menit) {
+    if (menit == null || isNaN(menit)) return "—";
+    menit = Math.round(menit);
+    if (menit < 60) return menit + " mnt";
+    return Math.floor(menit / 60) + " j " + (menit % 60) + " mnt";
+  }
+  function formatTimer(detik) {
+    detik = Math.max(0, Math.floor(detik));
+    var m = Math.floor(detik / 60);
+    var s = detik % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  // ---------- Modal ----------
+  var modalCallback = null;
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalAksi").style.display = "flex";
+    modalCallback = callback;
+    $("modalBack").classList.add("open");
+  }
+  function bukaModalForm(judul, isi, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalAksi").style.display = "none";
+    modalCallback = null;
+    $("modalBack").classList.add("open");
+  }
+  function tutupModal() {
+    $("modalBack").classList.remove("open");
+    modalCallback = null;
+  }
+  $("modalBatal").addEventListener("click", tutupModal);
+  $("modalYa").addEventListener("click", function () {
+    $("modalBack").classList.remove("open");
+    if (modalCallback) { var cb = modalCallback; modalCallback = null; cb(); }
+  });
+
+  // ---------- Data ----------
+  var STORAGE_KEY = "manajemenMeja.v1";
+  var BATAS_LAMA_MENIT = 60;
+
+  function seedState() {
+    var kini = Date.now();
+    function mntLalu(m) { return new Date(kini - m * 60000).toISOString(); }
+    function jamHariIni(jam, menit) {
+      var d = new Date();
+      d.setHours(jam, menit, 0, 0);
+      return d.toISOString();
+    }
+    return {
+      resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
+      kategori: [
+        { id: 1, nama: "Makanan" },
+        { id: 2, nama: "Minuman" },
+        { id: 3, nama: "Camilan" },
+        { id: 4, nama: "Paket" }
+      ],
+      items: [
+        { id: 1, kat: 1, nama: "Nasi Goreng Oyen", deskripsi: "Nasi goreng telur, ayam suwir, kerupuk, acar.", harga: 18000, tersedia: true },
+        { id: 2, kat: 1, nama: "Mie Goreng Spesial", deskripsi: "Mie goreng telur, sayur, ayam, dan bawang goreng.", harga: 17000, tersedia: true },
+        { id: 3, kat: 1, nama: "Ayam Geprek Sambal Matah", deskripsi: "Ayam goreng geprek, sambal matah, nasi putih.", harga: 20000, tersedia: true },
+        { id: 4, kat: 1, nama: "Soto Ayam Kampung", deskripsi: "Soto ayam, soun, telur, seledri, sambal.", harga: 15000, tersedia: true },
+        { id: 5, kat: 2, nama: "Es Teh Manis", deskripsi: "Teh melati manis dingin.", harga: 5000, tersedia: true },
+        { id: 6, kat: 2, nama: "Kopi Tubruk Oyen", deskripsi: "Kopi tubruk robusta, gula aren.", harga: 8000, tersedia: true },
+        { id: 7, kat: 2, nama: "Es Kopi Susu Gula Aren", deskripsi: "Es kopi susu, gula aren, es batu.", harga: 12000, tersedia: true },
+        { id: 8, kat: 2, nama: "Jus Alpukat", deskripsi: "Jus alpukat, susu kental manis, es batu.", harga: 15000, tersedia: false },
+        { id: 9, kat: 3, nama: "Kentang Goreng", deskripsi: "Kentang goreng renyah, saus sambal.", harga: 12000, tersedia: true },
+        { id: 10, kat: 3, nama: "Pisang Goreng Cokelat Keju", deskripsi: "Pisang goreng, meses cokelat, keju parut.", harga: 10000, tersedia: true },
+        { id: 11, kat: 3, nama: "Roti Bakar Cokelat", deskripsi: "Roti bakar cokelat, margarin.", harga: 9000, tersedia: true },
+        { id: 12, kat: 4, nama: "Paket Nasi + Ayam + Es Teh", deskripsi: "Nasi putih, ayam geprek, es teh manis.", harga: 25000, tersedia: true }
+      ],
+      meja: [
+        { id: 1, nomor: 1, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
+        { id: 2, nomor: 2, zona: "Dalam", kapasitas: 4, status: "dipesan", pelanggan: null, reservasiId: 1 },
+        { id: 3, nomor: 3, zona: "Dalam", kapasitas: 4, status: "terisi", pelanggan: { nama: "Budi", jumlahOrang: 4, mulai: mntLalu(25), catatan: "", items: [{ id: 1, nama: "Nasi Goreng Oyen", harga: 18000, qty: 2 }, { id: 5, nama: "Es Teh Manis", harga: 5000, qty: 2 }] } },
+        { id: 4, nomor: 4, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
+        { id: 5, nomor: 5, zona: "Dalam", kapasitas: 4, status: "terisi", pelanggan: { nama: "Sari", jumlahOrang: 2, mulai: mntLalu(70), catatan: "Minta kursi bayi.", items: [{ id: 7, nama: "Es Kopi Susu Gula Aren", harga: 12000, qty: 2 }] } },
+        { id: 6, nomor: 6, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
+        { id: 7, nomor: 7, zona: "Teras", kapasitas: 2, status: "dipesan", pelanggan: null, reservasiId: 2 },
+        { id: 8, nomor: 8, zona: "Teras", kapasitas: 2, status: "kosong", pelanggan: null },
+        { id: 9, nomor: 9, zona: "Keluarga", kapasitas: 6, status: "kosong", pelanggan: null },
+        { id: 10, nomor: 10, zona: "Keluarga", kapasitas: 6, status: "kosong", pelanggan: null }
+      ],
+      reservasi: [
+        { id: 1, no: "RSV-001", meja: 2, nama: "Dewi", telp: "0812-7777-8888", jumlahOrang: 2, tanggal: hariIniKey(), waktu: "18:30", catatan: "", status: "aktif", dibuat: mntLalu(120) },
+        { id: 2, no: "RSV-002", meja: 7, nama: "Andi", telp: "0813-9999-1111", jumlahOrang: 4, tanggal: hariIniKey(), waktu: "19:00", catatan: "Ulang tahun anak.", status: "aktif", dibuat: mntLalu(90) }
+      ],
+      sesi: [
+        { id: 1, meja: 1, nama: "Rina", jumlahOrang: 3, mulai: jamHariIni(9, 5), selesai: jamHariIni(9, 50), total: 52000 },
+        { id: 2, meja: 4, nama: "Tono", jumlahOrang: 2, mulai: jamHariIni(10, 15), selesai: jamHariIni(10, 55), total: 31000 },
+        { id: 3, meja: 6, nama: "Maya", jumlahOrang: 4, mulai: jamHariIni(11, 30), selesai: jamHariIni(12, 20), total: 74000 },
+        { id: 4, meja: 9, nama: "Keluarga Harto", jumlahOrang: 6, mulai: jamHariIni(12, 40), selesai: jamHariIni(13, 35), total: 125000 }
+      ],
+      seqReservasi: 3,
+      seqSesi: 5
+    };
+  }
+
+  var state = seedState();
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.meja) && Array.isArray(d.reservasi) && Array.isArray(d.sesi)) {
+        state = d;
+        if (!state.seqReservasi) state.seqReservasi = state.reservasi.length + 1;
+        if (!state.seqSesi) state.seqSesi = state.sesi.length + 1;
+      }
+    } catch (e) { /* data rusak: pakai contoh */ }
+  }
+
+  function cariMeja(id) { return state.meja.find(function (x) { return x.id === id; }); }
+  function cariReservasi(id) { return state.reservasi.find(function (x) { return x.id === id; }); }
+  function labelStatusMeja(s) { return s === "kosong" ? "Kosong" : s === "terisi" ? "Terisi" : "Dipesan"; }
+  function kelasStatusMeja(s) { return s === "kosong" ? "st-kosong" : s === "terisi" ? "st-terisi" : "st-dipesan"; }
+  function totalPesananMeja(m) {
+    if (!m.pelanggan || !m.pelanggan.items) return 0;
+    return m.pelanggan.items.reduce(function (a, it) { return a + it.harga * it.qty; }, 0);
+  }
+  function menitDuduk(m) {
+    if (!m.pelanggan || !m.pelanggan.mulai) return 0;
+    return (Date.now() - new Date(m.pelanggan.mulai).getTime()) / 60000;
+  }
+  function sesiHariIni() {
+    var kunci = hariIniKey();
+    return state.sesi.filter(function (s) { return s.selesai && s.selesai.slice(0, 10) === kunci; });
+  }
+  function rataDurasiSesi() {
+    var s = sesiHariIni();
+    if (!s.length) return null;
+    var total = s.reduce(function (a, x) { return a + (new Date(x.selesai).getTime() - new Date(x.mulai).getTime()) / 60000; }, 0);
+    return total / s.length;
+  }
+  function perputaranPerMeja() {
+    var s = sesiHariIni();
+    return state.meja.map(function (m) {
+      var sesi = s.filter(function (x) { return x.meja === m.nomor; });
+      var rata = null;
+      if (sesi.length) {
+        rata = sesi.reduce(function (a, x) { return a + (new Date(x.selesai).getTime() - new Date(x.mulai).getTime()) / 60000; }, 0) / sesi.length;
+      }
+      return { nomor: m.nomor, zona: m.zona, jumlah: sesi.length, rata: rata, total: sesi.reduce(function (a, x) { return a + (x.total || 0); }, 0) };
+    });
+  }
+
+  // ---------- Login & pengguna ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
+  ];
+  var users = [];
+  var currentUser = null;
+
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
+      var d = JSON.parse(raw);
+      if (!Array.isArray(d) || d.length === 0) throw new Error("kosong");
+      users = d.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
+      });
+    } catch (e) {
+      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+      saveUsers();
+    }
+  }
+  function saveUsers() {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  }
+  function terapkanSesi() {
+    document.body.setAttribute("data-role", currentUser ? currentUser.role : "");
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")" : "—";
+    $("namaAkunSaya").textContent = currentUser ? currentUser.name : "—";
+    $("loginOverlay").classList.toggle("hidden", !!currentUser);
+  }
+  function masuk(username, password) {
+    var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
+    if (!u) return false;
+    currentUser = u;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+    return true;
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+  }
+  function pulihkanSesi() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
+      if (u) { currentUser = u; terapkanSesi(); }
+    } catch (e) { /* abaikan */ }
+  }
+
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim();
+    var p = $("loginPass").value;
+    if (masuk(u, p)) {
+      $("loginError").hidden = true;
+      $("loginPass").value = "";
+      renderSemua();
+      toast("Selamat datang, " + currentUser.name + ".");
+    } else {
+      $("loginError").hidden = false;
+    }
+  });
+  $("btnKeluar").addEventListener("click", function () {
+    keluar();
+    toast("Anda sudah keluar.");
+  });
+
+  // ---------- Tab ----------
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      if (tab === "dashboard") renderDashboard();
+      if (tab === "denah") renderDenah();
+      if (tab === "pemesanan") renderPemesanan();
+      if (tab === "riwayat") renderRiwayat();
+      if (tab === "laporan") renderLaporan();
+    });
+  });
+
+  // ---------- Dashboard ----------
+  function renderDashboard() {
+    var kosong = state.meja.filter(function (m) { return m.status === "kosong"; }).length;
+    var terisi = state.meja.filter(function (m) { return m.status === "terisi"; }).length;
+    var dipesan = state.meja.filter(function (m) { return m.status === "dipesan"; }).length;
+    $("dKosong").textContent = kosong;
+    $("dTerisi").textContent = terisi;
+    $("dDipesan").textContent = dipesan;
+    $("dSesi").textContent = sesiHariIni().length;
+    var rata = rataDurasiSesi();
+    $("dRataDurasi").textContent = rata == null ? "—" : menitKeTeks(rata);
+    var lama = state.meja.filter(function (m) { return m.status === "terisi" && menitDuduk(m) > BATAS_LAMA_MENIT; })
+      .sort(function (a, b) { return menitDuduk(b) - menitDuduk(a); });
+    $("daftarLama").innerHTML = lama.length ? lama.map(function (m) {
+      return '<div class="item-bar"><div><div class="nm">Meja ' + m.nomor + " · " + esc(m.pelanggan.nama) + ' <span class="lencana st-dipesan">LAMA</span></div>' +
+        '<div class="dt">' + m.pelanggan.jumlahOrang + " orang · Duduk " + jamDari(m.pelanggan.mulai) + "</div></div>" +
+        '<div class="harga" data-timer-meja="' + m.id + '">' + formatTimer(menitDuduk(m) * 60) + "</div></div>";
+    }).join("") : '<p class="kosong">Tidak ada meja yang terisi lebih dari 60 menit.</p>';
+    renderPengguna();
+  }
+
+  function renderPengguna() {
+    var wrap = $("daftarPengguna");
+    if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
+    wrap.innerHTML = users.map(function (u) {
+      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var tombol = "";
+      if (u.username !== currentUser.username) {
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif !== false ? "Nonaktifkan" : "Aktifkan") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
+      }
+      return '<div class="user-row"><div><b>' + esc(u.name) + '</b> <span style="color:var(--muted)">(@' + esc(u.username) + ")</span><br>" +
+        '<span class="lencana ' + (u.role === "admin" ? "st-terisi" : "st-dipesan") + '">' + labelPeran + "</span> " +
+        (u.aktif === false ? '<span class="lencana st-batal">Nonaktif</span>' : "") + "</div>" +
+        '<div class="aksi">' + tombol + "</div></div>";
+    }).join("");
+  }
+
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    if (aksi === "peran") {
+      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin."); return;
+      }
+      u.role = u.role === "admin" ? "kasir" : "admin";
+      saveUsers();
+      renderPengguna();
+      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
+    } else if (aksi === "aktif") {
+      if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers();
+      renderPengguna();
+      toast(u.aktif !== false ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
+    } else if (aksi === "sandi") {
+      tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ") menjadi \"mm123\"?", function () {
+        u.password = "mm123";
+        saveUsers();
+        toast("Kata sandi " + u.name + " direset menjadi mm123.");
+      });
+    }
+  });
+
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim().toLowerCase();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
+    saveUsers();
+    $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + nama + " ditambahkan.");
+  });
+
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("fSandiLama").value;
+    var baru = $("fSandiBaru").value;
+    if (currentUser.password !== lama) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 4) { toast("Kata sandi baru minimal 4 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("fSandiLama").value = ""; $("fSandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diganti.");
+  });
+
+  // ---------- Denah Meja ----------
+  var denahFilter = "semua"; // semua | kosong | terisi | dipesan
+  var FILTER_DENAH = [
+    { id: "semua", label: "Semua" },
+    { id: "kosong", label: "Kosong" },
+    { id: "terisi", label: "Terisi" },
+    { id: "dipesan", label: "Dipesan" }
+  ];
+
+  function renderDenah() {
+    var terisi = state.meja.filter(function (m) { return m.status === "terisi"; }).length;
+    $("badgeDenah").textContent = terisi;
+    $("denahChips").innerHTML = FILTER_DENAH.map(function (f) {
+      var jml = f.id === "semua" ? state.meja.length : state.meja.filter(function (m) { return m.status === f.id; }).length;
+      return '<button class="chip' + (denahFilter === f.id ? " active" : "") + '" type="button" data-filter-denah="' + f.id + '">' + f.label + " (" + jml + ")</button>";
+    }).join("");
+    var daftar = state.meja.filter(function (m) { return denahFilter === "semua" || m.status === denahFilter; });
+    $("denahGrid").innerHTML = daftar.map(function (m) {
+      var isi = "";
+      if (m.status === "terisi" && m.pelanggan) {
+        isi = '<div class="nama">' + esc(m.pelanggan.nama) + " · " + m.pelanggan.jumlahOrang + ' orang</div>' +
+          '<div class="timer" data-timer-meja="' + m.id + '">' + formatTimer(menitDuduk(m) * 60) + "</div>" +
+          '<div class="info">Pesanan: ' + rupiah(totalPesananMeja(m)) + "</div>";
+      } else if (m.status === "dipesan") {
+        var r = m.reservasiId ? cariReservasi(m.reservasiId) : null;
+        isi = r ? '<div class="nama">' + esc(r.nama) + " · " + r.jumlahOrang + ' orang</div>' +
+          '<div class="info">Dipesan ' + esc(r.tanggal) + " " + esc(r.waktu) + " · " + esc(r.no) + "</div>" : '<div class="info">Dipesan</div>';
+      } else {
+        isi = '<div class="info">Siap diduduki</div>';
+      }
+      return '<button class="meja-kartu ' + m.status + '" type="button" data-meja="' + m.id + '">' +
+        '<span class="no">Meja ' + m.nomor + '</span>' +
+        '<span class="zona">' + esc(m.zona) + " · maks " + m.kapasitas + ' orang</span>' +
+        '<span class="lencana ' + kelasStatusMeja(m.status) + '">' + labelStatusMeja(m.status) + "</span>" + isi + "</button>";
+    }).join("");
+  }
+
+  $("denahChips").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-filter-denah]");
+    if (!btn) return;
+    denahFilter = btn.getAttribute("data-filter-denah");
+    renderDenah();
+  });
+
+  $("denahGrid").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-meja]");
+    if (!btn) return;
+    bukaDetailMeja(Number(btn.getAttribute("data-meja")));
+  });
+
+  // ---------- Detail meja (modal) ----------
+  var modalMejaId = null;
+  var dudukiKeranjang = {};
+
+  function bukaDetailMeja(id) {
+    var m = cariMeja(id);
+    if (!m) return;
+    modalMejaId = id;
+    dudukiKeranjang = {};
+    var isi = "";
+    if (m.status === "terisi" && m.pelanggan) {
+      isi = '<p>Meja ' + m.nomor + " (" + esc(m.zona) + ", maks " + m.kapasitas + " orang) sedang terisi oleh <b>" + esc(m.pelanggan.nama) + "</b> (" + m.pelanggan.jumlahOrang + " orang) sejak " + jamDari(m.pelanggan.mulai) + ".</p>";
+      if (m.pelanggan.catatan) isi += '<p>Catatan: ' + esc(m.pelanggan.catatan) + "</p>";
+      if (m.pelanggan.items && m.pelanggan.items.length) {
+        isi += "<p>Pesanan di meja ini:</p>" + m.pelanggan.items.map(function (it) {
+          return '<div class="krj-baris"><span class="nm">' + it.qty + "× " + esc(it.nama) + '</span><span class="hg">' + rupiah(it.harga * it.qty) + "</span></div>";
+        }).join("") + '<p style="margin-top:8px"><b>Total pesanan: ' + rupiah(totalPesananMeja(m)) + "</b></p>";
+      }
+      var tujuan = state.meja.filter(function (x) { return x.status === "kosong"; });
+      isi += '<div class="field" style="margin-top:14px"><label for="mdPindahKe">Pindah ke meja kosong</label><select id="mdPindahKe">' +
+        (tujuan.length ? tujuan.map(function (x) { return '<option value="' + x.id + '">Meja ' + x.nomor + " (" + esc(x.zona) + ", maks " + x.kapasitas + " orang)</option>"; }).join("") : '<option value="">Tidak ada meja kosong</option>') + "</select></div>";
+      isi += '<div class="aksi" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
+        '<button class="btn biru kecil" type="button" id="mdBtnPindah">Pindah Meja</button>' +
+        '<button class="btn hijau kecil" type="button" id="mdBtnSelesai">Selesaikan (Meja Kosong)</button>' +
+        '<button class="btn ghost kecil" type="button" id="mdBtnTutup">Tutup</button></div>';
+    } else if (m.status === "dipesan") {
+      var r = m.reservasiId ? cariReservasi(m.reservasiId) : null;
+      isi = r ? '<p>Meja ' + m.nomor + " (" + esc(m.zona) + ") dipesan oleh <b>" + esc(r.nama) + "</b> (" + r.jumlahOrang + " orang) untuk " + esc(r.tanggal) + " pukul " + esc(r.waktu) + " (" + esc(r.no) + ").</p>" +
+        (r.catatan ? "<p>Catatan: " + esc(r.catatan) + "</p>" : "") : "<p>Meja ini dipesan.</p>";
+      isi += '<div class="aksi" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
+        (r ? '<button class="btn hijau kecil" type="button" id="mdBtnCheckin">Check-in (Duduki)</button>' : "") +
+        '<button class="btn ghost kecil" type="button" id="mdBtnTutup">Tutup</button></div>';
+    } else {
+      isi = '<p>Meja ' + m.nomor + " (" + esc(m.zona) + ", maks " + m.kapasitas + " orang) sedang kosong.</p>" +
+        '<div class="field"><label for="mdNama">Nama pelanggan *</label><input type="text" id="mdNama" placeholder="Contoh: Budi"></div>' +
+        '<div class="field"><label for="mdOrang">Jumlah orang *</label><input type="number" id="mdOrang" min="1" max="12" value="2"></div>' +
+        '<div class="field"><label for="mdCatatan">Catatan (opsional)</label><input type="text" id="mdCatatan" placeholder="Contoh: Minta kursi bayi."></div>' +
+        '<p style="margin-bottom:8px"><b>Pesanan awal (opsional, dari menu Warung Kopi Oyen):</b></p>' +
+        '<div id="mdMenu"></div>' +
+        '<div class="aksi" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px">' +
+        '<button class="btn hijau kecil" type="button" id="mdBtnDuduki">Duduki Meja</button>' +
+        '<button class="btn ghost kecil" type="button" id="mdBtnTutup">Tutup</button></div>';
+    }
+    bukaModalForm("Meja " + m.nomor + " — " + labelStatusMeja(m.status), "Detail dan tindakan untuk meja ini.", isi);
+    var btnTutup = $("mdBtnTutup");
+    if (btnTutup) btnTutup.addEventListener("click", tutupModal);
+    if (m.status === "kosong") renderMenuDuduki(m);
+    var bDuduki = $("mdBtnDuduki");
+    if (bDuduki) bDuduki.addEventListener("click", function () { dudukiMeja(m.id); });
+    var bSelesai = $("mdBtnSelesai");
+    if (bSelesai) bSelesai.addEventListener("click", function () { selesaikanMeja(m.id); });
+    var bPindah = $("mdBtnPindah");
+    if (bPindah) bPindah.addEventListener("click", function () { pindahMeja(m.id); });
+    var bCheckin = $("mdBtnCheckin");
+    if (bCheckin) bCheckin.addEventListener("click", function () { checkinReservasi(m.reservasiId); });
+  }
+
+  function renderMenuDuduki(m) {
+    var wrap = $("mdMenu");
+    if (!wrap) return;
+    wrap.innerHTML = state.items.filter(function (it) { return it.tersedia; }).map(function (it) {
+      var q = dudukiKeranjang[it.id] || 0;
+      return '<div class="krj-baris"><span class="nm">' + esc(it.nama) + ' <span class="hg">' + rupiah(it.harga) + '</span></span>' +
+        '<span class="qty"><button type="button" data-dk-kurang="' + it.id + '" aria-label="Kurangi">−</button>' +
+        '<span class="jml">' + q + '</span>' +
+        '<button type="button" data-dk-tambah="' + it.id + '" aria-label="Tambah">+</button></span></div>';
+    }).join("");
+    wrap.onclick = function (e) {
+      var t = e.target.closest("[data-dk-tambah]");
+      var k = e.target.closest("[data-dk-kurang]");
+      var id = t ? Number(t.getAttribute("data-dk-tambah")) : k ? Number(k.getAttribute("data-dk-kurang")) : null;
+      if (!id) return;
+      dudukiKeranjang[id] = Math.max(0, (dudukiKeranjang[id] || 0) + (t ? 1 : -1));
+      if (dudukiKeranjang[id] === 0) delete dudukiKeranjang[id];
+      renderMenuDuduki(m);
+    };
+  }
+
+  function dudukiMeja(id) {
+    var m = cariMeja(id);
+    if (!m || m.status !== "kosong") { toast("Meja tidak kosong."); return; }
+    var nama = $("mdNama").value.trim();
+    var orang = Number($("mdOrang").value);
+    if (!nama) { toast("Nama pelanggan wajib diisi."); return; }
+    if (!orang || orang < 1 || orang > m.kapasitas + 6) { toast("Jumlah orang tidak valid."); return; }
+    var items = Object.keys(dudukiKeranjang).map(function (k) {
+      var it = state.items.find(function (x) { return x.id === Number(k); });
+      return { id: it.id, nama: it.nama, harga: it.harga, qty: dudukiKeranjang[k] };
+    });
+    m.status = "terisi";
+    m.pelanggan = { nama: nama, jumlahOrang: orang, mulai: new Date().toISOString(), catatan: $("mdCatatan").value.trim(), items: items };
+    saveState();
+    tutupModal();
+    renderSemua();
+    toast("Meja " + m.nomor + " diduduki oleh " + nama + ".");
+  }
+
+  function selesaikanMeja(id) {
+    var m = cariMeja(id);
+    if (!m || m.status !== "terisi" || !m.pelanggan) { toast("Meja tidak sedang terisi."); return; }
+    var p = m.pelanggan;
+    tanyaKonfirmasi("Selesaikan meja " + m.nomor, "Selesaikan sesi " + p.nama + " di meja " + m.nomor + "? Meja kembali kosong dan sesi masuk riwayat.", function () {
+      state.sesi.push({
+        id: state.seqSesi++, meja: m.nomor, nama: p.nama, jumlahOrang: p.jumlahOrang,
+        mulai: p.mulai, selesai: new Date().toISOString(),
+        total: (p.items || []).reduce(function (a, it) { return a + it.harga * it.qty; }, 0)
+      });
+      m.status = "kosong";
+      m.pelanggan = null;
+      saveState();
+      tutupModal();
+      renderSemua();
+      toast("Meja " + m.nomor + " selesai dan kembali kosong.");
+    });
+  }
+
+  function pindahMeja(id) {
+    var m = cariMeja(id);
+    if (!m || m.status !== "terisi" || !m.pelanggan) { toast("Meja tidak sedang terisi."); return; }
+    var tujuanId = Number($("mdPindahKe").value);
+    var t = cariMeja(tujuanId);
+    if (!t || t.status !== "kosong") { toast("Pilih meja tujuan yang kosong."); return; }
+    t.status = "terisi";
+    t.pelanggan = m.pelanggan;
+    m.status = "kosong";
+    m.pelanggan = null;
+    saveState();
+    tutupModal();
+    renderSemua();
+    toast("Pelanggan dipindah dari meja " + m.nomor + " ke meja " + t.nomor + ".");
+  }
+
+  function checkinReservasi(reservasiId) {
+    var r = cariReservasi(reservasiId);
+    if (!r || r.status !== "aktif") { toast("Pemesanan tidak aktif."); return; }
+    var m = cariMeja(r.meja);
+    if (!m || m.status !== "dipesan") { toast("Meja pemesanan tidak tersedia."); return; }
+    m.status = "terisi";
+    m.pelanggan = { nama: r.nama, jumlahOrang: r.jumlahOrang, mulai: new Date().toISOString(), catatan: r.catatan || "", items: [] };
+    m.reservasiId = null;
+    r.status = "selesai";
+    saveState();
+    tutupModal();
+    renderSemua();
+    toast("Check-in: " + r.nama + " duduk di meja " + m.nomor + ".");
+  }
+
+  // ---------- Pemesanan ----------
+  function isiPilihanMejaPemesanan() {
+    var sel = $("psMeja");
+    sel.innerHTML = state.meja.filter(function (m) { return m.status === "kosong"; }).map(function (m) {
+      return '<option value="' + m.id + '">Meja ' + m.nomor + " (" + esc(m.zona) + ", maks " + m.kapasitas + " orang)</option>";
+    }).join("") || '<option value="">Tidak ada meja kosong</option>';
+  }
+
+  function renderPemesanan() {
+    isiPilihanMejaPemesanan();
+    if (!$("psTanggal").value) $("psTanggal").value = hariIniKey();
+    var aktif = state.reservasi.filter(function (r) { return r.status === "aktif"; })
+      .sort(function (a, b) { return (a.tanggal + a.waktu).localeCompare(b.tanggal + b.waktu); });
+    $("daftarReservasi").innerHTML = aktif.length ? aktif.map(function (r) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(r.no) + " · " + esc(r.nama) + " · Meja " + r.meja + ' <span class="lencana st-aktif">Aktif</span></div>' +
+        '<div class="dt">' + r.jumlahOrang + " orang · " + esc(r.tanggal) + " pukul " + esc(r.waktu) + (r.telp ? " · " + esc(r.telp) : "") + (r.catatan ? " · " + esc(r.catatan) : "") + "</div></div>" +
+        '<div class="aksi" style="display:flex;gap:6px;flex-wrap:wrap">' +
+        '<button class="btn hijau kecil" type="button" data-res-aksi="checkin" data-res="' + r.id + '">Check-in</button>' +
+        '<button class="btn ghost kecil" type="button" data-res-aksi="batal" data-res="' + r.id + '">Batalkan</button></div></div>';
+    }).join("") : '<p class="kosong">Belum ada pemesanan aktif.</p>';
+  }
+
+  $("btnBuatPemesanan").addEventListener("click", function () {
+    var nama = $("psNama").value.trim();
+    var telp = $("psTelp").value.trim();
+    var mejaId = Number($("psMeja").value);
+    var orang = Number($("psOrang").value);
+    var tanggal = $("psTanggal").value;
+    var waktu = $("psWaktu").value;
+    var catatan = $("psCatatan").value.trim();
+    var m = cariMeja(mejaId);
+    if (!nama) { toast("Nama pelanggan wajib diisi."); return; }
+    if (!m || m.status !== "kosong") { toast("Pilih meja yang masih kosong."); return; }
+    if (!orang || orang < 1) { toast("Jumlah orang tidak valid."); return; }
+    if (!tanggal || !waktu) { toast("Tanggal dan waktu wajib diisi."); return; }
+    var r = {
+      id: state.seqReservasi, no: "RSV-" + String(state.seqReservasi).padStart(3, "0"),
+      meja: m.nomor, nama: nama, telp: telp, jumlahOrang: orang,
+      tanggal: tanggal, waktu: waktu, catatan: catatan, status: "aktif", dibuat: new Date().toISOString()
+    };
+    state.seqReservasi++;
+    state.reservasi.push(r);
+    m.status = "dipesan";
+    m.reservasiId = r.id;
+    saveState();
+    $("psNama").value = ""; $("psTelp").value = ""; $("psCatatan").value = ""; $("psOrang").value = "2";
+    renderSemua();
+    toast("Pemesanan " + r.no + " untuk meja " + m.nomor + " disimpan.");
+  });
+
+  $("daftarReservasi").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-res-aksi]");
+    if (!btn) return;
+    var id = Number(btn.getAttribute("data-res"));
+    var aksi = btn.getAttribute("data-res-aksi");
+    var r = cariReservasi(id);
+    if (!r) return;
+    if (aksi === "checkin") {
+      checkinReservasi(id);
+    } else if (aksi === "batal") {
+      tanyaKonfirmasi("Batalkan pemesanan", "Batalkan pemesanan " + r.no + " (" + r.nama + ", meja " + r.meja + ")?", function () {
+        r.status = "batal";
+        var m = state.meja.find(function (x) { return x.reservasiId === r.id; });
+        if (m) { m.status = "kosong"; m.reservasiId = null; }
+        saveState();
+        renderSemua();
+        toast("Pemesanan " + r.no + " dibatalkan.");
+      });
+    }
+  });
+
+  // ---------- Riwayat ----------
+  var riwayatFilter = "semua"; // semua | sesi | reservasi
+  function renderRiwayat() {
+    $("riwayatChips").innerHTML = [
+      { id: "semua", label: "Semua" },
+      { id: "sesi", label: "Sesi Meja Selesai" },
+      { id: "reservasi", label: "Pemesanan Selesai / Batal" }
+    ].map(function (f) {
+      return '<button class="chip' + (riwayatFilter === f.id ? " active" : "") + '" type="button" data-filter-riwayat="' + f.id + '">' + f.label + "</button>";
+    }).join("");
+    var baris = [];
+    if (riwayatFilter !== "reservasi") {
+      state.sesi.slice().sort(function (a, b) { return new Date(b.selesai) - new Date(a.selesai); }).forEach(function (s) {
+        var durasi = (new Date(s.selesai).getTime() - new Date(s.mulai).getTime()) / 60000;
+        baris.push({ waktu: s.selesai, html: '<div class="item-bar"><div><div class="nm">Meja ' + s.meja + " · " + esc(s.nama) + ' <span class="lencana st-selesai">Sesi Selesai</span></div>' +
+          '<div class="dt">' + s.jumlahOrang + " orang · " + jamDari(s.mulai) + "–" + jamDari(s.selesai) + " · " + menitKeTeks(durasi) + "</div></div>" +
+          '<div class="harga">' + rupiah(s.total || 0) + "</div></div>" });
+      });
+    }
+    if (riwayatFilter !== "sesi") {
+      state.reservasi.filter(function (r) { return r.status !== "aktif"; }).forEach(function (r) {
+        baris.push({ waktu: r.dibuat, html: '<div class="item-bar"><div><div class="nm">' + esc(r.no) + " · " + esc(r.nama) + " · Meja " + r.meja + ' <span class="lencana ' + (r.status === "selesai" ? "st-selesai" : "st-batal") + '">' + (r.status === "selesai" ? "Check-in / Selesai" : "Dibatalkan") + '</span></div>' +
+          '<div class="dt">' + r.jumlahOrang + " orang · " + esc(r.tanggal) + " pukul " + esc(r.waktu) + "</div></div></div>" });
+      });
+    }
+    baris.sort(function (a, b) { return new Date(b.waktu) - new Date(a.waktu); });
+    $("riwayatDaftar").innerHTML = baris.length ? baris.map(function (b) { return b.html; }).join("") : '<p class="kosong">Belum ada riwayat.</p>';
+  }
+
+  $("riwayatChips").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-filter-riwayat]");
+    if (!btn) return;
+    riwayatFilter = btn.getAttribute("data-filter-riwayat");
+    renderRiwayat();
+  });
+
+  // ---------- Laporan ----------
+  function renderLaporan() {
+    var sesi = sesiHariIni();
+    $("lSesi").textContent = sesi.length;
+    var rata = rataDurasiSesi();
+    $("lRata").textContent = rata == null ? "—" : menitKeTeks(rata);
+    var per = perputaranPerMeja();
+    var laris = per.slice().sort(function (a, b) { return b.jumlah - a.jumlah; })[0];
+    $("lLaris").textContent = laris && laris.jumlah > 0 ? "Meja " + laris.nomor + " (" + laris.jumlah + "×)" : "—";
+    $("lReservasi").textContent = state.reservasi.filter(function (r) { return r.tanggal === hariIniKey(); }).length;
+    $("laporanPerMeja").innerHTML = per.map(function (p) {
+      return '<div class="item-bar"><div><div class="nm">Meja ' + p.nomor + ' <span style="color:var(--muted);font-weight:600">(' + esc(p.zona) + ")</span></div>" +
+        '<div class="dt">' + p.jumlah + " sesi · rata-rata " + menitKeTeks(p.rata) + "</div></div>" +
+        '<div class="harga">' + rupiah(p.total) + "</div></div>";
+    }).join("");
+    var daftar = sesi.slice().sort(function (a, b) { return new Date(b.selesai) - new Date(a.selesai); });
+    $("laporanSelesai").innerHTML = daftar.length ? daftar.map(function (s) {
+      var durasi = (new Date(s.selesai).getTime() - new Date(s.mulai).getTime()) / 60000;
+      return '<div class="item-bar"><div><div class="nm">Meja ' + s.meja + " · " + esc(s.nama) + "</div>" +
+        '<div class="dt">' + s.jumlahOrang + " orang · " + jamDari(s.mulai) + "–" + jamDari(s.selesai) + " · " + menitKeTeks(durasi) + "</div></div>" +
+        '<div class="harga">' + rupiah(s.total || 0) + "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada sesi selesai hari ini.</p>';
+  }
+
+  // ---------- Reset data ----------
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Kembalikan data contoh", "Hapus semua perubahan dan kembalikan data contoh Warung Kopi Oyen?", function () {
+      state = seedState();
+      saveState();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Timer berjalan ----------
+  function perbaruiTimer() {
+    document.querySelectorAll("[data-timer-meja]").forEach(function (el) {
+      var m = cariMeja(Number(el.getAttribute("data-timer-meja")));
+      if (m && m.status === "terisi") el.textContent = formatTimer(menitDuduk(m) * 60);
+    });
+  }
+  setInterval(perbaruiTimer, 30000);
+
+  // ---------- Render semua & init ----------
+  function renderSemua() {
+    renderDashboard();
+    renderDenah();
+    renderPemesanan();
+    renderRiwayat();
+    renderLaporan();
+  }
+
+  $("tanggalHariIni").textContent = tanggalHariIni();
+  loadState();
+  loadUsers();
+  terapkanSesi();
+  pulihkanSesi();
+  if (currentUser) renderSemua();
+})();
+</script>
+</body>
+</html>
