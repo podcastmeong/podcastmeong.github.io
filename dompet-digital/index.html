@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dompet Digital (Simulasi Demo)</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+  .simulasi-box {
+    margin-top: 14px; background: rgba(246, 169, 60, .16); border: 1px solid #f6a93c;
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5;
+  }
+  .simulasi-box b { color: #f6a93c; }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.peringatan > span { background: #d99a1f; }
+  .progres.lewat > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .simulasi-kuning {
+    background: var(--amber-soft); border: 1px solid #e3c98a; border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin-bottom: 12px;
+  }
+  .simulasi-kuning b { color: var(--amber); }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .qr-wrap { text-align: center; padding: 10px 0 4px; }
+  .qr-wrap canvas { border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .notif-belum { background: #fdf9ec; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · SIMULASI</span>
+    <h1>Dompet <span class="aksen">Digital</span></h1>
+    <p>Lihat cara kerja dompet digital: saldo, pembayaran QR, top up, riwayat transaksi, dan notifikasi — semuanya contoh simulasi untuk dipelajari.</p>
+    <div class="simulasi-box"><b>SIMULASI DEMO — BUKAN UANG ASLI.</b> Semua saldo, top up, pembayaran QR, transfer, dan notifikasi di aplikasi ini adalah <b>contoh simulasi</b>. Tidak ada transfer uang sungguhan, tidak ada pembayaran nyata, dan tidak ada koneksi ke bank atau e-wallet mana pun.</div>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="saldo">Saldo</button>
+    <button class="tab-btn" type="button" data-tab="qr">QR Payment</button>
+    <button class="tab-btn" type="button" data-tab="topup">Top Up</button>
+    <button class="tab-btn" type="button" data-tab="riwayat">Riwayat <span class="badge" id="badgeRiwayat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="notifikasi">Notifikasi <span class="badge" id="badgeNotif">0</span></button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Dompet</h2><p id="dJudul">Ringkasan dompet simulasi Anda: saldo, uang masuk, uang keluar, dan transaksi terbaru.</p></div>
+    <div class="simulasi-kuning"><b>SIMULASI DEMO</b> — saldo di bawah ini adalah saldo contoh, bukan uang asli. Tidak ada uang sungguhan yang berpindah.</div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Saldo Saat Ini (Simulasi)</div><div class="angka" id="dSaldo" style="font-size:22px">Rp0</div><div class="sub" id="dSaldoSub"></div></div>
+      <div class="stat"><div class="label">Total Masuk (Simulasi)</div><div class="angka" id="dMasuk" style="font-size:22px">Rp0</div><div class="sub" id="dMasukSub"></div></div>
+      <div class="stat"><div class="label">Total Keluar (Simulasi)</div><div class="angka" id="dKeluar" style="font-size:22px">Rp0</div><div class="sub" id="dKeluarSub"></div></div>
+      <div class="stat warn"><div class="label">Transaksi</div><div class="angka" id="dJumlah" style="font-size:22px">0</div><div class="sub" id="dJumlahSub"></div></div>
+    </div>
+    <div class="card" id="cardPeringatanSaldo" hidden>
+      <h3>⚠ Saldo Rendah</h3>
+      <p class="sub" id="dPeringatanSaldo">—</p>
+    </div>
+    <div class="card"><h3>Notifikasi Belum Dibaca</h3><p class="sub" id="dNotif">—</p></div>
+    <div class="card"><h3>Transaksi Terbaru</h3><div id="daftarTransaksiTerbaru"></div></div>
+    <div class="card" id="cardTopupCepat">
+      <h3>Top Up Cepat (Simulasi)</h3>
+      <p class="sub">Tambah saldo contoh. Metode dan jumlah di bawah ini hanya simulasi — tidak ada uang yang benar-benar ditransfer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qMetode">Metode top up (contoh)</label><select id="qMetode">
+          <option value="Transfer Bank (contoh)">Transfer Bank (contoh)</option>
+          <option value="Minimarket (contoh)">Minimarket (contoh)</option>
+          <option value="Kartu Debit (contoh)">Kartu Debit (contoh)</option>
+        </select></div>
+        <div class="field"><label for="qJumlahTopup">Jumlah (Rp, min. 10.000)</label><input id="qJumlahTopup" type="number" min="10000" placeholder="cth: 100000"></div>
+      </div>
+      <button class="btn kecil" id="btnTopupCepat" type="button">Top Up Sekarang (Simulasi)</button>
+      <p class="sub" id="pesanTopupCepat" style="margin-top:8px"></p>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengguna.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-saldo">
+    <div class="page-head"><h2>Saldo</h2><p>Saldo contoh dompet Anda dan ringkasan uang masuk vs keluar per periode. Semua angka di sini adalah simulasi.</p></div>
+    <div class="card">
+      <h3>Saldo Saya (Simulasi)</h3>
+      <p class="sub">Nomor dompet contoh dan saldo saat ini.</p>
+      <div class="grid-stat" style="margin-bottom:0">
+        <div class="stat accent"><div class="label">Saldo Saat Ini</div><div class="angka" id="sSaldo" style="font-size:22px">Rp0</div><div class="sub" id="sSaldoSub"></div></div>
+        <div class="stat"><div class="label">Saldo Awal (Contoh)</div><div class="angka" id="sSaldoAwal" style="font-size:22px">Rp0</div><div class="sub">Saldo awal contoh saat dompet dibuat</div></div>
+      </div>
+      <p class="sub" style="margin-top:12px" id="nomorDompet">Nomor dompet contoh: —</p>
+    </div>
+    <div class="card">
+      <h3>Ringkasan per Periode</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fPeriodeSaldo">Periode</label><select id="fPeriodeSaldo">
+          <option value="7">7 hari terakhir</option>
+          <option value="30" selected>30 hari terakhir</option>
+          <option value="semua">Semua</option>
+        </select></div>
+      </div>
+      <div class="grid-stat" style="margin-bottom:0">
+        <div class="stat"><div class="label">Uang Masuk</div><div class="angka" id="sMasuk" style="font-size:22px">Rp0</div><div class="sub" id="sMasukSub"></div></div>
+        <div class="stat"><div class="label">Uang Keluar</div><div class="angka" id="sKeluar" style="font-size:22px">Rp0</div><div class="sub" id="sKeluarSub"></div></div>
+        <div class="stat"><div class="label">Selisih (Masuk − Keluar)</div><div class="angka" id="sSelisih" style="font-size:22px">Rp0</div><div class="sub" id="sSelisihSub"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Per Jenis Transaksi</h3>
+      <p class="sub" id="ringkasanSaldoJenis"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelSaldoJenis"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-qr">
+    <div class="page-head"><h2>QR Payment (Simulasi)</h2><p>Bayar dengan memindai kode QR contoh, atau tampilkan QR Anda untuk menerima pembayaran contoh. Kode QR di sini hanya pola contoh — bukan kode pembayaran nyata.</p></div>
+    <div class="card">
+      <h3>Bayar dengan QR (Simulasi)</h3>
+      <p class="sub">Pindai kode QR toko contoh di bawah, lalu isi jumlah dan bayar. Pembayaran hanya mengurangi saldo contoh — tidak ada uang yang benar-benar dibayar.</p>
+      <div class="qr-wrap">
+        <canvas id="qrToko" width="200" height="200"></canvas>
+        <p class="sub" style="margin-top:8px">Kode QR toko contoh (simulasi) — <b>Warung Kopi Seduh</b><br>Kode contoh: QRIS-CONTOH-001 · bukan kode pembayaran nyata.</p>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="qMerchant">Nama toko / merchant (contoh)</label><input id="qMerchant" type="text" value="Warung Kopi Seduh" placeholder="cth: Warung Kopi Seduh"></div>
+        <div class="field"><label for="qJumlahBayar">Jumlah bayar (Rp)</label><input id="qJumlahBayar" type="number" min="1" placeholder="cth: 50000"></div>
+      </div>
+      <button class="btn kecil oren" id="btnBayarQR" type="button">Bayar Sekarang (Simulasi)</button>
+      <p class="sub" id="pesanBayar" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <h3>Transfer ke Pengguna Lain (Simulasi)</h3>
+      <p class="sub">Kirim saldo contoh ke pengguna demo lain. Bila penerima adalah pengguna demo, saldonya ikut bertambah (simulasi). Bila "Lainnya", hanya tercatat di riwayat Anda.</p>
+      <div class="form-grid">
+        <div class="field"><label for="tPenerima">Penerima</label><select id="tPenerima"></select></div>
+        <div class="field" id="fieldNamaLain" hidden><label for="tNamaLain">Nama penerima lain</label><input id="tNamaLain" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="tJumlahTransfer">Jumlah transfer (Rp)</label><input id="tJumlahTransfer" type="number" min="1" placeholder="cth: 50000"></div>
+        <div class="field"><label for="tKeterangan">Keterangan (opsional)</label><input id="tKeterangan" type="text" placeholder="cth: Bayar patungan"></div>
+      </div>
+      <button class="btn kecil" id="btnTransfer" type="button">Kirim Transfer (Simulasi)</button>
+      <p class="sub" id="pesanTransfer" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <h3>QR Saya — Terima Pembayaran (Simulasi)</h3>
+      <p class="sub">Tunjukkan kode ini bila ada yang mau membayar Anda (contoh). Kode ini hanya pola contoh dari nomor dompet Anda — bukan kode pembayaran nyata.</p>
+      <div class="qr-wrap">
+        <canvas id="qrSaya" width="200" height="200"></canvas>
+        <p class="sub" style="margin-top:8px" id="qrSayaKet">Nomor dompet contoh: —</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-topup">
+    <div class="page-head"><h2>Top Up (Simulasi)</h2><p>Tambah saldo contoh lewat metode contoh. Tidak ada uang sungguhan yang ditransfer — top up di sini hanya menambah angka saldo simulasi.</p></div>
+    <div class="card">
+      <h3>Top Up Saldo (Simulasi)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tuMetode">Metode top up (contoh)</label><select id="tuMetode">
+          <option value="Transfer Bank (contoh)">Transfer Bank (contoh)</option>
+          <option value="Minimarket (contoh)">Minimarket (contoh)</option>
+          <option value="Kartu Debit (contoh)">Kartu Debit (contoh)</option>
+        </select></div>
+        <div class="field"><label for="tuJumlah">Jumlah (Rp, min. 10.000, maks. 10.000.000)</label><input id="tuJumlah" type="number" min="10000" max="10000000" placeholder="cth: 200000"></div>
+      </div>
+      <button class="btn kecil hijau" id="btnTopup" type="button">Top Up Sekarang (Simulasi)</button>
+      <p class="sub" id="pesanTopup" style="margin-top:8px"></p>
+      <p class="sub">Saldo Anda saat ini (simulasi): <b id="tuSaldoKini">Rp0</b></p>
+    </div>
+    <div class="card">
+      <h3>Top Up Terakhir</h3>
+      <div id="daftarTopupTerbaru"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head"><h2>Riwayat Transaksi</h2><p>Semua transaksi contoh Anda: top up, pembayaran QR, transfer, dan penerimaan — lengkap dengan saldo setelah tiap transaksi.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPeriodeRiwayat">Periode</label><select id="fPeriodeRiwayat">
+          <option value="7">7 hari terakhir</option>
+          <option value="30" selected>30 hari terakhir</option>
+          <option value="semua">Semua</option>
+        </select></div>
+        <div class="field"><label for="fJenisRiwayat">Jenis transaksi</label><select id="fJenisRiwayat">
+          <option value="">Semua jenis</option>
+          <option value="topup">Top Up</option>
+          <option value="bayar">Pembayaran QR</option>
+          <option value="transfer">Transfer Keluar</option>
+          <option value="terima">Transfer Masuk</option>
+        </select></div>
+        <div class="field"><label for="cariRiwayat">Cari nama / keterangan</label><input id="cariRiwayat" type="text" placeholder="cth: Kopi"></div>
+      </div>
+      <p class="sub" id="ringkasanRiwayat"></p>
+      <div id="daftarRiwayat" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor riwayat yang sedang difilter ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvRiwayat" type="button">Ekspor CSV Riwayat</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-notifikasi">
+    <div class="page-head"><h2>Notifikasi</h2><p>Notifikasi contoh untuk setiap transaksi dan pengingat saldo rendah. Semua notifikasi di sini adalah contoh simulasi.</p></div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn kecil" id="btnBacaSemua" type="button">Tandai Semua Dibaca</button>
+        <select id="fNotif" style="width:auto;flex:1;min-width:180px">
+          <option value="semua">Semua notifikasi</option>
+          <option value="belum">Belum dibaca saja</option>
+        </select>
+      </div>
+      <p class="sub" id="ringkasanNotif"></p>
+      <div id="daftarNotifikasi" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Dompet Digital (Simulasi Demo).</p></div>
+    <div class="card panduan">
+      <div class="simulasi-kuning"><b>SIMULASI DEMO — BUKAN DOMPET SUNGGUHAN.</b> Aplikasi ini hanya mencontohkan cara kerja dompet digital. Semua saldo dan transaksi adalah contoh. Tidak ada uang asli, tidak ada pembayaran nyata, tidak ada koneksi ke bank atau e-wallet, dan kode QR di sini hanya pola contoh.</div>
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Saldo</b> untuk melihat saldo contoh dan ringkasan uang masuk vs keluar per periode.</li>
+        <li>Buka tab <b>Top Up</b> untuk menambah saldo contoh lewat metode contoh (min. Rp10.000, maks. Rp10.000.000).</li>
+        <li>Buka tab <b>QR Payment</b> untuk membayar toko contoh dengan kode QR contoh, atau mentransfer saldo contoh ke pengguna demo lain. Pembayaran ditolak bila saldo contoh tidak cukup.</li>
+        <li>Buka tab <b>Riwayat</b> untuk melihat semua transaksi contoh beserta saldo setelah tiap transaksi; gunakan filter periode, jenis, dan pencarian.</li>
+        <li>Buka tab <b>Notifikasi</b> untuk melihat pemberitahuan contoh tiap transaksi dan pengingat saldo rendah (di bawah Rp100.000).</li>
+      </ol>
+      <h3>Rumus yang Dipakai</h3>
+      <ul>
+        <li><b>Saldo saat ini</b> = saldo awal contoh + semua top up + semua transfer masuk − semua pembayaran QR − semua transfer keluar.</li>
+        <li><b>Saldo setelah transaksi</b> dicatat pada tiap transaksi, sehingga riwayat selalu bisa dicek ulang dari saldo awal.</li>
+        <li><b>Saldo rendah</b> = saldo di bawah Rp100.000. Begitu saldo turun di bawah batas ini, muncul peringatan di Dasbor dan notifikasi contoh "Saldo rendah".</li>
+        <li><b>Top up</b> minimal Rp10.000 dan maksimal Rp10.000.000 per transaksi (simulasi).</li>
+        <li><b>Pembayaran QR dan transfer</b> ditolak bila jumlahnya melebihi saldo contoh saat ini.</li>
+      </ul>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna, melihat semua dompet, transaksi, dan notifikasi.</li>
+        <li><b>Pengguna</b> — memakai dompet simulasinya sendiri: top up, bayar QR, transfer, serta melihat riwayat dan notifikasi miliknya sendiri. Tidak bisa kelola pengguna atau melihat data milik pengguna lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Ini <b>simulasi demo</b>, bukan dompet digital sungguhan: tidak ada uang asli, tidak ada pembayaran nyata, tidak ada koneksi bank/e-wallet, dan kode QR hanya pola contoh.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada penarikan otomatis dari rekening.</li>
+        <li>Angka dan nama di sini adalah contoh demo, bukan data keuangan sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengguna — <b>pengguna / pengguna123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Dompet Digital — demo simulasi satu file HTML. Semua saldo dan transaksi adalah contoh, bukan uang asli. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">DOMPET DIGITAL · SIMULASI DEMO</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Lihat cara kerja dompet digital: saldo, pembayaran QR, top up, riwayat, dan notifikasi.</p>
+    <div class="simulasi-kuning"><b>SIMULASI DEMO — BUKAN UANG ASLI.</b> Semua saldo dan transaksi di aplikasi ini adalah contoh simulasi. Tidak ada uang sungguhan.</div>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengguna — <b>pengguna / pengguna123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  /* ---------- Kode QR contoh (pola simulasi, BUKAN kode pembayaran nyata) ---------- */
+  function gambarQR(canvas, teks) {
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext("2d");
+    var n = 25, s = canvas.width / n;
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    var hash = 0;
+    for (var i = 0; i < teks.length; i++) hash = ((hash * 31) + teks.charCodeAt(i)) >>> 0;
+    var rnd = hash || 1;
+    function acak() { rnd = (rnd * 1103515245 + 12345) % 2147483648; return rnd / 2147483648; }
+    function diPencari(r, c) {
+      return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+    }
+    function gambarPencari(r0, c0) {
+      for (var r = 0; r < 7; r++) for (var c = 0; c < 7; c++) {
+        var tepi = r === 0 || r === 6 || c === 0 || c === 6;
+        var tengah = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+        ctx.fillStyle = (tepi || tengah) ? "#14263d" : "#ffffff";
+        ctx.fillRect((c0 + c) * s, (r0 + r) * s, s, s);
+      }
+    }
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (diPencari(r, c)) continue;
+        ctx.fillStyle = acak() < 0.45 ? "#14263d" : "#ffffff";
+        ctx.fillRect(c * s, r * s, s, s);
+      }
+    }
+    gambarPencari(0, 0); gambarPencari(0, n - 7); gambarPencari(n - 7, 0);
+  }
+
+  var STORAGE_KEY = "dompetDigital.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var BATAS_SALDO_RENDAH = 100000;
+  var TOPUP_MIN = 10000, TOPUP_MAX = 10000000;
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ---------- */
+  /* Saldo admin: 1.000.000 + 750.000 top up + 300.000 terima − 200.500 bayar − 200.000 transfer = 1.649.500
+     Saldo pengguna: 500.000 + 200.000 top up + 100.000 terima − 580.000 keluar (85.000+150.000+300.000+45.000) = 220.000 */
+  function seedState() {
+    var dompet = [
+      { username: "admin", nama: "Administrator", nomor: "0812-0000-0001", saldoAwal: 1000000 },
+      { username: "pengguna", nama: "Budi Santoso", nomor: "0812-0000-0002", saldoAwal: 500000 }
+    ];
+    var transaksi = [];
+    var notifikasi = [];
+    function tambahNotifikasi(pemilik, judul, isi, tanggal) {
+      notifikasi.push({ id: notifikasi.length + 1, pemilik: pemilik, judul: judul, isi: isi, tanggal: tanggal, dibaca: false });
+    }
+    function saldoBerjalan(pemilik) {
+      var d = dompet.find(function (x) { return x.username === pemilik; });
+      var s = d ? d.saldoAwal : 0;
+      transaksi.forEach(function (t) {
+        if (t.pemilik !== pemilik) return;
+        if (t.jenis === "topup" || t.jenis === "terima") s += t.jumlah;
+        else s -= t.jumlah;
+      });
+      return s;
+    }
+    function tambah(pemilik, jenis, nama, jumlah, offset, keterangan) {
+      var sebelum = saldoBerjalan(pemilik);
+      var sesudah = (jenis === "topup" || jenis === "terima") ? sebelum + jumlah : sebelum - jumlah;
+      var tgl = kunciPlus(offset);
+      transaksi.push({
+        id: transaksi.length + 1, pemilik: pemilik, jenis: jenis, nama: nama, jumlah: jumlah,
+        tanggal: tgl, keterangan: keterangan || "", saldoSetelah: sesudah
+      });
+      var judul = jenis === "topup" ? "Top Up berhasil (simulasi)"
+        : jenis === "bayar" ? "Pembayaran QR berhasil (simulasi)"
+        : jenis === "transfer" ? "Transfer terkirim (simulasi)"
+        : "Transfer diterima (simulasi)";
+      var arah = (jenis === "topup" || jenis === "terima") ? "masuk" : "keluar";
+      tambahNotifikasi(pemilik, judul, nama + " " + rupiah(jumlah) + " (" + arah + "). Saldo contoh Anda sekarang " + rupiah(sesudah) + ".", tgl);
+      if (sesudah < BATAS_SALDO_RENDAH && sebelum >= BATAS_SALDO_RENDAH) {
+        tambahNotifikasi(pemilik, "Saldo rendah (simulasi)", "Saldo contoh Anda tinggal " + rupiah(sesudah) + ", di bawah batas Rp100.000. Segera top up (simulasi).", tgl);
+      }
+      return sesudah;
+    }
+    // Admin — 6 transaksi
+    tambah("admin", "topup", "Top Up via Transfer Bank (contoh)", 500000, -10, "Transfer Bank (contoh)");
+    tambah("admin", "bayar", "Warung Kopi Seduh", 125000, -9, "Bayar QR toko contoh");
+    tambah("admin", "transfer", "Transfer ke Sari Dewi", 200000, -7, "Transfer contoh");
+    tambah("admin", "terima", "Terima dari Budi Santoso", 300000, -5, "Transfer contoh dari Budi");
+    tambah("admin", "bayar", "Minimarket Contoh", 75500, -3, "Bayar QR toko contoh");
+    tambah("admin", "topup", "Top Up via Minimarket (contoh)", 250000, -1, "Minimarket (contoh)");
+    // Pengguna — 6 transaksi
+    tambah("pengguna", "topup", "Top Up via Transfer Bank (contoh)", 200000, -8, "Transfer Bank (contoh)");
+    tambah("pengguna", "bayar", "Kantin Kampus", 85000, -6, "Bayar QR toko contoh");
+    tambah("pengguna", "transfer", "Transfer ke Administrator", 300000, -5, "Transfer contoh ke admin");
+    tambah("pengguna", "bayar", "SPBU Contoh", 150000, -4, "Bayar QR toko contoh");
+    tambah("pengguna", "terima", "Terima dari Andi Pratama", 100000, -2, "Transfer contoh dari Andi");
+    tambah("pengguna", "bayar", "Jajan Sore", 45000, 0, "Bayar QR toko contoh");
+    // Promo contoh (simulasi) — satu per pengguna
+    tambahNotifikasi("admin", "Promo contoh (simulasi)", "Cashback 10% untuk top up pertama — hanya contoh simulasi, bukan promo nyata.", kunciPlus(-2));
+    tambahNotifikasi("pengguna", "Promo contoh (simulasi)", "Cashback 10% untuk top up pertama — hanya contoh simulasi, bukan promo nyata.", kunciPlus(-2));
+    return {
+      dompet: dompet, transaksi: transaksi, notifikasi: notifikasi,
+      nextTransaksiId: transaksi.length + 1, nextNotifikasiId: notifikasi.length + 1
+    };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengguna", nama: "Budi Santoso", peran: "pengguna", password: "pengguna123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.dompet) state.dompet = [];
+    if (!state.transaksi) state.transaksi = [];
+    if (!state.notifikasi) state.notifikasi = [];
+    if (!state.nextTransaksiId) state.nextTransaksiId = state.transaksi.length + 1;
+    if (!state.nextNotifikasiId) state.nextNotifikasiId = state.notifikasi.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : "Pengguna"; }
+
+  function cariDompet(username) { return state.dompet.find(function (x) { return x.username === username; }); }
+  function transaksiTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.transaksi.slice();
+    return state.transaksi.filter(function (t) { return t.pemilik === currentUser.username; });
+  }
+  function notifikasiTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.notifikasi.slice();
+    return state.notifikasi.filter(function (n) { return n.pemilik === currentUser.username; });
+  }
+  function saldoOf(username) {
+    var d = cariDompet(username);
+    var s = d ? d.saldoAwal : 0;
+    state.transaksi.forEach(function (t) {
+      if (t.pemilik !== username) return;
+      if (t.jenis === "topup" || t.jenis === "terima") s += t.jumlah;
+      else s -= t.jumlah;
+    });
+    return s;
+  }
+  function labelJenis(jenis) {
+    return jenis === "topup" ? "Top Up" : jenis === "bayar" ? "Pembayaran QR" : jenis === "transfer" ? "Transfer Keluar" : "Transfer Masuk";
+  }
+  function lencanaJenis(jenis) {
+    if (jenis === "topup") return '<span class="lencana st-aman">Top Up</span>';
+    if (jenis === "bayar") return '<span class="lencana st-oren">Pembayaran QR</span>';
+    if (jenis === "transfer") return '<span class="lencana st-habis">Transfer Keluar</span>';
+    return '<span class="lencana st-biru">Transfer Masuk</span>';
+  }
+  function bolehUbahData(pemilik) {
+    return currentUser && (currentUser.peran === "admin" || pemilik === currentUser.username);
+  }
+
+  /* Tambah transaksi + notifikasi contoh. Kembalikan transaksi baru, atau null bila ditolak. */
+  function tambahTransaksi(pemilik, jenis, nama, jumlah, keterangan) {
+    var sebelum = saldoOf(pemilik);
+    if ((jenis === "bayar" || jenis === "transfer") && jumlah > sebelum) return null;
+    var sesudah = (jenis === "topup" || jenis === "terima") ? sebelum + jumlah : sebelum - jumlah;
+    var t = {
+      id: state.nextTransaksiId++, pemilik: pemilik, jenis: jenis, nama: nama, jumlah: jumlah,
+      tanggal: hariIniKey(), keterangan: keterangan || "", saldoSetelah: sesudah
+    };
+    state.transaksi.push(t);
+    var judul = jenis === "topup" ? "Top Up berhasil (simulasi)"
+      : jenis === "bayar" ? "Pembayaran QR berhasil (simulasi)"
+      : jenis === "transfer" ? "Transfer terkirim (simulasi)"
+      : "Transfer diterima (simulasi)";
+    var arah = (jenis === "topup" || jenis === "terima") ? "masuk" : "keluar";
+    state.notifikasi.push({
+      id: state.nextNotifikasiId++, pemilik: pemilik, judul: judul,
+      isi: nama + " " + rupiah(jumlah) + " (" + arah + "). Saldo contoh Anda sekarang " + rupiah(sesudah) + ".",
+      tanggal: hariIniKey(), dibaca: false
+    });
+    if (sesudah < BATAS_SALDO_RENDAH && sebelum >= BATAS_SALDO_RENDAH) {
+      state.notifikasi.push({
+        id: state.nextNotifikasiId++, pemilik: pemilik, judul: "Saldo rendah (simulasi)",
+        isi: "Saldo contoh Anda tinggal " + rupiah(sesudah) + ", di bawah batas Rp100.000. Segera top up (simulasi).",
+        tanggal: hariIniKey(), dibaca: false
+      });
+    }
+    saveState();
+    return t;
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "saldo") renderSaldo();
+    if (nama === "qr") renderQR();
+    if (nama === "topup") renderTopup();
+    if (nama === "riwayat") renderRiwayat();
+    if (nama === "notifikasi") renderNotifikasi();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function ringkas(list) {
+    var masuk = 0, keluar = 0;
+    list.forEach(function (t) {
+      if (t.jenis === "topup" || t.jenis === "terima") masuk += Number(t.jumlah) || 0;
+      else keluar += Number(t.jumlah) || 0;
+    });
+    return { masuk: masuk, keluar: keluar, jumlah: list.length };
+  }
+  function renderDashboard() {
+    var list = transaksiTerlihat();
+    var r = ringkas(list);
+    var saldo = currentUser ? saldoOf(currentUser.username) : 0;
+    $("dSaldo").textContent = rupiah(saldo);
+    $("dSaldoSub").textContent = currentUser ? "Dompet " + currentUser.nama + " (simulasi)" : "";
+    $("dMasuk").textContent = rupiah(r.masuk);
+    $("dMasukSub").textContent = list.filter(function (t) { return t.jenis === "topup" || t.jenis === "terima"; }).length + " transaksi masuk";
+    $("dKeluar").textContent = rupiah(r.keluar);
+    $("dKeluarSub").textContent = list.filter(function (t) { return t.jenis === "bayar" || t.jenis === "transfer"; }).length + " transaksi keluar";
+    $("dJumlah").textContent = r.jumlah;
+    $("dJumlahSub").textContent = currentUser && currentUser.peran === "admin" ? "semua pengguna" : "milik Anda";
+    $("badgeRiwayat").textContent = r.jumlah;
+    var belum = notifikasiTerlihat().filter(function (n) { return !n.dibaca; });
+    $("badgeNotif").textContent = belum.length;
+    if (saldo < BATAS_SALDO_RENDAH) {
+      $("cardPeringatanSaldo").hidden = false;
+      $("dPeringatanSaldo").textContent = "Saldo contoh Anda tinggal " + rupiah(saldo) + ", di bawah batas Rp100.000. Segera top up (simulasi) agar pembayaran QR tidak ditolak.";
+    } else {
+      $("cardPeringatanSaldo").hidden = true;
+    }
+    $("dNotif").textContent = belum.length
+      ? belum.length + " notifikasi belum dibaca — terbaru: " + belum[belum.length - 1].judul + ". Lihat tab Notifikasi."
+      : "Tidak ada notifikasi yang belum dibaca.";
+    var terbaru = list.slice().sort(function (a, b) {
+      return (b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id);
+    }).slice(0, 5);
+    $("daftarTransaksiTerbaru").innerHTML = terbaru.length ? terbaru.map(function (t) {
+      var tanda = (t.jenis === "topup" || t.jenis === "terima") ? "+" : "−";
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b> ' + lencanaJenis(t.jenis) +
+        '<br><span class="sub">' + tglSingkat(t.tanggal) + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + ' · oleh ' + esc(t.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + tanda + rupiah(t.jumlah) + '</b><br><span class="sub">saldo ' + rupiah(t.saldoSetelah) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada transaksi.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Dompet dan transaksinya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: "pengguna", password: p, aktif: true });
+    var nomor = "0812-0000-" + String(100 + state.dompet.length + 1).slice(-4);
+    state.dompet.push({ username: u, nama: nama, nomor: nomor, saldoAwal: 0 });
+    saveUsers(); saveState(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan dengan dompet contoh baru (saldo awal Rp0).");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Top up (dipakai dasbor cepat + tab top up) ---------- */
+  function lakukanTopup(metode, jumlah) {
+    if (!currentUser) return null;
+    if (!(jumlah >= TOPUP_MIN)) { return { error: "Top up minimal Rp10.000 (simulasi)." }; }
+    if (jumlah > TOPUP_MAX) { return { error: "Top up maksimal Rp10.000.000 per transaksi (simulasi)." }; }
+    var t = tambahTransaksi(currentUser.username, "topup", "Top Up via " + metode, Math.round(jumlah), metode);
+    return { transaksi: t };
+  }
+  $("btnTopupCepat").addEventListener("click", function () {
+    var hasil = lakukanTopup($("qMetode").value, Number($("qJumlahTopup").value || 0));
+    if (!hasil) return;
+    if (hasil.error) { $("pesanTopupCepat").textContent = hasil.error; return; }
+    $("pesanTopupCepat").textContent = "Top up " + rupiah(hasil.transaksi.jumlah) + " berhasil (simulasi). Saldo contoh Anda sekarang " + rupiah(hasil.transaksi.saldoSetelah) + ".";
+    $("qJumlahTopup").value = "";
+    renderSemua();
+    toast("Top up berhasil (simulasi).");
+  });
+
+  /* ---------- Tab Saldo ---------- */
+  function filterPeriode(list, periode) {
+    if (periode === "semua") return list.slice();
+    var hari = Number(periode);
+    var batas = kunciPlus(-(hari - 1));
+    return list.filter(function (t) { return t.tanggal >= batas; });
+  }
+  function renderSaldo() {
+    if (!currentUser) return;
+    var d = cariDompet(currentUser.username);
+    var saldo = saldoOf(currentUser.username);
+    $("sSaldo").textContent = rupiah(saldo);
+    $("sSaldoSub").textContent = saldo < BATAS_SALDO_RENDAH ? "Saldo rendah — di bawah Rp100.000" : "Saldo di atas batas rendah Rp100.000";
+    $("sSaldoAwal").textContent = rupiah(d ? d.saldoAwal : 0);
+    $("nomorDompet").textContent = "Nomor dompet contoh: " + (d ? d.nomor : "—") + " — nomor contoh, bukan nomor rekening nyata.";
+    var periode = $("fPeriodeSaldo").value || "30";
+    var list = filterPeriode(transaksiTerlihat(), periode);
+    var r = ringkas(list);
+    $("sMasuk").textContent = rupiah(r.masuk);
+    $("sMasukSub").textContent = list.filter(function (t) { return t.jenis === "topup" || t.jenis === "terima"; }).length + " transaksi masuk";
+    $("sKeluar").textContent = rupiah(r.keluar);
+    $("sKeluarSub").textContent = list.filter(function (t) { return t.jenis === "bayar" || t.jenis === "transfer"; }).length + " transaksi keluar";
+    $("sSelisih").textContent = rupiah(r.masuk - r.keluar);
+    $("sSelisihSub").textContent = "Periode: " + (periode === "semua" ? "semua" : periode + " hari terakhir");
+    var perJenis = {};
+    ["topup", "bayar", "transfer", "terima"].forEach(function (j) { perJenis[j] = { jumlah: 0, total: 0 }; });
+    list.forEach(function (t) { perJenis[t.jenis].jumlah++; perJenis[t.jenis].total += Number(t.jumlah) || 0; });
+    $("ringkasanSaldoJenis").textContent = list.length + " transaksi pada periode ini" +
+      (currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)") + ".";
+    $("tabelSaldoJenis").innerHTML = "<tr><th>Jenis</th><th>Jumlah Transaksi</th><th>Total</th></tr>" +
+      ["topup", "bayar", "transfer", "terima"].map(function (j) {
+        return "<tr><td>" + labelJenis(j) + "</td><td class=\"angka\">" + perJenis[j].jumlah + "</td><td class=\"angka\">" + rupiah(perJenis[j].total) + "</td></tr>";
+      }).join("");
+  }
+  $("fPeriodeSaldo").addEventListener("change", renderSaldo);
+
+  /* ---------- Tab QR ---------- */
+  function isiPilihanPenerima() {
+    var opsi = users.filter(function (u) { return currentUser && u.username !== currentUser.username && u.aktif; })
+      .map(function (u) { return '<option value="' + esc(u.username) + '">' + esc(u.nama) + ' (@' + esc(u.username) + ')</option>'; }).join("");
+    $("tPenerima").innerHTML = opsi + '<option value="__lain__">Lainnya (nama bebas)</option>';
+  }
+  function renderQR() {
+    if (!currentUser) return;
+    gambarQR($("qrToko"), "QRIS-CONTOH-001-WARUNG-KOPI-SEDUH");
+    var d = cariDompet(currentUser.username);
+    gambarQR($("qrSaya"), "DOMPET-CONTOH-" + (d ? d.nomor : currentUser.username));
+    $("qrSayaKet").textContent = "Nomor dompet contoh: " + (d ? d.nomor : "—") + " — kode QR contoh, bukan kode pembayaran nyata.";
+    isiPilihanPenerima();
+    $("fieldNamaLain").hidden = $("tPenerima").value !== "__lain__";
+  }
+  $("tPenerima").addEventListener("change", function () {
+    $("fieldNamaLain").hidden = $("tPenerima").value !== "__lain__";
+  });
+  $("btnBayarQR").addEventListener("click", function () {
+    if (!currentUser) return;
+    var merchant = $("qMerchant").value.trim();
+    var jumlah = Math.round(Number($("qJumlahBayar").value || 0));
+    if (!merchant) { $("pesanBayar").textContent = "Isi nama toko / merchant dulu."; return; }
+    if (!(jumlah > 0)) { $("pesanBayar").textContent = "Isi jumlah bayar (Rp) dulu."; return; }
+    var t = tambahTransaksi(currentUser.username, "bayar", merchant, jumlah, "Bayar QR toko contoh");
+    if (!t) {
+      $("pesanBayar").textContent = "Saldo contoh tidak cukup (saldo " + rupiah(saldoOf(currentUser.username)) + ", butuh " + rupiah(jumlah) + "). Top up dulu (simulasi).";
+      return;
+    }
+    $("pesanBayar").textContent = "Pembayaran " + rupiah(jumlah) + " ke " + merchant + " berhasil (simulasi). Saldo contoh Anda sekarang " + rupiah(t.saldoSetelah) + ".";
+    $("qJumlahBayar").value = "";
+    renderSemua();
+    toast("Pembayaran QR berhasil (simulasi).");
+  });
+  $("btnTransfer").addEventListener("click", function () {
+    if (!currentUser) return;
+    var jumlah = Math.round(Number($("tJumlahTransfer").value || 0));
+    var ket = $("tKeterangan").value.trim();
+    var pilihan = $("tPenerima").value;
+    var namaPenerima = "";
+    var usernamePenerima = null;
+    if (pilihan === "__lain__") {
+      namaPenerima = $("tNamaLain").value.trim();
+      if (!namaPenerima) { $("pesanTransfer").textContent = "Isi nama penerima lain dulu."; return; }
+    } else {
+      usernamePenerima = pilihan;
+      var u = users.find(function (x) { return x.username === usernamePenerima; });
+      namaPenerima = u ? u.nama : usernamePenerima;
+    }
+    if (!(jumlah > 0)) { $("pesanTransfer").textContent = "Isi jumlah transfer (Rp) dulu."; return; }
+    var t = tambahTransaksi(currentUser.username, "transfer", "Transfer ke " + namaPenerima, jumlah, ket);
+    if (!t) {
+      $("pesanTransfer").textContent = "Saldo contoh tidak cukup (saldo " + rupiah(saldoOf(currentUser.username)) + ", butuh " + rupiah(jumlah) + "). Top up dulu (simulasi).";
+      return;
+    }
+    var tambahan = "";
+    if (usernamePenerima) {
+      tambahTransaksi(usernamePenerima, "terima", "Terima dari " + currentUser.nama, jumlah, ket);
+      tambahan = " Saldo contoh " + namaPenerima + " ikut bertambah " + rupiah(jumlah) + " (simulasi).";
+    }
+    $("pesanTransfer").textContent = "Transfer " + rupiah(jumlah) + " ke " + namaPenerima + " berhasil (simulasi). Saldo contoh Anda sekarang " + rupiah(t.saldoSetelah) + "." + tambahan;
+    $("tJumlahTransfer").value = ""; $("tKeterangan").value = ""; $("tNamaLain").value = "";
+    renderSemua();
+    toast("Transfer berhasil (simulasi).");
+  });
+
+  /* ---------- Tab Top Up ---------- */
+  function renderTopup() {
+    if (!currentUser) return;
+    $("tuSaldoKini").textContent = rupiah(saldoOf(currentUser.username));
+    var list = transaksiTerlihat().filter(function (t) { return t.jenis === "topup"; })
+      .sort(function (a, b) { return (b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id); }).slice(0, 5);
+    $("daftarTopupTerbaru").innerHTML = list.length ? list.map(function (t) {
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b>' +
+        '<br><span class="sub">' + tglSingkat(t.tanggal) + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + ' · oleh ' + esc(t.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>+' + rupiah(t.jumlah) + '</b><br><span class="sub">saldo ' + rupiah(t.saldoSetelah) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada top up.</p>';
+  }
+  $("btnTopup").addEventListener("click", function () {
+    var hasil = lakukanTopup($("tuMetode").value, Number($("tuJumlah").value || 0));
+    if (!hasil) return;
+    if (hasil.error) { $("pesanTopup").textContent = hasil.error; return; }
+    $("pesanTopup").textContent = "Top up " + rupiah(hasil.transaksi.jumlah) + " via " + $("tuMetode").value + " berhasil (simulasi). Saldo contoh Anda sekarang " + rupiah(hasil.transaksi.saldoSetelah) + ".";
+    $("tuJumlah").value = "";
+    renderSemua();
+    toast("Top up berhasil (simulasi).");
+  });
+
+  /* ---------- Tab Riwayat ---------- */
+  function riwayatTersaring() {
+    var periode = $("fPeriodeRiwayat").value || "30";
+    var jenis = $("fJenisRiwayat").value;
+    var cari = ($("cariRiwayat").value || "").trim().toLowerCase();
+    var list = filterPeriode(transaksiTerlihat(), periode);
+    if (jenis) list = list.filter(function (t) { return t.jenis === jenis; });
+    if (cari) list = list.filter(function (t) {
+      return t.nama.toLowerCase().indexOf(cari) !== -1 || (t.keterangan || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    return list.sort(function (a, b) {
+      return (b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id);
+    });
+  }
+  function renderRiwayat() {
+    var list = riwayatTersaring();
+    var r = ringkas(list);
+    $("ringkasanRiwayat").textContent = list.length + " transaksi, masuk " + rupiah(r.masuk) + ", keluar " + rupiah(r.keluar) +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)");
+    $("daftarRiwayat").innerHTML = list.length ? list.map(function (t) {
+      var tanda = (t.jenis === "topup" || t.jenis === "terima") ? "+" : "−";
+      var aksi = "";
+      if (bolehUbahData(t.pemilik)) {
+        aksi = '<button class="btn ghost kecil" data-hapus-trx="' + t.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b> ' + lencanaJenis(t.jenis) +
+        '<br><span class="sub">' + tglSingkat(t.tanggal) + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + ' · oleh ' + esc(t.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + tanda + rupiah(t.jumlah) + '</b><br><span class="sub">saldo ' + rupiah(t.saldoSetelah) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada transaksi yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-trx]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-trx"));
+        var t = state.transaksi.find(function (x) { return x.id === id; });
+        if (!t) return;
+        tanyaKonfirmasi("Hapus Transaksi", "Hapus transaksi " + t.nama + " " + rupiah(t.jumlah) + "? Saldo dihitung ulang dari transaksi yang tersisa.", function () {
+          state.transaksi = state.transaksi.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Transaksi dihapus.");
+        });
+      });
+    });
+  }
+  $("fPeriodeRiwayat").addEventListener("change", renderRiwayat);
+  $("fJenisRiwayat").addEventListener("change", renderRiwayat);
+  $("cariRiwayat").addEventListener("input", renderRiwayat);
+  $("btnCsvRiwayat").addEventListener("click", function () {
+    var list = riwayatTersaring();
+    var baris = [["Tanggal", "Pemilik", "Jenis", "Nama Transaksi", "Jumlah (Rp)", "Saldo Setelah (Rp)", "Keterangan"].map(csvCell).join(",")];
+    list.forEach(function (t) {
+      baris.push([t.tanggal, t.pemilik, labelJenis(t.jenis), t.nama, t.jumlah, t.saldoSetelah, t.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("riwayat-dompet-digital.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV riwayat diunduh (" + list.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("dompet-digital-backup.json", JSON.stringify({ aplikasi: "dompet-digital", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.dompet) || !Array.isArray(d.state.transaksi) || !Array.isArray(d.state.notifikasi) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Transaksi, notifikasi, dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Tab Notifikasi ---------- */
+  function renderNotifikasi() {
+    var filter = $("fNotif").value || "semua";
+    var list = notifikasiTerlihat().slice().sort(function (a, b) {
+      return (b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id);
+    });
+    var belum = list.filter(function (n) { return !n.dibaca; }).length;
+    if (filter === "belum") list = list.filter(function (n) { return !n.dibaca; });
+    $("ringkasanNotif").textContent = notifikasiTerlihat().length + " notifikasi, " + belum + " belum dibaca" +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)") + ".";
+    $("daftarNotifikasi").innerHTML = list.length ? list.map(function (n) {
+      return '<div class="baris' + (n.dibaca ? "" : " notif-belum") + '" style="border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px"><div><b>' + esc(n.judul) + '</b> ' +
+        (n.dibaca ? '<span class="lencana st-navy">Dibaca</span>' : '<span class="lencana st-rendah">Belum dibaca</span>') +
+        '<br><span class="sub">' + esc(n.isi) + '</span><br><span class="sub">' + tglSingkat(n.tanggal) + ' · untuk ' + esc(n.pemilik) + '</span></div>' +
+        '<div style="text-align:right">' +
+        (n.dibaca ? "" : '<button class="btn ghost kecil" data-baca-notif="' + n.id + '" type="button">Tandai Dibaca</button> ') +
+        '<button class="btn ghost kecil" data-hapus-notif="' + n.id + '" type="button">Hapus</button></div></div>';
+    }).join("") : '<p class="sub">Tidak ada notifikasi.</p>';
+    document.querySelectorAll("[data-baca-notif]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var n = state.notifikasi.find(function (x) { return x.id === Number(btn.getAttribute("data-baca-notif")); });
+        if (!n) return;
+        n.dibaca = true; saveState(); renderSemua();
+      });
+    });
+    document.querySelectorAll("[data-hapus-notif]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-notif"));
+        state.notifikasi = state.notifikasi.filter(function (x) { return x.id !== id; });
+        saveState(); renderSemua(); toast("Notifikasi dihapus.");
+      });
+    });
+  }
+  $("fNotif").addEventListener("change", renderNotifikasi);
+  $("btnBacaSemua").addEventListener("click", function () {
+    notifikasiTerlihat().forEach(function (n) { n.dibaca = true; });
+    saveState(); renderSemua(); toast("Semua notifikasi ditandai dibaca.");
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderSaldo(); renderQR(); renderTopup(); renderRiwayat(); renderNotifikasi();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
