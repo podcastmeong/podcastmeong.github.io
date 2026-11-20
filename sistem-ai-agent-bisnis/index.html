@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem AI Agent Bisnis — Simulasi Interaktif — KikiWorks</title>
+<meta name="description" content="Contoh sistem AI Agent untuk operasional perusahaan: 1 CEO Agent + 10 sub-agent + Approval Center. Coba simulator proses pesanan, lihat dashboard, dan pahami level 1 sampai 5.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f7f9fc; color: #14263d; line-height: 1.6; }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; color: #14263d; }
+  h1 { font-size: clamp(30px, 5vw, 52px); line-height: 1.08; letter-spacing: -.02em; }
+  h2 { font-size: clamp(24px, 3.5vw, 32px); line-height: 1.12; margin-bottom: 6px; }
+  h3 { font-size: 20px; line-height: 1.25; }
+  .banner { background: #ffd34d; color: #14263d; text-align: center; font-weight: 700; padding: 10px 16px; font-size: 15px; }
+  .banner small { display: block; font-weight: 400; font-size: 13px; }
+  header { background: #14263d; color: #fff; padding: 40px 20px 34px; text-align: center; }
+  header h1 { color: #fff; margin-bottom: 10px; }
+  header p { color: #c9d8ea; max-width: 700px; margin: 0 auto; font-size: 16px; }
+  header p b { color: #f4ce82; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 18px 40px; }
+  section { margin-bottom: 36px; }
+  section > p.sub { color: #5b7288; font-size: 15px; margin-bottom: 16px; max-width: 720px; }
+  .note { background: #fff8e1; border: 1px solid #f0d48a; border-radius: 12px; padding: 12px 16px; font-size: 14px; color: #5b4a1e; margin-bottom: 18px; }
+  .note b { color: #14263d; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { background: #fff; border: 1px solid #dbe4ef; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(20,38,61,.06); }
+  .card .tag { display: inline-block; background: #14263d; color: #fff; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 8px; }
+  .card .tag.gold { background: #f4ce82; color: #14263d; }
+  .card h3 { margin-bottom: 4px; }
+  .card p { color: #33475e; font-size: 15px; }
+  .ceo { border: 2px solid #f4ce82; background: #fffdf5; }
+  .execbar { background: #14263d; color: #fff; border-radius: 14px; padding: 18px 20px; margin-top: 16px; }
+  .execbar h3 { color: #f4ce82; margin-bottom: 6px; }
+  .execbar p { color: #c9d8ea; font-size: 15px; }
+  .execbar .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .execbar .tools span { background: #1e3a5c; border: 1px solid #8fb4d9; border-radius: 999px; padding: 5px 12px; font-size: 14px; font-weight: 700; }
+
+  /* Simulator */
+  .sim { background: #fff; border: 1px solid #dbe4ef; border-radius: 16px; padding: 22px; box-shadow: 0 2px 10px rgba(20,38,61,.06); }
+  .sim label { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .sim textarea { width: 100%; font-family: inherit; font-size: 16px; color: #14263d; border: 2px solid #dbe4ef; border-radius: 10px; padding: 12px 14px; resize: vertical; min-height: 64px; }
+  .sim textarea:focus { outline: none; border-color: #8fb4d9; }
+  .sim .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .btn { font-family: inherit; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; padding: 11px 20px; cursor: pointer; }
+  .btn-primary { background: #14263d; color: #fff; }
+  .btn-primary:hover { background: #1e3a5c; }
+  .btn-primary:disabled { background: #8fa5bb; cursor: not-allowed; }
+  .btn-ghost { background: #e8eef5; color: #14263d; }
+  .btn-ok { background: #2e7d32; color: #fff; }
+  .btn-no { background: #b3261e; color: #fff; }
+  .steps { margin-top: 18px; display: none; }
+  .steps.show { display: block; }
+  .step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e8eef5; }
+  .step:last-child { border-bottom: none; }
+  .step .dot { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background: #e8eef5; color: #5b7288; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .step.active .dot { background: #14263d; color: #fff; }
+  .step.done .dot { background: #2e7d32; color: #fff; }
+  .step.wait .dot { background: #f4ce82; color: #14263d; }
+  .step h4 { font-size: 16px; margin-bottom: 2px; }
+  .step p { font-size: 14px; color: #33475e; }
+  .step .out { font-size: 14px; color: #2e7d32; font-weight: 700; margin-top: 2px; }
+  .approval { display: none; background: #fff8e1; border: 2px solid #f0d48a; border-radius: 12px; padding: 16px 18px; margin-top: 16px; }
+  .approval.show { display: block; }
+  .approval h4 { margin-bottom: 4px; }
+  .approval p { font-size: 14px; color: #5b4a1e; margin-bottom: 12px; }
+  .result { display: none; background: #eef3f9; border-left: 5px solid #2e7d32; border-radius: 10px; padding: 16px 18px; margin-top: 16px; }
+  .result.show { display: block; }
+  .result h3 { margin-bottom: 6px; }
+  .result ul { margin-left: 20px; font-size: 15px; color: #33475e; }
+  .result.stop { border-left-color: #b3261e; }
+
+  /* Alur */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .fstep { background: #fff; border: 1px solid #dbe4ef; border-radius: 12px; padding: 14px 18px; box-shadow: 0 2px 10px rgba(20,38,61,.06); }
+  .fstep h3 { font-size: 17px; }
+  .fstep p { font-size: 14px; color: #33475e; }
+  .farrow { text-align: center; font-size: 20px; color: #8fb4d9; line-height: 1.2; padding: 2px 0; }
+  .branch { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .branch .ok { border: 2px solid #2e7d32; }
+  .branch .no { border: 2px solid #b3261e; }
+  @media (max-width: 600px) { .branch { grid-template-columns: 1fr; } }
+
+  /* Dashboard */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .stat { background: #fff; border: 1px solid #dbe4ef; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 10px rgba(20,38,61,.06); }
+  .stat .n { font-size: 34px; font-weight: 800; color: #14263d; line-height: 1; }
+  .stat .l { font-size: 13px; color: #5b7288; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(20,38,61,.06); font-size: 15px; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid #dbe4ef; }
+  th { background: #14263d; color: #fff; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .pill.run { background: #e3f0ff; color: #14508c; }
+  .pill.wait { background: #fff3cd; color: #7a5b00; }
+  .pill.done { background: #dff2e3; color: #2e7d32; }
+  .approve-box { background: #fff; border: 2px solid #f0d48a; border-radius: 14px; padding: 18px 20px; margin-top: 16px; box-shadow: 0 2px 10px rgba(20,38,61,.06); }
+  .approve-box h3 { margin-bottom: 4px; }
+  .approve-box p { font-size: 14px; color: #33475e; margin-bottom: 12px; }
+
+  /* Level */
+  .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .level { background: #fff; border: 1px solid #dbe4ef; border-radius: 14px; padding: 18px; box-shadow: 0 2px 10px rgba(20,38,61,.06); border-top: 5px solid #8fb4d9; }
+  .level.top { border-top-color: #f4ce82; }
+  .level .lvl { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b7288; }
+  .level h3 { margin: 4px 0 6px; }
+  .level p { font-size: 14px; color: #33475e; }
+  .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
+  footer { text-align: center; color: #5b7288; font-size: 14px; padding: 10px 18px 30px; }
+  footer a { color: #14263d; font-weight: 700; }
+  .wa { display: inline-block; background: #14263d; color: #fff !important; text-decoration: none; font-weight: 700; padding: 11px 22px; border-radius: 10px; font-size: 15px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="banner">SIMULASI — Contoh sistem untuk dipelajari, bukan sistem yang sudah berjalan<small>Semua angka dan proses di halaman ini adalah contoh. Tidak terhubung ke database, WhatsApp, atau sistem toko mana pun.</small></div>
+<header>
+  <h1>AI Business Autonomous Agent</h1>
+  <p>Sistem <b>AI Agent</b> untuk menjalankan operasional perusahaan secara otomatis — dengan <b>pengawasan manusia</b> bila diperlukan.</p>
+</header>
+<main>
+
+<section>
+  <h2>Apa itu Sistem AI Agent?</h2>
+  <p class="sub">Sistem AI Agent adalah sekumpulan AI yang memiliki tugas berbeda, saling berkomunikasi, mengambil keputusan berdasarkan aturan, dan menjalankan pekerjaan secara otomatis dengan pengawasan manusia bila diperlukan.</p>
+  <div class="note"><b>Bukan sekadar chatbot.</b> Sistem ini merupakan kombinasi AI, database, workflow, aplikasi, dan pengawasan manusia.</div>
+  <p style="font-size:15px;color:#33475e">Contoh yang dibangun di halaman ini: <b>AI Business Autonomous Agent</b> untuk menjalankan operasional perusahaan — dari pesanan masuk sampai laporan selesai.</p>
+</section>
+
+<section>
+  <h2>1 · Struktur Tim Agent</h2>
+  <p class="sub">Satu CEO Agent sebagai otak utama, dibantu 10 sub-agent. Manusia tetap memegang persetujuan akhir lewat Approval Center.</p>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="card ceo">
+      <span class="tag gold">OTAK UTAMA</span>
+      <h3>CEO AI Agent</h3>
+      <p>Mengatur strategi dan membagi pekerjaan ke semua sub-agent.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card"><span class="tag">AGENT 1</span><h3>Marketing Agent</h3><p>Promosi dan pemasaran.</p></div>
+    <div class="card"><span class="tag">AGENT 2</span><h3>Sales Agent</h3><p>Prospek dan penjualan.</p></div>
+    <div class="card"><span class="tag">AGENT 3</span><h3>Finance Agent</h3><p>Keuangan dan laporan.</p></div>
+    <div class="card"><span class="tag">AGENT 4</span><h3>Customer Service</h3><p>Melayani pelanggan.</p></div>
+    <div class="card"><span class="tag">AGENT 5</span><h3>Research Agent</h3><p>Riset pasar dan pesaing.</p></div>
+    <div class="card"><span class="tag">AGENT 6</span><h3>Operations Agent</h3><p>Operasional perusahaan.</p></div>
+    <div class="card"><span class="tag">AGENT 7</span><h3>HR Agent</h3><p>SDM dan karyawan.</p></div>
+    <div class="card"><span class="tag">AGENT 8</span><h3>Data Analyst Agent</h3><p>Analisis data bisnis.</p></div>
+    <div class="card"><span class="tag">AGENT 9</span><h3>Product Agent</h3><p>Produk dan katalog.</p></div>
+    <div class="card"><span class="tag">AGENT 10</span><h3>Risk &amp; Legal Agent</h3><p>Risiko dan kepatuhan.</p></div>
+  </div>
+  <div class="execbar">
+    <h3>Approval Center — Manusia menyetujui keputusan penting</h3>
+    <p>Keputusan di atas batas kewenangan agent tidak jalan sendiri. Pemilik perusahaan memeriksa dan menyetujui (atau menolak) sebelum eksekusi.</p>
+    <div class="tools"><span>Database</span><span>Google Sheets</span><span>WhatsApp</span><span>Email</span><span>Website</span><span>Laporan</span></div>
+  </div>
+  <p style="font-size:13px;color:#5b7288;margin-top:10px">Catatan: 11 agent tidak harus berarti 11 model AI yang berbeda. Mereka bisa memakai model yang sama dengan instruksi dan peran yang berbeda.</p>
+</section>
+
+<section>
+  <h2>2 · Simulator Proses Pesanan</h2>
+  <p class="sub">Contoh nyata: perusahaan distributor sembako menerima pesanan. Tulis pesanan pelanggan, jalankan simulasi, dan rasakan jadi pemilik perusahaan di Approval Center — Anda yang memutuskan pesanan jalan atau ditahan.</p>
+  <div class="sim">
+    <label for="pesan">Pesan pelanggan</label>
+    <textarea id="pesan">Saya mau pesan 100 dus minyak goreng.</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="btnJalan" onclick="jalankanSimulasi()">Jalankan Simulasi</button>
+      <button class="btn btn-ghost" onclick="resetSimulasi()">Ulang dari Awal</button>
+    </div>
+    <div class="steps" id="steps"></div>
+    <div class="approval" id="approval">
+      <h4>Approval Center — Menunggu keputusan Anda</h4>
+      <p>CEO Agent sudah memeriksa harga, stok, dan pembayaran. Pesanan memenuhi aturan dan siap dieksekusi — tapi keputusan akhir ada di tangan Anda sebagai pemilik perusahaan.</p>
+      <div class="row">
+        <button class="btn btn-ok" onclick="keputusan(true)">Setujui Pesanan</button>
+        <button class="btn btn-no" onclick="keputusan(false)">Tolak Pesanan</button>
+      </div>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+  <p style="font-size:13px;color:#5b7288;margin-top:10px">Dalam simulasi ini muncul juga <b>Inventory Agent</b> (cek stok gudang) dan <b>Reporting Agent</b> (buat laporan) — keduanya bagian dari alur pesanan, di luar 10 sub-agent pada struktur di atas.</p>
+</section>
+
+<section>
+  <h2>3 · Alur Otomatis Sistem</h2>
+  <p class="sub">Dari pesanan masuk sampai laporan diperbarui — dengan satu titik keputusan yang menentukan lanjut atau tahan.</p>
+  <div class="flow">
+    <div class="fstep"><h3>INPUT — Pesanan pelanggan masuk</h3><p>AI membaca pesanan dan mengidentifikasi produk, jumlah, pelanggan, dan alamat.</p></div>
+    <div class="farrow">↓</div>
+    <div class="fstep"><h3>AI memeriksa data</h3><p>Harga, stok, piutang, dan ketentuan diskon dicek ke database dan katalog.</p></div>
+    <div class="farrow">↓</div>
+    <div class="fstep"><h3>KEPUTUSAN — Memenuhi syarat atau ada masalah?</h3><p>CEO Agent menggabungkan hasil pemeriksaan dan menentukan apakah pesanan memenuhi aturan.</p></div>
+    <div class="farrow">↓</div>
+    <div class="branch">
+      <div class="fstep ok"><h3>Memenuhi syarat → Lanjut</h3><p>Buat dokumen pesanan dan teruskan ke Approval / Eksekusi sesuai batas kewenangan.</p></div>
+      <div class="fstep no"><h3>Bermasalah → Tahan</h3><p>Pesanan ditahan dan diminta pemeriksaan manusia sebelum ada langkah lanjut.</p></div>
+    </div>
+    <div class="farrow">↓</div>
+    <div class="fstep"><h3>HASIL AKHIR</h3><p>Pesanan tercatat · Gudang mendapat tugas · Laporan diperbarui.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>4 · Dashboard Pemantauan Agent</h2>
+  <p class="sub">Contoh tampilan dashboard pemilik: semua agent terpantau dalam satu layar. Angka di bawah ini contoh, dan tombol persetujuan di bawah benar-benar bisa ditekan.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">11</div><div class="l">Total Agent</div></div>
+    <div class="stat"><div class="n" id="statJalan">8</div><div class="l">Tugas Berjalan</div></div>
+    <div class="stat"><div class="n" id="statTunggu">3</div><div class="l">Menunggu Persetujuan</div></div>
+    <div class="stat"><div class="n" id="statSelesai">125</div><div class="l">Tugas Selesai</div></div>
+  </div>
+  <table>
+    <tr><th>Agent</th><th>Status Pekerjaan</th></tr>
+    <tr><td>Marketing Agent</td><td><span class="pill run">Berjalan</span></td></tr>
+    <tr><td>Sales Agent</td><td><span class="pill run">Berjalan</span></td></tr>
+    <tr><td>Finance Agent</td><td><span class="pill wait">Menunggu</span></td></tr>
+    <tr><td>Inventory Agent</td><td><span class="pill done">Selesai</span></td></tr>
+    <tr><td>Operations Agent</td><td><span class="pill run">Berjalan</span></td></tr>
+    <tr><td>Research Agent</td><td><span class="pill done">Selesai</span></td></tr>
+  </table>
+  <div class="approve-box" id="approveBox">
+    <h3>Approval Center — Persetujuan diskon</h3>
+    <p>Pesanan pelanggan · Diskon khusus. Status: <b id="approveStatus">Pending</b></p>
+    <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ok" id="btnSetujuDash" onclick="setujuDash()">Setujui</button>
+      <button class="btn btn-no" id="btnTolakDash" onclick="tolakDash()">Tolak</button>
+    </div>
+    <p style="margin-top:10px;font-size:13px;color:#5b7288" id="approveNote">Kontrol contoh — keputusan Anda di sini hanya mengubah angka contoh di atas.</p>
+  </div>
+</section>
+
+<section>
+  <h2>5 · Teknologi untuk Membangunnya</h2>
+  <p class="sub">Tujuh komponen, masing-masing punya peran yang jelas.</p>
+  <table>
+    <tr><th>Bagian</th><th>Teknologi</th><th>Fungsi</th></tr>
+    <tr><td>Otak AI</td><td>Gemini API</td><td>Berpikir dan memproses instruksi.</td></tr>
+    <tr><td>Otomatisasi</td><td>n8n</td><td>Menghubungkan pekerjaan.</td></tr>
+    <tr><td>Database</td><td>Supabase / PostgreSQL</td><td>Menyimpan data.</td></tr>
+    <tr><td>Dashboard</td><td>HTML, CSS, JavaScript</td><td>Memantau Agent.</td></tr>
+    <tr><td>Data sederhana</td><td>Google Sheets</td><td>Catatan operasional.</td></tr>
+    <tr><td>Komunikasi</td><td>WhatsApp API / Email</td><td>Berkomunikasi dengan pelanggan.</td></tr>
+    <tr><td>Approval</td><td>Dashboard web</td><td>Persetujuan pemilik.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>6 · Tingkatan Kemampuan</h2>
+  <p class="sub">Dari asisten yang menunggu perintah sampai bisnis yang berjalan hampir sendiri — tetap dengan pengawasan manusia.</p>
+  <div class="levels">
+    <div class="level"><span class="lvl">Level 1</span><h3>Asisten AI</h3><p>Menjawab pertanyaan.</p></div>
+    <div class="level"><span class="lvl">Level 2</span><h3>AI dengan Tugas</h3><p>Membuat laporan.</p></div>
+    <div class="level"><span class="lvl">Level 3</span><h3>Multi-Agent</h3><p>Beberapa Agent bekerja sama.</p></div>
+    <div class="level"><span class="lvl">Level 4</span><h3>Autonomous Agent</h3><p>Merencanakan dan menjalankan pekerjaan.</p></div>
+    <div class="level top"><span class="lvl">Level 5</span><h3>Autonomous Business</h3><p>Mengelola banyak proses bisnis dengan pengawasan manusia.</p></div>
+  </div>
+  <div class="compare">
+    <div class="card"><span class="tag">AI BIASA</span><h3>Menunggu perintah</h3><p>Bekerja hanya setelah disuruh, satu tugas sekali jalan.</p></div>
+    <div class="card"><span class="tag">AI AGENT</span><h3>Menerima tujuan</h3><p>Diberi tujuan, lalu mengerjakan tugas sampai selesai.</p></div>
+    <div class="card"><span class="tag">MULTI-AGENT</span><h3>Berkolaborasi</h3><p>Beberapa agent dengan peran berbeda bekerja sama.</p></div>
+    <div class="card"><span class="tag gold">AUTONOMOUS SYSTEM</span><h3>Merencanakan &amp; memperbaiki</h3><p>Sistem dapat merencanakan, menjalankan, mengevaluasi, dan memperbaiki proses secara otomatis.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>7 · Contoh Penerapan di Berbagai Bidang</h2>
+  <p class="sub">Pola yang sama, peran yang disesuaikan dengan bidangnya.</p>
+  <div class="grid">
+    <div class="card"><span class="tag">PERUSAHAAN</span><h3>Operasional Perusahaan</h3><p>CEO, keuangan, pemasaran, penjualan, dan HR dalam satu sistem.</p></div>
+    <div class="card"><span class="tag">DISTRIBUTOR</span><h3>Stok &amp; Pengiriman</h3><p>Stok, pesanan, gudang, dan pengiriman terpantau otomatis.</p></div>
+    <div class="card"><span class="tag">DIGITAL MARKETING</span><h3>Konten &amp; Publikasi</h3><p>Riset, ide konten, produksi, publikasi, dan analisis.</p></div>
+    <div class="card"><span class="tag">MARKETPLACE</span><h3>Produk &amp; Layanan</h3><p>Produk, pelanggan, transaksi, dan layanan pelanggan.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Kesimpulan</h2>
+  <p style="font-size:16px;color:#33475e;max-width:720px">Sistem AI Agent bukan hanya chatbot. Sistem ini merupakan kombinasi AI, database, workflow, aplikasi, dan pengawasan manusia.</p>
+  <div class="note" style="margin-top:14px"><b>Saran untuk memulai:</b> mulai dari 1 CEO Agent + 10 Sub-Agent + Dashboard + Approval Center, kemudian kembangkan otomatisasinya secara bertahap.</div>
+  <a class="wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20tanya%20tentang%20Sistem%20AI%20Agent%20Bisnis.">Tanya via WhatsApp</a>
+</section>
+
+</main>
+<footer>
+  Halaman contoh &amp; simulasi untuk belajar — data dan proses di halaman ini hanya contoh.<br>
+  <a href="https://podcastmeong.github.io/">Beranda</a> · <a href="https://podcastmeong.github.io/aplikasi/">Kamar Aplikasi</a> · <a href="https://podcastmeong.github.io/toko.html">Toko</a>
+</footer>
+
+<script>
+var LANGKAH = [
+  { nama: "Customer Service Agent", kerja: "Membaca pesan, mengenali pelanggan, dan mencatat pesanan.", hasil: "Pesanan dicatat." },
+  { nama: "Sales Agent", kerja: "Memeriksa harga, diskon, dan riwayat pembelian pelanggan.", hasil: "Harga & diskon dicek dari katalog." },
+  { nama: "Inventory Agent", kerja: "Memeriksa stok barang di gudang.", hasil: "Stok dicek — contoh: tersedia." },
+  { nama: "Finance Agent", kerja: "Menghitung total tagihan, pajak jika berlaku, dan status pembayaran.", hasil: "Total tagihan dihitung." },
+  { nama: "CEO Agent", kerja: "Menggabungkan hasil pemeriksaan dan menentukan apakah pesanan memenuhi aturan.", hasil: "Pesanan memenuhi aturan." }
+];
+var timer = null, idx = 0, sedangJalan = false;
+
+function buatLangkah(l, i) {
+  var d = document.createElement("div");
+  d.className = "step"; d.id = "step-" + i;
+  d.innerHTML = '<div class="dot">' + (i + 1) + '</div><div><h4>' + l.nama + '</h4><p>' + l.kerja + '</p><p class="out" style="display:none">' + l.hasil + '</p></div>';
+  return d;
+}
+function jalankanSimulasi() {
+  if (sedangJalan) return;
+  var pesan = document.getElementById("pesan").value.trim();
+  if (!pesan) { alert("Tulis dulu pesanan pelanggannya."); return; }
+  sedangJalan = true; idx = 0;
+  document.getElementById("btnJalan").disabled = true;
+  document.getElementById("approval").classList.remove("show");
+  var r = document.getElementById("result"); r.classList.remove("show"); r.classList.remove("stop");
+  var box = document.getElementById("steps"); box.innerHTML = ""; box.classList.add("show");
+  LANGKAH.forEach(function(l, i) { box.appendChild(buatLangkah(l, i)); });
+  jalankanLangkah();
+}
+function jalankanLangkah() {
+  if (idx >= LANGKAH.length) {
+    var ap = document.getElementById("approval");
+    ap.classList.add("show");
+    ap.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  var el = document.getElementById("step-" + idx);
+  el.classList.add("active");
+  timer = setTimeout(function() {
+    el.classList.remove("active"); el.classList.add("done");
+    el.querySelector(".dot").textContent = "✓";
+    el.querySelector(".out").style.display = "block";
+    idx++;
+    jalankanLangkah();
+  }, 1100);
+}
+function keputusan(setuju) {
+  document.getElementById("approval").classList.remove("show");
+  var r = document.getElementById("result");
+  if (setuju) {
+    r.innerHTML = "<h3>Pesanan disetujui — eksekusi berjalan</h3><ul><li><b>Operations Agent:</b> menyiapkan surat jalan, jadwal pengiriman, dan tugas gudang.</li><li><b>Reporting Agent:</b> membuat laporan penjualan, stok keluar, dan keuntungan.</li><li>Pesanan tercatat · Gudang mendapat tugas · Laporan diperbarui.</li></ul>";
+    r.classList.remove("stop");
+    tambahSelesai();
+  } else {
+    r.innerHTML = "<h3>Pesanan ditahan</h3><ul><li>Pesanan tidak dieksekusi dan diteruskan ke pemeriksaan manusia.</li><li>Tidak ada surat jalan, tidak ada barang keluar gudang.</li></ul>";
+    r.classList.add("stop");
+  }
+  r.classList.add("show");
+  sedangJalan = false;
+  document.getElementById("btnJalan").disabled = false;
+  r.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function resetSimulasi() {
+  clearTimeout(timer); sedangJalan = false; idx = 0;
+  document.getElementById("btnJalan").disabled = false;
+  document.getElementById("steps").innerHTML = "";
+  document.getElementById("steps").classList.remove("show");
+  document.getElementById("approval").classList.remove("show");
+  var r = document.getElementById("result"); r.classList.remove("show"); r.classList.remove("stop");
+}
+function tambahSelesai() {
+  var s = document.getElementById("statSelesai");
+  s.textContent = parseInt(s.textContent, 10) + 1;
+}
+function setujuDash() {
+  document.getElementById("approveStatus").textContent = "Disetujui";
+  document.getElementById("approveNote").textContent = "Diskon disetujui — angka contoh diperbarui: menunggu persetujuan berkurang 1, tugas selesai bertambah 1.";
+  document.getElementById("statTunggu").textContent = parseInt(document.getElementById("statTunggu").textContent, 10) - 1;
+  tambahSelesai();
+  document.getElementById("btnSetujuDash").disabled = true;
+  document.getElementById("btnTolakDash").disabled = true;
+}
+function tolakDash() {
+  document.getElementById("approveStatus").textContent = "Ditolak";
+  document.getElementById("approveNote").textContent = "Diskon ditolak — pesanan diteruskan ke pemeriksaan manusia. Angka contoh tidak berubah.";
+  document.getElementById("btnSetujuDash").disabled = true;
+  document.getElementById("btnTolakDash").disabled = true;
+}
+</script>
+</body>
+</html>
