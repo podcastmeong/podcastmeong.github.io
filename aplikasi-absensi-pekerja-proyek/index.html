@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Absensi Pekerja Proyek — PM Oyen</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .daftar-proyek .pry { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--surface); }
+  .daftar-proyek .pry .nm { font-weight: 800; font-size: 16px; }
+  .daftar-proyek .pry .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-proyek .pry .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .daftar-revisi .rv { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--surface); }
+  .daftar-revisi .rv .nm { font-weight: 800; font-size: 16px; }
+  .daftar-revisi .rv .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-revisi .rv .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .catatan { border-left: 3px solid var(--soft); padding: 6px 10px; margin-bottom: 8px; background: var(--surface-2); border-radius: 0 8px 8px 0; }
+  .catatan .nm { font-weight: 700; font-size: 13px; }
+  .catatan .dt { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO</span>
+    <h1>Aplikasi <span class="aksen">Absensi Pekerja Proyek</span></h1>
+    <p>Absensi harian pekerja lapangan, rekap kehadiran, dan hitung upah harian — untuk kontraktor dan mandor proyek konstruksi.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="absensi" id="tabAbsensi">Absensi <span class="badge" id="badgeAbsensi">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pekerja" id="tabPekerja">Pekerja <span class="badge" id="badgePekerja">0</span></button>
+    <button class="tab-btn" type="button" data-tab="upah" id="tabUpah">Upah</button>
+    <button class="tab-btn" type="button" data-tab="rekap" id="tabRekap">Rekap</button>
+    <button class="tab-btn" type="button" data-tab="laporan" id="tabLaporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Absensi</h2><p>Ringkasan kehadiran hari ini, pekerja, dan upah 30 hari terakhir.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Pekerja</div><div class="angka" id="dPekerja">0</div><div class="sub" id="dPekerjaSub"></div></div>
+      <div class="stat"><div class="label">Absensi Hari Ini</div><div class="angka" id="dAbsensi">0</div><div class="sub" id="dAbsensiSub"></div></div>
+      <div class="stat warn"><div class="label">Tidak Hadir Hari Ini</div><div class="angka" id="dTidakHadir">0</div><div class="sub" id="dTidakHadirSub"></div></div>
+      <div class="stat"><div class="label">Total Upah (30 hari)</div><div class="angka" id="dUpah" style="font-size:22px">Rp0</div><div class="sub" id="dUpahSub"></div></div>
+    </div>
+    <div class="card"><h3>Perlu Perhatian</h3><p class="sub">Alpa, sakit, izin hari ini, dan pekerja yang belum pernah tercatat absensinya.</p><div id="daftarPerhatian"></div></div>
+    <div class="card"><h3>Kehadiran Hari Ini</h3><p class="sub">Siapa saja yang sudah tercatat absensinya hari ini.</p><div id="daftarHariIni"></div></div>
+    <div class="card"><h3>Pekerja Terbaru</h3><div id="daftarPekerjaTerbaru"></div></div>
+    <div class="card" id="cardTambahPekerja">
+      <h3>Tambah Pekerja</h3><p class="sub">Hanya admin yang bisa menambah pekerja.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pkNama">Nama pekerja</label><input id="pkNama" type="text" placeholder="cth: Slamet Riyadi"></div>
+        <div class="field"><label for="pkJabatan">Jabatan</label><select id="pkJabatan"><option>Tukang Batu</option><option>Tukang Kayu</option><option>Tukang Besi</option><option>Tukang Las</option><option>Tukang Cat</option><option>Tukang Listrik</option><option>Tukang Plumbing</option><option>Kenek</option><option>Mandor</option><option>Operator Alat</option></select></div>
+        <div class="field"><label for="pkProyek">Proyek</label><select id="pkProyek"></select></div>
+        <div class="field"><label for="pkUpah">Upah harian (Rp)</label><input id="pkUpah" type="number" min="0" placeholder="cth: 150000"></div>
+        <div class="field"><label for="pkTelepon">No. telepon (opsional)</label><input id="pkTelepon" type="text" placeholder="cth: 0812-3456-7890"></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanPekerja" type="button">Simpan Pekerja</button>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3><p class="sub">Hanya admin. Pengguna baru mendapat peran Mandor atau Keuangan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Wijaya"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran"><option value="mandor">Mandor</option><option value="keuangan">Keuangan</option></select></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3><p class="sub">Kartu ini selalu terlihat untuk semua peran — admin, mandor, maupun keuangan.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-absensi">
+    <div class="page-head"><h2>Absensi Harian</h2><p>Catat kehadiran pekerja per hari: hadir, terlambat, izin, sakit, atau alpa.</p></div>
+    <div class="card" id="cardTambahAbsensi">
+      <h3>Tambah Absensi</h3>
+      <div class="form-grid">
+        <div class="field"><label for="abPekerja">Pekerja</label><select id="abPekerja"></select></div>
+        <div class="field"><label for="abTanggal">Tanggal</label><input id="abTanggal" type="date"></div>
+        <div class="field"><label for="abStatus">Status</label><select id="abStatus"><option>Hadir</option><option>Terlambat</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select></div>
+        <div class="field"><label for="abProyek">Proyek</label><select id="abProyek"></select></div>
+        <div class="field"><label for="abMasuk">Jam masuk</label><input id="abMasuk" type="time" value="07:00"></div>
+        <div class="field"><label for="abPulang">Jam pulang</label><input id="abPulang" type="time" value="17:00"></div>
+      </div>
+      <div class="field"><label for="abKeterangan">Keterangan (opsional)</label><input id="abKeterangan" type="text" placeholder="cth: Macet di jalan tol"></div>
+      <button class="btn kecil" id="btnSimpanAbsensi" type="button">Simpan Absensi</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Absensi</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fAbProyek">Proyek</label><select id="fAbProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="fAbPekerja">Pekerja</label><select id="fAbPekerja"><option value="semua">Semua pekerja</option></select></div>
+        <div class="field"><label for="fAbStatus">Status</label><select id="fAbStatus"><option value="semua">Semua status</option><option>Hadir</option><option>Terlambat</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select></div>
+        <div class="field"><label for="cariAb">Cari absensi</label><input id="cariAb" type="text" placeholder="cth: agus, macet, izin"></div>
+      </div>
+      <p class="sub" id="ringkasanAbsensi"></p>
+      <div id="daftarAbsensi" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pekerja">
+    <div class="page-head"><h2>Data Pekerja</h2><p>Daftar pekerja lapangan, jabatan, proyek, dan upah hariannya.</p></div>
+    <div class="card">
+      <h3>Daftar Pekerja</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fPkProyek">Proyek</label><select id="fPkProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="fPkJabatan">Jabatan</label><select id="fPkJabatan"><option value="semua">Semua jabatan</option><option>Tukang Batu</option><option>Tukang Kayu</option><option>Tukang Besi</option><option>Tukang Las</option><option>Tukang Cat</option><option>Tukang Listrik</option><option>Tukang Plumbing</option><option>Kenek</option><option>Mandor</option><option>Operator Alat</option></select></div>
+        <div class="field"><label for="cariPk">Cari pekerja</label><input id="cariPk" type="text" placeholder="cth: agus, tukang batu"></div>
+      </div>
+      <p class="sub" id="ringkasanPekerja"></p>
+      <div id="daftarPekerja" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-upah">
+    <div class="page-head"><h2>Hitung Upah Harian</h2><p>Upah dihitung otomatis: Hadir dan Terlambat dibayar penuh, Izin / Sakit / Alpa tidak dibayar.</p></div>
+    <div class="card">
+      <h3>Upah per Pekerja</h3>
+      <div class="form-grid">
+        <div class="field"><label for="upPeriode">Periode</label><select id="upPeriode"><option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option><option value="30hari" selected>30 hari terakhir</option><option value="semua">Semua</option></select></div>
+        <div class="field"><label for="fUpProyek">Proyek</label><select id="fUpProyek"><option value="semua">Semua proyek</option></select></div>
+      </div>
+      <p class="sub" id="ringkasanUpah"></p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelUpah"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-rekap">
+    <div class="page-head"><h2>Rekap Kehadiran per Pekerja</h2><p>Jumlah Hadir, Terlambat, Izin, Sakit, Alpa, dan persentase kehadiran tiap pekerja.</p></div>
+    <div class="card">
+      <h3>Rekap Kehadiran</h3>
+      <div class="form-grid">
+        <div class="field"><label for="rkPeriode">Periode</label><select id="rkPeriode"><option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option><option value="30hari" selected>30 hari terakhir</option><option value="semua">Semua</option></select></div>
+        <div class="field"><label for="fRkProyek">Proyek</label><select id="fRkProyek"><option value="semua">Semua proyek</option></select></div>
+      </div>
+      <p class="sub" id="ringkasanRekap"></p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelRekap"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Absensi</h2><p>Rekap absensi dan upah per periode, siap diekspor dan dibagikan.</p></div>
+    <div class="card">
+      <h3>Periode Laporan</h3>
+      <div class="field"><label for="lapPeriode">Periode</label><select id="lapPeriode"><option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option><option value="30hari" selected>30 hari terakhir</option><option value="semua">Semua</option></select></div>
+      <div class="grid-stat" style="margin-top:14px">
+        <div class="stat"><div class="label">Absensi Tercatat</div><div class="angka" id="lAbsensi">0</div><div class="sub" id="lAbsensiSub"></div></div>
+        <div class="stat"><div class="label">Hadir</div><div class="angka" id="lHadir">0</div><div class="sub" id="lHadirSub"></div></div>
+        <div class="stat"><div class="label">Terlambat / Izin / Sakit / Alpa</div><div class="angka" id="lLain">0</div><div class="sub" id="lLainSub"></div></div>
+        <div class="stat"><div class="label">Total Upah Periode</div><div class="angka" id="lUpah" style="font-size:22px">Rp0</div><div class="sub" id="lUpahSub"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Upah per Pekerja</h3><p class="sub">Hari dibayar = Hadir + Terlambat. Izin, Sakit, dan Alpa tidak dibayar.</p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelLaporanUpah"></table></div>
+    </div>
+    <div class="card">
+      <h3>Kehadiran per Pekerja</h3><p class="sub">Persentase kehadiran dihitung dari hari tercatat dalam periode.</p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelLaporanHadir"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan</h3><p class="sub">Unduh laporan sebagai CSV, atau cadangkan seluruh data sebagai JSON.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnCsvAbsensi" type="button">Ekspor CSV Absensi</button>
+        <button class="btn kecil biru" id="btnCsvUpah" type="button">Ekspor CSV Upah</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:16px">
+        <h3 style="margin-bottom:6px">Teks WhatsApp</h3>
+        <p class="sub">Ringkasan laporan untuk dibagikan ke grup proyek via WhatsApp. Aplikasi ini tidak mengirim pesan sendiri — teks disalin lalu ditempel manual.</p>
+        <div class="pesan-teks" id="teksWA"></div>
+        <button class="btn kecil wa" id="btnSalinWA" type="button">Salin Teks WhatsApp</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Atur Ulang Data</h3><p class="sub">Mengembalikan semua data ke contoh awal (data demo). Data yang sudah ditambahkan akan hilang.</p>
+      <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Absensi Pekerja Proyek.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li><b>Mandor</b> mencatat <b>Absensi</b> setiap hari: pilih pekerja, tanggal, status (Hadir / Terlambat / Izin / Sakit / Alpa), jam masuk dan pulang.</li>
+        <li>Cek <b>Rekap</b> untuk melihat kehadiran tiap pekerja dan persentasenya.</li>
+        <li><b>Keuangan</b> membuka <b>Upah</b> untuk menghitung upah harian: Hadir dan Terlambat dibayar penuh, Izin / Sakit / Alpa tidak dibayar.</li>
+        <li>Rekap di <b>Laporan</b> dan ekspor CSV atau bagikan ringkasannya via WhatsApp.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk tambah pekerja, kelola pengguna, dan hapus data.</li>
+        <li><b>Mandor</b> — mencatat absensi harian dan melihat data pekerja proyeknya (PRY-002). Tidak bisa tambah pekerja, kelola pengguna, atau membuka Laporan.</li>
+        <li><b>Keuangan</b> — menghitung upah harian, rekap, dan laporan. Tidak bisa mencatat absensi atau tambah pekerja.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat.</li>
+        <li>Upah dihitung dari status absensi saja; tidak ada potongan denda keterlambatan atau lembur — sesuaikan dengan aturan perusahaan Anda.</li>
+        <li>Angka dan nama di sini adalah contoh demo, bukan harga resmi atau data pekerja sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Mandor — <b>mandor / mandor123</b></li>
+        <li>Keuangan — <b>keuangan / keuangan123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Absensi Pekerja Proyek — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PM OYEN</span>
+    <h2 style="margin-top:10px">Aplikasi Absensi Pekerja Proyek</h2>
+    <p class="login-sub">Masuk untuk mencatat absensi pekerja proyek Anda.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <div class="login-error" id="loginError" style="display:none">Nama pengguna atau kata sandi salah, atau akun nonaktif.</div>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Mandor — <b>mandor / mandor123</b><br>
+      Keuangan — <b>keuangan / keuangan123</b>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function kunciPlus(hari) {
+    var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d);
+  }
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", tutupModal);
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "aplikasiAbsensiPekerjaProyek.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  function seedState() {
+    var proyek = [
+      { id: 1, kode: "PRY-001", nama: "Rumah Tinggal 2 Lantai — Pejaten", klien: "Bpk. Hartono", lokasi: "Jl. Pejaten Raya No. 10, Jakarta Selatan", status: "Aktif", mulai: kunciPlus(-60), selesai: kunciPlus(30) },
+      { id: 2, kode: "PRY-002", nama: "Ruko 3 Lantai — Kalibata", klien: "PT Maju Bersama", lokasi: "Jl. Kalibata Raya No. 5, Jakarta Selatan", status: "Aktif", mulai: kunciPlus(-45), selesai: kunciPlus(45) },
+      { id: 3, kode: "PRY-003", nama: "Renovasi Kantor — Tebet", klien: "CV Sinar Abadi", lokasi: "Jl. Tebet Raya No. 21, Jakarta Selatan", status: "Selesai", mulai: kunciPlus(-90), selesai: kunciPlus(-5) }
+    ];
+    var pekerja = [
+      { id: 1, kode: "PKJ-001", nama: "Agus Wijaya", jabatan: "Tukang Batu", proyekId: 1, upahHarian: 150000, telepon: "0812-3456-7801", aktif: true },
+      { id: 2, kode: "PKJ-002", nama: "Sinta Dewi", jabatan: "Tukang Cat", proyekId: 1, upahHarian: 140000, telepon: "0812-3456-7802", aktif: true },
+      { id: 3, kode: "PKJ-003", nama: "Joko Susilo", jabatan: "Kenek", proyekId: 1, upahHarian: 110000, telepon: "0812-3456-7803", aktif: true },
+      { id: 4, kode: "PKJ-004", nama: "Rudi Hartono", jabatan: "Tukang Kayu", proyekId: 1, upahHarian: 145000, telepon: "0812-3456-7804", aktif: true },
+      { id: 5, kode: "PKJ-005", nama: "Dewi Lestari", jabatan: "Tukang Besi", proyekId: 2, upahHarian: 150000, telepon: "0812-3456-7805", aktif: true },
+      { id: 6, kode: "PKJ-006", nama: "Budi Santoso", jabatan: "Mandor", proyekId: 2, upahHarian: 200000, telepon: "0812-3456-7806", aktif: true },
+      { id: 7, kode: "PKJ-007", nama: "Andi Pratama", jabatan: "Tukang Las", proyekId: 2, upahHarian: 155000, telepon: "0812-3456-7807", aktif: true },
+      { id: 8, kode: "PKJ-008", nama: "Slamet Riyadi", jabatan: "Operator Alat", proyekId: 2, upahHarian: 160000, telepon: "0812-3456-7808", aktif: true },
+      { id: 9, kode: "PKJ-009", nama: "Bambang Sutejo", jabatan: "Tukang Listrik", proyekId: 3, upahHarian: 150000, telepon: "0812-3456-7809", aktif: true },
+      { id: 10, kode: "PKJ-010", nama: "Eko Prasetyo", jabatan: "Kenek", proyekId: 3, upahHarian: 110000, telepon: "0812-3456-7810", aktif: true }
+    ];
+    // [pekerjaId, offsetHari, status, jamMasuk, keterangan]
+    var mentah = [
+      [1, 0, "Hadir", "07:00", ""], [2, 0, "Hadir", "07:05", ""], [3, 0, "Terlambat", "07:45", "Macet di jalan tol"], [4, 0, "Hadir", "07:00", ""], [5, 0, "Hadir", "07:10", ""], [6, 0, "Hadir", "06:45", ""], [7, 0, "Izin", "", "Urusan keluarga"], [8, 0, "Hadir", "07:00", ""],
+      [1, -1, "Hadir", "07:00", ""], [2, -1, "Hadir", "07:00", ""], [3, -1, "Hadir", "07:05", ""], [4, -1, "Sakit", "", "Demam"], [5, -1, "Hadir", "07:00", ""], [6, -1, "Hadir", "07:00", ""],
+      [1, -2, "Hadir", "07:00", ""], [2, -2, "Terlambat", "07:30", "Ban bocor"], [3, -2, "Hadir", "07:00", ""], [4, -2, "Hadir", "07:00", ""], [5, -2, "Izin", "", "Antar anak ke dokter"], [6, -2, "Hadir", "07:00", ""],
+      [1, -3, "Hadir", "07:00", ""], [2, -3, "Hadir", "07:05", ""], [3, -3, "Alpa", "", ""], [4, -3, "Hadir", "07:00", ""], [5, -3, "Hadir", "07:00", ""],
+      [1, -5, "Hadir", "07:00", ""], [2, -5, "Hadir", "07:00", ""], [3, -5, "Hadir", "07:00", ""], [4, -5, "Hadir", "07:00", ""], [5, -5, "Hadir", "07:00", ""],
+      [1, -7, "Terlambat", "07:40", "Hujan deras"], [2, -7, "Hadir", "07:00", ""], [3, -7, "Hadir", "07:00", ""], [4, -7, "Hadir", "07:00", ""],
+      [1, -10, "Hadir", "07:00", ""], [2, -10, "Hadir", "07:00", ""], [3, -10, "Hadir", "07:00", ""], [4, -10, "Hadir", "07:00", ""],
+      [1, -14, "Hadir", "07:00", ""], [2, -14, "Izin", "", "Cuti menikah saudara"], [3, -14, "Hadir", "07:00", ""],
+      [1, -21, "Hadir", "07:00", ""], [2, -21, "Hadir", "07:00", ""], [3, -21, "Hadir", "07:00", ""],
+      [1, -29, "Hadir", "07:00", ""], [2, -29, "Hadir", "07:00", ""]
+    ];
+    var absensi = mentah.map(function (m, i) {
+      var pk = pekerja.find(function (p) { return p.id === m[0]; });
+      return {
+        id: i + 1, kode: "ABS-" + String(i + 1).padStart(3, "0"),
+        pekerjaId: m[0], proyekId: pk ? pk.proyekId : 1,
+        tanggal: kunciPlus(m[1]), status: m[2],
+        jamMasuk: m[3] || "", jamPulang: (m[2] === "Hadir" || m[2] === "Terlambat") ? "17:00" : "",
+        keterangan: m[4] || "", dicatatOleh: "Budi Santoso"
+      };
+    });
+    return { proyek: proyek, pekerja: pekerja, absensi: absensi };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", password: "admin123", nama: "Administrator", peran: "admin", aktif: true },
+      { username: "mandor", password: "mandor123", nama: "Budi Santoso", peran: "mandor", aktif: true },
+      { username: "keuangan", password: "keuangan123", nama: "Sari Wijaya", peran: "keuangan", aktif: true }
+    ];
+  }
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.pekerja) state = seedState();
+    saveState();
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+    saveUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+  function cariProyek(id) { return state.proyek.find(function (x) { return x.id === id; }); }
+  function kodeProyek(id) { var p = cariProyek(id); return p ? p.kode : "—"; }
+  function namaProyek(id) { var p = cariProyek(id); return p ? p.nama : "—"; }
+  function cariPekerja(id) { return state.pekerja.find(function (x) { return x.id === id; }); }
+  function namaPekerja(id) { var p = cariPekerja(id); return p ? p.nama : "—"; }
+  function kodeBaru(prefix, daftar) {
+    var n = daftar.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0) + 1;
+    return { id: n, kode: prefix + "-" + String(n).padStart(3, "0") };
+  }
+  function labelStatusAbsensi(s) {
+    return s === "Hadir" ? "st-aman" : s === "Terlambat" ? "st-emas" : s === "Izin" ? "st-biru" : s === "Sakit" ? "st-oren" : "st-habis";
+  }
+  function peranTxt(r) {
+    return r === "admin" ? "Admin" : r === "mandor" ? "Mandor" : "Keuangan";
+  }
+  function proyekMandor() { return 2; } // Mandor (Budi Santoso) membawahi PRY-002
+  function pekerjaTerlihat() {
+    if (currentUser && currentUser.peran === "mandor") {
+      return state.pekerja.filter(function (p) { return p.proyekId === proyekMandor(); });
+    }
+    return state.pekerja;
+  }
+  function absensiTerlihat() {
+    if (currentUser && currentUser.peran === "mandor") {
+      var ids = pekerjaTerlihat().map(function (p) { return p.id; });
+      return state.absensi.filter(function (a) { return ids.indexOf(a.pekerjaId) >= 0; });
+    }
+    return state.absensi;
+  }
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    $("cardTambahPekerja").style.display = peran === "admin" ? "" : "none";
+    $("cardTambahAbsensi").style.display = peran === "keuangan" ? "none" : "";
+    var sembunyiMandor = ["laporan"];
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) {
+      var tab = b.getAttribute("data-tab");
+      b.style.display = (peran === "mandor" && sembunyiMandor.indexOf(tab) >= 0) ? "none" : "";
+    });
+    if (peran === "mandor") {
+      var aktif = document.querySelector("#tabbar .tab-btn.active");
+      if (aktif && sembunyiMandor.indexOf(aktif.getAttribute("data-tab")) >= 0) pindahTab("dashboard");
+    }
+  }
+  function masuk(user) {
+    currentUser = user;
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ username: user.username }));
+    $("loginOverlay").classList.add("hidden");
+    $("loginError").style.display = "none";
+    $("userChip").textContent = peranTxt(user.peran) + " (" + user.nama + ")";
+    terapkanPeran();
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    localStorage.removeItem(SESSION_KEY);
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (!found) { $("loginError").style.display = "block"; return; }
+    $("loginUser").value = ""; $("loginPass").value = "";
+    masuk(found);
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    if (currentUser && currentUser.peran === "mandor" && nama === "laporan") nama = "dashboard";
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "laporan") renderLaporan();
+    if (nama === "upah") renderUpah();
+    if (nama === "rekap") renderRekap();
+  }
+  function isiSelect() {
+    var optProyek = state.proyek.map(function (p) { return '<option value="' + p.id + '">' + esc(p.kode + " — " + p.nama) + "</option>"; }).join("");
+    var optFilter = '<option value="semua">Semua proyek</option>' + optProyek;
+    ["fAbProyek", "fPkProyek", "fUpProyek", "fRkProyek"].forEach(function (id) { $(id).innerHTML = optFilter; });
+    ["pkProyek", "abProyek"].forEach(function (id) { $(id).innerHTML = optProyek; });
+    var daftarPkj = pekerjaTerlihat();
+    $("abPekerja").innerHTML = daftarPkj.map(function (p) { return '<option value="' + p.id + '">' + esc(p.kode + " — " + p.nama + " (" + p.jabatan + ")") + "</option>"; }).join("");
+    var optPkjFilter = '<option value="semua">Semua pekerja</option>' + daftarPkj.map(function (p) { return '<option value="' + p.id + '">' + esc(p.nama) + "</option>"; }).join("");
+    $("fAbPekerja").innerHTML = optPkjFilter;
+    $("abTanggal").value = hariIniKey();
+  }
+  function jendelaDari(nilaiPeriode) {
+    var hari = hariIniKey();
+    if (nilaiPeriode === "hari") return { dari: hari, sampai: hari };
+    if (nilaiPeriode === "7hari") return { dari: kunciPlus(-6), sampai: hari };
+    if (nilaiPeriode === "30hari") return { dari: kunciPlus(-29), sampai: hari };
+    return { dari: null, sampai: null };
+  }
+  function dalamJendela(tanggal, j) {
+    if (!j.dari) return true;
+    return tanggal >= j.dari && tanggal <= j.sampai;
+  }
+  function dibayar(a) { return a.status === "Hadir" || a.status === "Terlambat"; }
+  function hitungUpahPekerja(pekerjaId, j) {
+    var pk = cariPekerja(pekerjaId);
+    if (!pk) return { hariDibayar: 0, total: 0 };
+    var daftar = state.absensi.filter(function (a) { return a.pekerjaId === pekerjaId && dalamJendela(a.tanggal, j); });
+    var hariDibayar = daftar.filter(dibayar).length;
+    return { hariDibayar: hariDibayar, total: hariDibayar * (pk.upahHarian || 0) };
+  }
+  function hitungRekapPekerja(pekerjaId, j) {
+    var daftar = state.absensi.filter(function (a) { return a.pekerjaId === pekerjaId && dalamJendela(a.tanggal, j); });
+    var r = { total: daftar.length, hadir: 0, terlambat: 0, izin: 0, sakit: 0, alpa: 0 };
+    daftar.forEach(function (a) {
+      if (a.status === "Hadir") r.hadir++;
+      else if (a.status === "Terlambat") r.terlambat++;
+      else if (a.status === "Izin") r.izin++;
+      else if (a.status === "Sakit") r.sakit++;
+      else if (a.status === "Alpa") r.alpa++;
+    });
+    r.persen = r.total ? Math.round((r.hadir + r.terlambat) / r.total * 100) : null;
+    return r;
+  }
+  function renderDashboard() {
+    var aktif = state.pekerja.filter(function (p) { return p.aktif; }).length;
+    $("dPekerja").textContent = state.pekerja.length;
+    $("dPekerjaSub").textContent = "Aktif " + aktif + " · Proyek " + state.proyek.length;
+    var hariIni = state.absensi.filter(function (a) { return a.tanggal === hariIniKey(); });
+    var hadir = hariIni.filter(function (a) { return a.status === "Hadir"; }).length;
+    var terlambat = hariIni.filter(function (a) { return a.status === "Terlambat"; }).length;
+    var izin = hariIni.filter(function (a) { return a.status === "Izin"; }).length;
+    var sakit = hariIni.filter(function (a) { return a.status === "Sakit"; }).length;
+    var alpa = hariIni.filter(function (a) { return a.status === "Alpa"; }).length;
+    $("dAbsensi").textContent = hariIni.length;
+    $("dAbsensiSub").textContent = "Hadir " + hadir + " · Terlambat " + terlambat + " · Izin " + izin;
+    var tidakHadir = terlambat + izin + sakit + alpa;
+    $("dTidakHadir").textContent = tidakHadir;
+    $("dTidakHadirSub").textContent = "Terlambat " + terlambat + " · Izin " + izin + " · Sakit " + sakit + " · Alpa " + alpa;
+    var j30 = jendelaDari("30hari");
+    var totalUpah = 0, totalHariDibayar = 0;
+    state.pekerja.forEach(function (p) {
+      var u = hitungUpahPekerja(p.id, j30);
+      totalUpah += u.total; totalHariDibayar += u.hariDibayar;
+    });
+    $("dUpah").textContent = rupiah(totalUpah);
+    $("dUpahSub").textContent = totalHariDibayar + " hari dibayar · " + state.pekerja.length + " pekerja";
+    $("badgeAbsensi").textContent = state.absensi.length;
+    $("badgePekerja").textContent = state.pekerja.length;
+    var perhatian = [];
+    state.absensi.filter(function (a) { return a.status === "Alpa"; }).forEach(function (a) {
+      perhatian.push({ teks: "Alpa: " + namaPekerja(a.pekerjaId) + " — " + tglSingkat(a.tanggal) + " (" + kodeProyek(a.proyekId) + ")", kelas: "st-habis" });
+    });
+    state.absensi.filter(function (a) { return a.status === "Sakit"; }).forEach(function (a) {
+      perhatian.push({ teks: "Sakit: " + namaPekerja(a.pekerjaId) + " — " + tglSingkat(a.tanggal) + (a.keterangan ? " (" + a.keterangan + ")" : ""), kelas: "st-oren" });
+    });
+    hariIni.filter(function (a) { return a.status === "Izin"; }).forEach(function (a) {
+      perhatian.push({ teks: "Izin hari ini: " + namaPekerja(a.pekerjaId) + (a.keterangan ? " — " + a.keterangan : ""), kelas: "st-biru" });
+    });
+    state.pekerja.forEach(function (p) {
+      var ada = state.absensi.some(function (a) { return a.pekerjaId === p.id && dalamJendela(a.tanggal, j30); });
+      if (!ada) perhatian.push({ teks: "Belum pernah tercatat absensinya (30 hari): " + p.nama + " — " + p.jabatan + " (" + kodeProyek(p.proyekId) + ")", kelas: "st-emas" });
+    });
+    $("daftarPerhatian").innerHTML = perhatian.length ? perhatian.map(function (x) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(x.teks) + '</div></div><span class="lencana ' + x.kelas + '">Perhatian</span></div>';
+    }).join("") : '<div class="kosong">Tidak ada yang perlu perhatian saat ini.</div>';
+    var urut = hariIni.slice().sort(function (a, b) { return a.pekerjaId - b.pekerjaId; });
+    $("daftarHariIni").innerHTML = urut.length ? urut.map(function (a) {
+      var pk = cariPekerja(a.pekerjaId);
+      return '<div class="item-bar"><div><div class="nm">' + esc(namaPekerja(a.pekerjaId)) + '</div><div class="dt">' + esc((pk ? pk.jabatan : "") + " · " + kodeProyek(a.proyekId) + " · Masuk " + (a.jamMasuk || "—") + " · Pulang " + (a.jamPulang || "—")) + (a.keterangan ? " · " + esc(a.keterangan) : "") + '</div></div><span class="lencana ' + labelStatusAbsensi(a.status) + '">' + esc(a.status) + "</span></div>";
+    }).join("") : '<div class="kosong">Belum ada absensi hari ini.</div>';
+    var terbaru = state.pekerja.slice().sort(function (a, b) { return b.id - a.id; }).slice(0, 3);
+    $("daftarPekerjaTerbaru").innerHTML = terbaru.map(function (p) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + esc(p.jabatan + " · " + kodeProyek(p.proyekId) + " · Upah " + rupiah(p.upahHarian) + "/hari") + '</div></div><span class="lencana ' + (p.aktif ? "st-aman" : "st-habis") + '">' + (p.aktif ? "Aktif" : "Nonaktif") + "</span></div>";
+    }).join("");
+    renderPengguna();
+  }
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") return;
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      return '<div class="user-row"><div><div class="nm" style="font-weight:700">' + esc(u.username + " — " + u.nama) + '</div><div class="dt" style="color:var(--muted);font-size:13px">' + peranTxt(u.peran) + " · " + (u.aktif ? "Aktif" : "Nonaktif") + '</div></div><div class="aksi">' +
+        (u.username === "admin" ? "" : '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>' +
+        '<button class="btn ghost kecil" type="button" data-aksi-pengguna="' + (u.aktif ? "nonaktif" : "aktifkan") + '" data-user="' + esc(u.username) + '">' + (u.aktif ? "Nonaktifkan" : "Aktifkan") + "</button>") +
+        "</div></div>";
+    }).join("");
+  }
+  function renderAbsensi() {
+    var fp = $("fAbProyek").value, fpk = $("fAbPekerja").value, fs = $("fAbStatus").value, cari = ($("cariAb").value || "").toLowerCase();
+    var daftar = absensiTerlihat().filter(function (a) {
+      if (fp !== "semua" && a.proyekId !== Number(fp)) return false;
+      if (fpk !== "semua" && a.pekerjaId !== Number(fpk)) return false;
+      if (fs !== "semua" && a.status !== fs) return false;
+      if (cari && (namaPekerja(a.pekerjaId) + " " + a.keterangan + " " + a.status).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    }).slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+    var hadir = daftar.filter(function (a) { return a.status === "Hadir"; }).length;
+    $("ringkasanAbsensi").textContent = daftar.length + " absensi ditampilkan · Hadir " + hadir;
+    $("daftarAbsensi").innerHTML = daftar.length ? daftar.map(function (a) {
+      var hapus = currentUser && currentUser.peran === "admin" ? '<button class="btn merah kecil" type="button" data-aksi-absensi="hapus" data-id="' + a.id + '">Hapus</button>' : "";
+      return '<div class="item-bar"><div><div class="nm">' + esc(a.kode + " — " + namaPekerja(a.pekerjaId)) + '</div><div class="dt">' + esc(kodeProyek(a.proyekId) + " · " + tglSingkat(a.tanggal) + " · Masuk " + (a.jamMasuk || "—") + " · Pulang " + (a.jamPulang || "—") + " · Dicatat: " + a.dicatatOleh) + (a.keterangan ? " · " + esc(a.keterangan) : "") + '</div></div><div class="aksi"><span class="lencana ' + labelStatusAbsensi(a.status) + '">' + esc(a.status) + "</span>" + hapus + "</div></div>";
+    }).join("") : '<div class="kosong">Belum ada absensi yang cocok.</div>';
+  }
+  function renderPekerja() {
+    var fp = $("fPkProyek").value, fj = $("fPkJabatan").value, cari = ($("cariPk").value || "").toLowerCase();
+    var daftar = pekerjaTerlihat().filter(function (p) {
+      if (fp !== "semua" && p.proyekId !== Number(fp)) return false;
+      if (fj !== "semua" && p.jabatan !== fj) return false;
+      if (cari && (p.nama + " " + p.jabatan).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    }).slice().sort(function (a, b) { return a.id - b.id; });
+    $("ringkasanPekerja").textContent = daftar.length + " pekerja ditampilkan";
+    $("daftarPekerja").innerHTML = daftar.length ? daftar.map(function (p) {
+      var aksi = "";
+      if (currentUser && currentUser.peran === "admin") {
+        aksi = '<button class="btn ghost kecil" type="button" data-aksi-pekerja="' + (p.aktif ? "nonaktif" : "aktifkan") + '" data-id="' + p.id + '">' + (p.aktif ? "Nonaktifkan" : "Aktifkan") + "</button>" +
+          '<button class="btn merah kecil" type="button" data-aksi-pekerja="hapus" data-id="' + p.id + '">Hapus</button>';
+      }
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + esc(p.jabatan + " · " + kodeProyek(p.proyekId) + " · Upah " + rupiah(p.upahHarian) + "/hari" + (p.telepon ? " · " + p.telepon : "")) + '</div></div><div class="aksi"><span class="lencana ' + (p.aktif ? "st-aman" : "st-habis") + '">' + (p.aktif ? "Aktif" : "Nonaktif") + "</span>" + aksi + "</div></div>";
+    }).join("") : '<div class="kosong">Belum ada pekerja yang cocok.</div>';
+  }
+  function barisUpah(j, proyekFilter) {
+    var total = 0, totalHari = 0;
+    var baris = pekerjaTerlihat().filter(function (p) {
+      return proyekFilter === "semua" || p.proyekId === Number(proyekFilter);
+    }).map(function (p) {
+      var u = hitungUpahPekerja(p.id, j);
+      total += u.total; totalHari += u.hariDibayar;
+      return "<tr><td>" + esc(p.kode) + "</td><td>" + esc(p.nama) + "<br><span style=\"color:var(--muted);font-size:12.5px\">" + esc(p.jabatan + " · " + kodeProyek(p.proyekId)) + "</span></td><td class=\"angka\">" + rupiah(p.upahHarian) + "</td><td class=\"angka\">" + u.hariDibayar + "</td><td class=\"angka\">" + rupiah(u.total) + "</td></tr>";
+    }).join("");
+    return { baris: baris, total: total, totalHari: totalHari };
+  }
+  function renderUpah() {
+    var j = jendelaDari($("upPeriode").value);
+    var r = barisUpah(j, $("fUpProyek").value);
+    $("ringkasanUpah").textContent = r.totalHari + " hari dibayar · Total " + rupiah(r.total);
+    $("tabelUpah").innerHTML = "<tr><th>Kode</th><th>Pekerja</th><th>Upah / Hari</th><th>Hari Dibayar</th><th>Total Upah</th></tr>" + (r.baris || '<tr><td colspan="5" class="kosong">Belum ada pekerja yang cocok.</td></tr>') +
+      "<tr><td colspan=\"3\"><b>Total</b></td><td class=\"angka\"><b>" + r.totalHari + "</b></td><td class=\"angka\"><b>" + rupiah(r.total) + "</b></td></tr>";
+  }
+  function barisRekap(j, proyekFilter) {
+    var baris = pekerjaTerlihat().filter(function (p) {
+      return proyekFilter === "semua" || p.proyekId === Number(proyekFilter);
+    }).map(function (p) {
+      var r = hitungRekapPekerja(p.id, j);
+      return "<tr><td>" + esc(p.kode) + "</td><td>" + esc(p.nama) + "<br><span style=\"color:var(--muted);font-size:12.5px\">" + esc(p.jabatan + " · " + kodeProyek(p.proyekId)) + "</span></td><td class=\"angka\">" + r.hadir + "</td><td class=\"angka\">" + r.terlambat + "</td><td class=\"angka\">" + r.izin + "</td><td class=\"angka\">" + r.sakit + "</td><td class=\"angka\">" + r.alpa + "</td><td class=\"angka\">" + (r.persen === null ? "—" : r.persen + "%") + "</td></tr>";
+    }).join("");
+    return baris;
+  }
+  function renderRekap() {
+    var j = jendelaDari($("rkPeriode").value);
+    var baris = barisRekap(j, $("fRkProyek").value);
+    var daftar = absensiTerlihat().filter(function (a) { return dalamJendela(a.tanggal, j); });
+    $("ringkasanRekap").textContent = daftar.length + " absensi dalam periode · Hadir " + daftar.filter(function (a) { return a.status === "Hadir"; }).length + " · Terlambat " + daftar.filter(function (a) { return a.status === "Terlambat"; }).length;
+    $("tabelRekap").innerHTML = "<tr><th>Kode</th><th>Pekerja</th><th>Hadir</th><th>Terlambat</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th>Kehadiran</th></tr>" + (baris || '<tr><td colspan="8" class="kosong">Belum ada pekerja yang cocok.</td></tr>');
+  }
+  function renderLaporan() {
+    var j = jendelaDari($("lapPeriode").value);
+    var daftar = state.absensi.filter(function (a) { return dalamJendela(a.tanggal, j); });
+    var hadir = daftar.filter(function (a) { return a.status === "Hadir"; }).length;
+    var terlambat = daftar.filter(function (a) { return a.status === "Terlambat"; }).length;
+    var izin = daftar.filter(function (a) { return a.status === "Izin"; }).length;
+    var sakit = daftar.filter(function (a) { return a.status === "Sakit"; }).length;
+    var alpa = daftar.filter(function (a) { return a.status === "Alpa"; }).length;
+    var totalUpah = 0, totalHariDibayar = 0;
+    state.pekerja.forEach(function (p) {
+      var u = hitungUpahPekerja(p.id, j);
+      totalUpah += u.total; totalHariDibayar += u.hariDibayar;
+    });
+    $("lAbsensi").textContent = daftar.length;
+    $("lAbsensiSub").textContent = "Hadir " + hadir + " · Terlambat " + terlambat;
+    $("lHadir").textContent = hadir;
+    $("lHadirSub").textContent = "dari " + daftar.length + " tercatat";
+    $("lLain").textContent = terlambat + izin + sakit + alpa;
+    $("lLainSub").textContent = "Terlambat " + terlambat + " · Izin " + izin + " · Sakit " + sakit + " · Alpa " + alpa;
+    $("lUpah").textContent = rupiah(totalUpah);
+    $("lUpahSub").textContent = totalHariDibayar + " hari dibayar";
+    var rUpah = barisUpah(j, "semua");
+    $("tabelLaporanUpah").innerHTML = "<tr><th>Kode</th><th>Pekerja</th><th>Upah / Hari</th><th>Hari Dibayar</th><th>Total Upah</th></tr>" + rUpah.baris +
+      "<tr><td colspan=\"3\"><b>Total</b></td><td class=\"angka\"><b>" + rUpah.totalHari + "</b></td><td class=\"angka\"><b>" + rupiah(rUpah.total) + "</b></td></tr>";
+    var rHadir = barisRekap(j, "semua");
+    $("tabelLaporanHadir").innerHTML = "<tr><th>Kode</th><th>Pekerja</th><th>Hadir</th><th>Terlambat</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th>Kehadiran</th></tr>" + rHadir;
+    var hariIni = state.absensi.filter(function (a) { return a.tanggal === hariIniKey(); });
+    var thTidakHadir = hariIni.filter(function (a) { return a.status !== "Hadir"; }).length;
+    var thTerlambat = hariIni.filter(function (a) { return a.status === "Terlambat"; }).length;
+    var thIzin = hariIni.filter(function (a) { return a.status === "Izin"; }).length;
+    $("teksWA").textContent = "Laporan Absensi — " + tanggalHariIni() + "\n" +
+      "Pekerja aktif: " + state.pekerja.filter(function (p) { return p.aktif; }).length + " dari " + state.pekerja.length + "\n" +
+      "Absensi (30 hari): " + state.absensi.filter(function (a) { return dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + "\n" +
+      "Hadir: " + state.absensi.filter(function (a) { return a.status === "Hadir" && dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + " · Terlambat: " + state.absensi.filter(function (a) { return a.status === "Terlambat" && dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + " · Izin: " + state.absensi.filter(function (a) { return a.status === "Izin" && dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + " · Sakit: " + state.absensi.filter(function (a) { return a.status === "Sakit" && dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + " · Alpa: " + state.absensi.filter(function (a) { return a.status === "Alpa" && dalamJendela(a.tanggal, jendelaDari("30hari")); }).length + "\n" +
+      "Total upah (30 hari): " + rupiah(state.pekerja.reduce(function (s, p) { return s + hitungUpahPekerja(p.id, jendelaDari("30hari")).total; }, 0)) + "\n" +
+      "Tidak hadir hari ini: " + thTidakHadir + " (Terlambat " + thTerlambat + ", Izin " + thIzin + ")";
+  }
+  function renderSemua() {
+    isiSelect();
+    renderDashboard();
+    renderAbsensi();
+    renderPekerja();
+    renderUpah();
+    renderRekap();
+    renderLaporan();
+  }
+
+  $("abPekerja").addEventListener("change", function () {
+    var pk = cariPekerja(Number($("abPekerja").value));
+    if (pk) $("abProyek").value = String(pk.proyekId);
+  });
+  $("btnSimpanAbsensi").addEventListener("click", function () {
+    if (currentUser && currentUser.peran === "keuangan") { toast("Keuangan tidak bisa mencatat absensi."); return; }
+    var pk = cariPekerja(Number($("abPekerja").value));
+    if (!pk) { toast("Pilih pekerja dulu."); return; }
+    var tanggal = $("abTanggal").value || hariIniKey();
+    var duplikat = state.absensi.some(function (a) { return a.pekerjaId === pk.id && a.tanggal === tanggal; });
+    if (duplikat) { toast("Absensi " + pk.nama + " tanggal " + tglSingkat(tanggal) + " sudah tercatat."); return; }
+    var status = $("abStatus").value;
+    var nb = kodeBaru("ABS", state.absensi);
+    state.absensi.push({
+      id: nb.id, kode: nb.kode, pekerjaId: pk.id,
+      proyekId: Number($("abProyek").value) || pk.proyekId,
+      tanggal: tanggal, status: status,
+      jamMasuk: (status === "Hadir" || status === "Terlambat") ? ($("abMasuk").value || "") : "",
+      jamPulang: (status === "Hadir" || status === "Terlambat") ? ($("abPulang").value || "") : "",
+      keterangan: $("abKeterangan").value.trim(),
+      dicatatOleh: currentUser ? currentUser.nama : ""
+    });
+    saveState();
+    $("abKeterangan").value = "";
+    renderSemua(); toast("Absensi " + nb.kode + " disimpan.");
+  });
+  $("btnSimpanPekerja").addEventListener("click", function () {
+    if (!currentUser || currentUser.peran !== "admin") { toast("Hanya admin yang bisa menambah pekerja."); return; }
+    var nama = $("pkNama").value.trim();
+    var upah = Number($("pkUpah").value || 0);
+    if (!nama) { toast("Isi nama pekerja."); return; }
+    if (!upah || upah <= 0) { toast("Isi upah harian yang benar."); return; }
+    var nb = kodeBaru("PKJ", state.pekerja);
+    state.pekerja.push({ id: nb.id, kode: nb.kode, nama: nama, jabatan: $("pkJabatan").value, proyekId: Number($("pkProyek").value), upahHarian: upah, telepon: $("pkTelepon").value.trim(), aktif: true });
+    saveState();
+    ["pkNama", "pkUpah", "pkTelepon"].forEach(function (id) { $(id).value = ""; });
+    renderSemua(); toast("Pekerja " + nb.kode + " disimpan.");
+  });
+
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-aksi-absensi],[data-aksi-pekerja],[data-aksi-pengguna]");
+    if (!t) return;
+    var aksi = t.getAttribute("data-aksi-absensi") || t.getAttribute("data-aksi-pekerja") || t.getAttribute("data-aksi-pengguna");
+    if (t.hasAttribute("data-aksi-absensi")) {
+      var aid = Number(t.getAttribute("data-id"));
+      var a = state.absensi.find(function (x) { return x.id === aid; });
+      tanyaKonfirmasi("Hapus Absensi", "Hapus " + (a ? a.kode + " — " + namaPekerja(a.pekerjaId) + " " + tglSingkat(a.tanggal) : "") + "?", function () {
+        state.absensi = state.absensi.filter(function (x) { return x.id !== aid; });
+        saveState(); renderSemua(); toast("Absensi dihapus.");
+      });
+    } else if (t.hasAttribute("data-aksi-pekerja")) {
+      var pid = Number(t.getAttribute("data-id"));
+      var pk = cariPekerja(pid);
+      if (!pk) return;
+      if (aksi === "hapus") {
+        tanyaKonfirmasi("Hapus Pekerja", "Hapus " + pk.kode + " — " + pk.nama + " beserta " + state.absensi.filter(function (x) { return x.pekerjaId === pid; }).length + " catatan absensinya?", function () {
+          state.pekerja = state.pekerja.filter(function (x) { return x.id !== pid; });
+          state.absensi = state.absensi.filter(function (x) { return x.pekerjaId !== pid; });
+          saveState(); renderSemua(); toast("Pekerja dihapus.");
+        });
+      } else if (aksi === "nonaktif" || aksi === "aktifkan") {
+        pk.aktif = aksi === "aktifkan"; saveState(); renderSemua();
+        toast(pk.nama + (pk.aktif ? " diaktifkan." : " dinonaktifkan."));
+      }
+    } else if (t.hasAttribute("data-aksi-pengguna")) {
+      var uname = t.getAttribute("data-user");
+      var u = users.find(function (x) { return x.username === uname; });
+      if (!u) return;
+      if (aksi === "sandi") {
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.username + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.username + " direset menjadi bk123.");
+        });
+      } else if (aksi === "nonaktif" || aksi === "aktifkan") {
+        u.aktif = aksi === "aktifkan"; saveUsers(); renderPengguna();
+        toast(u.username + (u.aktif ? " diaktifkan." : " dinonaktifkan."));
+      }
+    }
+  });
+
+  ["fAbProyek", "fAbPekerja", "fAbStatus", "cariAb"].forEach(function (id) { $(id).addEventListener("input", renderAbsensi); });
+  ["fPkProyek", "fPkJabatan", "cariPk"].forEach(function (id) { $(id).addEventListener("input", renderPekerja); });
+  ["upPeriode", "fUpProyek"].forEach(function (id) { $(id).addEventListener("change", renderUpah); });
+  ["rkPeriode", "fRkProyek"].forEach(function (id) { $(id).addEventListener("change", renderRekap); });
+  $("lapPeriode").addEventListener("change", renderLaporan);
+
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), pw = $("pgPass").value;
+    if (!u || !nama || !pw) { toast("Isi nama pengguna, nama lengkap, dan kata sandi awal."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: u, password: pw, nama: nama, peran: $("pgPeran").value, aktif: true });
+    saveUsers();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    renderPengguna(); isiSelect(); toast("Pengguna " + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (lama !== currentUser.password) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke contoh awal? Data yang sudah ditambahkan akan hilang.", function () {
+      state = seedState(); saveState(); renderSemua(); toast("Data dikembalikan ke contoh awal.");
+    });
+  });
+  $("btnCsvAbsensi").addEventListener("click", function () {
+    var j = jendelaDari($("lapPeriode").value);
+    var daftar = state.absensi.filter(function (a) { return dalamJendela(a.tanggal, j); }).slice().sort(function (a, b) { return a.tanggal.localeCompare(b.tanggal); });
+    var baris = [["ID", "Kode Proyek", "Nama Proyek", "Pekerja", "Jabatan", "Tanggal", "Status", "Jam Masuk", "Jam Pulang", "Keterangan", "Dicatat Oleh"].map(csvCell).join(",")];
+    daftar.forEach(function (a) {
+      var pk = cariPekerja(a.pekerjaId);
+      baris.push([a.kode, kodeProyek(a.proyekId), namaProyek(a.proyekId), namaPekerja(a.pekerjaId), pk ? pk.jabatan : "", a.tanggal, a.status, a.jamMasuk, a.jamPulang, a.keterangan, a.dicatatOleh].map(csvCell).join(","));
+    });
+    unduh("absensi-pekerja-proyek.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV absensi diunduh (" + daftar.length + " baris).");
+  });
+  $("btnCsvUpah").addEventListener("click", function () {
+    var j = jendelaDari($("lapPeriode").value);
+    var baris = [["Pekerja", "Jabatan", "Proyek", "Upah Harian (Rp)", "Hari Dibayar", "Total Upah (Rp)"].map(csvCell).join(",")];
+    state.pekerja.forEach(function (p) {
+      var u = hitungUpahPekerja(p.id, j);
+      baris.push([p.nama, p.jabatan, kodeProyek(p.proyekId), p.upahHarian, u.hariDibayar, u.total].map(csvCell).join(","));
+    });
+    unduh("upah-pekerja-proyek.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV upah diunduh (" + state.pekerja.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("backup-absensi-pekerja-proyek.json", JSON.stringify({ aplikasi: "aplikasi-absensi-pekerja-proyek", versi: 1, diekspor: new Date().toISOString(), state: state }, null, 2), "application/json;charset=utf-8");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files && $("inputRestore").files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var data = JSON.parse(r.result);
+        if (!data.state || !data.state.pekerja) throw new Error("format");
+        state = data.state; saveState(); renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    r.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnSalinWA").addEventListener("click", function () {
+    var teks = $("teksWA").textContent;
+    function ok() { toast("Teks WhatsApp disalin."); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(ok, function () { salinManual(); });
+    } else { salinManual(); }
+    function salinManual() {
+      var ta = document.createElement("textarea");
+      ta.value = teks; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); ok(); } catch (e) { toast("Salin manual dari kotak teks."); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadUsers();
+  loadState();
+  var sesi = null;
+  try { sesi = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) { /* abaikan */ }
+  if (sesi && sesi.username) {
+    var sUser = users.find(function (x) { return x.username === sesi.username && x.aktif; });
+    if (sUser) masuk(sUser); else keluar();
+  } else { keluar(); }
+})();
+</script>
+</body>
+</html>
+
