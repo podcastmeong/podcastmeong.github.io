@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aplikasi Pinjaman &amp; Kredit (Simulasi)</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+  .simulasi-box {
+    margin-top: 14px; background: rgba(246, 169, 60, .16); border: 1px solid #f6a93c;
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5;
+  }
+  .simulasi-box b { color: #f6a93c; }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.peringatan > span { background: #d99a1f; }
+  .progres.lewat > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .simulasi-kuning {
+    background: var(--amber-soft); border: 1px solid #e3c98a; border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin-bottom: 12px;
+  }
+  .simulasi-kuning b { color: var(--amber); }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · SIMULASI</span>
+    <h1>Pinjaman &amp; <span class="aksen">Kredit</span></h1>
+    <p>Merencanakan pinjaman jadi mudah: simulasi cicilan anuitas, jadwal pembayaran, pemantauan angsuran rencana, dan perbandingan skema pinjaman — semuanya simulasi untuk dipelajari sebelum memutuskan.</p>
+    <div class="simulasi-box"><b>SIMULASI PERENCANAAN — BUKAN PEMBERI PINJAMAN.</b> Aplikasi ini hanya <b>simulasi untuk merencanakan pinjaman</b>. Ini bukan lembaga keuangan, tidak menyalurkan pinjaman, tidak ada pengajuan nyata, dan tidak ada pencairan dana. Semua angka adalah contoh perhitungan.</div>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="simulasi">Simulasi</button>
+    <button class="tab-btn" type="button" data-tab="cicilan">Cicilan</button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal</button>
+    <button class="tab-btn" type="button" data-tab="angsuran">Angsuran <span class="badge" id="badgeAngsuran">0</span></button>
+    <button class="tab-btn" type="button" data-tab="perbandingan">Perbandingan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Rencana Pinjaman</h2><p>Ringkasan rencana pinjaman simulasi Anda: pokok aktif, angsuran per bulan, dan angsuran yang segera atau lewat jatuh tempo.</p></div>
+    <div class="simulasi-kuning"><b>SIMULASI PERENCANAAN</b> — semua rencana di bawah ini adalah contoh simulasi, bukan pinjaman sungguhan. Tidak ada dana yang dicairkan.</div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Pokok Aktif (Simulasi)</div><div class="angka" id="dPokok" style="font-size:22px">Rp0</div><div class="sub" id="dPokokSub"></div></div>
+      <div class="stat"><div class="label">Angsuran / Bulan (Simulasi)</div><div class="angka" id="dAngsuran" style="font-size:22px">Rp0</div><div class="sub" id="dAngsuranSub"></div></div>
+      <div class="stat warn"><div class="label">Segera Jatuh Tempo (≤7 hari)</div><div class="angka" id="dSegera" style="font-size:22px">0</div><div class="sub" id="dSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Lewat Jatuh Tempo</div><div class="angka" id="dLewat" style="font-size:22px">0</div><div class="sub" id="dLewatSub"></div></div>
+    </div>
+    <div class="card"><h3>Jatuh Tempo Terdekat</h3><p class="sub">5 angsuran rencana yang paling dekat jatuh temponya.</p><div id="daftarTempoTerdekat"></div></div>
+    <div class="card" id="cardSimulasiCepat">
+      <h3>Simulasi Cepat</h3>
+      <p class="sub">Hitung angsuran per bulan dari pokok, bunga, dan tenor — lalu simpan sebagai rencana bila cocok.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qNama">Nama rencana (cth: KPR Rumah)</label><input id="qNama" type="text" placeholder="cth: Kredit Motor"></div>
+        <div class="field"><label for="qPokok">Pokok pinjaman (Rp)</label><input id="qPokok" type="number" min="1" placeholder="cth: 24000000"></div>
+        <div class="field"><label for="qBunga">Bunga per tahun (%)</label><input id="qBunga" type="number" min="0" step="0.1" placeholder="cth: 12"></div>
+        <div class="field"><label for="qTenor">Tenor (bulan)</label><input id="qTenor" type="number" min="1" placeholder="cth: 24"></div>
+      </div>
+      <div class="catatan" id="qHasil" hidden></div>
+      <div class="row">
+        <button class="btn kecil biru" id="btnHitungCepat" type="button">Hitung Angsuran</button>
+        <button class="btn kecil hijau" id="btnSimpanCepat" type="button">Simpan sebagai Rencana</button>
+      </div>
+      <p class="sub" id="pesanCepat" style="margin-top:8px"></p>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengguna.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-simulasi">
+    <div class="page-head"><h2>Simulasi Cicilan</h2><p>Isi pokok, bunga per tahun, dan tenor — aplikasi menghitung angsuran per bulan, total bunga, dan total bayar dengan rumus anuitas, lalu menampilkan jadwal lengkapnya.</p></div>
+    <div class="card">
+      <h3>Simulasi Pengajuan Pinjaman</h3>
+      <p class="sub">Semua angka di sini adalah simulasi perencanaan, bukan penawaran pinjaman nyata.</p>
+      <div class="form-grid">
+        <div class="field"><label for="sNama">Nama rencana</label><input id="sNama" type="text" placeholder="cth: KPR Rumah"></div>
+        <div class="field"><label for="sPokok">Pokok pinjaman (Rp)</label><input id="sPokok" type="number" min="1" placeholder="cth: 120000000"></div>
+        <div class="field"><label for="sBunga">Bunga per tahun (%)</label><input id="sBunga" type="number" min="0" step="0.1" placeholder="cth: 12"></div>
+        <div class="field"><label for="sTenor">Tenor (bulan)</label><input id="sTenor" type="number" min="1" placeholder="cth: 12"></div>
+        <div class="field"><label for="sMulai">Tanggal mulai (angsuran pertama)</label><input id="sMulai" type="date"></div>
+        <div class="field"><label for="sKet">Keterangan (opsional)</label><input id="sKet" type="text" placeholder="cth: Rumah di Bandung"></div>
+      </div>
+      <button class="btn kecil biru" id="btnHitungSimulasi" type="button">Hitung Simulasi</button>
+      <p class="sub" id="pesanSimulasi" style="margin-top:8px"></p>
+    </div>
+    <div class="card" id="cardHasilSimulasi" hidden>
+      <h3>Hasil Simulasi</h3>
+      <div class="grid-stat" style="margin-bottom:12px">
+        <div class="stat accent"><div class="label">Angsuran / Bulan</div><div class="angka" id="hAngsuran" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label">Total Bunga</div><div class="angka" id="hBunga" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label">Total Bayar</div><div class="angka" id="hTotal" style="font-size:22px">Rp0</div></div>
+      </div>
+      <p class="sub" id="hRingkasan"></p>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn kecil hijau" id="btnSimpanSimulasi" type="button">Simpan sebagai Rencana</button>
+      </div>
+      <h3 style="margin-top:6px">Jadwal Pembayaran (Pratinjau)</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelSimulasi"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-cicilan">
+    <div class="page-head"><h2>Cicilan &amp; Rencana Pinjaman</h2><p>Daftar rencana pinjaman simulasi: angsuran per bulan, total bunga, sisa pokok, dan progres pembayaran angsuran.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fStatusRencana">Status</label><select id="fStatusRencana">
+          <option value="semua">Semua</option>
+          <option value="aktif" selected>Aktif</option>
+          <option value="lunas">Lunas</option>
+        </select></div>
+        <div class="field"><label for="cariRencana">Cari nama rencana</label><input id="cariRencana" type="text" placeholder="cth: KPR"></div>
+      </div>
+      <p class="sub" id="ringkasanCicilan"></p>
+      <div id="daftarRencana" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor daftar rencana yang sedang difilter ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvRencana" type="button">Ekspor CSV Rencana</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal Pembayaran</h2><p>Jadwal angsuran per bulan untuk satu rencana: tanggal jatuh tempo, angsuran, bunga, pokok, sisa pokok, dan status bayar.</p></div>
+    <div class="card">
+      <div class="field"><label for="jRencana">Pilih rencana</label><select id="jRencana"></select></div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelJadwal"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-angsuran">
+    <div class="page-head"><h2>Pemantauan Angsuran</h2><p>Angsuran rencana yang belum dibayar, diurutkan dari jatuh tempo terdekat. Tandai sudah bayar bila angsuran sudah dibayar (rencana), atau salin teks pengingat untuk dikirim sendiri.</p></div>
+    <div class="card">
+      <div class="chips" id="chipsAngsuran">
+        <button class="chip active" type="button" data-f="semua">Semua belum bayar</button>
+        <button class="chip" type="button" data-f="segera">Segera (≤7 hari)</button>
+        <button class="chip" type="button" data-f="lewat">Lewat tempo</button>
+        <button class="chip" type="button" data-f="bulanini">Bulan ini</button>
+      </div>
+      <p class="sub" id="ringkasanAngsuran"></p>
+      <div id="daftarAngsuran" style="margin-top:10px"></div>
+      <div class="pesan-teks" id="kotakPengingat" hidden></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-perbandingan">
+    <div class="page-head"><h2>Perbandingan Skema Pinjaman</h2><p>Bandingkan dua skema pinjaman (pokok, bunga, tenor berbeda) — lihat angsuran, total bunga, dan total bayar masing-masing, lalu putuskan mana yang lebih murah secara total.</p></div>
+    <div class="card">
+      <h3>Skema A</h3>
+      <div class="form-grid">
+        <div class="field"><label for="aPokok">Pokok A (Rp)</label><input id="aPokok" type="number" min="1" placeholder="cth: 24000000"></div>
+        <div class="field"><label for="aBunga">Bunga A per tahun (%)</label><input id="aBunga" type="number" min="0" step="0.1" placeholder="cth: 12"></div>
+        <div class="field"><label for="aTenor">Tenor A (bulan)</label><input id="aTenor" type="number" min="1" placeholder="cth: 24"></div>
+      </div>
+      <h3>Skema B</h3>
+      <div class="form-grid">
+        <div class="field"><label for="bPokok">Pokok B (Rp)</label><input id="bPokok" type="number" min="1" placeholder="cth: 24000000"></div>
+        <div class="field"><label for="bBunga">Bunga B per tahun (%)</label><input id="bBunga" type="number" min="0" step="0.1" placeholder="cth: 10"></div>
+        <div class="field"><label for="bTenor">Tenor B (bulan)</label><input id="bTenor" type="number" min="1" placeholder="cth: 36"></div>
+      </div>
+      <button class="btn kecil biru" id="btnBanding" type="button">Bandingkan Skema</button>
+      <p class="sub" id="pesanBanding" style="margin-top:8px"></p>
+    </div>
+    <div class="card" id="cardHasilBanding" hidden>
+      <h3>Hasil Perbandingan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelBanding"></table></div>
+      <div class="catatan" id="putusanBanding" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Pinjaman &amp; Kredit (Simulasi).</p></div>
+    <div class="card panduan">
+      <div class="simulasi-kuning"><b>SIMULASI PERENCANAAN — BUKAN PEMBERI PINJAMAN.</b> Aplikasi ini hanya simulasi untuk merencanakan pinjaman. Ini bukan lembaga keuangan, tidak menyalurkan pinjaman, tidak ada pengajuan nyata, dan tidak ada pencairan dana. Semua angka adalah contoh perhitungan.</div>
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Simulasi</b>, isi pokok, bunga per tahun, dan tenor — aplikasi menghitung angsuran per bulan, total bunga, dan total bayar, lalu menampilkan jadwal lengkapnya. Simpan sebagai rencana bila cocok.</li>
+        <li>Buka tab <b>Cicilan</b> untuk melihat semua rencana: angsuran per bulan, total bunga, sisa pokok, dan progres pembayaran.</li>
+        <li>Buka tab <b>Jadwal</b>, pilih satu rencana, dan lihat jadwal angsuran per bulan beserta status bayarnya.</li>
+        <li>Buka tab <b>Angsuran</b> untuk memantau angsuran yang segera atau lewat jatuh tempo; tandai sudah bayar bila angsuran sudah dibayar (rencana), atau salin teks pengingat untuk dikirim sendiri.</li>
+        <li>Buka tab <b>Perbandingan</b> untuk membandingkan dua skema pinjaman dan melihat mana yang total bayarnya lebih murah.</li>
+      </ol>
+      <h3>Rumus yang Dipakai</h3>
+      <ul>
+        <li><b>Angsuran anuitas</b> = pokok × r × (1+r)<sup>n</sup> ÷ ((1+r)<sup>n</sup> − 1), dengan r = bunga per tahun ÷ 12. Bila bunga 0%, angsuran = pokok ÷ tenor.</li>
+        <li><b>Bunga bulan ke-n</b> = sisa pokok sebelum bulan itu × r. <b>Pokok bulan ke-n</b> = angsuran − bunga bulan itu.</li>
+        <li><b>Bulan terakhir disesuaikan</b> agar sisa pokok tepat Rp0.</li>
+        <li><b>Total bunga</b> = total bayar − pokok. <b>Sisa pokok</b> = pokok − pokok yang sudah dibayar sampai bulan terakhir yang lunas.</li>
+        <li><b>Segera</b> = jatuh tempo dalam 7 hari ke depan (termasuk hari ini). <b>Lewat</b> = jatuh tempo sudah lewat dan belum dibayar.</li>
+      </ul>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua rencana pinjaman.</li>
+        <li><b>Pengguna</b> — membuat rencana pinjaman dan memantau angsurannya sendiri. Tidak bisa kelola pengguna atau melihat rencana milik pengguna lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Ini <b>simulasi perencanaan</b>, bukan pemberi pinjaman: tidak ada pengajuan nyata, tidak ada pencairan dana, dan hasil simulasi bukan penawaran resmi dari lembaga keuangan mana pun.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Teks pengingat hanya disalin — aplikasi tidak mengirim pesan apa pun.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengguna — <b>pengguna / pengguna123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Pinjaman &amp; Kredit — demo simulasi satu file HTML. Semua rencana dan angka adalah contoh perencanaan, bukan pinjaman sungguhan. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PINJAMAN &amp; KREDIT · SIMULASI</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Rencanakan pinjaman: simulasi cicilan, jadwal pembayaran, dan pemantauan angsuran.</p>
+    <div class="simulasi-kuning"><b>SIMULASI PERENCANAAN — BUKAN PEMBERI PINJAMAN.</b> Aplikasi ini hanya simulasi untuk merencanakan pinjaman. Tidak ada pengajuan nyata dan tidak ada pencairan dana.</div>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengguna — <b>pengguna / pengguna123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function tambahBulan(kunci, n) {
+    var bg = kunci.split("-");
+    var d = new Date(Number(bg[0]), Number(bg[1]) - 1 + n, Number(bg[2]));
+    return kunciTanggal(d);
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+  function salinTeks(teks) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).catch(function () {});
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = teks; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  var STORAGE_KEY = "aplikasiPinjamanKredit.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- Rumus anuitas (diuji silang dengan Python) ---------- */
+  function hitungAngsuran(pokok, bungaTahun, tenor) {
+    var r = (Number(bungaTahun) || 0) / 100 / 12;
+    if (r === 0) return pokok / tenor;
+    var f = Math.pow(1 + r, tenor);
+    return pokok * r * f / (f - 1);
+  }
+  function buatJadwal(rencana) {
+    var r = (Number(rencana.bunga) || 0) / 100 / 12;
+    var a = hitungAngsuran(rencana.pokok, rencana.bunga, rencana.tenor);
+    var sisa = Number(rencana.pokok);
+    var rows = [];
+    for (var n = 1; n <= rencana.tenor; n++) {
+      var bunga = sisa * r;
+      var pokokBayar, angsuran;
+      if (n === rencana.tenor) {
+        pokokBayar = sisa;
+        angsuran = bunga + pokokBayar;
+      } else {
+        pokokBayar = a - bunga;
+        angsuran = a;
+      }
+      sisa -= pokokBayar;
+      rows.push({
+        bulan: n,
+        tanggal: tambahBulan(rencana.tanggalMulai, n - 1),
+        angsuran: Math.round(angsuran),
+        bunga: Math.round(bunga),
+        pokok: Math.round(pokokBayar),
+        sisa: Math.round(sisa)
+      });
+    }
+    return rows;
+  }
+  function totalBayar(rencana) {
+    var t = 0;
+    buatJadwal(rencana).forEach(function (row) { t += row.angsuran; });
+    return t;
+  }
+  function statusRencana(rencana) {
+    var dibayar = state.pembayaran.filter(function (p) { return p.rencanaId === rencana.id; }).length;
+    return dibayar >= rencana.tenor ? "Lunas" : "Aktif";
+  }
+  function bulanDibayar(rencana) {
+    return state.pembayaran.filter(function (p) { return p.rencanaId === rencana.id; }).length;
+  }
+  function sisaPokok(rencana) {
+    var jadwal = buatJadwal(rencana);
+    var dibayar = bulanDibayar(rencana);
+    if (dibayar >= jadwal.length) return 0;
+    return dibayar === 0 ? Number(rencana.pokok) : jadwal[dibayar - 1].sisa;
+  }
+  function sudahBayarBulan(rencanaId, bulanKe) {
+    return state.pembayaran.some(function (p) { return p.rencanaId === rencanaId && p.bulanKe === bulanKe; });
+  }
+  function statusAngsuran(row, rencanaId) {
+    if (sudahBayarBulan(rencanaId, row.bulan)) return "Lunas";
+    if (row.tanggal < hariIniKey()) return "Lewat";
+    if (row.tanggal <= kunciPlus(7)) return "Segera";
+    return "Belum";
+  }
+  function lencanaStatusAngsuran(st) {
+    if (st === "Lunas") return '<span class="lencana st-aman">Lunas</span>';
+    if (st === "Lewat") return '<span class="lencana st-habis">Lewat</span>';
+    if (st === "Segera") return '<span class="lencana st-rendah">Segera</span>';
+    return '<span class="lencana st-biru">Belum</span>';
+  }
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     KPR Rumah 300jt/8%/120: angsuran 3.639.828, total 436.779.360, bunga 136.779.360; mulai 20 Sep 2026; bln 1-2 dibayar.
+     Kredit Motor 24jt/12%/24: angsuran 1.129.763, total 27.114.312, bunga 3.114.312; mulai 22 Agu 2026; bln 1-3 dibayar.
+     Pinjaman Renovasi 50jt/10%/36: angsuran 1.613.359, total 58.080.924, bunga 8.080.924; mulai 4 Mei 2026; bln 1-6 dibayar; bln 7 (4 Nov) lewat.
+     Cicilan TV 6jt/0%/6: angsuran 1.000.000; mulai 24 Mei 2026; semua 6 bln dibayar = Lunas.
+     Cicilan HP 6jt/12%/12: angsuran 533.093, total 6.397.116, bunga 397.116; mulai 21 Okt 2026; bln 1 dibayar; bln 2 (21 Nov) segera.
+     Pinjaman Online 3jt/24%/6: angsuran 535.577, total 3.213.462, bunga 213.462; mulai 6 Okt 2026; bln 1 (6 Okt) + bln 2 (6 Nov) lewat. */
+  function seedState() {
+    var rencana = [
+      { id: 1, pemilik: "admin", nama: "KPR Rumah", pokok: 300000000, bunga: 8, tenor: 120, tanggalMulai: kunciPlus(-61), keterangan: "Rumah di Bandung" },
+      { id: 2, pemilik: "admin", nama: "Kredit Motor", pokok: 24000000, bunga: 12, tenor: 24, tanggalMulai: kunciPlus(-90), keterangan: "Motor baru" },
+      { id: 3, pemilik: "admin", nama: "Pinjaman Renovasi", pokok: 50000000, bunga: 10, tenor: 36, tanggalMulai: kunciPlus(-200), keterangan: "Renovasi dapur" },
+      { id: 4, pemilik: "admin", nama: "Cicilan TV", pokok: 6000000, bunga: 0, tenor: 6, tanggalMulai: kunciPlus(-180), keterangan: "TV 43 inci, 0%" },
+      { id: 5, pemilik: "pengguna", nama: "Cicilan HP", pokok: 6000000, bunga: 12, tenor: 12, tanggalMulai: kunciPlus(-30), keterangan: "HP baru" },
+      { id: 6, pemilik: "pengguna", nama: "Pinjaman Online", pokok: 3000000, bunga: 24, tenor: 6, tanggalMulai: kunciPlus(-45), keterangan: "Dana darurat" }
+    ];
+    var pembayaran = [];
+    function bayar(rencanaId, bulanKe, tanggal) {
+      var r = rencana.find(function (x) { return x.id === rencanaId; });
+      var jadwal = buatJadwal(r);
+      pembayaran.push({ id: pembayaran.length + 1, rencanaId: rencanaId, bulanKe: bulanKe, tanggal: tanggal, jumlah: jadwal[bulanKe - 1].angsuran });
+    }
+    bayar(1, 1, "2026-09-20"); bayar(1, 2, "2026-10-20");
+    bayar(2, 1, "2026-08-22"); bayar(2, 2, "2026-09-22"); bayar(2, 3, "2026-10-22");
+    bayar(3, 1, "2026-05-04"); bayar(3, 2, "2026-06-04"); bayar(3, 3, "2026-07-04");
+    bayar(3, 4, "2026-08-04"); bayar(3, 5, "2026-09-04"); bayar(3, 6, "2026-10-04");
+    bayar(4, 1, "2026-05-24"); bayar(4, 2, "2026-06-24"); bayar(4, 3, "2026-07-24");
+    bayar(4, 4, "2026-08-24"); bayar(4, 5, "2026-09-24"); bayar(4, 6, "2026-10-24");
+    bayar(5, 1, "2026-10-21");
+    return {
+      rencana: rencana, pembayaran: pembayaran,
+      nextRencanaId: 7, nextBayarId: pembayaran.length + 1
+    };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengguna", nama: "Budi Santoso", peran: "pengguna", password: "pengguna123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  var filterAngsuran = "semua";
+  var hasilSimulasi = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.rencana) state.rencana = [];
+    if (!state.pembayaran) state.pembayaran = [];
+    if (!state.nextRencanaId) state.nextRencanaId = state.rencana.length + 1;
+    if (!state.nextBayarId) state.nextBayarId = state.pembayaran.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : "Pengguna"; }
+
+  function rencanaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.rencana.slice();
+    return state.rencana.filter(function (r) { return r.pemilik === currentUser.username; });
+  }
+  function cariRencana(id) { return state.rencana.find(function (x) { return x.id === id; }); }
+  function bolehUbahRencana(r) {
+    return currentUser && (currentUser.peran === "admin" || r.pemilik === currentUser.username);
+  }
+  function angsuranBelumBayar() {
+    var hasil = [];
+    rencanaTerlihat().forEach(function (r) {
+      buatJadwal(r).forEach(function (row) {
+        var st = statusAngsuran(row, r.id);
+        if (st === "Lunas") return;
+        hasil.push({ rencana: r, row: row, status: st });
+      });
+    });
+    hasil.sort(function (a, b) {
+      return (a.row.tanggal < b.row.tanggal ? -1 : a.row.tanggal > b.row.tanggal ? 1 : a.rencana.id - b.rencana.id);
+    });
+    return hasil;
+  }
+  function teksPengingat(item) {
+    return "Halo, ini pengingat (simulasi) dari Aplikasi Pinjaman & Kredit: angsuran \"" + item.rencana.nama +
+      "\" bulan ke-" + item.row.bulan + " sebesar " + rupiah(item.row.angsuran) +
+      " jatuh tempo " + tglSingkat(item.row.tanggal) + " (" + item.status + "). " +
+      "Ini hanya contoh pengingat simulasi — bukan tagihan nyata.";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "simulasi") renderSimulasiAwal();
+    if (nama === "cicilan") renderCicilan();
+    if (nama === "jadwal") renderJadwal();
+    if (nama === "angsuran") renderAngsuran();
+    if (nama === "perbandingan") renderBandingAwal();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var list = rencanaTerlihat();
+    var aktif = list.filter(function (r) { return statusRencana(r) === "Aktif"; });
+    var pokokAktif = 0, angsuranBln = 0;
+    aktif.forEach(function (r) {
+      pokokAktif += sisaPokok(r);
+      angsuranBln += Math.round(hitungAngsuran(r.pokok, r.bunga, r.tenor));
+    });
+    var belum = angsuranBelumBayar();
+    var segera = belum.filter(function (x) { return x.status === "Segera"; });
+    var lewat = belum.filter(function (x) { return x.status === "Lewat"; });
+    $("dPokok").textContent = rupiah(pokokAktif);
+    $("dPokokSub").textContent = aktif.length + " rencana aktif" + (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)");
+    $("dAngsuran").textContent = rupiah(angsuranBln);
+    $("dAngsuranSub").textContent = "total angsuran per bulan rencana aktif";
+    $("dSegera").textContent = segera.length;
+    $("dSegeraSub").textContent = "jatuh tempo dalam 7 hari ke depan";
+    $("dLewat").textContent = lewat.length;
+    $("dLewatSub").textContent = "jatuh tempo sudah lewat, belum dibayar";
+    $("badgeAngsuran").textContent = belum.length;
+    $("daftarTempoTerdekat").innerHTML = belum.length ? belum.slice(0, 5).map(function (item) {
+      return '<div class="baris"><div><b>' + esc(item.rencana.nama) + '</b> — bulan ke-' + item.row.bulan + ' ' + lencanaStatusAngsuran(item.status) +
+        '<br><span class="sub">Jatuh tempo ' + tglSingkat(item.row.tanggal) + ' · pemilik ' + esc(item.rencana.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(item.row.angsuran) + '</b></div></div>';
+    }).join("") : '<p class="sub">Tidak ada angsuran yang belum dibayar.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Rencana pinjamannya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: "pengguna", password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Simulasi cepat (dasbor) ---------- */
+  function bacaSimulasiCepat() {
+    var nama = $("qNama").value.trim();
+    var pokok = Math.round(Number($("qPokok").value || 0));
+    var bunga = Number($("qBunga").value || 0);
+    var tenor = Math.round(Number($("qTenor").value || 0));
+    if (!(pokok > 0) || !(tenor > 0) || bunga < 0) return null;
+    var angsuran = Math.round(hitungAngsuran(pokok, bunga, tenor));
+    var total = 0;
+    buatJadwal({ pokok: pokok, bunga: bunga, tenor: tenor, tanggalMulai: hariIniKey() }).forEach(function (row) { total += row.angsuran; });
+    return { nama: nama, pokok: pokok, bunga: bunga, tenor: tenor, angsuran: angsuran, total: total, totalBunga: total - pokok };
+  }
+  $("btnHitungCepat").addEventListener("click", function () {
+    var h = bacaSimulasiCepat();
+    if (!h) { $("pesanCepat").textContent = "Isi pokok (lebih dari Rp0), bunga (0 atau lebih), dan tenor (lebih dari 0 bulan)."; $("qHasil").hidden = true; return; }
+    $("qHasil").hidden = false;
+    $("qHasil").innerHTML = "<b>Angsuran per bulan: " + rupiah(h.angsuran) + "</b><br>Total bayar " + rupiah(h.total) + " · total bunga " + rupiah(h.totalBunga) + " selama " + h.tenor + " bulan (simulasi).";
+    $("pesanCepat").textContent = "";
+  });
+  $("btnSimpanCepat").addEventListener("click", function () {
+    var h = bacaSimulasiCepat();
+    if (!h) { $("pesanCepat").textContent = "Hitung dulu: isi pokok, bunga, dan tenor."; return; }
+    if (!h.nama) { $("pesanCepat").textContent = "Isi nama rencana dulu sebelum menyimpan."; return; }
+    if (!currentUser) return;
+    state.rencana.push({ id: state.nextRencanaId++, pemilik: currentUser.username, nama: h.nama, pokok: h.pokok, bunga: h.bunga, tenor: h.tenor, tanggalMulai: hariIniKey(), keterangan: "Dari simulasi cepat" });
+    saveState(); renderSemua();
+    $("pesanCepat").textContent = "Rencana \"" + h.nama + "\" tersimpan (simulasi). Lihat tab Cicilan.";
+    toast("Rencana tersimpan.");
+  });
+
+  /* ---------- Tab Simulasi ---------- */
+  function renderSimulasiAwal() {
+    if (!$("sMulai").value) $("sMulai").value = hariIniKey();
+  }
+  function tabelJadwalHTML(jadwal, rencanaId) {
+    return "<tr><th>Bulan</th><th>Jatuh Tempo</th><th class=\"angka\">Angsuran</th><th class=\"angka\">Bunga</th><th class=\"angka\">Pokok</th><th class=\"angka\">Sisa Pokok</th><th>Status</th></tr>" +
+      jadwal.map(function (row) {
+        var st = rencanaId ? statusAngsuran(row, rencanaId) : "Belum";
+        return "<tr><td>" + row.bulan + "</td><td>" + tglSingkat(row.tanggal) + "</td><td class=\"angka\">" + rupiah(row.angsuran) + "</td><td class=\"angka\">" + rupiah(row.bunga) + "</td><td class=\"angka\">" + rupiah(row.pokok) + "</td><td class=\"angka\">" + rupiah(row.sisa) + "</td><td>" + lencanaStatusAngsuran(st) + "</td></tr>";
+      }).join("");
+  }
+  $("btnHitungSimulasi").addEventListener("click", function () {
+    var nama = $("sNama").value.trim();
+    var pokok = Math.round(Number($("sPokok").value || 0));
+    var bunga = Number($("sBunga").value || 0);
+    var tenor = Math.round(Number($("sTenor").value || 0));
+    var mulai = $("sMulai").value || hariIniKey();
+    if (!(pokok > 0) || !(tenor > 0) || bunga < 0) { $("pesanSimulasi").textContent = "Isi pokok (lebih dari Rp0), bunga (0 atau lebih), dan tenor (lebih dari 0 bulan)."; return; }
+    var rencana = { pokok: pokok, bunga: bunga, tenor: tenor, tanggalMulai: mulai };
+    var jadwal = buatJadwal(rencana);
+    var total = 0;
+    jadwal.forEach(function (row) { total += row.angsuran; });
+    var angsuran = Math.round(hitungAngsuran(pokok, bunga, tenor));
+    hasilSimulasi = { nama: nama, pokok: pokok, bunga: bunga, tenor: tenor, tanggalMulai: mulai, keterangan: $("sKet").value.trim() };
+    $("cardHasilSimulasi").hidden = false;
+    $("hAngsuran").textContent = rupiah(angsuran);
+    $("hBunga").textContent = rupiah(total - pokok);
+    $("hTotal").textContent = rupiah(total);
+    $("hRingkasan").textContent = "Pokok " + rupiah(pokok) + " · bunga " + bunga + "%/tahun · tenor " + tenor + " bulan · mulai " + tglSingkat(mulai) + " (simulasi).";
+    $("tabelSimulasi").innerHTML = tabelJadwalHTML(jadwal, null);
+    $("pesanSimulasi").textContent = "";
+  });
+  $("btnSimpanSimulasi").addEventListener("click", function () {
+    if (!hasilSimulasi) { $("pesanSimulasi").textContent = "Hitung simulasi dulu."; return; }
+    if (!hasilSimulasi.nama) { $("pesanSimulasi").textContent = "Isi nama rencana dulu sebelum menyimpan."; return; }
+    if (!currentUser) return;
+    state.rencana.push({ id: state.nextRencanaId++, pemilik: currentUser.username, nama: hasilSimulasi.nama, pokok: hasilSimulasi.pokok, bunga: hasilSimulasi.bunga, tenor: hasilSimulasi.tenor, tanggalMulai: hasilSimulasi.tanggalMulai, keterangan: hasilSimulasi.keterangan || "Dari simulasi" });
+    saveState(); renderSemua();
+    $("pesanSimulasi").textContent = "Rencana \"" + hasilSimulasi.nama + "\" tersimpan (simulasi). Lihat tab Cicilan.";
+    toast("Rencana tersimpan.");
+  });
+
+  /* ---------- Tab Cicilan ---------- */
+  function rencanaTersaring() {
+    var status = $("fStatusRencana").value || "semua";
+    var cari = ($("cariRencana").value || "").trim().toLowerCase();
+    var list = rencanaTerlihat();
+    if (status !== "semua") list = list.filter(function (r) { return statusRencana(r) === (status === "aktif" ? "Aktif" : "Lunas"); });
+    if (cari) list = list.filter(function (r) { return r.nama.toLowerCase().indexOf(cari) !== -1; });
+    return list;
+  }
+  function renderCicilan() {
+    var list = rencanaTersaring();
+    var aktif = list.filter(function (r) { return statusRencana(r) === "Aktif"; });
+    var pokokAktif = 0;
+    aktif.forEach(function (r) { pokokAktif += sisaPokok(r); });
+    $("ringkasanCicilan").textContent = list.length + " rencana (" + aktif.length + " aktif), sisa pokok aktif " + rupiah(pokokAktif) +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)") + ".";
+    $("daftarRencana").innerHTML = list.length ? list.map(function (r) {
+      var st = statusRencana(r);
+      var dibayar = bulanDibayar(r);
+      var total = totalBayar(r);
+      var aksi = "";
+      if (bolehUbahRencana(r)) {
+        aksi = '<button class="btn ghost kecil" data-hapus-rencana="' + r.id + '" type="button">Hapus</button>';
+      }
+      var lencana = st === "Lunas" ? '<span class="lencana st-aman">Lunas</span>' : '<span class="lencana st-biru">Aktif</span>';
+      var persen = r.tenor > 0 ? Math.round(dibayar / r.tenor * 100) : 0;
+      return '<div class="baris"><div><b>' + esc(r.nama) + '</b> ' + lencana +
+        '<br><span class="sub">Pokok ' + rupiah(r.pokok) + ' · bunga ' + r.bunga + '%/tahun · tenor ' + r.tenor + ' bulan · mulai ' + tglSingkat(r.tanggalMulai) +
+        ' · pemilik ' + esc(r.pemilik) + (r.keterangan ? ' · ' + esc(r.keterangan) : '') + '</span>' +
+        '<br><span class="sub">Angsuran ' + rupiah(Math.round(hitungAngsuran(r.pokok, r.bunga, r.tenor))) + '/bulan · total bunga ' + rupiah(total - r.pokok) + ' · total bayar ' + rupiah(total) + '</span>' +
+        '<br><span class="sub">Dibayar ' + dibayar + '/' + r.tenor + ' bulan (' + persen + '%) · sisa pokok ' + rupiah(sisaPokok(r)) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada rencana yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-rencana]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-rencana"));
+        var r = cariRencana(id);
+        if (!r) return;
+        tanyaKonfirmasi("Hapus Rencana", "Hapus rencana \"" + r.nama + "\" beserta semua pembayaran angsurannya?", function () {
+          state.rencana = state.rencana.filter(function (x) { return x.id !== id; });
+          state.pembayaran = state.pembayaran.filter(function (p) { return p.rencanaId !== id; });
+          saveState(); renderSemua(); toast("Rencana dihapus.");
+        });
+      });
+    });
+  }
+  $("fStatusRencana").addEventListener("change", renderCicilan);
+  $("cariRencana").addEventListener("input", renderCicilan);
+  $("btnCsvRencana").addEventListener("click", function () {
+    var list = rencanaTersaring();
+    var baris = [["Nama Rencana", "Pemilik", "Pokok (Rp)", "Bunga (%/tahun)", "Tenor (bulan)", "Angsuran/Bulan (Rp)", "Total Bunga (Rp)", "Total Bayar (Rp)", "Sisa Pokok (Rp)", "Bulan Dibayar", "Status"].map(csvCell).join(",")];
+    list.forEach(function (r) {
+      var total = totalBayar(r);
+      baris.push([r.nama, r.pemilik, r.pokok, r.bunga, r.tenor, Math.round(hitungAngsuran(r.pokok, r.bunga, r.tenor)), total - r.pokok, total, sisaPokok(r), bulanDibayar(r) + "/" + r.tenor, statusRencana(r)].map(csvCell).join(","));
+    });
+    unduh("rencana-pinjaman-kredit.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV rencana diunduh (" + list.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("aplikasi-pinjaman-kredit-backup.json", JSON.stringify({ aplikasi: "aplikasi-pinjaman-kredit", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.rencana) || !Array.isArray(d.state.pembayaran) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Rencana, pembayaran, dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Tab Jadwal ---------- */
+  function isiPilihanJadwal() {
+    var list = rencanaTerlihat();
+    var nilai = $("jRencana").value;
+    $("jRencana").innerHTML = list.map(function (r) {
+      return '<option value="' + r.id + '">' + esc(r.nama) + ' — ' + rupiah(Math.round(hitungAngsuran(r.pokok, r.bunga, r.tenor))) + '/bulan (' + esc(r.pemilik) + ')</option>';
+    }).join("");
+    if (nilai && list.some(function (r) { return String(r.id) === nilai; })) $("jRencana").value = nilai;
+  }
+  function renderJadwal() {
+    isiPilihanJadwal();
+    var id = Number($("jRencana").value || 0);
+    var r = cariRencana(id);
+    if (!r) {
+      $("ringkasanJadwal").textContent = "Belum ada rencana.";
+      $("tabelJadwal").innerHTML = "";
+      return;
+    }
+    var jadwal = buatJadwal(r);
+    var dibayar = bulanDibayar(r);
+    var total = totalBayar(r);
+    $("ringkasanJadwal").textContent = r.nama + " — pokok " + rupiah(r.pokok) + ", bunga " + r.bunga + "%/tahun, tenor " + r.tenor + " bulan, angsuran " + rupiah(Math.round(hitungAngsuran(r.pokok, r.bunga, r.tenor))) + "/bulan, total bunga " + rupiah(total - r.pokok) + ", dibayar " + dibayar + "/" + r.tenor + " bulan, sisa pokok " + rupiah(sisaPokok(r)) + ".";
+    $("tabelJadwal").innerHTML = tabelJadwalHTML(jadwal, r.id);
+  }
+  $("jRencana").addEventListener("change", renderJadwal);
+
+  /* ---------- Tab Angsuran ---------- */
+  document.querySelectorAll("#chipsAngsuran .chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      document.querySelectorAll("#chipsAngsuran .chip").forEach(function (c) { c.classList.remove("active"); });
+      chip.classList.add("active");
+      filterAngsuran = chip.getAttribute("data-f");
+      renderAngsuran();
+    });
+  });
+  function renderAngsuran() {
+    var list = angsuranBelumBayar();
+    if (filterAngsuran === "segera") list = list.filter(function (x) { return x.status === "Segera"; });
+    if (filterAngsuran === "lewat") list = list.filter(function (x) { return x.status === "Lewat"; });
+    if (filterAngsuran === "bulanini") {
+      var kunciBulan = hariIniKey().slice(0, 7);
+      list = list.filter(function (x) { return x.row.tanggal.slice(0, 7) === kunciBulan; });
+    }
+    var segera = angsuranBelumBayar().filter(function (x) { return x.status === "Segera"; }).length;
+    var lewat = angsuranBelumBayar().filter(function (x) { return x.status === "Lewat"; }).length;
+    $("ringkasanAngsuran").textContent = list.length + " angsuran belum dibayar (total segera " + segera + ", lewat " + lewat + ")" +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)") + ".";
+    $("daftarAngsuran").innerHTML = list.length ? list.map(function (item, idx) {
+      var aksi = "";
+      if (bolehUbahRencana(item.rencana)) {
+        aksi = '<button class="btn hijau kecil" data-bayar="' + item.rencana.id + ':' + item.row.bulan + '" type="button">Tandai Sudah Bayar</button> ';
+      }
+      aksi += '<button class="btn wa kecil" data-ingat="' + idx + '" type="button">Salin Pengingat WA</button>';
+      return '<div class="baris" data-angsuran-idx="' + idx + '"><div><b>' + esc(item.rencana.nama) + '</b> — bulan ke-' + item.row.bulan + ' ' + lencanaStatusAngsuran(item.status) +
+        '<br><span class="sub">Jatuh tempo ' + tglSingkat(item.row.tanggal) + ' · pemilik ' + esc(item.rencana.pemilik) + ' · sisa pokok setelah bulan ini ' + rupiah(item.row.sisa) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(item.row.angsuran) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada angsuran yang cocok.</p>';
+    // Simpan daftar yang sedang tampil untuk tombol pengingat (indeks sesuai urutan tampil)
+    renderAngsuran._tampil = list;
+    document.querySelectorAll("[data-bayar]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bg = btn.getAttribute("data-bayar").split(":");
+        var rencanaId = Number(bg[0]), bulanKe = Number(bg[1]);
+        var r = cariRencana(rencanaId);
+        if (!r || sudahBayarBulan(rencanaId, bulanKe)) return;
+        var jadwal = buatJadwal(r);
+        var row = jadwal[bulanKe - 1];
+        state.pembayaran.push({ id: state.nextBayarId++, rencanaId: rencanaId, bulanKe: bulanKe, tanggal: hariIniKey(), jumlah: row.angsuran });
+        saveState(); renderSemua();
+        toast("Angsuran bulan ke-" + bulanKe + " \"" + r.nama + "\" ditandai sudah dibayar (rencana).");
+      });
+    });
+    document.querySelectorAll("[data-ingat]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var item = renderAngsuran._tampil[Number(btn.getAttribute("data-ingat"))];
+        if (!item) return;
+        var teks = teksPengingat(item);
+        salinTeks(teks);
+        $("kotakPengingat").hidden = false;
+        $("kotakPengingat").textContent = teks;
+        toast("Teks pengingat disalin — kirim sendiri lewat WhatsApp.");
+      });
+    });
+  }
+
+  /* ---------- Tab Perbandingan ---------- */
+  function renderBandingAwal() { /* biarkan isian terakhir tetap */ }
+  $("btnBanding").addEventListener("click", function () {
+    var aPokok = Math.round(Number($("aPokok").value || 0));
+    var aBunga = Number($("aBunga").value || 0);
+    var aTenor = Math.round(Number($("aTenor").value || 0));
+    var bPokok = Math.round(Number($("bPokok").value || 0));
+    var bBunga = Number($("bBunga").value || 0);
+    var bTenor = Math.round(Number($("bTenor").value || 0));
+    if (!(aPokok > 0) || !(aTenor > 0) || aBunga < 0 || !(bPokok > 0) || !(bTenor > 0) || bBunga < 0) {
+      $("pesanBanding").textContent = "Isi kedua skema dengan lengkap: pokok (lebih dari Rp0), bunga (0 atau lebih), dan tenor (lebih dari 0 bulan).";
+      return;
+    }
+    function hitung(pokok, bunga, tenor) {
+      var jadwal = buatJadwal({ pokok: pokok, bunga: bunga, tenor: tenor, tanggalMulai: hariIniKey() });
+      var total = 0;
+      jadwal.forEach(function (row) { total += row.angsuran; });
+      return { pokok: pokok, bunga: bunga, tenor: tenor, angsuran: Math.round(hitungAngsuran(pokok, bunga, tenor)), total: total, totalBunga: total - pokok };
+    }
+    var A = hitung(aPokok, aBunga, aTenor);
+    var B = hitung(bPokok, bBunga, bTenor);
+    $("cardHasilBanding").hidden = false;
+    $("tabelBanding").innerHTML = "<tr><th></th><th>Skema A</th><th>Skema B</th></tr>" +
+      "<tr><td>Pokok</td><td class=\"angka\">" + rupiah(A.pokok) + "</td><td class=\"angka\">" + rupiah(B.pokok) + "</td></tr>" +
+      "<tr><td>Bunga / tahun</td><td class=\"angka\">" + A.bunga + "%</td><td class=\"angka\">" + B.bunga + "%</td></tr>" +
+      "<tr><td>Tenor</td><td class=\"angka\">" + A.tenor + " bulan</td><td class=\"angka\">" + B.tenor + " bulan</td></tr>" +
+      "<tr><td>Angsuran / bulan</td><td class=\"angka\">" + rupiah(A.angsuran) + "</td><td class=\"angka\">" + rupiah(B.angsuran) + "</td></tr>" +
+      "<tr><td>Total bunga</td><td class=\"angka\">" + rupiah(A.totalBunga) + "</td><td class=\"angka\">" + rupiah(B.totalBunga) + "</td></tr>" +
+      "<tr><td>Total bayar</td><td class=\"angka\">" + rupiah(A.total) + "</td><td class=\"angka\">" + rupiah(B.total) + "</td></tr>";
+    var selisih = Math.abs(A.total - B.total);
+    var menang = A.total <= B.total ? "A" : "B";
+    var kalah = menang === "A" ? "B" : "A";
+    var angsuranMenang = menang === "A" ? A.angsuran : B.angsuran;
+    var angsuranKalah = menang === "A" ? B.angsuran : A.angsuran;
+    var selisihAngsuran = Math.abs(A.angsuran - B.angsuran);
+    $("putusanBanding").innerHTML = "<b>Putusan (simulasi): Skema " + menang + " lebih murah</b> — total bayar " + rupiah(menang === "A" ? A.total : B.total) +
+      ", lebih murah " + rupiah(selisih) + " dibanding Skema " + kalah + " (" + rupiah(menang === "A" ? B.total : A.total) + "). " +
+      "Angsuran Skema " + menang + " " + rupiah(angsuranMenang) + "/bulan" +
+      (selisihAngsuran > 0 ? " — " + (angsuranMenang < angsuranKalah ? "lebih ringan " : "lebih berat ") + rupiah(selisihAngsuran) + "/bulan dibanding Skema " + kalah + "." : ".");
+    $("pesanBanding").textContent = "";
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderCicilan(); renderJadwal(); renderAngsuran();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
