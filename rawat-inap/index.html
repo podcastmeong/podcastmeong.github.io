@@ -133,28 +133,76 @@
       footer p { margin: 0 0 8px; }
       footer p:last-child { margin-bottom: 0; }
       footer strong { color: var(--ink); }
+      .head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .user-box { display: flex; align-items: center; gap: 10px; }
+      .user-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: .85rem; font-weight: 700; color: var(--ink); box-shadow: var(--shadow); white-space: nowrap; }
+      .user-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+      .login-overlay.hidden { display: none; }
+      .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+      .login-card h2 { margin: 0 0 6px; }
+      .login-sub { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+      .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+      .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; background: var(--card-2); color: var(--ink); }
+      .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+      .login-card .btn { width: 100%; margin-top: 16px; }
+      .login-note { color: var(--ink-2); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+      .user-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--card-2); flex-wrap: wrap; }
+      body[data-role="kasir"] .tab-btn[data-tab="pengaturan"] { display: none; }
+      .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 12px; font-size: .9rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 300; max-width: calc(100vw - 32px); text-align: center; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .dash-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .9rem; }
+      .dash-table th, .dash-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .dash-table th { color: var(--ink); font-weight: 700; }
+      .dash-table td { color: var(--ink-2); }
     </style>
   </head>
   <body>
     <div class="wrap">
       <header class="page-head">
+        <div class="head-row">
+          <div>
         <h1>Rawat Inap</h1>
         <p>Manajemen kamar, pasien rawat inap, jadwal perawat, dan laporan hunian untuk klinik &amp; rumah sakit kecil.</p>
+          </div>
+          <div class="user-box">
+            <span class="user-chip"><span class="dot"></span><span id="userChip">—</span></span>
+            <button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Keluar</button>
+          </div>
+        </div>
         <span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span>
       </header>
 
       <nav class="tabs" role="tablist" aria-label="Menu aplikasi">
-        <button class="tab-btn active" data-tab="kamar" role="tab">Kamar</button>
+        <button class="tab-btn active" data-tab="dasbor" role="tab">Dasbor</button>
+        <button class="tab-btn" data-tab="kamar" role="tab">Kamar</button>
         <button class="tab-btn" data-tab="pasien" role="tab">Pasien</button>
         <button class="tab-btn" data-tab="jadwal" role="tab">Jadwal Perawat</button>
         <button class="tab-btn" data-tab="perkembangan" role="tab">Perkembangan</button>
         <button class="tab-btn" data-tab="tempat-tidur" role="tab">Tempat Tidur</button>
         <button class="tab-btn" data-tab="laporan" role="tab">Laporan</button>
+        <button class="tab-btn" data-tab="pengaturan" role="tab">Pengaturan</button>
         <button class="tab-btn" data-tab="panduan" role="tab">Panduan</button>
       </nav>
 
       <!-- ============ KAMAR ============ -->
-      <section class="panel active" id="panel-kamar">
+      <!-- ============ DASBOR ============ -->
+      <section class="panel active" id="panel-dasbor">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Hunian Kamar</p><p class="value" id="dHunian">0/0</p><p class="sub" id="dHunianSub">0% tempat tidur terisi</p></div>
+          <div class="card stat"><p class="label">Pasien Masuk Hari Ini</p><p class="value" id="dMasukHariIni">0</p><p class="sub">Tanggal masuk hari ini</p></div>
+          <div class="card stat"><p class="label">Tempat Tidur Kosong</p><p class="value" id="dKosong">0</p><p class="sub">Siap ditempati</p></div>
+          <div class="card stat"><p class="label">Pasien Pulang / Dirujuk</p><p class="value" id="dPulangRujuk">0 / 0</p><p class="sub">Total sejak awal</p></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h2>Hunian per Kamar</h2>
+          <p class="hint">Tempat tidur terisi dihitung dari pasien berstatus Dirawat.</p>
+          <div id="dTabelKamar"></div>
+        </div>
+        <p class="hint" style="margin-top:12px;">Dasbor ini dipakai bersama: admin dan kasir melihat angka yang sama, dihitung langsung dari data aplikasi.</p>
+      </section>
+
+      <section class="panel" id="panel-kamar">
         <div class="stat-grid">
           <div class="card stat"><p class="label">Total Kamar</p><p class="value" id="statKamar">0</p><p class="sub">Semua kelas perawatan</p></div>
           <div class="card stat"><p class="label">Tempat Tidur Terisi</p><p class="value" id="statTerisi">0</p><p class="sub">Pasien sedang dirawat</p></div>
@@ -281,14 +329,36 @@
       </section>
 
       <!-- ============ PANDUAN ============ -->
+      <!-- ============ PENGATURAN ============ -->
+      <section class="panel" id="panel-pengaturan">
+        <div class="card form-card">
+          <h2>Pengguna Aplikasi</h2>
+          <p class="hint">Hanya admin yang melihat tab ini. Admin bisa menambah pengguna kasir atau admin lain, menghapus pengguna, dan mengganti kata sandi pengguna. Kasir tidak bisa mengganti kata sandinya sendiri — hanya admin yang menggantinya.</p>
+          <div id="userList"></div>
+          <h2 style="margin-top:18px;">Tambah Pengguna Baru</h2>
+          <div class="form-grid">
+            <div class="field"><label for="nuName">Nama lengkap</label><input type="text" id="nuName" placeholder="cth. Dewi Lestari" /></div>
+            <div class="field"><label for="nuUser">Nama pengguna</label><input type="text" id="nuUser" placeholder="cth. dewi" /></div>
+            <div class="field"><label for="nuPass">Kata sandi</label><input type="password" id="nuPass" placeholder="Kata sandi pengguna baru" /></div>
+            <div class="field"><label for="nuRole">Peran</label><select id="nuRole"><option value="kasir">Kasir</option><option value="admin">Admin</option></select></div>
+          </div>
+          <div class="form-actions"><button class="btn btn-primary" id="addUserBtn" type="button">+ Tambah Pengguna</button></div>
+        </div>
+      </section>
+
       <section class="panel" id="panel-panduan">
         <div class="card guide">
           <h2>Buku Panduan — Rawat Inap</h2>
           <p>Selamat datang di aplikasi <strong>Rawat Inap</strong>. Aplikasi ini membantu klinik atau rumah sakit kecil mengelola kamar rawat inap, mencatat pasien yang dirawat, mengatur jadwal perawat, memantau perkembangan pasien, melihat status tempat tidur, dan menyusun laporan hunian — semua dari satu halaman, tanpa perlu memasang program tambahan. Cukup buka file aplikasi di peramban (browser) seperti Chrome atau Edge, di komputer maupun HP.</p>
           <div class="callout"><p><strong>Penting — batas pemakaian demo:</strong> aplikasi ini memakai <strong>data contoh</strong>. Data medis sungguhan <strong>tidak boleh disimpan</strong> di aplikasi demo ini. Penerapan nyata di fasilitas kesehatan membutuhkan perlindungan data sesuai UU Perlindungan Data Pribadi (UU PDP), kontrol akses berdasarkan peran (misalnya hanya perawat dan dokter yang boleh melihat data pasien), dan jejak audit (catatan siapa mengakses atau mengubah data dan kapan).</p></div>
 
+          <h2>Masuk (Login), Dasbor, dan Pengguna Aplikasi</h2>
+          <p>Saat aplikasi dibuka, layar masuk tampil lebih dulu. Masukkan <strong>nama pengguna</strong> dan <strong>kata sandi</strong> Anda, lalu klik <strong>Masuk</strong>. Ada dua peran: <strong>admin</strong> dan <strong>kasir</strong>. Sesi masuk tersimpan selama tab peramban masih terbuka — memuat ulang halaman tidak meminta masuk lagi, tetapi menutup tab akan meminta masuk kembali. Klik <strong>Keluar</strong> di kanan atas untuk keluar dan kembali ke layar masuk.</p>
+          <p>Tab <strong>Dasbor</strong> adalah tab pertama setelah masuk. Dasbor menampilkan ringkasan yang dihitung langsung dari data aplikasi — hunian kamar (tempat tidur terisi dari total kapasitas), pasien masuk hari ini, tempat tidur kosong, dan pasien pulang/dirujuk — beserta tabel hunian tiap kamar. Admin dan kasir melihat dasbor yang sama.</p>
+          <p><strong>Pengguna aplikasi (khusus admin):</strong> hanya admin yang melihat tab <strong>Pengaturan</strong>. Di sana, pada bagian Pengguna Aplikasi, admin bisa <strong>menambah pengguna baru</strong> (isi nama, nama pengguna, kata sandi, dan peran), <strong>menghapus pengguna</strong>, dan <strong>mengganti kata sandi</strong> pengguna lewat tombol "Ganti sandi" di tiap baris pengguna. Kasir tidak bisa mengganti kata sandinya sendiri — hanya admin yang menggantinya. Akun baru dibuat admin di tab Pengaturan; admin yang baru masuk pertama kali sebaiknya segera mengganti kata sandinya di sana agar hanya dia yang tahu.</p>
+
           <h2>1. Tab Kamar</h2>
-          <p>Tab pertama yang tampil saat aplikasi dibuka. Di atas ada empat angka ringkasan: jumlah kamar, tempat tidur terisi, tempat tidur kosong, dan tingkat hunian (persentase tempat tidur yang terisi dari total kapasitas).</p>
+          <p>Di tab ini ada empat angka ringkasan: jumlah kamar, tempat tidur terisi, tempat tidur kosong, dan tingkat hunian (persentase tempat tidur yang terisi dari total kapasitas). Tab Dasbor — tab pertama setelah masuk — menampilkan ringkasan yang sama ditambah pasien masuk hari ini.</p>
           <ul>
             <li><strong>Tambah kamar</strong> — isi nama/nomor kamar (misalnya "Melati 1"), pilih kelas (Kelas III, II, I, VIP, atau Isolasi), isi jumlah tempat tidur, dan pilih status kamar (Tersedia, Penuh, atau Perawatan), lalu klik <strong>+ Tambah Kamar</strong>.</li>
             <li><strong>Ubah</strong> — klik tombol Ubah pada kartu kamar; formulir terisi data kamar itu. Perbaiki yang perlu, lalu klik <strong>Simpan Perubahan</strong>. Klik <strong>Batal Ubah</strong> untuk membatalkan.</li>
@@ -375,6 +445,21 @@
         <p>Aplikasi ini adalah alat <strong>pencatatan dan pemantauan rawat inap</strong>. Aplikasi ini <strong>bukan rekam medis elektronik</strong> dan <strong>bukan sistem BPJS</strong>. Data medis pasien adalah data sensitif dan <strong>tidak boleh disimpan</strong> di aplikasi demo ini; penerapan nyata membutuhkan perlindungan data sesuai UU PDP, kontrol akses per peran, dan jejak audit.</p>
       </footer>
     </div>
+
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-card">
+        <h2>Rawat Inap</h2>
+        <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+        <label for="loginUser">Nama pengguna</label>
+        <input type="text" id="loginUser" autocomplete="username" />
+        <label for="loginPass">Kata sandi</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+        <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+        <button class="btn btn-primary" id="loginBtn" type="button" style="justify-content:center">Masuk</button>
+        <p class="login-note">Akun baru dibuat admin di tab Pengaturan (Pengguna Aplikasi). Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sana agar hanya Anda yang tahu.</p>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
 
     <script>
       "use strict";
@@ -579,6 +664,7 @@
       }
 
       function renderAll() {
+        renderDashboard();
         renderRooms();
         renderRoomSelects();
         renderPatients();
@@ -597,6 +683,7 @@
           btn.classList.add("active");
           document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
           $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+          if (btn.getAttribute("data-tab") === "dasbor") renderDashboard();
         });
       });
 
@@ -718,6 +805,144 @@
           $("roomForm").scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
+
+      /* ================= LOGIN & PENGGUNA (admin & kasir) ================= */
+      var LS_KEY = "rawatInap.v1";
+      function toast(msg) {
+        var t = $("toast"); if (!t) return;
+        t.textContent = msg; t.classList.add("show");
+        clearTimeout(toast._tm); toast._tm = setTimeout(function () { t.classList.remove("show"); }, 2400);
+      }
+      var DEFAULT_USERS = [
+        { username: "admin", password: "admin123", name: "Admin", role: "admin" },
+        { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir" }
+      ];
+      function getUsers() {
+        try {
+          var raw = localStorage.getItem(LS_KEY + ".users");
+          if (!raw) return DEFAULT_USERS.slice();
+          var u = JSON.parse(raw);
+          return Array.isArray(u) && u.length ? u : DEFAULT_USERS.slice();
+        } catch (e) { return DEFAULT_USERS.slice(); }
+      }
+      function saveUsers(users) {
+        try { localStorage.setItem(LS_KEY + ".users", JSON.stringify(users)); } catch (e) {}
+      }
+      var currentUser = null;
+      function applyRole() {
+        if (!currentUser) return;
+        document.body.setAttribute("data-role", currentUser.role);
+        $("userChip").textContent = currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")";
+        var activeTab = document.querySelector(".tab-btn.active");
+        if (currentUser.role === "kasir" && activeTab && activeTab.getAttribute("data-tab") === "pengaturan") {
+          document.querySelector('.tab-btn[data-tab="dasbor"]').click();
+        }
+        renderUserList();
+      }
+      function doLogin() {
+        var u = $("loginUser").value.trim().toLowerCase();
+        var p = $("loginPass").value;
+        var found = getUsers().filter(function (x) { return x.username.toLowerCase() === u && x.password === p; })[0];
+        if (!found) { $("loginError").hidden = false; return; }
+        currentUser = found;
+        try { sessionStorage.setItem(LS_KEY + ".session", found.username); } catch (e) {}
+        $("loginOverlay").classList.add("hidden");
+        $("loginError").hidden = true;
+        $("loginPass").value = "";
+        applyRole();
+        toast("Selamat datang, " + found.name);
+      }
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("logoutBtn").addEventListener("click", function () {
+        try { sessionStorage.removeItem(LS_KEY + ".session"); } catch (e) {}
+        location.reload();
+      });
+      (function restoreSession() {
+        try {
+          var saved = sessionStorage.getItem(LS_KEY + ".session");
+          if (!saved) return;
+          var found = getUsers().filter(function (x) { return x.username === saved; })[0];
+          if (!found) return;
+          currentUser = found;
+          $("loginOverlay").classList.add("hidden");
+          applyRole();
+        } catch (e) {}
+      })();
+      function renderUserList() {
+        var wrap = $("userList"); if (!wrap) return;
+        var users = getUsers();
+        wrap.innerHTML = "";
+        users.forEach(function (u) {
+          var row = document.createElement("div");
+          row.className = "user-row";
+          row.innerHTML = '<div><strong>' + esc(u.name) + '</strong> <span style="color:var(--ink-2)">(' + esc(u.username) + ' &middot; ' + (u.role === "admin" ? "Admin" : "Kasir") + ')</span></div>';
+          if (!(currentUser && u.username === currentUser.username)) {
+            var del = document.createElement("button");
+            del.className = "btn btn-ghost btn-small"; del.textContent = "Hapus"; del.type = "button";
+            del.addEventListener("click", function () {
+              var admins = getUsers().filter(function (x) { return x.role === "admin"; });
+              if (u.role === "admin" && admins.length <= 1) { toast("Tidak bisa: minimal harus ada 1 admin"); return; }
+              if (!confirm('Hapus pengguna "' + u.name + '"?')) return;
+              saveUsers(getUsers().filter(function (x) { return x.username !== u.username; }));
+              renderUserList(); toast("Pengguna dihapus: " + u.name);
+            });
+            row.appendChild(del);
+          }
+          var ch = document.createElement("button");
+          ch.className = "btn btn-ghost btn-small"; ch.textContent = "Ganti sandi"; ch.type = "button";
+          ch.addEventListener("click", function () {
+            var np = prompt("Kata sandi baru untuk " + u.name + " (" + u.username + "):");
+            if (np === null || !np.trim()) return;
+            var users = getUsers();
+            users.forEach(function (x) { if (x.username === u.username) x.password = np.trim(); });
+            saveUsers(users); toast("Kata sandi diganti: " + u.name);
+          });
+          row.appendChild(ch);
+          wrap.appendChild(row);
+        });
+      }
+      $("addUserBtn").addEventListener("click", function () {
+        var name = $("nuName").value.trim();
+        var username = $("nuUser").value.trim().toLowerCase();
+        var pass = $("nuPass").value;
+        var role = $("nuRole").value;
+        if (!name || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi"); return; }
+        if (getUsers().some(function (x) { return x.username.toLowerCase() === username; })) { toast("Nama pengguna sudah dipakai"); return; }
+        var users = getUsers();
+        users.push({ username: username, password: pass, name: name, role: role });
+        saveUsers(users);
+        $("nuName").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+        renderUserList(); toast("Pengguna ditambahkan: " + name);
+      });
+      function todayIso() {
+        var n = new Date();
+        return n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
+      }
+
+
+      /* ================= DASBOR ================= */
+      function renderDashboard() {
+        var totalKap = 0, totalTerisi = 0;
+        state.rooms.forEach(function (r) { totalKap += r.kapasitas; totalTerisi += occupiedOf(r.id).length; });
+        var kosong = totalKap - totalTerisi;
+        var hunian = totalKap ? Math.round(totalTerisi / totalKap * 100) : 0;
+        $("dHunian").textContent = totalTerisi + "/" + totalKap;
+        $("dHunianSub").textContent = hunian + "% tempat tidur terisi";
+        $("dMasukHariIni").textContent = state.patients.filter(function (p) { return p.masuk === todayIso(); }).length;
+        $("dKosong").textContent = kosong;
+        var pulang = state.patients.filter(function (p) { return p.status === "Pulang"; }).length;
+        var rujuk = state.patients.filter(function (p) { return p.status === "Dirujuk"; }).length;
+        $("dPulangRujuk").textContent = pulang + " / " + rujuk;
+        $("dTabelKamar").innerHTML = '<table class="dash-table"><thead><tr><th>Kamar</th><th>Kelas</th><th>Terisi</th><th>Hunian</th></tr></thead><tbody>' +
+          state.rooms.map(function (r) {
+            var occ = occupiedOf(r.id).length;
+            var pct = r.kapasitas ? Math.round(occ / r.kapasitas * 100) : 0;
+            return "<tr><td>" + esc(r.nama) + "</td><td>" + esc(r.kelas) + "</td><td>" + occ + " dari " + r.kapasitas + "</td><td>" + pct + "%</td></tr>";
+          }).join("") + "</tbody></table>";
+      }
+
 
       /* ================= INIT ================= */
       var now = new Date();

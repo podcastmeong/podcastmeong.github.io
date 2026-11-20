@@ -121,15 +121,45 @@
       footer p { margin: 0 0 8px; }
       footer p:last-child { margin-bottom: 0; }
       footer strong { color: var(--ink); }
+
+      .head-user { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+      .user-chip { font-size: .85rem; font-weight: 700; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--ink-2); }
+      .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+      .login-overlay.hidden { display: none; }
+      .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+      .login-card h2 { margin: 0 0 6px; font-size: 1.3rem; }
+      .login-sub { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+      .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; color: var(--ink-2); }
+      .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; background: var(--card-2); color: var(--ink); }
+      .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+      .login-card .btn { width: 100%; margin-top: 16px; }
+      .login-note { color: var(--ink-2); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+      .user-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--card-2); flex-wrap: wrap; }
+      .user-row .user-actions { display: flex; gap: 8px; }
+      body[data-role="kasir"] .tab-btn[data-tab="pengaturan"] { display: none; }
+      .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(80px); background: var(--ink); color: var(--card); padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 14px; z-index: 300; transition: transform .25s; box-shadow: var(--shadow); max-width: calc(100vw - 32px); text-align: center; }
+      .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="page-head"><h1>Apotek Rumah Sakit</h1><p>Stok obat, penjualan, resep elektronik, pembelian, dan peringatan kedaluwarsa — apotek klinik dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span></header>
+<header class="page-head"><h1>Apotek Rumah Sakit</h1><p>Stok obat, penjualan, resep elektronik, pembelian, dan peringatan kedaluwarsa — apotek klinik dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span><div class="head-user"><span class="user-chip" id="currentUserName"></span><button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Keluar</button></div></header>
 <div class="notice"><strong>Demo — data contoh:</strong> semua nama obat, pasien, dan angka di aplikasi ini adalah <strong>data contoh</strong>, bukan data sungguhan. <strong>Data medis sungguhan tidak boleh disimpan di demo ini</strong> (UU PDP). Penerapan nyata butuh perlindungan data, kontrol akses per peran, dan jejak audit.</div>
-<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="stok" role="tab">Stok Obat</button><button class="tab-btn" data-tab="penjualan" role="tab">Penjualan</button><button class="tab-btn" data-tab="resep" role="tab">Resep Elektronik</button><button class="tab-btn" data-tab="pembelian" role="tab">Pembelian</button><button class="tab-btn" data-tab="kedaluwarsa" role="tab">Kedaluwarsa</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
+<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="dasbor" role="tab">Dasbor</button><button class="tab-btn" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="stok" role="tab">Stok Obat</button><button class="tab-btn" data-tab="penjualan" role="tab">Penjualan</button><button class="tab-btn" data-tab="resep" role="tab">Resep Elektronik</button><button class="tab-btn" data-tab="pembelian" role="tab">Pembelian</button><button class="tab-btn" data-tab="kedaluwarsa" role="tab">Kedaluwarsa</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="pengaturan" role="tab">Pengaturan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
 
-      <section class="panel active" id="panel-ringkasan">
+            <section class="panel active" id="panel-dasbor">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Stok Menipis</p><p class="value" id="dbLow">0</p><p class="sub">Obat dengan stok 10 atau kurang</p></div>
+          <div class="card stat"><p class="label">Obat Kedaluwarsa</p><p class="value" id="dbExp">0</p><p class="sub">Segera kedaluwarsa (&le; 90 hari): <span id="dbExpSoon">0</span></p></div>
+          <div class="card stat"><p class="label">Penjualan Hari Ini</p><p class="value" id="dbJualHari">Rp0</p><p class="sub">Total penjualan tanggal hari ini</p></div>
+          <div class="card stat"><p class="label">Resep Menunggu</p><p class="value" id="dbResepTunggu">0</p><p class="sub">Resep belum ditebus</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Stok Menipis</h2><p class="hint">Obat dengan stok 10 atau kurang — segera pesan ulang.</p><div id="dbLowList"></div></div>
+          <div class="card"><h2>Penjualan Hari Ini</h2><p class="hint">Penjualan yang dicatat hari ini.</p><div id="dbJualList"></div></div>
+        </div>
+      </section>
+<section class="panel" id="panel-ringkasan">
         <div class="stat-grid">
           <div class="card stat"><p class="label">Jenis Obat</p><p class="value" id="stJenis">0</p><p class="sub">Obat terdaftar di stok</p></div>
           <div class="card stat"><p class="label">Total Penjualan</p><p class="value" id="stJual">Rp0</p><p class="sub">Semua penjualan tercatat</p></div>
@@ -164,7 +194,14 @@
         <h2 class="section-title">Stok per Kategori</h2>
         <div class="card"><div class="table-wrap"><table class="data"><thead><tr><th>Kategori</th><th>Jenis Obat</th><th>Total Stok</th></tr></thead><tbody id="lpPerKat"></tbody></table></div></div>
       </section>
+<section class="panel" id="panel-pengaturan"><div class="card form-card"><h2>Pengguna Aplikasi</h2><p class="hint">Hanya admin yang melihat tab ini. Admin menambah pengguna baru dan mengganti kata sandi pengguna di sini. Kasir tidak bisa mengganti kata sandinya sendiri — minta admin untuk menggantikannya.</p><div id="userList"></div><div class="form-grid"><div class="field"><label for="nuName">Nama</label><input type="text" id="nuName" maxlength="30" /></div><div class="field"><label for="nuUser">Nama pengguna</label><input type="text" id="nuUser" maxlength="20" /></div><div class="field"><label for="nuPass">Kata sandi</label><input type="text" id="nuPass" maxlength="30" /></div><div class="field"><label for="nuRole">Peran</label><select id="nuRole"><option value="kasir">Kasir</option><option value="admin">Admin</option></select></div></div><div class="form-actions"><button type="button" class="btn btn-primary" id="addUserBtn">+ Tambah Pengguna</button></div><p class="hint" style="margin:12px 0 0">Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sini agar hanya Anda yang tahu.</p></div></section>
 <section class="panel" id="panel-panduan"><div class="card guide"><h2>Buku Panduan — Apotek Rumah Sakit</h2><p>Aplikasi <strong>Apotek Rumah Sakit</strong> membantu apotek mengelola stok obat, penjualan, resep elektronik, pembelian dari pemasok, dan peringatan kedaluwarsa — semua dari satu halaman. Semua yang tampil adalah <strong>data contoh untuk demo</strong>.</p>
+          <h2>Masuk ke Aplikasi (Login) &amp; Dasbor</h2>
+          <p>Saat aplikasi dibuka, muncul layar masuk. Isi <strong>nama pengguna</strong> dan <strong>kata sandi</strong> Anda, lalu klik <strong>Masuk</strong>. Ada dua peran: <strong>Admin</strong> dan <strong>Kasir</strong>. Setelah masuk, tab pertama yang tampil adalah <strong>Dasbor</strong>. Untuk keluar, klik tombol <strong>Keluar</strong> di bagian atas halaman. Bila halaman dimuat ulang, Anda tetap masuk (sesi tersimpan di peramban ini) sampai Anda menekan Keluar.</p>
+          <p>Dasbor menampilkan ringkasan dari data aplikasi ini sendiri: jumlah obat dengan stok menipis, obat yang sudah kedaluwarsa dan yang segera kedaluwarsa, total penjualan hari ini, dan resep yang masih menunggu — di bawahnya ada daftar obat dengan stok menipis dan penjualan hari ini. Angka di dasbor dihitung langsung dari data yang ada — setiap kali Anda menambah data baru, angka dasbor ikut berubah. Admin dan kasir melihat dasbor yang sama.</p>
+          <h2>Pengaturan — Pengguna Aplikasi (Admin)</h2>
+          <p>Tab <strong>Pengaturan</strong> hanya terlihat oleh admin. Di sana admin bisa <strong>menambah pengguna baru</strong> (isi nama, nama pengguna, kata sandi, dan peran, lalu klik <strong>+ Tambah Pengguna</strong>), <strong>menghapus pengguna</strong>, dan <strong>mengganti kata sandi</strong> pengguna lewat tombol <strong>Ganti sandi</strong> di samping nama pengguna. Kasir tidak melihat tab Pengaturan dan tidak bisa mengganti kata sandinya sendiri — hanya admin yang menggantinya. Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di tab Pengaturan agar hanya Anda yang tahu.</p>
+
           <h2>1. Tab Ringkasan</h2>
           <p>Gambaran apotek hari ini: jumlah jenis obat, total penjualan hari ini, resep elektronik yang menunggu, dan obat yang hampir kedaluwarsa. Di bawahnya ada daftar obat dengan stok menipis dan penjualan terbaru.</p>
           <h2>2. Tab Stok Obat</h2>
@@ -230,6 +267,21 @@
           </table>
           <p>Untuk pemesanan, pertanyaan harga, atau penyesuaian kebutuhan, hubungi penjual melalui <strong>WhatsApp 0812-4798-6994</strong>.</p>
 </div></section><footer><p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (6 obat, 4 penjualan, 4 resep elektronik, 3 pembelian) Data pada aplikasi demo ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p><p>Aplikasi ini adalah <strong>alat pencatatan apotek demo</strong>. Aplikasi ini <strong>bukan sistem apotek resmi</strong> dan <strong>bukan sistem BPJS</strong> — tidak terhubung ke BPJS Kesehatan. Data medis pasien adalah data sensitif; aplikasi ini <strong>tidak menyimpan data medis secara permanen</strong> — jangan memasukkan data pasien nyata ke dalamnya.</p></footer></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-card">
+        <h2>Apotek Rumah Sakit</h2>
+        <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+        <label for="loginUser">Nama pengguna</label>
+        <input type="text" id="loginUser" autocomplete="username" />
+        <label for="loginPass">Kata sandi</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+        <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+        <button class="btn btn-primary" id="loginBtn" style="justify-content:center">Masuk</button>
+        <p class="login-note">Akun baru dibuat admin di tab Pengaturan (Pengguna Aplikasi). Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sana agar hanya Anda yang tahu.</p>
+      </div>
+    </div>
 <script>
       "use strict";
       var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -384,7 +436,7 @@
         state.stok.forEach(function (o) { if (!perKat[o.kategori]) perKat[o.kategori] = { n: 0, s: 0 }; perKat[o.kategori].n += 1; perKat[o.kategori].s += o.stok; });
         $("lpPerKat").innerHTML = Object.keys(perKat).map(function (k) { return "<tr><td>" + esc(k) + "</td><td>" + perKat[k].n + "</td><td>" + perKat[k].s + "</td></tr>"; }).join("");
       }
-      function renderAll() { renderSummary(); renderStok(); renderJual(); renderResepEl(); renderBeli(); renderExp(); renderLaporan(); }
+      function renderAll() { renderDashboard(); renderSummary(); renderStok(); renderJual(); renderResepEl(); renderBeli(); renderExp(); renderLaporan(); }
       function deleteItem(kind, id) {
         state[kind] = state[kind].filter(function (x) { return x.id !== id; });
         renderAll();
@@ -438,6 +490,140 @@
         showNote($("beliFormNote"), "Pembelian " + nama + " sebanyak " + jml + " berhasil dicatat" + (o ? " dan stok bertambah." : ". Obat belum ada di stok — tambahkan lewat tab Stok Obat."));
         e.target.reset(); renderAll();
       });
+
+      /* ---------- Login pengguna (admin & kasir) ---------- */
+      var LS_KEY = "apotekRs.v1";
+      var DEFAULT_USERS = [
+        { username: "admin", password: "admin123", name: "Admin", role: "admin" },
+        { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir" }
+      ];
+      function getUsers() {
+        try {
+          var raw = localStorage.getItem(LS_KEY + ".users");
+          if (!raw) return DEFAULT_USERS.slice();
+          var u = JSON.parse(raw);
+          return Array.isArray(u) && u.length ? u : DEFAULT_USERS.slice();
+        } catch (e) { return DEFAULT_USERS.slice(); }
+      }
+      function saveUsers(users) {
+        try { localStorage.setItem(LS_KEY + ".users", JSON.stringify(users)); } catch (e) {}
+      }
+      var currentUser = null;
+      function applyRole() {
+        if (!currentUser) return;
+        document.body.setAttribute("data-role", currentUser.role);
+        $("currentUserName").textContent = currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")";
+        var activeTab = document.querySelector(".tab-btn.active");
+        if (currentUser.role === "kasir" && activeTab && activeTab.getAttribute("data-tab") === "pengaturan") {
+          document.querySelector('.tab-btn[data-tab="dasbor"]').click();
+        }
+        renderUserList();
+      }
+      function doLogin() {
+        var u = $("loginUser").value.trim().toLowerCase();
+        var p = $("loginPass").value;
+        var found = getUsers().filter(function (x) { return x.username.toLowerCase() === u && x.password === p; })[0];
+        if (!found) { $("loginError").hidden = false; return; }
+        currentUser = found;
+        try { sessionStorage.setItem(LS_KEY + ".session", found.username); } catch (e) {}
+        $("loginOverlay").classList.add("hidden");
+        $("loginError").hidden = true;
+        applyRole();
+        toast("Selamat datang, " + found.name);
+      }
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("logoutBtn").addEventListener("click", function () {
+        try { sessionStorage.removeItem(LS_KEY + ".session"); } catch (e) {}
+        location.reload();
+      });
+      (function restoreSession() {
+        try {
+          var saved = sessionStorage.getItem(LS_KEY + ".session");
+          if (!saved) return;
+          var found = getUsers().filter(function (x) { return x.username === saved; })[0];
+          if (!found) return;
+          currentUser = found;
+          $("loginOverlay").classList.add("hidden");
+          applyRole();
+        } catch (e) {}
+      })();
+      function renderUserList() {
+        var wrap = $("userList"); if (!wrap) return;
+        var users = getUsers();
+        wrap.innerHTML = "";
+        users.forEach(function (u) {
+          var row = document.createElement("div");
+          row.className = "user-row";
+          row.innerHTML = '<div><strong>' + esc(u.name) + '</strong> <span style="color:var(--ink-2)">(' + esc(u.username) + ' &middot; ' + (u.role === "admin" ? "Admin" : "Kasir") + ')</span></div>';
+          var acts = document.createElement("div");
+          acts.className = "user-actions";
+          if (!(currentUser && u.username === currentUser.username)) {
+            var del = document.createElement("button");
+            del.className = "btn btn-danger btn-small"; del.textContent = "Hapus";
+            del.addEventListener("click", function () {
+              var admins = getUsers().filter(function (x) { return x.role === "admin"; });
+              if (u.role === "admin" && admins.length <= 1) { toast("Tidak bisa: minimal harus ada 1 admin"); return; }
+              if (!confirm('Hapus pengguna "' + u.name + '"?')) return;
+              saveUsers(getUsers().filter(function (x) { return x.username !== u.username; }));
+              renderUserList(); toast("Pengguna dihapus: " + u.name);
+            });
+            acts.appendChild(del);
+          }
+          var ch = document.createElement("button");
+          ch.className = "btn btn-ghost btn-small"; ch.textContent = "Ganti sandi";
+          ch.addEventListener("click", function () {
+            var np = prompt("Kata sandi baru untuk " + u.name + " (" + u.username + "):");
+            if (np === null || !np.trim()) return;
+            var users2 = getUsers();
+            users2.forEach(function (x) { if (x.username === u.username) x.password = np.trim(); });
+            saveUsers(users2); toast("Kata sandi diganti: " + u.name);
+          });
+          acts.appendChild(ch);
+          row.appendChild(acts);
+          wrap.appendChild(row);
+        });
+      }
+      $("addUserBtn").addEventListener("click", function () {
+        var name = $("nuName").value.trim();
+        var username = $("nuUser").value.trim().toLowerCase();
+        var pass = $("nuPass").value;
+        var role = $("nuRole").value;
+        if (!name || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi"); return; }
+        if (getUsers().some(function (x) { return x.username.toLowerCase() === username; })) { toast("Nama pengguna sudah dipakai"); return; }
+        var users = getUsers();
+        users.push({ username: username, password: pass, name: name, role: role });
+        saveUsers(users);
+        $("nuName").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+        renderUserList(); toast("Pengguna ditambahkan: " + name);
+      });
+      /* ---------- Toast ---------- */
+      var toastTimer = null;
+      function toast(msg) {
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+      }
+      function todayISO() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+      /* ---------- Dasbor ---------- */
+      function renderDashboard() {
+        var today = todayISO();
+        var low = state.stok.filter(function (o) { return o.stok <= 10; });
+        var exp = state.stok.filter(function (o) { return daysToExp(o.exp) < 0; });
+        var soon = state.stok.filter(function (o) { var d = daysToExp(o.exp); return d >= 0 && d <= 90; });
+        var jualHari = state.penjualan.filter(function (j) { return j.tanggal === today; });
+        $("dbLow").textContent = low.length;
+        $("dbExp").textContent = exp.length;
+        $("dbExpSoon").textContent = soon.length;
+        $("dbJualHari").textContent = fmtRp(jualHari.reduce(function (a, j) { return a + j.total; }, 0));
+        $("dbResepTunggu").textContent = state.resepEl.filter(function (r) { return r.status === "Menunggu"; }).length;
+        $("dbLowList").innerHTML = low.length ? low.map(function (o) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(o.nama) + '</div><div class="meta">' + esc(o.kategori) + " • Sisa " + o.stok + " " + esc(o.satuan) + "</div></div>" + '<span class="badge badge-amber">Stok Menipis</span></div>';
+        }).join("") : '<p class="empty">Tidak ada obat dengan stok menipis.</p>';
+        $("dbJualList").innerHTML = jualHari.length ? jualHari.map(function (j) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(j.obat) + " — " + j.jumlah + " x " + fmtRp(j.harga) + '</div><div class="meta">' + esc(j.pembeli) + " • " + esc(j.kasir) + "</div></div>" + '<span class="qnum">' + fmtRp(j.total) + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada penjualan hari ini.</p>';
+      }
       renderAll();
 </script>
 </body>

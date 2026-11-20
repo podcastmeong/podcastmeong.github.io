@@ -121,15 +121,45 @@
       footer p { margin: 0 0 8px; }
       footer p:last-child { margin-bottom: 0; }
       footer strong { color: var(--ink); }
+
+      .head-user { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+      .user-chip { font-size: .85rem; font-weight: 700; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--ink-2); }
+      .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+      .login-overlay.hidden { display: none; }
+      .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+      .login-card h2 { margin: 0 0 6px; font-size: 1.3rem; }
+      .login-sub { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+      .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; color: var(--ink-2); }
+      .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; background: var(--card-2); color: var(--ink); }
+      .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+      .login-card .btn { width: 100%; margin-top: 16px; }
+      .login-note { color: var(--ink-2); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+      .user-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--card-2); flex-wrap: wrap; }
+      .user-row .user-actions { display: flex; gap: 8px; }
+      body[data-role="kasir"] .tab-btn[data-tab="pengaturan"] { display: none; }
+      .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(80px); background: var(--ink); color: var(--card); padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 14px; z-index: 300; transition: transform .25s; box-shadow: var(--shadow); max-width: calc(100vw - 32px); text-align: center; }
+      .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="page-head"><h1>Laboratorium</h1><p>Permintaan pemeriksaan, hasil laboratorium, riwayat tes pasien, dan laporan hasil otomatis — dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span></header>
+<header class="page-head"><h1>Laboratorium</h1><p>Permintaan pemeriksaan, hasil laboratorium, riwayat tes pasien, dan laporan hasil otomatis — dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span><div class="head-user"><span class="user-chip" id="currentUserName"></span><button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Keluar</button></div></header>
 <div class="notice"><strong>Demo — data contoh:</strong> semua nama pasien, hasil tes, dan angka di aplikasi ini adalah <strong>data contoh</strong>, bukan hasil laboratorium sungguhan. <strong>Data medis sungguhan tidak boleh disimpan di demo ini</strong> (UU PDP). Penerapan nyata butuh perlindungan data, kontrol akses per peran, dan jejak audit.</div>
-<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="permintaan" role="tab">Permintaan</button><button class="tab-btn" data-tab="hasil" role="tab">Hasil</button><button class="tab-btn" data-tab="riwayat" role="tab">Riwayat Tes</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="pasien" role="tab">Pasien</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
+<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="dasbor" role="tab">Dasbor</button><button class="tab-btn" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="permintaan" role="tab">Permintaan</button><button class="tab-btn" data-tab="hasil" role="tab">Hasil</button><button class="tab-btn" data-tab="riwayat" role="tab">Riwayat Tes</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="pasien" role="tab">Pasien</button><button class="tab-btn" data-tab="pengaturan" role="tab">Pengaturan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
 
-      <section class="panel active" id="panel-ringkasan">
+            <section class="panel active" id="panel-dasbor">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Permintaan Menunggu</p><p class="value" id="dbTunggu">0</p><p class="sub">Permintaan belum diproses</p></div>
+          <div class="card stat"><p class="label">Hasil Selesai</p><p class="value" id="dbHasil">0</p><p class="sub">Hasil laboratorium tercatat</p></div>
+          <div class="card stat"><p class="label">Hasil Abnormal</p><p class="value" id="dbAbnormal">0</p><p class="sub">Perlu perhatian dokter</p></div>
+          <div class="card stat"><p class="label">Tes Hari Ini</p><p class="value" id="dbTesHari">0</p><p class="sub">Permintaan tanggal hari ini</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Permintaan Menunggu</h2><p class="hint">Permintaan pemeriksaan yang belum diproses.</p><div id="dbTungguList"></div></div>
+          <div class="card"><h2>Hasil Abnormal</h2><p class="hint">Hasil di luar nilai rujukan — perlu perhatian dokter.</p><div id="dbAbList"></div></div>
+        </div>
+      </section>
+<section class="panel" id="panel-ringkasan">
         <div class="stat-grid">
           <div class="card stat"><p class="label">Permintaan</p><p class="value" id="stMinta">0</p><p class="sub">Semua permintaan pemeriksaan</p></div>
           <div class="card stat"><p class="label">Hasil Keluar</p><p class="value" id="stHasil">0</p><p class="sub">Hasil laboratorium tercatat</p></div>
@@ -168,7 +198,14 @@
         <div class="card"><div id="lpAbList"></div></div>
       </section>
 <section class="panel" id="panel-pasien"><div class="card form-card"><h2>Tambah Pasien Tes</h2><p class="hint">Daftar pasien yang menjalani pemeriksaan di laboratorium.</p><form id="pasienForm"><div class="form-grid"><div class="field"><label for="psNama">Nama lengkap pasien</label><input type="text" id="psNama" placeholder="cth. Siti Rahmawati" required /></div><div class="field"><label for="psLahir">Tanggal lahir</label><input type="date" id="psLahir" required /></div><div class="field"><label for="psTelp">Nomor telepon</label><input type="tel" id="psTelp" placeholder="cth. 0812-3456-7890" required /></div></div><div class="form-actions"><button type="submit" class="btn btn-primary">+ Tambah Pasien</button><button type="reset" class="btn btn-ghost">Bersihkan Formulir</button></div><p class="form-note" id="pasienFormNote"></p></form></div><div id="pasienList"></div></section>
+<section class="panel" id="panel-pengaturan"><div class="card form-card"><h2>Pengguna Aplikasi</h2><p class="hint">Hanya admin yang melihat tab ini. Admin menambah pengguna baru dan mengganti kata sandi pengguna di sini. Kasir tidak bisa mengganti kata sandinya sendiri — minta admin untuk menggantikannya.</p><div id="userList"></div><div class="form-grid"><div class="field"><label for="nuName">Nama</label><input type="text" id="nuName" maxlength="30" /></div><div class="field"><label for="nuUser">Nama pengguna</label><input type="text" id="nuUser" maxlength="20" /></div><div class="field"><label for="nuPass">Kata sandi</label><input type="text" id="nuPass" maxlength="30" /></div><div class="field"><label for="nuRole">Peran</label><select id="nuRole"><option value="kasir">Kasir</option><option value="admin">Admin</option></select></div></div><div class="form-actions"><button type="button" class="btn btn-primary" id="addUserBtn">+ Tambah Pengguna</button></div><p class="hint" style="margin:12px 0 0">Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sini agar hanya Anda yang tahu.</p></div></section>
 <section class="panel" id="panel-panduan"><div class="card guide"><h2>Buku Panduan — Laboratorium</h2><p>Aplikasi <strong>Laboratorium</strong> membantu laboratorium klinik mencatat permintaan pemeriksaan, hasil laboratorium, dan riwayat tes pasien, serta menyusun laporan hasil secara otomatis. Semua yang tampil adalah <strong>data contoh untuk demo</strong>.</p>
+          <h2>Masuk ke Aplikasi (Login) &amp; Dasbor</h2>
+          <p>Saat aplikasi dibuka, muncul layar masuk. Isi <strong>nama pengguna</strong> dan <strong>kata sandi</strong> Anda, lalu klik <strong>Masuk</strong>. Ada dua peran: <strong>Admin</strong> dan <strong>Kasir</strong>. Setelah masuk, tab pertama yang tampil adalah <strong>Dasbor</strong>. Untuk keluar, klik tombol <strong>Keluar</strong> di bagian atas halaman. Bila halaman dimuat ulang, Anda tetap masuk (sesi tersimpan di peramban ini) sampai Anda menekan Keluar.</p>
+          <p>Dasbor menampilkan ringkasan dari data aplikasi ini sendiri: permintaan yang masih menunggu, hasil yang sudah selesai, hasil abnormal, dan jumlah tes hari ini — di bawahnya ada daftar permintaan yang menunggu dan hasil abnormal. Angka di dasbor dihitung langsung dari data yang ada — setiap kali Anda menambah data baru, angka dasbor ikut berubah. Admin dan kasir melihat dasbor yang sama.</p>
+          <h2>Pengaturan — Pengguna Aplikasi (Admin)</h2>
+          <p>Tab <strong>Pengaturan</strong> hanya terlihat oleh admin. Di sana admin bisa <strong>menambah pengguna baru</strong> (isi nama, nama pengguna, kata sandi, dan peran, lalu klik <strong>+ Tambah Pengguna</strong>), <strong>menghapus pengguna</strong>, dan <strong>mengganti kata sandi</strong> pengguna lewat tombol <strong>Ganti sandi</strong> di samping nama pengguna. Kasir tidak melihat tab Pengaturan dan tidak bisa mengganti kata sandinya sendiri — hanya admin yang menggantinya. Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di tab Pengaturan agar hanya Anda yang tahu.</p>
+
           <h2>1. Tab Ringkasan</h2>
           <p>Gambaran laboratorium: permintaan hari ini, hasil yang sudah keluar, hasil abnormal yang perlu perhatian, dan jumlah pasien tes. Di bawahnya ada permintaan terbaru dan hasil terbaru.</p>
           <h2>2. Tab Permintaan</h2>
@@ -232,6 +269,21 @@
           </table>
           <p>Untuk pemesanan, pertanyaan harga, atau penyesuaian kebutuhan, hubungi penjual melalui <strong>WhatsApp 0812-4798-6994</strong>.</p>
 </div></section><footer><p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (5 pasien tes, 5 permintaan pemeriksaan, 5 hasil laboratorium) Data pada aplikasi demo ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p><p>Aplikasi ini adalah <strong>alat pencatatan laboratorium demo</strong>. Aplikasi ini <strong>bukan sistem laboratorium resmi</strong> dan <strong>bukan sistem BPJS</strong> — tidak terhubung ke BPJS Kesehatan. Data medis pasien adalah data sensitif; aplikasi ini <strong>tidak menyimpan data medis secara permanen</strong> — jangan memasukkan data pasien nyata ke dalamnya.</p></footer></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-card">
+        <h2>Laboratorium</h2>
+        <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+        <label for="loginUser">Nama pengguna</label>
+        <input type="text" id="loginUser" autocomplete="username" />
+        <label for="loginPass">Kata sandi</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+        <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+        <button class="btn btn-primary" id="loginBtn" style="justify-content:center">Masuk</button>
+        <p class="login-note">Akun baru dibuat admin di tab Pengaturan (Pengguna Aplikasi). Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sana agar hanya Anda yang tahu.</p>
+      </div>
+    </div>
 <script>
       "use strict";
       var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -366,7 +418,7 @@
             '<div class="item-actions"><span class="spacer"></span>' + delBtn("pasien", p.id) + "</div></div>";
         }).join("") : '<p class="empty">Belum ada pasien.</p>';
       }
-      function renderAll() { renderSummary(); renderMinta(); renderHasil(); renderRiwayat(); renderLaporan(); renderPasien(); }
+      function renderAll() { renderDashboard(); renderSummary(); renderMinta(); renderHasil(); renderRiwayat(); renderLaporan(); renderPasien(); }
       function deleteItem(kind, id) {
         state[kind] = state[kind].filter(function (x) { return x.id !== id; });
         renderAll();
@@ -396,6 +448,137 @@
         showNote($("pasienFormNote"), "Pasien " + $("psNama").value.trim() + " berhasil ditambahkan.");
         e.target.reset(); renderAll();
       });
+
+      /* ---------- Login pengguna (admin & kasir) ---------- */
+      var LS_KEY = "lab.v1";
+      var DEFAULT_USERS = [
+        { username: "admin", password: "admin123", name: "Admin", role: "admin" },
+        { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir" }
+      ];
+      function getUsers() {
+        try {
+          var raw = localStorage.getItem(LS_KEY + ".users");
+          if (!raw) return DEFAULT_USERS.slice();
+          var u = JSON.parse(raw);
+          return Array.isArray(u) && u.length ? u : DEFAULT_USERS.slice();
+        } catch (e) { return DEFAULT_USERS.slice(); }
+      }
+      function saveUsers(users) {
+        try { localStorage.setItem(LS_KEY + ".users", JSON.stringify(users)); } catch (e) {}
+      }
+      var currentUser = null;
+      function applyRole() {
+        if (!currentUser) return;
+        document.body.setAttribute("data-role", currentUser.role);
+        $("currentUserName").textContent = currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")";
+        var activeTab = document.querySelector(".tab-btn.active");
+        if (currentUser.role === "kasir" && activeTab && activeTab.getAttribute("data-tab") === "pengaturan") {
+          document.querySelector('.tab-btn[data-tab="dasbor"]').click();
+        }
+        renderUserList();
+      }
+      function doLogin() {
+        var u = $("loginUser").value.trim().toLowerCase();
+        var p = $("loginPass").value;
+        var found = getUsers().filter(function (x) { return x.username.toLowerCase() === u && x.password === p; })[0];
+        if (!found) { $("loginError").hidden = false; return; }
+        currentUser = found;
+        try { sessionStorage.setItem(LS_KEY + ".session", found.username); } catch (e) {}
+        $("loginOverlay").classList.add("hidden");
+        $("loginError").hidden = true;
+        applyRole();
+        toast("Selamat datang, " + found.name);
+      }
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("logoutBtn").addEventListener("click", function () {
+        try { sessionStorage.removeItem(LS_KEY + ".session"); } catch (e) {}
+        location.reload();
+      });
+      (function restoreSession() {
+        try {
+          var saved = sessionStorage.getItem(LS_KEY + ".session");
+          if (!saved) return;
+          var found = getUsers().filter(function (x) { return x.username === saved; })[0];
+          if (!found) return;
+          currentUser = found;
+          $("loginOverlay").classList.add("hidden");
+          applyRole();
+        } catch (e) {}
+      })();
+      function renderUserList() {
+        var wrap = $("userList"); if (!wrap) return;
+        var users = getUsers();
+        wrap.innerHTML = "";
+        users.forEach(function (u) {
+          var row = document.createElement("div");
+          row.className = "user-row";
+          row.innerHTML = '<div><strong>' + esc(u.name) + '</strong> <span style="color:var(--ink-2)">(' + esc(u.username) + ' &middot; ' + (u.role === "admin" ? "Admin" : "Kasir") + ')</span></div>';
+          var acts = document.createElement("div");
+          acts.className = "user-actions";
+          if (!(currentUser && u.username === currentUser.username)) {
+            var del = document.createElement("button");
+            del.className = "btn btn-danger btn-small"; del.textContent = "Hapus";
+            del.addEventListener("click", function () {
+              var admins = getUsers().filter(function (x) { return x.role === "admin"; });
+              if (u.role === "admin" && admins.length <= 1) { toast("Tidak bisa: minimal harus ada 1 admin"); return; }
+              if (!confirm('Hapus pengguna "' + u.name + '"?')) return;
+              saveUsers(getUsers().filter(function (x) { return x.username !== u.username; }));
+              renderUserList(); toast("Pengguna dihapus: " + u.name);
+            });
+            acts.appendChild(del);
+          }
+          var ch = document.createElement("button");
+          ch.className = "btn btn-ghost btn-small"; ch.textContent = "Ganti sandi";
+          ch.addEventListener("click", function () {
+            var np = prompt("Kata sandi baru untuk " + u.name + " (" + u.username + "):");
+            if (np === null || !np.trim()) return;
+            var users2 = getUsers();
+            users2.forEach(function (x) { if (x.username === u.username) x.password = np.trim(); });
+            saveUsers(users2); toast("Kata sandi diganti: " + u.name);
+          });
+          acts.appendChild(ch);
+          row.appendChild(acts);
+          wrap.appendChild(row);
+        });
+      }
+      $("addUserBtn").addEventListener("click", function () {
+        var name = $("nuName").value.trim();
+        var username = $("nuUser").value.trim().toLowerCase();
+        var pass = $("nuPass").value;
+        var role = $("nuRole").value;
+        if (!name || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi"); return; }
+        if (getUsers().some(function (x) { return x.username.toLowerCase() === username; })) { toast("Nama pengguna sudah dipakai"); return; }
+        var users = getUsers();
+        users.push({ username: username, password: pass, name: name, role: role });
+        saveUsers(users);
+        $("nuName").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+        renderUserList(); toast("Pengguna ditambahkan: " + name);
+      });
+      /* ---------- Toast ---------- */
+      var toastTimer = null;
+      function toast(msg) {
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+      }
+      function todayISO() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+      /* ---------- Dasbor ---------- */
+      function renderDashboard() {
+        var today = todayISO();
+        $("dbTunggu").textContent = state.permintaan.filter(function (m) { return m.status === "Menunggu"; }).length;
+        $("dbHasil").textContent = state.hasil.length;
+        $("dbAbnormal").textContent = state.hasil.filter(function (h) { return h.status === "Abnormal"; }).length;
+        $("dbTesHari").textContent = state.permintaan.filter(function (m) { return m.tanggal === today; }).length;
+        var tunggu = state.permintaan.filter(function (m) { return m.status === "Menunggu"; });
+        $("dbTungguList").innerHTML = tunggu.length ? tunggu.map(function (m) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(m.tes) + '</div><div class="meta">' + esc(m.pasien) + " • " + esc(m.dokter) + " • " + esc(formatDate(m.tanggal)) + "</div></div>" + statusBadge(m.status) + "</div>";
+        }).join("") : '<p class="empty">Tidak ada permintaan menunggu.</p>';
+        var ab = state.hasil.filter(function (h) { return h.status === "Abnormal"; });
+        $("dbAbList").innerHTML = ab.length ? ab.map(function (h) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(h.tes) + " — " + esc(h.hasil) + '</div><div class="meta">' + esc(h.pasien) + " • Rujukan " + esc(h.rujukan) + " • " + esc(formatDate(h.tanggal)) + "</div></div>" + statusBadge(h.status) + "</div>";
+        }).join("") : '<p class="empty">Tidak ada hasil abnormal.</p>';
+      }
       renderAll();
 </script>
 </body>

@@ -121,15 +121,45 @@
       footer p { margin: 0 0 8px; }
       footer p:last-child { margin-bottom: 0; }
       footer strong { color: var(--ink); }
+
+      .head-user { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+      .user-chip { font-size: .85rem; font-weight: 700; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--ink-2); }
+      .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+      .login-overlay.hidden { display: none; }
+      .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+      .login-card h2 { margin: 0 0 6px; font-size: 1.3rem; }
+      .login-sub { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+      .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; color: var(--ink-2); }
+      .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; background: var(--card-2); color: var(--ink); }
+      .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+      .login-card .btn { width: 100%; margin-top: 16px; }
+      .login-note { color: var(--ink-2); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+      .user-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--card-2); flex-wrap: wrap; }
+      .user-row .user-actions { display: flex; gap: 8px; }
+      body[data-role="kasir"] .tab-btn[data-tab="pengaturan"] { display: none; }
+      .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(80px); background: var(--ink); color: var(--card); padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 14px; z-index: 300; transition: transform .25s; box-shadow: var(--shadow); max-width: calc(100vw - 32px); text-align: center; }
+      .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="page-head"><h1>Keuangan & Kasir Rumah Sakit</h1><p>Tagihan pasien, pembayaran, invoice digital, laporan pemasukan, dan biaya perawatan — kasir rumah sakit dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span></header>
+<header class="page-head"><h1>Keuangan & Kasir Rumah Sakit</h1><p>Tagihan pasien, pembayaran, invoice digital, laporan pemasukan, dan biaya perawatan — kasir rumah sakit dalam satu halaman.</p><span class="today-line"><span class="dot"></span><span id="todayText">Hari ini</span></span><div class="head-user"><span class="user-chip" id="currentUserName"></span><button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Keluar</button></div></header>
 <div class="notice"><strong>Demo — data contoh:</strong> semua nama pasien, layanan, dan angka di aplikasi ini adalah <strong>data contoh</strong>, bukan data keuangan sungguhan. <strong>Data medis sungguhan tidak boleh disimpan di demo ini</strong> (UU PDP). <strong>Integrasi BPJS bukan bagian dari versi 1</strong> — penagihan BPJS membutuhkan API resmi BPJS Kesehatan.</div>
-<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="tagihan" role="tab">Tagihan</button><button class="tab-btn" data-tab="pembayaran" role="tab">Pembayaran</button><button class="tab-btn" data-tab="invoice" role="tab">Invoice</button><button class="tab-btn" data-tab="pemasukan" role="tab">Pemasukan</button><button class="tab-btn" data-tab="biaya" role="tab">Biaya Perawatan</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
+<nav class="tabs" role="tablist" aria-label="Menu aplikasi"><button class="tab-btn active" data-tab="dasbor" role="tab">Dasbor</button><button class="tab-btn" data-tab="ringkasan" role="tab">Ringkasan</button><button class="tab-btn" data-tab="tagihan" role="tab">Tagihan</button><button class="tab-btn" data-tab="pembayaran" role="tab">Pembayaran</button><button class="tab-btn" data-tab="invoice" role="tab">Invoice</button><button class="tab-btn" data-tab="pemasukan" role="tab">Pemasukan</button><button class="tab-btn" data-tab="biaya" role="tab">Biaya Perawatan</button><button class="tab-btn" data-tab="laporan" role="tab">Laporan</button><button class="tab-btn" data-tab="pengaturan" role="tab">Pengaturan</button><button class="tab-btn" data-tab="panduan" role="tab">Panduan</button></nav>
 
-      <section class="panel active" id="panel-ringkasan">
+            <section class="panel active" id="panel-dasbor">
+        <div class="stat-grid">
+          <div class="card stat"><p class="label">Tagihan Belum Lunas</p><p class="value" id="dbBelum">0</p><p class="sub">Invoice diterbitkan: <span id="dbInv">0</span></p></div>
+          <div class="card stat"><p class="label">Pemasukan Hari Ini</p><p class="value" id="dbMasukHari">Rp0</p><p class="sub">Pembayaran tanggal hari ini</p></div>
+          <div class="card stat"><p class="label">Pemasukan Bulan Ini</p><p class="value" id="dbMasukBulan">Rp0</p><p class="sub">Pembayaran bulan berjalan</p></div>
+          <div class="card stat"><p class="label">Total Tunggakan</p><p class="value" id="dbTunggakan">Rp0</p><p class="sub">Sisa tagihan belum terbayar</p></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h2>Tagihan Belum Lunas</h2><p class="hint">Tagihan yang masih menunggu pembayaran.</p><div id="dbBelumList"></div></div>
+          <div class="card"><h2>Pembayaran Hari Ini</h2><p class="hint">Pembayaran yang masuk hari ini.</p><div id="dbPayList"></div></div>
+        </div>
+      </section>
+<section class="panel" id="panel-ringkasan">
         <div class="stat-grid">
           <div class="card stat"><p class="label">Total Tagihan</p><p class="value" id="stTagihan">Rp0</p><p class="sub">Semua tagihan pasien</p></div>
           <div class="card stat"><p class="label">Pembayaran Masuk</p><p class="value" id="stBayar">Rp0</p><p class="sub">Total pembayaran tercatat</p></div>
@@ -175,7 +205,14 @@
         <h2 class="section-title">Pemasukan per Metode</h2>
         <div class="card"><div class="table-wrap"><table class="data"><thead><tr><th>Metode</th><th>Transaksi</th><th>Total</th></tr></thead><tbody id="lpPerMetode"></tbody></table></div></div>
       </section>
+<section class="panel" id="panel-pengaturan"><div class="card form-card"><h2>Pengguna Aplikasi</h2><p class="hint">Hanya admin yang melihat tab ini. Admin menambah pengguna baru dan mengganti kata sandi pengguna di sini. Kasir tidak bisa mengganti kata sandinya sendiri — minta admin untuk menggantikannya.</p><div id="userList"></div><div class="form-grid"><div class="field"><label for="nuName">Nama</label><input type="text" id="nuName" maxlength="30" /></div><div class="field"><label for="nuUser">Nama pengguna</label><input type="text" id="nuUser" maxlength="20" /></div><div class="field"><label for="nuPass">Kata sandi</label><input type="text" id="nuPass" maxlength="30" /></div><div class="field"><label for="nuRole">Peran</label><select id="nuRole"><option value="kasir">Kasir</option><option value="admin">Admin</option></select></div></div><div class="form-actions"><button type="button" class="btn btn-primary" id="addUserBtn">+ Tambah Pengguna</button></div><p class="hint" style="margin:12px 0 0">Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sini agar hanya Anda yang tahu.</p></div></section>
 <section class="panel" id="panel-panduan"><div class="card guide"><h2>Buku Panduan — Keuangan & Kasir Rumah Sakit</h2><p>Aplikasi <strong>Keuangan &amp; Kasir Rumah Sakit</strong> membantu rumah sakit mengelola tagihan pasien, pembayaran, invoice digital, pemasukan, dan biaya perawatan dalam satu tempat. Semua yang tampil adalah <strong>data contoh untuk demo</strong>. <strong>Integrasi BPJS bukan bagian dari versi 1</strong> — penagihan BPJS membutuhkan API resmi BPJS Kesehatan.</p>
+          <h2>Masuk ke Aplikasi (Login) &amp; Dasbor</h2>
+          <p>Saat aplikasi dibuka, muncul layar masuk. Isi <strong>nama pengguna</strong> dan <strong>kata sandi</strong> Anda, lalu klik <strong>Masuk</strong>. Ada dua peran: <strong>Admin</strong> dan <strong>Kasir</strong>. Setelah masuk, tab pertama yang tampil adalah <strong>Dasbor</strong>. Untuk keluar, klik tombol <strong>Keluar</strong> di bagian atas halaman. Bila halaman dimuat ulang, Anda tetap masuk (sesi tersimpan di peramban ini) sampai Anda menekan Keluar.</p>
+          <p>Dasbor menampilkan ringkasan dari data aplikasi ini sendiri: jumlah tagihan yang belum lunas, pemasukan hari ini, pemasukan bulan ini, dan total tunggakan — di bawahnya ada daftar tagihan yang belum lunas dan pembayaran hari ini. Angka di dasbor dihitung langsung dari data yang ada — setiap kali Anda menambah data baru, angka dasbor ikut berubah. Admin dan kasir melihat dasbor yang sama.</p>
+          <h2>Pengaturan — Pengguna Aplikasi (Admin)</h2>
+          <p>Tab <strong>Pengaturan</strong> hanya terlihat oleh admin. Di sana admin bisa <strong>menambah pengguna baru</strong> (isi nama, nama pengguna, kata sandi, dan peran, lalu klik <strong>+ Tambah Pengguna</strong>), <strong>menghapus pengguna</strong>, dan <strong>mengganti kata sandi</strong> pengguna lewat tombol <strong>Ganti sandi</strong> di samping nama pengguna. Kasir tidak melihat tab Pengaturan dan tidak bisa mengganti kata sandinya sendiri — hanya admin yang menggantinya. Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di tab Pengaturan agar hanya Anda yang tahu.</p>
+
           <h2>1. Tab Ringkasan</h2>
           <p>Gambaran keuangan: total tagihan, total pembayaran masuk, piutang yang belum tertagih, dan jumlah invoice. Di bawahnya ada tagihan yang belum lunas dan pembayaran terbaru.</p>
           <h2>2. Tab Tagihan</h2>
@@ -243,6 +280,21 @@
           </table>
           <p>Untuk pemesanan, pertanyaan harga, atau penyesuaian kebutuhan, hubungi penjual melalui <strong>WhatsApp 0812-4798-6994</strong>.</p>
 </div></section><footer><p><strong>Catatan kejujuran:</strong> data contoh pada aplikasi ini (6 layanan perawatan, 4 tagihan, 2 pembayaran) Data pada aplikasi demo ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke keadaan awal.</p><p>Aplikasi ini adalah <strong>alat pencatatan keuangan dan kasir demo</strong>. Aplikasi ini <strong>bukan sistem keuangan resmi</strong> rumah sakit dan <strong>bukan sistem BPJS</strong> — tidak terhubung ke BPJS Kesehatan. Invoice di aplikasi ini adalah <strong>invoice digital demo</strong>, bukan invoice resmi perpajakan. Data medis pasien adalah data sensitif; aplikasi ini <strong>tidak menyimpan data medis secara permanen</strong> — jangan memasukkan data pasien nyata ke dalamnya.</p></footer></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-card">
+        <h2>Keuangan &amp; Kasir Rumah Sakit</h2>
+        <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+        <label for="loginUser">Nama pengguna</label>
+        <input type="text" id="loginUser" autocomplete="username" />
+        <label for="loginPass">Kata sandi</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+        <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+        <button class="btn btn-primary" id="loginBtn" style="justify-content:center">Masuk</button>
+        <p class="login-note">Akun baru dibuat admin di tab Pengaturan (Pengguna Aplikasi). Admin: setelah masuk pertama kali, segera ganti kata sandi Anda di sana agar hanya Anda yang tahu.</p>
+      </div>
+    </div>
 <script>
       "use strict";
       var MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -405,7 +457,7 @@
         state.pembayaran.forEach(function (p) { if (!perMet[p.metode]) perMet[p.metode] = { n: 0, t: 0 }; perMet[p.metode].n += 1; perMet[p.metode].t += p.jumlah; });
         $("lpPerMetode").innerHTML = Object.keys(perMet).length ? Object.keys(perMet).map(function (k) { return "<tr><td>" + esc(k) + "</td><td>" + perMet[k].n + "</td><td>" + fmtRp(perMet[k].t) + "</td></tr>"; }).join("") : '<tr><td colspan="3">Belum ada pembayaran.</td></tr>';
       }
-      function renderAll() { renderSummary(); renderTagihan(); renderBayar(); renderInvoice(); renderPemasukan(); renderBiaya(); renderLaporan(); }
+      function renderAll() { renderDashboard(); renderSummary(); renderTagihan(); renderBayar(); renderInvoice(); renderPemasukan(); renderBiaya(); renderLaporan(); }
       function deleteItem(kind, id) {
         if (kind === "pembayaran") {
           var p = state.pembayaran.find(function (x) { return x.id === id; });
@@ -453,6 +505,142 @@
         showNote($("biayaFormNote"), "Layanan " + $("biNama").value.trim() + " berhasil ditambahkan (" + fmtRp(Number($("biHarga").value)) + ").");
         e.target.reset(); renderAll();
       });
+
+      /* ---------- Login pengguna (admin & kasir) ---------- */
+      var LS_KEY = "keuRs.v1";
+      var DEFAULT_USERS = [
+        { username: "admin", password: "admin123", name: "Admin", role: "admin" },
+        { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir" }
+      ];
+      function getUsers() {
+        try {
+          var raw = localStorage.getItem(LS_KEY + ".users");
+          if (!raw) return DEFAULT_USERS.slice();
+          var u = JSON.parse(raw);
+          return Array.isArray(u) && u.length ? u : DEFAULT_USERS.slice();
+        } catch (e) { return DEFAULT_USERS.slice(); }
+      }
+      function saveUsers(users) {
+        try { localStorage.setItem(LS_KEY + ".users", JSON.stringify(users)); } catch (e) {}
+      }
+      var currentUser = null;
+      function applyRole() {
+        if (!currentUser) return;
+        document.body.setAttribute("data-role", currentUser.role);
+        $("currentUserName").textContent = currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")";
+        var activeTab = document.querySelector(".tab-btn.active");
+        if (currentUser.role === "kasir" && activeTab && activeTab.getAttribute("data-tab") === "pengaturan") {
+          document.querySelector('.tab-btn[data-tab="dasbor"]').click();
+        }
+        renderUserList();
+      }
+      function doLogin() {
+        var u = $("loginUser").value.trim().toLowerCase();
+        var p = $("loginPass").value;
+        var found = getUsers().filter(function (x) { return x.username.toLowerCase() === u && x.password === p; })[0];
+        if (!found) { $("loginError").hidden = false; return; }
+        currentUser = found;
+        try { sessionStorage.setItem(LS_KEY + ".session", found.username); } catch (e) {}
+        $("loginOverlay").classList.add("hidden");
+        $("loginError").hidden = true;
+        applyRole();
+        toast("Selamat datang, " + found.name);
+      }
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+      $("logoutBtn").addEventListener("click", function () {
+        try { sessionStorage.removeItem(LS_KEY + ".session"); } catch (e) {}
+        location.reload();
+      });
+      (function restoreSession() {
+        try {
+          var saved = sessionStorage.getItem(LS_KEY + ".session");
+          if (!saved) return;
+          var found = getUsers().filter(function (x) { return x.username === saved; })[0];
+          if (!found) return;
+          currentUser = found;
+          $("loginOverlay").classList.add("hidden");
+          applyRole();
+        } catch (e) {}
+      })();
+      function renderUserList() {
+        var wrap = $("userList"); if (!wrap) return;
+        var users = getUsers();
+        wrap.innerHTML = "";
+        users.forEach(function (u) {
+          var row = document.createElement("div");
+          row.className = "user-row";
+          row.innerHTML = '<div><strong>' + esc(u.name) + '</strong> <span style="color:var(--ink-2)">(' + esc(u.username) + ' &middot; ' + (u.role === "admin" ? "Admin" : "Kasir") + ')</span></div>';
+          var acts = document.createElement("div");
+          acts.className = "user-actions";
+          if (!(currentUser && u.username === currentUser.username)) {
+            var del = document.createElement("button");
+            del.className = "btn btn-danger btn-small"; del.textContent = "Hapus";
+            del.addEventListener("click", function () {
+              var admins = getUsers().filter(function (x) { return x.role === "admin"; });
+              if (u.role === "admin" && admins.length <= 1) { toast("Tidak bisa: minimal harus ada 1 admin"); return; }
+              if (!confirm('Hapus pengguna "' + u.name + '"?')) return;
+              saveUsers(getUsers().filter(function (x) { return x.username !== u.username; }));
+              renderUserList(); toast("Pengguna dihapus: " + u.name);
+            });
+            acts.appendChild(del);
+          }
+          var ch = document.createElement("button");
+          ch.className = "btn btn-ghost btn-small"; ch.textContent = "Ganti sandi";
+          ch.addEventListener("click", function () {
+            var np = prompt("Kata sandi baru untuk " + u.name + " (" + u.username + "):");
+            if (np === null || !np.trim()) return;
+            var users2 = getUsers();
+            users2.forEach(function (x) { if (x.username === u.username) x.password = np.trim(); });
+            saveUsers(users2); toast("Kata sandi diganti: " + u.name);
+          });
+          acts.appendChild(ch);
+          row.appendChild(acts);
+          wrap.appendChild(row);
+        });
+      }
+      $("addUserBtn").addEventListener("click", function () {
+        var name = $("nuName").value.trim();
+        var username = $("nuUser").value.trim().toLowerCase();
+        var pass = $("nuPass").value;
+        var role = $("nuRole").value;
+        if (!name || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi"); return; }
+        if (getUsers().some(function (x) { return x.username.toLowerCase() === username; })) { toast("Nama pengguna sudah dipakai"); return; }
+        var users = getUsers();
+        users.push({ username: username, password: pass, name: name, role: role });
+        saveUsers(users);
+        $("nuName").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+        renderUserList(); toast("Pengguna ditambahkan: " + name);
+      });
+      /* ---------- Toast ---------- */
+      var toastTimer = null;
+      function toast(msg) {
+        var t = $("toast"); t.textContent = msg; t.classList.add("show");
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+      }
+      function todayISO() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+      /* ---------- Dasbor ---------- */
+      function renderDashboard() {
+        var today = todayISO();
+        var month = today.slice(0, 7);
+        var belum = state.tagihan.filter(function (x) { return x.status !== "Lunas"; });
+        var tunggakan = belum.reduce(function (a, x) { return a + (x.jumlah - x.terbayar); }, 0);
+        var masukHari = state.pembayaran.filter(function (p) { return p.tanggal === today; }).reduce(function (a, p) { return a + p.jumlah; }, 0);
+        var masukBulan = state.pembayaran.filter(function (p) { return String(p.tanggal).slice(0, 7) === month; }).reduce(function (a, p) { return a + p.jumlah; }, 0);
+        $("dbBelum").textContent = belum.length;
+        $("dbInv").textContent = state.tagihan.length;
+        $("dbMasukHari").textContent = fmtRp(masukHari);
+        $("dbMasukBulan").textContent = fmtRp(masukBulan);
+        $("dbTunggakan").textContent = fmtRp(tunggakan);
+        $("dbBelumList").innerHTML = belum.length ? belum.map(function (x) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(x.pasien) + " — " + esc(x.layanan) + '</div><div class="meta">' + esc(x.inv) + " • Sisa " + fmtRp(x.jumlah - x.terbayar) + " dari " + fmtRp(x.jumlah) + "</div></div>" + tagihanBadge(x.status) + "</div>";
+        }).join("") : '<p class="empty">Semua tagihan sudah lunas.</p>';
+        var payHari = state.pembayaran.filter(function (p) { return p.tanggal === today; });
+        $("dbPayList").innerHTML = payHari.length ? payHari.map(function (p) {
+          return '<div class="row-item"><div class="row-main"><div class="name">' + esc(p.pasien) + " — " + esc(p.metode) + '</div><div class="meta">' + esc(p.inv) + " • " + esc(formatDate(p.tanggal)) + "</div></div>" + '<span class="qnum">' + fmtRp(p.jumlah) + "</span></div>";
+        }).join("") : '<p class="empty">Belum ada pembayaran hari ini.</p>';
+      }
       renderAll();
 </script>
 </body>
