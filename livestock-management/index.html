@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livestock Management (Peternakan)</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · LIVESTOCK MANAGEMENT</span>
+    <h1>Livestock <span class="aksen">Management</span></h1>
+    <p>Data ternak per ekor dan per kelompok, jadwal pakan dan vaksin, pencatatan kesehatan ternak, biaya pakan, serta laporan ternak — dalam satu aplikasi untuk peternak ayam, sapi, dan hewan ternak lain.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="ternak">Ternak <span class="badge" id="badgeTernak">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pakan">Pakan <span class="badge" id="badgePakan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="vaksin">Vaksin <span class="badge" id="badgeVaksin">0</span></button>
+    <button class="tab-btn" type="button" data-tab="kesehatan">Kesehatan <span class="badge" id="badgeKesehatan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="biaya">Biaya</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Peternakan</h2><p>Ringkasan ternak, jadwal pakan dan vaksin, kesehatan, serta biaya pakan.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Ternak (ekor)</div><div class="angka" id="dEkor" style="font-size:22px">0</div><div class="sub" id="dEkorSub"></div></div>
+      <div class="stat"><div class="label">Sehat</div><div class="angka" id="dSehat" style="font-size:22px">0</div><div class="sub" id="dSehatSub"></div></div>
+      <div class="stat warn"><div class="label">Sakit</div><div class="angka" id="dSakit" style="font-size:22px">0</div><div class="sub" id="dSakitSub"></div></div>
+      <div class="stat bahaya"><div class="label">Mati</div><div class="angka" id="dMati" style="font-size:22px">0</div><div class="sub" id="dMatiSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Pakan Hari Ini (belum)</div><div class="angka" id="dPakanHariIni" style="font-size:22px">0</div><div class="sub" id="dPakanHariIniSub"></div></div>
+      <div class="stat warn"><div class="label">Vaksin Segera (≤7 hari)</div><div class="angka" id="dVaksinSegera" style="font-size:22px">0</div><div class="sub" id="dVaksinSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Vaksin Lewat Tanggal</div><div class="angka" id="dVaksinLewat" style="font-size:22px">0</div><div class="sub" id="dVaksinLewatSub"></div></div>
+      <div class="stat"><div class="label">Total Biaya (Semua)</div><div class="angka" id="dBiaya" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaSub"></div></div>
+    </div>
+    <div class="card"><h3>Jadwal yang Perlu Perhatian</h3><p class="sub">Pakan hari ini yang belum diberi, vaksin yang segera (≤7 hari) atau sudah lewat tanggal.</p><div id="daftarJadwalPerhatian"></div></div>
+    <div class="card"><h3>Kelompok dengan Ternak Sakit</h3><p class="sub">Kelompok ternak yang masih ada ekor sakit — segera periksa dan obati.</p><div id="daftarKelompokSakit"></div></div>
+    <div class="card"><h3>Biaya per Kategori</h3><p class="sub">Total biaya pakan, obat, vaksin, dan perawatan.</p><div id="daftarBiayaKategori"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat jadwal pakan, catatan kesehatan, atau biaya baru.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKePakan" type="button">Catat Pakan</button>
+        <button class="btn kecil hijau" id="btnKeKesehatan" type="button">Catat Kesehatan</button>
+        <button class="btn kecil biru" id="btnKeBiaya" type="button">Catat Biaya</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Peternak.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="peternak">Peternak</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-ternak">
+    <div class="page-head"><h2>Data Ternak</h2><p>Ternak per ekor dan per kelompok: jenis, jumlah, umur, kandang, dan status sehat/sakit/mati. Peternak hanya bisa melihat.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Kelompok Ternak</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="trNama">Nama kelompok</label><input id="trNama" type="text" placeholder="cth: Ayam Broiler Kandang C"></div>
+        <div class="field"><label for="trJenis">Jenis ternak</label><select id="trJenis">
+          <option value="Ayam">Ayam</option><option value="Sapi">Sapi</option><option value="Kambing">Kambing</option><option value="Bebek">Bebek</option><option value="Domba">Domba</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+        <div class="field"><label for="trJumlah">Jumlah (ekor)</label><input id="trJumlah" type="number" min="1" placeholder="cth: 100"></div>
+        <div class="field"><label for="trUmur">Umur</label><input id="trUmur" type="number" min="0" placeholder="cth: 28"></div>
+        <div class="field"><label for="trSatuanUmur">Satuan umur</label><select id="trSatuanUmur">
+          <option value="hari">hari</option><option value="minggu">minggu</option><option value="bulan">bulan</option><option value="tahun">tahun</option>
+        </select></div>
+        <div class="field"><label for="trKandang">Kandang / lokasi</label><input id="trKandang" type="text" placeholder="cth: Kandang C"></div>
+        <div class="field"><label for="trPemilik">Penanggung jawab</label><select id="trPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option><option value="peternak">Peternak (Budi Santoso)</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahTernak" type="button">Tambah Kelompok Ternak</button>
+    </div>
+    <div class="card"><h3>Daftar Ternak</h3><p class="sub" id="ringkasanTernak"></p><div id="daftarTernak"></div></div>
+  </section>
+
+  <section class="panel" id="panel-pakan">
+    <div class="page-head"><h2>Jadwal Pakan</h2><p>Jadwal pemberian pakan harian per kelompok ternak. Segera = ≤7 hari lagi, Lewat = tanggal sudah lewat dan belum diberi.</p></div>
+    <div class="card" id="cardTambahPakan">
+      <h3>Tambah Jadwal Pakan</h3>
+      <p class="sub">Admin, Manajer, dan Peternak (peternak hanya untuk kelompok ternaknya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="pkTernak">Kelompok ternak</label><select id="pkTernak"></select></div>
+        <div class="field"><label for="pkNama">Nama pakan</label><input id="pkNama" type="text" placeholder="cth: Pakan pagi"></div>
+        <div class="field"><label for="pkJenis">Jenis pakan</label><select id="pkJenis">
+          <option value="Konsentrat">Konsentrat</option><option value="Hijauan">Hijauan</option><option value="Dedak">Dedak</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+        <div class="field"><label for="pkTanggal">Tanggal</label><input id="pkTanggal" type="date"></div>
+        <div class="field"><label for="pkWaktu">Waktu</label><select id="pkWaktu">
+          <option value="Pagi">Pagi</option><option value="Siang">Siang</option><option value="Sore">Sore</option>
+        </select></div>
+        <div class="field"><label for="pkKg">Jumlah (kg)</label><input id="pkKg" type="number" min="0" step="0.1" placeholder="cth: 45"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPakan" type="button">Tambah Jadwal Pakan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPakan">Filter jadwal</label><select id="fPakan">
+          <option value="semua">Semua</option>
+          <option value="hariini">Hari ini</option>
+          <option value="segera">Segera (≤7 hari)</option>
+          <option value="lewat">Lewat tanggal</option>
+          <option value="selesai">Sudah diberi</option>
+        </select></div>
+        <div class="field"><label for="cariPakan">Cari</label><input id="cariPakan" type="text" placeholder="cth: Broiler atau Konsentrat"></div>
+      </div>
+      <p class="sub" id="ringkasanPakan"></p>
+      <div id="daftarPakan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-vaksin">
+    <div class="page-head"><h2>Jadwal Vaksin</h2><p>Jadwal vaksinasi per kelompok ternak. Segera = ≤7 hari lagi, Lewat = tanggal sudah lewat dan belum divaksin.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Jadwal Vaksin</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="vTernak">Kelompok ternak</label><select id="vTernak"></select></div>
+        <div class="field"><label for="vNama">Nama vaksin</label><input id="vNama" type="text" placeholder="cth: Vaksin ND (Tetelo)"></div>
+        <div class="field"><label for="vTanggal">Tanggal</label><input id="vTanggal" type="date"></div>
+        <div class="field"><label for="vKet">Keterangan (opsional)</label><input id="vKet" type="text" placeholder="cth: Dosis 500 ekor"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahVaksin" type="button">Tambah Jadwal Vaksin</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fVaksin">Filter jadwal</label><select id="fVaksin">
+          <option value="semua">Semua</option>
+          <option value="segera">Segera (≤7 hari)</option>
+          <option value="lewat">Lewat tanggal</option>
+          <option value="selesai">Sudah divaksin</option>
+        </select></div>
+        <div class="field"><label for="cariVaksin">Cari</label><input id="cariVaksin" type="text" placeholder="cth: ND atau Sapi"></div>
+      </div>
+      <p class="sub" id="ringkasanVaksin"></p>
+      <div id="daftarVaksin"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kesehatan">
+    <div class="page-head"><h2>Kesehatan Ternak</h2><p>Catatan sakit, pengobatan, dan pemulihan ternak. Mencatat "Sakit" mengurangi jumlah sehat dan menambah jumlah sakit; "Pulih" mengembalikan; "Mati" mengurangi dari sakit dulu lalu sehat.</p></div>
+    <div class="card" id="cardTambahKesehatan">
+      <h3>Catat Kesehatan</h3>
+      <p class="sub">Admin, Manajer, dan Peternak (peternak hanya untuk kelompok ternaknya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="kTernak">Kelompok ternak</label><select id="kTernak"></select></div>
+        <div class="field"><label for="kTanggal">Tanggal</label><input id="kTanggal" type="date"></div>
+        <div class="field"><label for="kGejala">Gejala / kondisi</label><input id="kGejala" type="text" placeholder="cth: Ayam lesu, nafsu makan turun"></div>
+        <div class="field"><label for="kObat">Pengobatan</label><input id="kObat" type="text" placeholder="cth: Vitamin + elektrolit"></div>
+        <div class="field"><label for="kStatus">Status</label><select id="kStatus">
+          <option value="Sakit">Sakit</option><option value="Pulih">Pulih</option><option value="Mati">Mati</option>
+        </select></div>
+        <div class="field"><label for="kJumlah">Jumlah terdampak (ekor)</label><input id="kJumlah" type="number" min="1" placeholder="cth: 5"></div>
+      </div>
+      <button class="btn kecil hijau" id="btnTambahKesehatan" type="button">Simpan Catatan Kesehatan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fKesStatus">Filter status</label><select id="fKesStatus">
+          <option value="semua">Semua status</option><option value="Sakit">Sakit</option><option value="Pulih">Pulih</option><option value="Mati">Mati</option>
+        </select></div>
+        <div class="field"><label for="fKesTernak">Filter kelompok</label><select id="fKesTernak"></select></div>
+        <div class="field"><label for="cariKes">Cari</label><input id="cariKes" type="text" placeholder="cth: lesu atau Vitamin"></div>
+      </div>
+      <p class="sub" id="ringkasanKesehatan"></p>
+      <div id="daftarKesehatan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-biaya">
+    <div class="page-head"><h2>Biaya Pakan &amp; Perawatan</h2><p>Biaya pakan, obat, vaksin, dan perawatan per kelompok ternak. Peternak hanya melihat biaya miliknya sendiri.</p></div>
+    <div class="card">
+      <h3>Catat Biaya</h3>
+      <p class="sub">Semua peran bisa mencatat biaya (peternak hanya untuk kelompok ternaknya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="bTernak">Kelompok ternak</label><select id="bTernak"></select></div>
+        <div class="field"><label for="bKategori">Kategori</label><select id="bKategori">
+          <option value="Pakan">Pakan</option><option value="Obat">Obat</option><option value="Vaksin">Vaksin</option><option value="Perawatan">Perawatan</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+        <div class="field"><label for="bKeterangan">Keterangan</label><input id="bKeterangan" type="text" placeholder="cth: Pakan broiler 50 kg"></div>
+        <div class="field"><label for="bTanggal">Tanggal</label><input id="bTanggal" type="date"></div>
+        <div class="field"><label for="bJumlah">Jumlah (Rp)</label><input id="bJumlah" type="number" min="0" placeholder="cth: 750000"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBiaya" type="button">Simpan Biaya</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Biaya</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fBulanBiaya">Bulan</label><select id="fBulanBiaya"></select></div>
+        <div class="field"><label for="fTernakBiaya">Kelompok ternak</label><select id="fTernakBiaya"></select></div>
+        <div class="field"><label for="fKatBiaya">Kategori</label><select id="fKatBiaya">
+          <option value="semua">Semua kategori</option><option value="Pakan">Pakan</option><option value="Obat">Obat</option><option value="Vaksin">Vaksin</option><option value="Perawatan">Perawatan</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanBiaya"></p>
+      <div id="daftarBiaya"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Ternak</h2><p>Total ternak, kesehatan, dan biaya per jenis, per kelompok, per bulan, dan per kategori biaya.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Jenis Ternak</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerJenis"></table></div>
+      <h3 style="margin-top:18px">Per Kelompok</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKelompok"></table></div>
+      <h3 style="margin-top:18px">Biaya per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Biaya per Kategori</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelKatBiaya"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor data ternak dan biaya bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Ternak &amp; Biaya</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Livestock Management.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Ternak</b> untuk melihat atau menambah kelompok ternak (jenis, jumlah ekor, umur, kandang, dan status sehat/sakit/mati).</li>
+        <li>Buka tab <b>Pakan</b> untuk menjadwalkan pemberian pakan harian. Tandai <b>Sudah Diberi</b> setelah pakan diberikan; jadwal yang lewat tanggal akan tampil sebagai peringatan.</li>
+        <li>Buka tab <b>Vaksin</b> untuk menjadwalkan vaksinasi. Tandai <b>Sudah Divaksin</b> setelah vaksin diberikan.</li>
+        <li>Buka tab <b>Kesehatan</b> untuk mencatat ternak sakit, pulih, atau mati beserta gejala dan pengobatannya. Jumlah sehat/sakit/mati di tab Ternak berubah otomatis mengikuti catatan ini.</li>
+        <li>Buka tab <b>Biaya</b> untuk mencatat biaya pakan, obat, vaksin, dan perawatan per kelompok ternak.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per jenis, per kelompok, per bulan, dan per kategori biaya, serta ekspor ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua catatan.</li>
+        <li><b>Manajer</b> — mengelola ternak, pakan, vaksin, kesehatan, biaya, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Peternak</b> — melihat jadwal dan data ternak; mencatat pakan, kesehatan, dan biaya untuk kelompok ternaknya sendiri. Tidak bisa menambah kelompok ternak/vaksin dan tidak bisa menghapus catatan orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Jumlah sehat/sakit/mati dihitung dari catatan kesehatan. Periksa kondisi ternak secara langsung — aplikasi ini hanya alat pencatatan, bukan pengganti pemeriksaan dokter hewan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Peternak — <b>peternak / peternak123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Livestock Management (Peternakan) — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">LIVESTOCK · PETERNAKAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Kelola ternak, jadwal pakan dan vaksin, kesehatan, serta biaya pakan.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Peternak — <b>peternak / peternak123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "livestockManagement.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var KAT_BIAYA = ["Pakan", "Obat", "Vaksin", "Perawatan", "Lainnya"];
+  var JENIS_TERNAK = ["Ayam", "Sapi", "Kambing", "Bebek", "Domba", "Lainnya"];
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_livestock.py):
+       Ternak 6 kelompok: total 995 ekor (sehat 971, sakit 19, mati 5).
+         Per jenis: Ayam 800 (781/15/4), Sapi 20 (19/1/0), Kambing 25 (24/1/0), Bebek 150 (147/2/1).
+         Peternak (T4+T5): 33 ekor (sehat 32, sakit 1, mati 0).
+       Pakan 12 entri: hari ini belum 4 (165 kg), segera 8, lewat 2.
+       Vaksin 7 entri: segera 4, lewat 1, selesai 2.
+       Kesehatan 10 catatan: Sakit 19 ekor, Mati 5 ekor, Pulih 9 ekor (konsisten dengan jumlah sakit/mati).
+       Biaya 15 entri, total Rp7.375.000.
+         Per kategori: Pakan 5.525.000, Obat 600.000, Vaksin 950.000, Perawatan 300.000.
+         Per kelompok: T1 1.400.000, T2 1.130.000, T3 1.750.000, T4 1.750.000, T5 495.000, T6 850.000.
+         Per bulan: Nov 13 entri Rp6.075.000; Okt 2 entri Rp1.300.000.
+         Peternak: Rp1.795.000 (4 catatan); Manajer: Rp5.580.000 (11 catatan). */
+  function seedState() {
+    var ternak = [
+      { id: 1, nama: "Ayam Broiler Kandang A", jenis: "Ayam", jumlah: 500, umur: 28, satuanUmur: "hari", kandang: "Kandang A", pemilik: "manajer", sehat: 485, sakit: 12, mati: 3 },
+      { id: 2, nama: "Ayam Petelur Kandang B", jenis: "Ayam", jumlah: 300, umur: 20, satuanUmur: "minggu", kandang: "Kandang B", pemilik: "manajer", sehat: 296, sakit: 3, mati: 1 },
+      { id: 3, nama: "Sapi Perah", jenis: "Sapi", jumlah: 12, umur: 3, satuanUmur: "tahun", kandang: "Kandang Sapi", pemilik: "manajer", sehat: 11, sakit: 1, mati: 0 },
+      { id: 4, nama: "Sapi Potong", jenis: "Sapi", jumlah: 8, umur: 2, satuanUmur: "tahun", kandang: "Kandang Sapi", pemilik: "peternak", sehat: 8, sakit: 0, mati: 0 },
+      { id: 5, nama: "Kambing Etawa", jenis: "Kambing", jumlah: 25, umur: 1, satuanUmur: "tahun", kandang: "Kandang Kambing", pemilik: "peternak", sehat: 24, sakit: 1, mati: 0 },
+      { id: 6, nama: "Bebek Petelur", jenis: "Bebek", jumlah: 150, umur: 6, satuanUmur: "bulan", kandang: "Kandang Bebek", pemilik: "manajer", sehat: 147, sakit: 2, mati: 1 }
+    ];
+    function pk(id, ternakId, nama, jenis, tanggal, waktu, kg, status) {
+      return { id: id, ternakId: ternakId, nama: nama, jenis: jenis, tanggal: tanggal, waktu: waktu, kg: kg, status: status };
+    }
+    var pakan = [
+      pk(1, 1, "Pakan pagi", "Konsentrat", kunciPlus(0), "Pagi", 45, "Belum"),
+      pk(2, 1, "Pakan sore", "Konsentrat", kunciPlus(0), "Sore", 40, "Belum"),
+      pk(3, 2, "Pakan pagi", "Konsentrat", kunciPlus(0), "Pagi", 30, "Selesai"),
+      pk(4, 3, "Pakan pagi", "Hijauan", kunciPlus(0), "Pagi", 60, "Belum"),
+      pk(5, 5, "Pakan pagi", "Hijauan", kunciPlus(0), "Pagi", 15, "Selesai"),
+      pk(6, 6, "Pakan sore", "Dedak", kunciPlus(0), "Sore", 20, "Belum"),
+      pk(7, 2, "Pakan sore", "Konsentrat", kunciPlus(1), "Sore", 28, "Belum"),
+      pk(8, 3, "Pakan sore", "Hijauan", kunciPlus(1), "Sore", 55, "Belum"),
+      pk(9, 4, "Pakan pagi", "Hijauan", kunciPlus(-1), "Pagi", 50, "Belum"),
+      pk(10, 5, "Pakan sore", "Hijauan", kunciPlus(-2), "Sore", 14, "Belum"),
+      pk(11, 1, "Pakan pagi", "Konsentrat", kunciPlus(2), "Pagi", 45, "Belum"),
+      pk(12, 6, "Pakan pagi", "Dedak", kunciPlus(3), "Pagi", 22, "Belum")
+    ];
+    function vk(id, ternakId, nama, tanggal, status, ket) {
+      return { id: id, ternakId: ternakId, nama: nama, tanggal: tanggal, status: status, ket: ket || "" };
+    }
+    var vaksin = [
+      vk(1, 1, "Vaksin ND (Tetelo)", kunciPlus(3), "Belum", "Dosis 500 ekor"),
+      vk(2, 2, "Vaksin AI (Flu Burung)", kunciPlus(5), "Belum", "Dosis 300 ekor"),
+      vk(3, 3, "Vaksin PMK", kunciPlus(2), "Belum", "12 ekor sapi"),
+      vk(4, 5, "Vaksin Enterotoksemia", kunciPlus(-3), "Belum", "25 ekor kambing"),
+      vk(5, 6, "Vaksin ND (Tetelo)", kunciPlus(6), "Belum", "Dosis 150 ekor"),
+      vk(6, 4, "Vaksin Anthrax", kunciPlus(-10), "Selesai", "8 ekor sapi"),
+      vk(7, 2, "Vaksin ND (Tetelo)", kunciPlus(-15), "Selesai", "Dosis 300 ekor")
+    ];
+    function ks(id, ternakId, tanggal, gejala, obat, status, jumlah, dariSakit, dariSehat) {
+      return { id: id, ternakId: ternakId, tanggal: tanggal, gejala: gejala, obat: obat, status: status, jumlah: jumlah, dariSakit: dariSakit || 0, dariSehat: dariSehat || 0 };
+    }
+    var kesehatan = [
+      ks(1, 1, kunciPlus(-2), "Ayam lesu, nafsu makan turun", "Vitamin + elektrolit", "Sakit", 12, 0, 12),
+      ks(2, 1, kunciPlus(-5), "Diare ringan (sudah pulih)", "Antibiotik", "Pulih", 8, 8, 0),
+      ks(3, 2, kunciPlus(-1), "Ayam batuk-batuk", "Obat batuk ayam", "Sakit", 3, 0, 3),
+      ks(4, 3, kunciPlus(-4), "Sapi pincang kaki kiri", "Perban + antiinflamasi", "Sakit", 1, 0, 1),
+      ks(5, 5, kunciPlus(-3), "Kambing demam", "Antipiretik", "Sakit", 1, 0, 1),
+      ks(6, 6, kunciPlus(-2), "Bebek lesu", "Vitamin", "Sakit", 2, 0, 2),
+      ks(7, 1, kunciPlus(-20), "Ayam mati mendadak", "—", "Mati", 3, 0, 3),
+      ks(8, 2, kunciPlus(-12), "Ayam mati", "—", "Mati", 1, 0, 1),
+      ks(9, 6, kunciPlus(-8), "Bebek mati", "—", "Mati", 1, 0, 1),
+      ks(10, 3, kunciPlus(-30), "Mastitis (sudah pulih)", "Antibiotik sapi", "Pulih", 1, 1, 0)
+    ];
+    function by(id, ternakId, kategori, keterangan, tanggal, jumlah, pemilik) {
+      return { id: id, ternakId: ternakId, kategori: kategori, keterangan: keterangan, tanggal: tanggal, jumlah: jumlah, pemilik: pemilik };
+    }
+    var biaya = [
+      by(1, 1, "Pakan", "Pakan broiler 50 kg", kunciPlus(-1), 750000, "manajer"),
+      by(2, 1, "Obat", "Vitamin & elektrolit", kunciPlus(-2), 150000, "manajer"),
+      by(3, 2, "Pakan", "Pakan petelur 40 kg", kunciPlus(-1), 600000, "manajer"),
+      by(4, 2, "Obat", "Obat batuk ayam", kunciPlus(-1), 80000, "manajer"),
+      by(5, 3, "Pakan", "Konsentrat sapi 100 kg", kunciPlus(-2), 1200000, "manajer"),
+      by(6, 3, "Obat", "Antiinflamasi sapi", kunciPlus(-4), 250000, "manajer"),
+      by(7, 4, "Pakan", "Rumput & konsentrat sapi", kunciPlus(-3), 900000, "peternak"),
+      by(8, 5, "Pakan", "Pakan kambing 25 kg", kunciPlus(-2), 375000, "peternak"),
+      by(9, 5, "Obat", "Antipiretik kambing", kunciPlus(-3), 120000, "peternak"),
+      by(10, 6, "Pakan", "Pakan bebek 30 kg", kunciPlus(-1), 450000, "manajer"),
+      by(11, 1, "Vaksin", "Vaksin ND 500 dosis", kunciPlus(-7), 500000, "manajer"),
+      by(12, 2, "Vaksin", "Vaksin AI 300 dosis", kunciPlus(-20), 450000, "manajer"),
+      by(13, 3, "Perawatan", "Pemeriksaan rutin sapi", kunciPlus(-5), 300000, "manajer"),
+      by(14, 4, "Pakan", "Pakan sapi potong", kunciPlus(-25), 850000, "manajer"),
+      by(15, 6, "Pakan", "Pakan bebek", kunciPlus(-8), 400000, "peternak")
+    ];
+    return { ternak: ternak, pakan: pakan, vaksin: vaksin, kesehatan: kesehatan, biaya: biaya,
+      nextTernakId: 7, nextPakanId: 13, nextVaksinId: 8, nextKesehatanId: 11, nextBiayaId: 16 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "peternak", nama: "Budi Santoso", peran: "peternak", password: "peternak123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.ternak) state.ternak = [];
+    if (!state.pakan) state.pakan = [];
+    if (!state.vaksin) state.vaksin = [];
+    if (!state.kesehatan) state.kesehatan = [];
+    if (!state.biaya) state.biaya = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Peternak"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariTernak(id) { return state.ternak.find(function (x) { return x.id === id; }); }
+  function namaTernak(id) { var t = cariTernak(id); return t ? t.nama : "—"; }
+  function ternakTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "peternak") return state.ternak.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.ternak.slice();
+  }
+  function idTernakTerlihat() {
+    var ids = {};
+    ternakTerlihat().forEach(function (t) { ids[t.id] = true; });
+    return ids;
+  }
+  function pakanTerlihat() {
+    var ids = idTernakTerlihat();
+    return state.pakan.filter(function (x) { return ids[x.ternakId]; });
+  }
+  function vaksinTerlihat() {
+    var ids = idTernakTerlihat();
+    return state.vaksin.filter(function (x) { return ids[x.ternakId]; });
+  }
+  function kesehatanTerlihat() {
+    var ids = idTernakTerlihat();
+    return state.kesehatan.filter(function (x) { return ids[x.ternakId]; });
+  }
+  function biayaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "peternak") return state.biaya.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.biaya.slice();
+  }
+  function bolehCatatKelompok(ternakId) {
+    var t = cariTernak(ternakId);
+    if (!t) return false;
+    if (bolehKelola()) return true;
+    return currentUser && currentUser.peran === "peternak" && t.pemilik === currentUser.username;
+  }
+  function bolehUbahCatatan(pemilik) {
+    return currentUser && (currentUser.peran !== "peternak" || pemilik === currentUser.username);
+  }
+  function totalBiaya(list) { var t = 0; list.forEach(function (x) { t += Number(x.jumlah) || 0; }); return t; }
+  function totalEkor(list) {
+    var r = { ekor: 0, sehat: 0, sakit: 0, mati: 0 };
+    list.forEach(function (t) {
+      r.ekor += Number(t.jumlah) || 0;
+      r.sehat += Number(t.sehat) || 0;
+      r.sakit += Number(t.sakit) || 0;
+      r.mati += Number(t.mati) || 0;
+    });
+    return r;
+  }
+  function pakanBelum() { return pakanTerlihat().filter(function (x) { return x.status !== "Selesai"; }); }
+  function vaksinBelum() { return vaksinTerlihat().filter(function (x) { return x.status !== "Selesai"; }); }
+  function bulanListBiaya() {
+    var seen = {}, list = [];
+    state.biaya.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; list.push(bk); }
+    });
+    list.sort().reverse();
+    return list;
+  }
+  function isiPilihanBulan(sel, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    bulanListBiaya().forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    sel.innerHTML = opts.join("");
+    if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+  function isiPilihanTernak(sel, defValue) {
+    sel.innerHTML = ternakTerlihat().map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.nama) + ' (' + t.jumlah + ' ekor)</option>';
+    }).join("");
+    if (defValue) sel.value = defValue;
+  }
+  function lencanaStatusKes(s) {
+    if (s === "Sakit") return '<span class="lencana st-habis">Sakit</span>';
+    if (s === "Pulih") return '<span class="lencana st-aman">Pulih</span>';
+    return '<span class="lencana st-navy">Mati</span>';
+  }
+  function lencanaSakit(n) {
+    if (n > 0) return '<span class="lencana st-habis">' + n + ' sakit</span>';
+    return '<span class="lencana st-aman">Sehat semua</span>';
+  }
+  function labelJadwal(tanggal) {
+    var d = selisihHari(tanggal);
+    if (d < 0) return '<span class="lencana st-habis">Lewat ' + Math.abs(d) + ' hari</span>';
+    if (d === 0) return '<span class="lencana st-rendah">Hari ini</span>';
+    if (d <= 7) return '<span class="lencana st-rendah">Dalam ' + d + ' hari</span>';
+    return '<span class="lencana st-biru">Dalam ' + d + ' hari</span>';
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "ternak") renderTernak();
+    if (nama === "pakan") renderPakan();
+    if (nama === "vaksin") renderVaksin();
+    if (nama === "kesehatan") renderKesehatan();
+    if (nama === "biaya") renderBiaya();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var tr = ternakTerlihat();
+    var tot = totalEkor(tr);
+    var biaya = biayaTerlihat();
+    var tb = totalBiaya(biaya);
+    var pkBelum = pakanBelum();
+    var pkHariIni = pkBelum.filter(function (x) { return x.tanggal === hariIniKey(); });
+    var vkBelum = vaksinBelum();
+    var vkSegera = vkBelum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; });
+    var vkLewat = vkBelum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    var pkSegera = pkBelum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; });
+    var pkLewat = pkBelum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    $("dEkor").textContent = tot.ekor.toLocaleString("id-ID");
+    $("dEkorSub").textContent = tr.length + " kelompok" + (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)");
+    $("dSehat").textContent = tot.sehat.toLocaleString("id-ID");
+    $("dSehatSub").textContent = tot.ekor > 0 ? Math.round(tot.sehat / tot.ekor * 1000) / 10 + "% dari total" : "belum ada ternak";
+    $("dSakit").textContent = tot.sakit.toLocaleString("id-ID");
+    $("dSakitSub").textContent = tr.filter(function (t) { return t.sakit > 0; }).length + " kelompok ada yang sakit";
+    $("dMati").textContent = tot.mati.toLocaleString("id-ID");
+    $("dMatiSub").textContent = tot.ekor > 0 ? Math.round(tot.mati / tot.ekor * 1000) / 10 + "% dari total" : "belum ada ternak";
+    $("dPakanHariIni").textContent = pkHariIni.length;
+    $("dPakanHariIniSub").textContent = pkHariIni.reduce(function (s, x) { return s + (Number(x.kg) || 0); }, 0) + " kg pakan hari ini";
+    $("dVaksinSegera").textContent = vkSegera.length;
+    $("dVaksinSegeraSub").textContent = "vaksin ≤7 hari lagi";
+    $("dVaksinLewat").textContent = vkLewat.length;
+    $("dVaksinLewatSub").textContent = "belum divaksin dan lewat tanggal";
+    $("dBiaya").textContent = rupiah(tb);
+    $("dBiayaSub").textContent = biaya.length + " catatan" + (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)");
+    $("badgeTernak").textContent = tr.length;
+    $("badgePakan").textContent = pkSegera.length + pkLewat.length;
+    $("badgeVaksin").textContent = vkSegera.length + vkLewat.length;
+    $("badgeKesehatan").textContent = tot.sakit;
+    var perhatian = [];
+    pkHariIni.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaTernak(x.ternakId), tanggal: x.tanggal, ket: "Pakan hari ini · " + x.waktu + " · " + x.kg + " kg " + x.jenis }); });
+    vkSegera.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaTernak(x.ternakId), tanggal: x.tanggal, ket: "Vaksin · " + (x.ket || "") }); });
+    vkLewat.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaTernak(x.ternakId), tanggal: x.tanggal, ket: "Vaksin lewat tanggal" }); });
+    pkLewat.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaTernak(x.ternakId), tanggal: x.tanggal, ket: "Pakan lewat tanggal · " + x.waktu + " · " + x.kg + " kg" }); });
+    perhatian.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : 0; });
+    $("daftarJadwalPerhatian").innerHTML = perhatian.length ? perhatian.map(function (e) {
+      return '<div class="baris"><div><b>' + esc(e.judul) + '</b> ' + labelJadwal(e.tanggal) +
+        '<br><span class="sub">' + esc(e.ket) + ' · ' + tglSingkat(e.tanggal) + '</span></div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang perlu perhatian.</p>';
+    var sakitKel = tr.filter(function (t) { return t.sakit > 0; });
+    $("daftarKelompokSakit").innerHTML = sakitKel.length ? sakitKel.map(function (t) {
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b> ' + lencanaSakit(t.sakit) +
+        '<br><span class="sub">' + esc(t.jenis) + ' · ' + esc(t.kandang) + ' · sehat ' + t.sehat + ' · mati ' + t.mati + ' dari ' + t.jumlah + ' ekor</span></div>' +
+        '<div style="text-align:right"><b>' + t.sakit + ' ekor sakit</b></div></div>';
+    }).join("") : '<p class="sub">Tidak ada ternak sakit.</p>';
+    var perKat = {};
+    KAT_BIAYA.forEach(function (k) { perKat[k] = 0; });
+    biaya.forEach(function (x) { if (!perKat[x.kategori]) perKat[x.kategori] = 0; perKat[x.kategori] += Number(x.jumlah) || 0; });
+    $("daftarBiayaKategori").innerHTML = KAT_BIAYA.map(function (k) {
+      var persen = tb > 0 ? Math.round(perKat[k] / tb * 1000) / 10 : 0;
+      return '<div class="baris"><div><b>' + k + '</b><br><span class="sub">' + persen + '% dari total biaya</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(perKat[k]) + '</b></div></div>';
+    }).join("");
+    renderPengguna();
+  }
+  $("btnKePakan").addEventListener("click", function () { pindahTab("pakan"); });
+  $("btnKeKesehatan").addEventListener("click", function () { pindahTab("kesehatan"); });
+  $("btnKeBiaya").addEventListener("click", function () { pindahTab("biaya"); });
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Catatan yang dibuatnya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    var peran = $("pgPeran").value || "peternak";
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: peran, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Ternak ---------- */
+  function renderTernak() {
+    var list = ternakTerlihat();
+    var tot = totalEkor(list);
+    $("ringkasanTernak").textContent = list.length + " kelompok · total " + tot.ekor + " ekor · sehat " + tot.sehat + " · sakit " + tot.sakit + " · mati " + tot.mati +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarTernak").innerHTML = list.length ? list.map(function (t) {
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<button class="btn ghost kecil" data-hapus-ternak="' + t.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b> <span class="tag">' + esc(t.jenis) + '</span> ' + lencanaSakit(t.sakit) +
+        '<br><span class="sub">' + esc(t.kandang) + ' · umur ' + t.umur + ' ' + esc(t.satuanUmur) + ' · penanggung jawab: ' + esc(t.pemilik) +
+        ' · sehat ' + t.sehat + ' · sakit ' + t.sakit + ' · mati ' + t.mati + '</span></div>' +
+        '<div style="text-align:right"><b>' + t.jumlah + ' ekor</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada ternak.</p>';
+    document.querySelectorAll("[data-hapus-ternak]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = cariTernak(Number(b.getAttribute("data-hapus-ternak")));
+        if (!t) return;
+        var ada = state.pakan.some(function (x) { return x.ternakId === t.id; }) ||
+          state.vaksin.some(function (x) { return x.ternakId === t.id; }) ||
+          state.kesehatan.some(function (x) { return x.ternakId === t.id; }) ||
+          state.biaya.some(function (x) { return x.ternakId === t.id; });
+        if (ada) { toast("Kelompok \"" + t.nama + "\" tidak bisa dihapus — masih ada pakan, vaksin, kesehatan, atau biaya tercatat."); return; }
+        tanyaKonfirmasi("Hapus Kelompok Ternak", "Hapus kelompok \"" + t.nama + "\"?", function () {
+          state.ternak = state.ternak.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Kelompok ternak dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahTernak").addEventListener("click", function () {
+    var nama = $("trNama").value.trim(), jenis = $("trJenis").value;
+    var jumlah = Number($("trJumlah").value), umur = Number($("trUmur").value);
+    var satuan = $("trSatuanUmur").value, kandang = $("trKandang").value.trim(), pemilik = $("trPemilik").value;
+    if (!nama) { toast("Isi nama kelompok dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah ternak (ekor) yang benar."); return; }
+    if (isNaN(umur) || umur < 0) { toast("Isi umur yang benar."); return; }
+    if (!kandang) { toast("Isi kandang / lokasi dulu."); return; }
+    state.ternak.push({ id: state.nextTernakId++, nama: nama, jenis: jenis, jumlah: jumlah, umur: umur, satuanUmur: satuan, kandang: kandang, pemilik: pemilik, sehat: jumlah, sakit: 0, mati: 0 });
+    saveState();
+    $("trNama").value = ""; $("trJumlah").value = ""; $("trUmur").value = ""; $("trKandang").value = "";
+    renderSemua();
+    toast("Kelompok ternak \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Pakan ---------- */
+  function renderPakan() {
+    isiPilihanTernak($("pkTernak"));
+    if (!$("pkTanggal").value) $("pkTanggal").value = hariIniKey();
+    var filter = $("fPakan").value || "semua";
+    var cari = ($("cariPakan").value || "").trim().toLowerCase();
+    var semua = pakanTerlihat();
+    var belum = semua.filter(function (x) { return x.status !== "Selesai"; });
+    var segera = belum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; });
+    var lewat = belum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    var hariIni = belum.filter(function (x) { return x.tanggal === hariIniKey(); });
+    var selesai = semua.filter(function (x) { return x.status === "Selesai"; });
+    var list = semua;
+    if (filter === "hariini") list = hariIni;
+    else if (filter === "segera") list = segera;
+    else if (filter === "lewat") list = lewat;
+    else if (filter === "selesai") list = selesai;
+    if (cari) list = list.filter(function (x) {
+      return x.nama.toLowerCase().indexOf(cari) !== -1 || namaTernak(x.ternakId).toLowerCase().indexOf(cari) !== -1 || x.jenis.toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.id - b.id; });
+    $("ringkasanPakan").textContent = list.length + " jadwal pakan · hari ini belum " + hariIni.length + " · segera " + segera.length + " · lewat " + lewat.length + " · sudah diberi " + selesai.length + ".";
+    $("daftarPakan").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehCatatKelompok(x.ternakId)) {
+        if (x.status === "Selesai") aksi += '<button class="btn ghost kecil" data-pakan-belum="' + x.id + '" type="button">Batalkan Selesai</button> ';
+        else aksi += '<button class="btn hijau kecil" data-pakan-selesai="' + x.id + '" type="button">Sudah Diberi</button> ';
+      } else if (x.status === "Selesai") {
+        aksi += '<span class="lencana st-aman">Sudah Diberi</span>';
+      }
+      if (bolehKelola()) aksi += '<button class="btn ghost kecil" data-hapus-pakan="' + x.id + '" type="button">Hapus</button>';
+      var lencana = x.status === "Selesai" ? '<span class="lencana st-aman">Sudah Diberi</span>' : labelJadwal(x.tanggal);
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(namaTernak(x.ternakId)) + ' · ' + tglSingkat(x.tanggal) + ' · ' + esc(x.waktu) + ' · ' + x.kg + ' kg ' + esc(x.jenis) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal pakan yang cocok.</p>';
+    document.querySelectorAll("[data-pakan-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.pakan.find(function (y) { return y.id === Number(b.getAttribute("data-pakan-selesai")); });
+        if (!x) return;
+        x.status = "Selesai"; saveState(); renderSemua(); toast("Pakan \"" + x.nama + "\" ditandai sudah diberi.");
+      });
+    });
+    document.querySelectorAll("[data-pakan-belum]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.pakan.find(function (y) { return y.id === Number(b.getAttribute("data-pakan-belum")); });
+        if (!x) return;
+        x.status = "Belum"; saveState(); renderSemua(); toast("Pakan \"" + x.nama + "\" dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-pakan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.pakan.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-pakan")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Jadwal Pakan", "Hapus jadwal \"" + x.nama + "\" untuk " + namaTernak(x.ternakId) + "?", function () {
+          state.pakan = state.pakan.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Jadwal pakan dihapus.");
+        });
+      });
+    });
+  }
+  $("fPakan").addEventListener("change", renderPakan);
+  $("cariPakan").addEventListener("input", renderPakan);
+  $("btnTambahPakan").addEventListener("click", function () {
+    var ternakId = Number($("pkTernak").value), nama = $("pkNama").value.trim();
+    var jenis = $("pkJenis").value, tanggal = $("pkTanggal").value, waktu = $("pkWaktu").value;
+    var kg = Number($("pkKg").value);
+    if (!ternakId) { toast("Pilih kelompok ternak dulu."); return; }
+    if (!bolehCatatKelompok(ternakId)) { toast("Anda hanya bisa mencatat pakan untuk kelompok ternak Anda sendiri."); return; }
+    if (!nama) { toast("Isi nama pakan dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal pakan."); return; }
+    if (!(kg > 0)) { toast("Isi jumlah pakan (kg) yang benar."); return; }
+    state.pakan.push({ id: state.nextPakanId++, ternakId: ternakId, nama: nama, jenis: jenis, tanggal: tanggal, waktu: waktu, kg: kg, status: "Belum" });
+    saveState();
+    $("pkNama").value = ""; $("pkKg").value = "";
+    renderSemua();
+    toast("Jadwal pakan \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Vaksin ---------- */
+  function renderVaksin() {
+    isiPilihanTernak($("vTernak"));
+    if (!$("vTanggal").value) $("vTanggal").value = hariIniKey();
+    var filter = $("fVaksin").value || "semua";
+    var cari = ($("cariVaksin").value || "").trim().toLowerCase();
+    var semua = vaksinTerlihat();
+    var belum = semua.filter(function (x) { return x.status !== "Selesai"; });
+    var segera = belum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; });
+    var lewat = belum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    var selesai = semua.filter(function (x) { return x.status === "Selesai"; });
+    var list = semua;
+    if (filter === "segera") list = segera;
+    else if (filter === "lewat") list = lewat;
+    else if (filter === "selesai") list = selesai;
+    if (cari) list = list.filter(function (x) {
+      return x.nama.toLowerCase().indexOf(cari) !== -1 || namaTernak(x.ternakId).toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.id - b.id; });
+    $("ringkasanVaksin").textContent = list.length + " jadwal vaksin · segera " + segera.length + " · lewat " + lewat.length + " · sudah divaksin " + selesai.length + ".";
+    $("daftarVaksin").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehKelola()) {
+        if (x.status === "Selesai") aksi += '<button class="btn ghost kecil" data-vaksin-belum="' + x.id + '" type="button">Batalkan Selesai</button> ';
+        else aksi += '<button class="btn hijau kecil" data-vaksin-selesai="' + x.id + '" type="button">Sudah Divaksin</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-vaksin="' + x.id + '" type="button">Hapus</button>';
+      } else if (x.status === "Selesai") {
+        aksi += '<span class="lencana st-aman">Sudah Divaksin</span>';
+      }
+      var lencana = x.status === "Selesai" ? '<span class="lencana st-aman">Sudah Divaksin</span>' : labelJadwal(x.tanggal);
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(namaTernak(x.ternakId)) + ' · ' + tglSingkat(x.tanggal) + (x.ket ? ' · ' + esc(x.ket) : '') + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal vaksin yang cocok.</p>';
+    document.querySelectorAll("[data-vaksin-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.vaksin.find(function (y) { return y.id === Number(b.getAttribute("data-vaksin-selesai")); });
+        if (!x) return;
+        x.status = "Selesai"; saveState(); renderSemua(); toast("Vaksin \"" + x.nama + "\" ditandai sudah divaksin.");
+      });
+    });
+    document.querySelectorAll("[data-vaksin-belum]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.vaksin.find(function (y) { return y.id === Number(b.getAttribute("data-vaksin-belum")); });
+        if (!x) return;
+        x.status = "Belum"; saveState(); renderSemua(); toast("Vaksin \"" + x.nama + "\" dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-vaksin]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.vaksin.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-vaksin")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Jadwal Vaksin", "Hapus jadwal \"" + x.nama + "\" untuk " + namaTernak(x.ternakId) + "?", function () {
+          state.vaksin = state.vaksin.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Jadwal vaksin dihapus.");
+        });
+      });
+    });
+  }
+  $("fVaksin").addEventListener("change", renderVaksin);
+  $("cariVaksin").addEventListener("input", renderVaksin);
+  $("btnTambahVaksin").addEventListener("click", function () {
+    var ternakId = Number($("vTernak").value), nama = $("vNama").value.trim();
+    var tanggal = $("vTanggal").value, ket = $("vKet").value.trim();
+    if (!ternakId) { toast("Pilih kelompok ternak dulu."); return; }
+    if (!nama) { toast("Isi nama vaksin dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal vaksin."); return; }
+    state.vaksin.push({ id: state.nextVaksinId++, ternakId: ternakId, nama: nama, tanggal: tanggal, status: "Belum", ket: ket });
+    saveState();
+    $("vNama").value = ""; $("vKet").value = "";
+    renderSemua();
+    toast("Jadwal vaksin \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Kesehatan (jumlah sehat/sakit/mati ikut berubah) ---------- */
+  function terapkanKesehatan(t, status, n, faktor, rec) {
+    // faktor +1 = terapkan, -1 = kembalikan (saat catatan dihapus).
+    if (status === "Sakit") {
+      t.sehat -= faktor * n; t.sakit += faktor * n;
+      if (faktor === 1) { rec.dariSehat = n; rec.dariSakit = 0; }
+    } else if (status === "Pulih") {
+      t.sakit -= faktor * n; t.sehat += faktor * n;
+      if (faktor === 1) { rec.dariSakit = n; rec.dariSehat = 0; }
+    } else if (status === "Mati") {
+      if (faktor === 1) {
+        var ambilSakit = Math.min(Number(t.sakit) || 0, n);
+        var ambilSehat = n - ambilSakit;
+        rec.dariSakit = ambilSakit; rec.dariSehat = ambilSehat;
+        t.sakit -= ambilSakit; t.sehat -= ambilSehat; t.mati += n;
+      } else {
+        t.sakit += rec.dariSakit || 0; t.sehat += rec.dariSehat || 0; t.mati -= n;
+      }
+    }
+  }
+  function renderKesehatan() {
+    isiPilihanTernak($("kTernak"));
+    if (!$("kTanggal").value) $("kTanggal").value = hariIniKey();
+    var selTernak = $("fKesTernak");
+    var simpanTernak = selTernak.value;
+    selTernak.innerHTML = '<option value="semua">Semua kelompok</option>' + ternakTerlihat().map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.nama) + '</option>';
+    }).join("");
+    if (simpanTernak && ternakTerlihat().some(function (t) { return String(t.id) === String(simpanTernak); })) selTernak.value = simpanTernak;
+    var fStatus = $("fKesStatus").value || "semua";
+    var fTernak = selTernak.value || "semua";
+    var cari = ($("cariKes").value || "").trim().toLowerCase();
+    var list = kesehatanTerlihat();
+    var jmlSakit = 0, jmlPulih = 0, jmlMati = 0;
+    list.forEach(function (x) {
+      if (x.status === "Sakit") jmlSakit += Number(x.jumlah) || 0;
+      else if (x.status === "Pulih") jmlPulih += Number(x.jumlah) || 0;
+      else if (x.status === "Mati") jmlMati += Number(x.jumlah) || 0;
+    });
+    if (fStatus !== "semua") list = list.filter(function (x) { return x.status === fStatus; });
+    if (fTernak !== "semua") list = list.filter(function (x) { return String(x.ternakId) === String(fTernak); });
+    if (cari) list = list.filter(function (x) {
+      return x.gejala.toLowerCase().indexOf(cari) !== -1 || x.obat.toLowerCase().indexOf(cari) !== -1 || namaTernak(x.ternakId).toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanKesehatan").textContent = list.length + " catatan kesehatan · sakit " + jmlSakit + " ekor · pulih " + jmlPulih + " ekor · mati " + jmlMati + " ekor" +
+      (currentUser && currentUser.peran === "peternak" ? " (kelompok Anda)" : " (semua)") + ".";
+    $("daftarKesehatan").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehKelola()) aksi = '<button class="btn ghost kecil" data-hapus-kes="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(x.gejala) + '</b> ' + lencanaStatusKes(x.status) +
+        '<br><span class="sub">' + esc(namaTernak(x.ternakId)) + ' · ' + tglSingkat(x.tanggal) + ' · ' + x.jumlah + ' ekor · pengobatan: ' + esc(x.obat) + '</span></div>' +
+        '<div style="text-align:right"><b>' + x.jumlah + ' ekor</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan kesehatan yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-kes]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.kesehatan.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-kes")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Catatan Kesehatan", "Hapus catatan \"" + x.gejala + "\" (" + x.jumlah + " ekor, " + x.status + ")? Jumlah sehat/sakit/mati akan dikembalikan seperti sebelum catatan ini.", function () {
+          var t = cariTernak(x.ternakId);
+          if (t) terapkanKesehatan(t, x.status, Number(x.jumlah) || 0, -1, x);
+          state.kesehatan = state.kesehatan.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Catatan kesehatan dihapus, jumlah ternak dikembalikan.");
+        });
+      });
+    });
+  }
+  $("fKesStatus").addEventListener("change", renderKesehatan);
+  $("fKesTernak").addEventListener("change", renderKesehatan);
+  $("cariKes").addEventListener("input", renderKesehatan);
+  $("btnTambahKesehatan").addEventListener("click", function () {
+    var ternakId = Number($("kTernak").value), tanggal = $("kTanggal").value;
+    var gejala = $("kGejala").value.trim(), obat = $("kObat").value.trim();
+    var status = $("kStatus").value, jumlah = Number($("kJumlah").value);
+    if (!ternakId) { toast("Pilih kelompok ternak dulu."); return; }
+    if (!bolehCatatKelompok(ternakId)) { toast("Anda hanya bisa mencatat kesehatan untuk kelompok ternak Anda sendiri."); return; }
+    if (!tanggal) { toast("Isi tanggal catatan."); return; }
+    if (!gejala) { toast("Isi gejala / kondisi dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah terdampak (ekor) yang benar."); return; }
+    var t = cariTernak(ternakId);
+    if (!t) { toast("Kelompok ternak tidak ditemukan."); return; }
+    if (status === "Sakit" && jumlah > Number(t.sehat)) { toast("Jumlah sakit (" + jumlah + ") melebihi ternak sehat yang ada (" + t.sehat + " ekor)."); return; }
+    if (status === "Pulih" && jumlah > Number(t.sakit)) { toast("Jumlah pulih (" + jumlah + ") melebihi ternak sakit yang ada (" + t.sakit + " ekor)."); return; }
+    if (status === "Mati" && jumlah > Number(t.sehat) + Number(t.sakit)) { toast("Jumlah mati (" + jumlah + ") melebihi ternak hidup yang ada (" + (Number(t.sehat) + Number(t.sakit)) + " ekor)."); return; }
+    var rec = { id: state.nextKesehatanId++, ternakId: ternakId, tanggal: tanggal, gejala: gejala, obat: obat || "—", status: status, jumlah: jumlah, dariSakit: 0, dariSehat: 0 };
+    terapkanKesehatan(t, status, jumlah, 1, rec);
+    state.kesehatan.push(rec);
+    saveState();
+    $("kGejala").value = ""; $("kObat").value = ""; $("kJumlah").value = "";
+    renderSemua();
+    toast("Catatan kesehatan tersimpan (" + status + " " + jumlah + " ekor).");
+  });
+
+  /* ---------- Biaya ---------- */
+  function renderBiaya() {
+    isiPilihanTernak($("bTernak"));
+    if (!$("bTanggal").value) $("bTanggal").value = hariIniKey();
+    var selBulan = $("fBulanBiaya");
+    var simpanBulan = selBulan.value;
+    isiPilihanBulan(selBulan, simpanBulan ? simpanBulan : "semua");
+    var selTernak = $("fTernakBiaya");
+    var simpanTernak = selTernak.value;
+    selTernak.innerHTML = '<option value="semua">Semua kelompok</option>' + ternakTerlihat().map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.nama) + '</option>';
+    }).join("");
+    if (simpanTernak && ternakTerlihat().some(function (t) { return String(t.id) === String(simpanTernak); })) selTernak.value = simpanTernak;
+    var bk = selBulan.value, ternakId = selTernak.value, kat = $("fKatBiaya").value || "semua";
+    var list = biayaTerlihat();
+    if (bk !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    if (ternakId !== "semua") list = list.filter(function (x) { return String(x.ternakId) === String(ternakId); });
+    if (kat !== "semua") list = list.filter(function (x) { return x.kategori === kat; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var total = totalBiaya(list);
+    $("ringkasanBiaya").textContent = list.length + " catatan biaya — total " + rupiah(total) +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarBiaya").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehUbahCatatan(x.pemilik)) aksi = '<button class="btn ghost kecil" data-hapus-biaya="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(x.keterangan) + '</b> <span class="tag">' + esc(x.kategori) + '</span>' +
+        '<br><span class="sub">' + esc(namaTernak(x.ternakId)) + ' · ' + tglSingkat(x.tanggal) + ' · dicatat oleh ' + esc(x.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada biaya yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-biaya]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.biaya.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-biaya")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Biaya", "Hapus biaya \"" + x.keterangan + "\" (" + rupiah(x.jumlah) + ")?", function () {
+          state.biaya = state.biaya.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Biaya dihapus.");
+        });
+      });
+    });
+  }
+  $("fBulanBiaya").addEventListener("change", renderBiaya);
+  $("fTernakBiaya").addEventListener("change", renderBiaya);
+  $("fKatBiaya").addEventListener("change", renderBiaya);
+  $("btnTambahBiaya").addEventListener("click", function () {
+    var ternakId = Number($("bTernak").value), kategori = $("bKategori").value;
+    var keterangan = $("bKeterangan").value.trim(), tanggal = $("bTanggal").value;
+    var jumlah = Number($("bJumlah").value);
+    if (!ternakId) { toast("Pilih kelompok ternak dulu."); return; }
+    if (!bolehCatatKelompok(ternakId)) { toast("Anda hanya bisa mencatat biaya untuk kelompok ternak Anda sendiri."); return; }
+    if (!keterangan) { toast("Isi keterangan biaya dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal biaya."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah biaya yang benar."); return; }
+    state.biaya.push({ id: state.nextBiayaId++, ternakId: ternakId, kategori: kategori, keterangan: keterangan, tanggal: tanggal, jumlah: jumlah, pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("bKeterangan").value = ""; $("bJumlah").value = "";
+    renderSemua();
+    toast("Biaya \"" + keterangan + "\" tercatat (" + rupiah(jumlah) + ").");
+  });
+
+  /* ---------- Laporan ---------- */
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    isiPilihanBulan(selBulan, simpan ? simpan : bulanKey(hariIniKey()));
+    var tr = ternakTerlihat();
+    var biaya = biayaTerlihat();
+    var tot = totalEkor(tr);
+    var tb = totalBiaya(biaya);
+    $("ringkasanLaporan").textContent = tr.length + " kelompok (" + tot.ekor + " ekor: sehat " + tot.sehat + ", sakit " + tot.sakit + ", mati " + tot.mati + ") · " + biaya.length + " catatan biaya (" + rupiah(tb) + ")" +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    var perJenis = {};
+    tr.forEach(function (t) {
+      if (!perJenis[t.jenis]) perJenis[t.jenis] = { ekor: 0, sehat: 0, sakit: 0, mati: 0, biaya: 0 };
+      perJenis[t.jenis].ekor += Number(t.jumlah) || 0;
+      perJenis[t.jenis].sehat += Number(t.sehat) || 0;
+      perJenis[t.jenis].sakit += Number(t.sakit) || 0;
+      perJenis[t.jenis].mati += Number(t.mati) || 0;
+    });
+    biaya.forEach(function (x) {
+      var t = cariTernak(x.ternakId);
+      if (t && perJenis[t.jenis]) perJenis[t.jenis].biaya += Number(x.jumlah) || 0;
+    });
+    $("tabelPerJenis").innerHTML = "<tr><th>Jenis</th><th class=\"angka\">Ekor</th><th class=\"angka\">Sehat</th><th class=\"angka\">Sakit</th><th class=\"angka\">Mati</th><th class=\"angka\">Biaya</th></tr>" +
+      (Object.keys(perJenis).length ? Object.keys(perJenis).map(function (j) {
+        var r = perJenis[j];
+        return "<tr><td><b>" + esc(j) + "</b></td><td class=\"angka\">" + r.ekor + "</td><td class=\"angka\">" + r.sehat + "</td><td class=\"angka\">" + r.sakit + "</td><td class=\"angka\">" + r.mati + "</td><td class=\"angka\">" + rupiah(r.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    $("tabelPerKelompok").innerHTML = "<tr><th>Kelompok</th><th class=\"angka\">Ekor</th><th class=\"angka\">Sehat</th><th class=\"angka\">Sakit</th><th class=\"angka\">Mati</th><th class=\"angka\">Biaya</th></tr>" +
+      (tr.length ? tr.map(function (t) {
+        var b = 0;
+        biaya.forEach(function (x) { if (x.ternakId === t.id) b += Number(x.jumlah) || 0; });
+        return "<tr><td><b>" + esc(t.nama) + "</b></td><td class=\"angka\">" + t.jumlah + "</td><td class=\"angka\">" + t.sehat + "</td><td class=\"angka\">" + t.sakit + "</td><td class=\"angka\">" + t.mati + "</td><td class=\"angka\">" + rupiah(b) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    var perBulan = {};
+    biaya.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { total: 0, jml: 0 };
+      perBulan[k].total += Number(x.jumlah) || 0; perBulan[k].jml += 1;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Catatan</th><th class=\"angka\">Total Biaya</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k];
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + r.jml + "</td><td class=\"angka\">" + rupiah(r.total) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+    var perKat = {};
+    KAT_BIAYA.forEach(function (k) { perKat[k] = 0; });
+    biaya.forEach(function (x) { if (!perKat[x.kategori]) perKat[x.kategori] = 0; perKat[x.kategori] += Number(x.jumlah) || 0; });
+    $("tabelKatBiaya").innerHTML = "<tr><th>Kategori</th><th class=\"angka\">Total</th><th class=\"angka\">% dari Biaya</th></tr>" +
+      KAT_BIAYA.map(function (k) {
+        var persen = tb > 0 ? Math.round(perKat[k] / tb * 1000) / 10 : 0;
+        return "<tr><td><b>" + k + "</b></td><td class=\"angka\">" + rupiah(perKat[k]) + "</td><td class=\"angka\">" + persen + "%</td></tr>";
+      }).join("");
+  }
+  $("fBulanLaporan").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var tr = ternakTerlihat();
+    var biaya = biayaTerlihat();
+    if (bk !== "semua") biaya = biaya.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    var baris = [["Jenis", "Tanggal", "Kelompok", "Keterangan", "Kategori", "Jumlah (Rp)", "Dicatat oleh"].map(csvCell).join(",")];
+    var n = 0;
+    tr.forEach(function (t) {
+      n++;
+      baris.push(["Ternak", "", t.nama, t.jenis + " · " + t.jumlah + " ekor (sehat " + t.sehat + ", sakit " + t.sakit + ", mati " + t.mati + ")", t.jenis, "", t.pemilik].map(csvCell).join(","));
+    });
+    biaya.forEach(function (x) {
+      n++;
+      baris.push(["Biaya", x.tanggal, namaTernak(x.ternakId), x.keterangan, x.kategori, x.jumlah, x.pemilik].map(csvCell).join(","));
+    });
+    unduh("laporan-livestock-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("livestock-management-backup.json", JSON.stringify({ aplikasi: "livestock-management", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.ternak) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Ternak, pakan, vaksin, kesehatan, dan biaya tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderTernak(); renderPakan(); renderVaksin(); renderKesehatan(); renderBiaya(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
