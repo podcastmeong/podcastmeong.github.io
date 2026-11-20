@@ -415,7 +415,7 @@
       <div class="card">
         <h3><span class="n">7</span> Batasan Aplikasi</h3>
         <ul>
-          <li>Data contoh dan data yang Anda masukkan <b>hanya tersimpan selama aplikasi dibuka</b>. Menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal.</li>
+          <li>Semua data (pesanan, pelanggan, dan harga layanan) <b>tersimpan otomatis di perangkat ini</b> setiap ada perubahan. Menutup atau memuat ulang halaman tidak menghilangkan data. Data tidak tersinkron ke perangkat lain — untuk sinkron lintas perangkat dibutuhkan versi server.</li>
           <li>Aplikasi ini adalah alat <b>pencatatan laundry</b> — bukan sistem pembayaran (tidak memproses uang, QRIS, atau transfer) dan bukan pelacakan kurir antar-jemput.</li>
           <li>Pemasukan hari ini adalah perkiraan dari pesanan berstatus Selesai; pembayaran tunai tetap dicatat terpisah sesuai kebiasaan usaha Anda.</li>
         </ul>
@@ -444,7 +444,7 @@
   </section>
 
   <footer>
-    <p><b>Catatan jujur:</b> data contoh di aplikasi ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data awal.</p>
+    <p><b>Catatan jujur:</b> data Anda tersimpan otomatis di perangkat ini setiap ada perubahan; data tidak tersinkron ke perangkat lain (butuh versi server).</p>
     <p>Aplikasi ini adalah alat pencatatan laundry untuk membantu operasional harian, bukan sistem pembayaran dan bukan pelacakan kurir.</p>
   </footer>
 </div>
@@ -609,6 +609,26 @@
     mkOrder("c1","svc2",2.5,"Selesai",    -3, -2, 0,  "Ambil sendiri"),
     mkOrder("c3","svc1",7,  "Diterima",    0, 3, null, "")
   ];
+
+  /* ---------- Penyimpanan otomatis (localStorage) ---------- */
+  var STORAGE_KEY = "sistemLaundry.v1";
+  function saveData(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ v:1, services:services, customers:customers, orders:orders, seq:seq }));
+    } catch(e){ /* penyimpanan tidak tersedia: aplikasi tetap jalan tanpa menyimpan */ }
+  }
+  function loadData(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      var d = JSON.parse(raw);
+      if(!d || !Array.isArray(d.services) || !Array.isArray(d.customers) || !Array.isArray(d.orders)) return false;
+      services = d.services; customers = d.customers; orders = d.orders;
+      if(typeof d.seq === "number" && d.seq > 0) seq = d.seq;
+      return true;
+    } catch(e){ return false; }
+  }
+  loadData();
 
   /* ---------- Ikon layanan ---------- */
   var ICONS = {
@@ -930,6 +950,7 @@
           '<div class="field"><label>&nbsp;</label><button type="submit" class="btn btn-primary">Simpan Harga</button></div>'+
           '</div></form></div></article>';
     }).join("");
+    saveData();
   }
   document.getElementById("svcList").addEventListener("click", function(e){
     var t = e.target.closest("[data-svc-toggle]"); if(!t) return;
@@ -979,6 +1000,7 @@
     renderOrders();
     renderCustomers();
     renderServices();
+    saveData();
   }
   renderAll();
 })();

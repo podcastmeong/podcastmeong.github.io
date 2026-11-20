@@ -511,7 +511,7 @@
               <li><b>Meja</b> — denah 10 meja dan statusnya.</li>
               <li><b>Panduan</b> — halaman ini.</li>
             </ul>
-            <p class="muted">Aplikasi ini dibuka dengan data contoh (12 menu, 10 meja, 8 pesanan) supaya Anda bisa langsung mencoba semua fitur. Data contoh hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikan data ke contoh awal.</p>
+            <p class="muted">Aplikasi ini dibuka dengan data contoh (12 menu, 10 meja, 8 pesanan) supaya Anda bisa langsung mencoba semua fitur bila belum ada data tersimpan. Semua perubahan tersimpan otomatis di perangkat ini; data tidak tersinkron ke perangkat lain (butuh versi server).</p>
           </section>
 
           <section class="card">
@@ -578,7 +578,7 @@
           <section class="card">
             <h3><span class="n">7</span> Batasan Aplikasi</h3>
             <ul>
-              <li>Data hanya tersimpan <b>selama aplikasi dibuka</b>. Menutup tab, menutup browser, atau memuat ulang halaman mengembalikan data ke data contoh awal. Catat rekap penting di tempat lain sebelum menutup aplikasi.</li>
+              <li>Semua data (pesanan, menu, meja) <b>tersimpan otomatis di perangkat ini</b> setiap ada perubahan. Menutup tab atau memuat ulang halaman tidak menghilangkan data. Data tidak tersinkron ke perangkat lain — untuk sinkron lintas perangkat dibutuhkan versi server.</li>
               <li>Aplikasi ini adalah <b>alat pencatatan pesanan</b> — bukan sistem pembayaran. Pembayaran tetap dilakukan seperti biasa (tunai, QRIS, atau mesin EDC Anda sendiri) dan tidak diproses di dalam aplikasi.</li>
               <li>Tidak ada integrasi dapur otomatis: pesanan tidak terkirim sendiri ke printer dapur atau layar dapur; status diubah manual oleh staf.</li>
               <li>Aplikasi berjalan di satu perangkat dan satu jendela browser; belum ada sinkronisasi antarperangkat atau banyak pengguna bersamaan.</li>
@@ -614,7 +614,7 @@
       </section>
 
       <footer>
-        <b>Catatan jujur:</b> data contoh di aplikasi ini hanya tersimpan selama aplikasi dibuka — menutup atau memuat ulang halaman akan mengembalikannya ke data awal. Sistem Restoran adalah aplikasi pencatatan restoran, <b>bukan</b> sistem pembayaran dan tidak terhubung ke integrasi dapur otomatis.
+        <b>Catatan jujur:</b> data Anda tersimpan otomatis di perangkat ini setiap ada perubahan; data tidak tersinkron ke perangkat lain (butuh versi server). Sistem Restoran adalah aplikasi pencatatan restoran, <b>bukan</b> sistem pembayaran dan tidak terhubung ke integrasi dapur otomatis.
       </footer>
     </div>
 
@@ -688,6 +688,30 @@
         editingMenuId: null,
         selectedTable: null
       };
+
+      // ================= PENYIMPANAN OTOMATIS (localStorage) =================
+      var STORAGE_KEY = "sistemRestoran.v1";
+      function saveData() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            v: 1, menus: state.menus, orders: state.orders, tables: state.tables,
+            nextMenuId: state.nextMenuId, nextOrderNum: state.nextOrderNum
+          }));
+        } catch (e) { /* penyimpanan tidak tersedia: aplikasi tetap jalan tanpa menyimpan */ }
+      }
+      function loadData() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          var d = JSON.parse(raw);
+          if (!d || !Array.isArray(d.menus) || !Array.isArray(d.orders) || !Array.isArray(d.tables)) return false;
+          state.menus = d.menus; state.orders = d.orders; state.tables = d.tables;
+          if (typeof d.nextMenuId === "number" && d.nextMenuId > 0) state.nextMenuId = d.nextMenuId;
+          if (typeof d.nextOrderNum === "number" && d.nextOrderNum > 0) state.nextOrderNum = d.nextOrderNum;
+          return true;
+        } catch (e) { return false; }
+      }
+      loadData();
 
       var STATUS_AKTIF = ["Baru", "Dimasak", "Disajikan"];
       var SEMUA_STATUS = ["Baru", "Dimasak", "Disajikan", "Selesai", "Dibatalkan"];
@@ -1162,6 +1186,7 @@
         renderPesanan();
         renderMenu();
         renderMeja();
+        saveData();
       }
       var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
       var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
