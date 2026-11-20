@@ -1,0 +1,1625 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Estimasi Biaya Perbaikan — Bengkel Oyen</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 620px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .part-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px;
+  }
+  .part-row label { margin: 0; font-weight: 400; display: flex; gap: 8px; align-items: center; flex: 1 1 200px; }
+  .part-row input[type="number"] { max-width: 90px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">CONTOH DEMO</span>
+    <h1>Aplikasi Estimasi Biaya Perbaikan <span class="aksen">— Bengkel Oyen</span></h1>
+    <p>Buat estimasi biaya jasa dan suku cadang sebelum perbaikan, kirim ke pelanggan untuk persetujuan, lalu ubah estimasi yang disetujui menjadi work order — lengkap dengan perbandingan estimasi vs biaya akhir.</p>
+    <p class="tanggal" id="tanggalHari">—</p>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="estimasi">Estimasi <span class="badge" id="badgeEst">0</span></button>
+    <button class="tab-btn" type="button" data-tab="workorder">Work Order <span class="badge" id="badgeWO">0</span></button>
+    <button class="tab-btn" type="button" data-tab="riwayat">Riwayat</button>
+    <button class="tab-btn" type="button" data-tab="laporan" data-peran="admin,kasir">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dasbor</h2>
+      <p>Ringkasan estimasi bengkel: estimasi bulan ini, total nilai estimasi, tingkat persetujuan pelanggan, dan estimasi yang masih menunggu keputusan.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Estimasi Bulan Ini</div><div class="angka" id="dEstBulan">0</div></div>
+      <div class="stat"><div class="label">Total Nilai Estimasi Bulan Ini</div><div class="angka" id="dNilaiBulan">Rp0</div></div>
+      <div class="stat"><div class="label">Tingkat Persetujuan</div><div class="angka" id="dTingkatSetuju">0%</div></div>
+      <div class="stat warn"><div class="label">Menunggu Keputusan</div><div class="angka" id="dMenunggu">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Estimasi Menunggu Keputusan</h3>
+      <p class="sub">Estimasi berstatus Draf atau Dikirim — belum disetujui atau ditolak pelanggan.</p>
+      <div id="daftarMenunggu"></div>
+    </div>
+    <div class="card">
+      <h3>Estimasi Terbaru</h3>
+      <p class="sub">Lima estimasi terakhir, dari yang terbaru — beserta status dan totalnya.</p>
+      <div id="daftarEstTerbaru"></div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk. Kasir adalah operator bengkel: bisa membuat estimasi, mengubah status, membuat work order, dan membuka laporan — tapi tidak bisa mengelola pengguna. Mekanik hanya melihat estimasi dan work order yang ditugaskan kepadanya.</p>
+      <div id="daftarPengguna"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="nuNama">Nama lengkap *</label>
+          <input type="text" id="nuNama" placeholder="cth: Dewi">
+        </div>
+        <div class="field">
+          <label for="nuUser">Nama pengguna *</label>
+          <input type="text" id="nuUser" placeholder="cth: dewi">
+        </div>
+        <div class="field">
+          <label for="nuPass">Kata sandi *</label>
+          <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+        </div>
+        <div class="field">
+          <label for="nuPeran">Peran</label>
+          <select id="nuPeran">
+            <option value="kasir">Kasir (operator bengkel)</option>
+            <option value="mekanik">Mekanik (tim bengkel)</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Masuk sebagai <b id="namaAkunSaya">—</b>. Kata sandi baru minimal 6 karakter. Kartu ini selalu terlihat untuk semua peran.</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="sandiLama">Kata sandi lama *</label>
+            <input type="password" id="sandiLama" placeholder="Kata sandi lama">
+          </div>
+          <div class="field">
+            <label for="sandiBaru">Kata sandi baru *</label>
+            <input type="password" id="sandiBaru" placeholder="Kata sandi baru">
+          </div>
+        </div>
+        <button class="btn kecil" type="submit">Ganti Kata Sandi</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-estimasi">
+    <div class="page-head">
+      <h2>Estimasi</h2>
+      <p>Buat estimasi biaya perbaikan: pilih kendaraan, diagnosa, jasa dan spare part — total dihitung otomatis dan terlihat sebelum disimpan. Kirim estimasi ke pelanggan, lalu catat keputusannya: Disetujui atau Ditolak.</p>
+    </div>
+    <div class="card" id="cardBuatEstimasi">
+      <h3>Buat Estimasi Baru</h3>
+      <p class="sub">Total estimasi dihitung otomatis (jasa + spare part − diskon) dan terlihat sebelum disimpan. Simpan sebagai Draf bila masih perlu dicek, atau langsung Kirim ke Pelanggan.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="esKendaraan">Kendaraan *</label>
+          <select id="esKendaraan"></select>
+        </div>
+        <div class="field">
+          <label for="esTanggal">Tanggal estimasi *</label>
+          <input type="date" id="esTanggal">
+        </div>
+        <div class="field">
+          <label for="esMekanik">Mekanik yang menangani *</label>
+          <select id="esMekanik"></select>
+        </div>
+        <div class="field">
+          <label for="esDiskon">Diskon (Rp)</label>
+          <input type="number" id="esDiskon" min="0" step="1000" value="0" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="esDiagnosa">Keluhan / diagnosa *</label>
+          <input type="text" id="esDiagnosa" placeholder="cth: Servis berkala + ganti kampas rem">
+        </div>
+        <div class="field">
+          <label for="esCatatan">Catatan untuk pelanggan</label>
+          <input type="text" id="esCatatan" placeholder="cth: Harga bisa berubah setelah pemeriksaan">
+        </div>
+      </div>
+      <div class="field">
+        <label>Jasa perbaikan *</label>
+        <div class="chips" id="esJasa"></div>
+      </div>
+      <div class="field">
+        <label>Spare part yang dibutuhkan</label>
+        <div id="esParts"></div>
+      </div>
+      <div class="row">
+        <button class="btn kecil" id="btnSimpanDraf" type="button">Simpan sebagai Draf</button>
+        <button class="btn biru kecil" id="btnSimpanKirim" type="button">Simpan &amp; Kirim ke Pelanggan</button>
+        <span class="chip-pengguna" id="esTotal">Total estimasi: Rp0</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <select id="fEsStatus">
+            <option value="semua">Semua status</option>
+            <option value="Draf">Draf</option>
+            <option value="Dikirim">Dikirim</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+            <option value="Dijadikan WO">Dijadikan WO</option>
+          </select>
+        </div>
+        <div class="grow"><input type="text" id="cariEs" placeholder="Cari nomor / plat / diagnosa / pelanggan…"></div>
+      </div>
+      <div id="ringkasanEs"></div>
+      <div id="daftarEstimasi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-workorder">
+    <div class="page-head">
+      <h2>Work Order</h2>
+      <p>Work order yang dibuat dari estimasi yang disetujui pelanggan. Biaya akhir bisa diubah (tambah jasa, ubah jumlah part, ubah diskon) — perbandingan dengan estimasi awal selalu ditampilkan.</p>
+    </div>
+    <div class="card">
+      <p class="catatan">Work order hanya dibuat dari estimasi berstatus <b>Disetujui</b> (tombol <b>Jadikan WO</b> di tab Estimasi). Setelah dibuat, status estimasi berubah menjadi <b>Dijadikan WO</b>.</p>
+      <div id="daftarWO"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head">
+      <h2>Riwayat Estimasi</h2>
+      <p>Semua estimasi dan work order untuk satu kendaraan atau satu pelanggan — lengkap dengan total dan perbandingan biaya akhir.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <label for="rwKendaraan">Kendaraan</label>
+          <select id="rwKendaraan"></select>
+        </div>
+        <div class="grow">
+          <label for="rwPelanggan">Pelanggan</label>
+          <select id="rwPelanggan"></select>
+        </div>
+      </div>
+      <div id="ringkasanRiwayat"></div>
+      <div id="daftarRiwayat"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Estimasi</h2>
+      <p>Laporan estimasi per periode dan status: jumlah estimasi, total nilai, tingkat persetujuan, dan perbandingan estimasi vs biaya akhir work order.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <label for="lapPeriode">Periode</label>
+          <select id="lapPeriode">
+            <option value="hari">Hari ini</option>
+            <option value="7hari">7 hari terakhir</option>
+            <option value="30hari" selected>30 hari terakhir</option>
+            <option value="semua">Semua</option>
+          </select>
+        </div>
+        <div class="grow">
+          <label for="lapStatus">Status</label>
+          <select id="lapStatus">
+            <option value="semua">Semua status</option>
+            <option value="Draf">Draf</option>
+            <option value="Dikirim">Dikirim</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+            <option value="Dijadikan WO">Dijadikan WO</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div class="row">
+            <button class="btn biru kecil" id="btnExportCSV" type="button">Ekspor CSV</button>
+            <button class="btn kecil" id="btnBackupJSON" type="button">Backup JSON</button>
+            <button class="btn ghost kecil" id="btnPulihkan" type="button">Pulihkan Backup</button>
+            <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+          </div>
+        </div>
+      </div>
+      <div class="grid-stat">
+        <div class="stat"><div class="label">Jumlah Estimasi</div><div class="angka" id="lJumlah">0</div></div>
+        <div class="stat accent"><div class="label">Total Nilai Estimasi</div><div class="angka" id="lNilai">Rp0</div></div>
+        <div class="stat"><div class="label">Disetujui / Dijadikan WO</div><div class="angka" id="lSetuju">0</div></div>
+        <div class="stat warn"><div class="label">Selisih WO vs Estimasi</div><div class="angka" id="lSelisih">Rp0</div></div>
+      </div>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLaporan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Jasa Paling Sering Diestimasi pada Periode Ini</h3>
+      <div id="daftarTerlaris"></div>
+    </div>
+    <div class="card">
+      <h3>Estimasi pada Periode Ini</h3>
+      <div id="daftarLaporanEs"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai Aplikasi Estimasi Biaya Perbaikan, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur semua data termasuk pengguna; sebagai <b>Kasir</b> untuk membuat estimasi, mengubah status, membuat work order, dan membuka laporan; atau sebagai <b>Mekanik</b> untuk melihat estimasi dan work order yang ditugaskan kepadanya.</li>
+        <li>Di tab <b>Estimasi</b>, buat estimasi baru: pilih kendaraan, tanggal, mekanik, keluhan/diagnosa, lalu centang jasa dan spare part. Total dihitung otomatis dan terlihat sebelum disimpan. Simpan sebagai <b>Draf</b> bila masih perlu dicek, atau <b>Simpan &amp; Kirim ke Pelanggan</b> bila sudah siap dikirim.</li>
+        <li>Klik <b>Salin Teks WA</b> pada estimasi untuk menyalin teks estimasi ke pelanggan (lengkap dengan rincian dan total), lalu tempel di WhatsApp. Aplikasi ini hanya menyiapkan teks — pengiriman dilakukan manual lewat WhatsApp Anda.</li>
+        <li>Setelah pelanggan menjawab, ubah status estimasi: <b>Disetujui</b> bila pelanggan setuju, <b>Ditolak</b> bila tidak. Estimasi yang Disetujui bisa diubah menjadi work order dengan tombol <b>Jadikan WO</b>.</li>
+        <li>Di tab <b>Work Order</b>, buka Detail untuk mengubah biaya akhir bila pekerjaan ternyata berbeda dari estimasi (tambah jasa, ubah jumlah part, ubah diskon, ubah status). Perbandingan estimasi vs biaya akhir selalu ditampilkan — bila biaya akhir melebihi estimasi, selisihnya ditandai merah.</li>
+        <li>Di tab <b>Riwayat</b>, lihat semua estimasi dan work order untuk satu kendaraan atau satu pelanggan. Di tab <b>Laporan</b>, lihat estimasi per periode dan status, lalu gunakan <b>Ekspor CSV</b> dan <b>Backup JSON</b>.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>; Mekanik — <b>mekanik</b> / <b>mekanik123</b> (melihat estimasi dan work order mekanik Agus). Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+      <p class="sub">Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh Bengkel Oyen (5 mekanik, 14 layanan, 12 spare part, 8 pelanggan, 12 kendaraan — 6 mobil dan 6 motor, 10 estimasi, dan 2 work order). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p class="sub">Estimasi <b>bukan harga final</b> — biaya akhir bisa berubah setelah pemeriksaan kendaraan di bengkel, bila ditemukan kerusakan tambahan atau harga spare part berubah. Aplikasi ini <b>bukan</b> sistem akuntansi dan <b>bukan</b> payment gateway (pembayaran dicatat manual). Teks WhatsApp yang disalin dari aplikasi <b>hanya teks</b> — aplikasi tidak mengirim WhatsApp sendiri, kirim manual lewat WhatsApp Anda. Data <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh kasir dan mekanik di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Aplikasi Estimasi Biaya Perbaikan v1.</b> Estimasi biaya jasa dan suku cadang, persetujuan pelanggan, ubah estimasi menjadi work order, perbandingan estimasi vs biaya akhir, plus riwayat dan laporan estimasi (admin, kasir, dan mekanik). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Bengkel Oyen, bukan data penjualan sungguhan.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Estimasi%20Biaya%20Perbaikan." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi" id="modalAksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Estimasi Biaya Perbaikan</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk membuat estimasi biaya perbaikan bengkel. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (estimasi, work order, riwayat, laporan; tidak bisa kelola pengguna)<br>Mekanik: <b>mekanik</b> / <b>mekanik123</b> (hanya estimasi dan work order mekanik Agus; tidak bisa membuka laporan)</p>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function kunciTanggal(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciDariIso(iso) { return iso ? kunciTanggal(new Date(iso)) : ""; }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var p = kunci.split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa");
+    var baru = ya.cloneNode(true);
+    baru.style.display = "";
+    ya.parentNode.replaceChild(baru, ya);
+    baru.addEventListener("click", function () {
+      tutupModal();
+      callback();
+    });
+  }
+  function bukaModalForm(judul, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = "";
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "none";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBatal").addEventListener("click", tutupModal);
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = namaFile;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function salinTeks(teks, pesanOk) {
+    function selesai() { toast(pesanOk || "Teks disalin."); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(selesai, function () { salinFallback(teks); selesai(); });
+    } else {
+      salinFallback(teks);
+      selesai();
+    }
+  }
+  function salinFallback(teks) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = teks;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e) { /* abaikan */ }
+  }
+
+  // ---------- Data contoh ----------
+  var STORAGE_KEY = "aplikasiEstimasiBiaya.v1";
+  function seedState() {
+    function tglOffset(hari, jam, menit) {
+      var d = new Date();
+      d.setDate(d.getDate() + hari);
+      d.setHours(jam, menit, 0, 0);
+      return d.toISOString();
+    }
+    function keyOffset(hari) {
+      var d = new Date();
+      d.setDate(d.getDate() + hari);
+      return kunciTanggal(d);
+    }
+    return {
+      usaha: { nama: "Bengkel Oyen", alamat: "Jl. Raya Pejaten No. 88, Jakarta Selatan", wa: "081247986994" },
+      mekanik: [
+        { id: 1, nama: "Agus", spesialisasi: "Mesin & Tune Up", telp: "081212345601", komisiDefault: 10, aktif: true },
+        { id: 2, nama: "Rudi", spesialisasi: "Kaki-Kaki & Ban", telp: "081212345602", komisiDefault: 10, aktif: true },
+        { id: 3, nama: "Sinta", spesialisasi: "Kelistrikan & AC", telp: "081212345603", komisiDefault: 12, aktif: true },
+        { id: 4, nama: "Budi", spesialisasi: "Motor & CVT", telp: "081212345604", komisiDefault: 10, aktif: true },
+        { id: 5, nama: "Dedi", spesialisasi: "Servis Rutin", telp: "081212345605", komisiDefault: 8, aktif: true }
+      ],
+      layanan: [
+        { id: 1, nama: "Ganti Oli Mesin", kat: "Servis Rutin", harga: 75000, durasi: 30 },
+        { id: 2, nama: "Servis Ringan (Oli + Filter)", kat: "Servis Rutin", harga: 150000, durasi: 60 },
+        { id: 3, nama: "Tune Up Mesin", kat: "Servis Rutin", harga: 350000, durasi: 120 },
+        { id: 4, nama: "Servis CVT", kat: "Motor", harga: 90000, durasi: 60 },
+        { id: 5, nama: "Ganti Kampas Rem", kat: "Rem", harga: 120000, durasi: 45 },
+        { id: 6, nama: "Ganti Ban", kat: "Ban", harga: 75000, durasi: 30 },
+        { id: 7, nama: "Tambal Ban", kat: "Ban", harga: 25000, durasi: 20 },
+        { id: 8, nama: "Ganti Busi", kat: "Kelistrikan", harga: 50000, durasi: 20 },
+        { id: 9, nama: "Ganti Aki", kat: "Kelistrikan", harga: 50000, durasi: 30 },
+        { id: 10, nama: "Servis AC", kat: "AC", harga: 250000, durasi: 90 },
+        { id: 11, nama: "Spooring & Balancing", kat: "Kaki-Kaki", harga: 200000, durasi: 60 },
+        { id: 12, nama: "Servis Injeksi", kat: "Mesin", harga: 180000, durasi: 75 },
+        { id: 13, nama: "Ganti Filter Udara", kat: "Servis Rutin", harga: 60000, durasi: 25 },
+        { id: 14, nama: "Servis Kaki-Kaki", kat: "Kaki-Kaki", harga: 220000, durasi: 90 }
+      ],
+      parts: [
+        { id: 1, nama: "Oli Mesin 10W-40", harga: 185000 },
+        { id: 2, nama: "Oli Motor 10W-30", harga: 95000 },
+        { id: 3, nama: "Filter Oli Mobil", harga: 45000 },
+        { id: 4, nama: "Filter Oli Motor", harga: 35000 },
+        { id: 5, nama: "Busi", harga: 35000 },
+        { id: 6, nama: "Kampas Rem Depan", harga: 210000 },
+        { id: 7, nama: "Kampas Rem Motor", harga: 95000 },
+        { id: 8, nama: "V-Belt", harga: 145000 },
+        { id: 9, nama: "Ban Belakang", harga: 320000 },
+        { id: 10, nama: "Freon AC", harga: 120000 },
+        { id: 11, nama: "Aki 12V", harga: 450000 },
+        { id: 12, nama: "Filter Udara", harga: 85000 }
+      ],
+      pelanggan: [
+        { id: 1, nama: "Bapak Andi Wijaya", telp: "081212345678", alamat: "Jl. Pejaten Raya No. 40, Pasar Minggu" },
+        { id: 2, nama: "Ibu Sari Dewi", telp: "081377788899", alamat: "Jl. Bangka Raya No. 21, Mampang" },
+        { id: 3, nama: "Bapak Budi Santoso", telp: "082112233445", alamat: "Jl. Cipete Raya No. 15, Cilandak" },
+        { id: 4, nama: "Ibu Ratna Kusuma", telp: "081298765432", alamat: "Jl. Kemang Raya No. 8, Jakarta Selatan" },
+        { id: 5, nama: "Bapak Hendra Gunawan", telp: "081355566677", alamat: "Jl. Pasar Minggu No. 112, Jakarta Selatan" },
+        { id: 6, nama: "Ibu Maya Putri", telp: "081322233344", alamat: "Jl. Fatmawati No. 27, Cilandak" },
+        { id: 7, nama: "Bapak Joko Prasetyo", telp: "081255566677", alamat: "Jl. Kalibata No. 55, Pancoran" },
+        { id: 8, nama: "PT Antar Jaya", telp: "081244455566", alamat: "Jl. TB Simatupang Kav. 12, Jakarta Selatan" }
+      ],
+      kendaraan: [
+        { id: 1, pelangganId: 1, plat: "B 1234 ABC", merek: "Toyota Avanza", tahun: 2019, jenis: "Mobil", km: 68400 },
+        { id: 2, pelangganId: 1, plat: "B 5678 DEF", merek: "Toyota Innova", tahun: 2021, jenis: "Mobil", km: 45200 },
+        { id: 3, pelangganId: 2, plat: "B 2345 GHI", merek: "Honda Brio", tahun: 2020, jenis: "Mobil", km: 52300 },
+        { id: 4, pelangganId: 3, plat: "B 3456 JKL", merek: "Mitsubishi Xpander", tahun: 2022, jenis: "Mobil", km: 28700 },
+        { id: 5, pelangganId: 3, plat: "B 4567 MNO", merek: "Daihatsu Calya", tahun: 2021, jenis: "Mobil", km: 39100 },
+        { id: 6, pelangganId: 4, plat: "B 6789 PQR", merek: "Honda HR-V", tahun: 2020, jenis: "Mobil", km: 61400 },
+        { id: 7, pelangganId: 4, plat: "B 7890 STU", merek: "Honda PCX 160", tahun: 2022, jenis: "Motor", km: 21800 },
+        { id: 8, pelangganId: 5, plat: "B 8901 VWX", merek: "Honda Beat", tahun: 2019, jenis: "Motor", km: 32400 },
+        { id: 9, pelangganId: 6, plat: "B 9012 YZA", merek: "Yamaha Vario 160", tahun: 2021, jenis: "Motor", km: 18700 },
+        { id: 10, pelangganId: 7, plat: "B 1122 BCD", merek: "Yamaha Aerox 155", tahun: 2022, jenis: "Motor", km: 12300 },
+        { id: 11, pelangganId: 7, plat: "B 2233 EFG", merek: "Yamaha NMAX", tahun: 2022, jenis: "Motor", km: 9800 },
+        { id: 12, pelangganId: 8, plat: "B 3344 HIJ", merek: "Honda Scoopy", tahun: 2023, jenis: "Motor", km: 5400 }
+      ],
+      estimasi: [
+        { id: 1, no: "EST-001", kendaraanId: 1, tanggal: tglOffset(0, 9, 0), mekanikId: 1, diagnosa: "Servis berkala 70.000 km", status: "Disetujui", diskon: 0, catatan: "", woId: null,
+          jasa: [{ layananId: 2, harga: 150000 }, { layananId: 1, harga: 75000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 2, no: "EST-002", kendaraanId: 8, tanggal: tglOffset(-1, 10, 30), mekanikId: 4, diagnosa: "Ganti oli + servis CVT", status: "Dijadikan WO", diskon: 0, catatan: "", woId: 1,
+          jasa: [{ layananId: 1, harga: 75000 }, { layananId: 4, harga: 90000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }] },
+        { id: 3, no: "EST-003", kendaraanId: 3, tanggal: tglOffset(-2, 9, 0), mekanikId: 3, diagnosa: "Servis AC kurang dingin", status: "Disetujui", diskon: 0, catatan: "Cek kebocoran freon dulu.", woId: null,
+          jasa: [{ layananId: 10, harga: 250000 }],
+          parts: [{ partId: 10, qty: 1, harga: 120000 }] },
+        { id: 4, no: "EST-004", kendaraanId: 6, tanggal: tglOffset(-3, 10, 0), mekanikId: 1, diagnosa: "Tune up mesin", status: "Dikirim", diskon: 0, catatan: "", woId: null,
+          jasa: [{ layananId: 3, harga: 350000 }],
+          parts: [{ partId: 5, qty: 4, harga: 35000 }] },
+        { id: 5, no: "EST-005", kendaraanId: 10, tanggal: tglOffset(-5, 11, 0), mekanikId: 4, diagnosa: "Ganti kampas rem + ganti oli", status: "Draf", diskon: 10000, catatan: "", woId: null,
+          jasa: [{ layananId: 5, harga: 120000 }, { layananId: 1, harga: 75000 }],
+          parts: [{ partId: 7, qty: 1, harga: 95000 }, { partId: 2, qty: 1, harga: 95000 }] },
+        { id: 6, no: "EST-006", kendaraanId: 2, tanggal: tglOffset(-8, 9, 30), mekanikId: 2, diagnosa: "Spooring & balancing", status: "Disetujui", diskon: 0, catatan: "", woId: null,
+          jasa: [{ layananId: 11, harga: 200000 }],
+          parts: [] },
+        { id: 7, no: "EST-007", kendaraanId: 9, tanggal: tglOffset(-12, 9, 0), mekanikId: 5, diagnosa: "Servis berkala", status: "Ditolak", diskon: 0, catatan: "Pelanggan minta tunda bulan depan.", woId: null,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 4, qty: 1, harga: 35000 }] },
+        { id: 8, no: "EST-008", kendaraanId: 4, tanggal: tglOffset(-20, 10, 0), mekanikId: 1, diagnosa: "Servis berkala 25.000 km", status: "Dijadikan WO", diskon: 25000, catatan: "", woId: 2,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 9, no: "EST-009", kendaraanId: 5, tanggal: tglOffset(-35, 9, 0), mekanikId: 3, diagnosa: "Ganti aki + ganti busi", status: "Disetujui", diskon: 0, catatan: "", woId: null,
+          jasa: [{ layananId: 9, harga: 50000 }, { layananId: 8, harga: 50000 }],
+          parts: [{ partId: 11, qty: 1, harga: 450000 }, { partId: 5, qty: 4, harga: 35000 }] },
+        { id: 10, no: "EST-010", kendaraanId: 7, tanggal: tglOffset(-45, 10, 0), mekanikId: 2, diagnosa: "Ganti ban belakang", status: "Dikirim", diskon: 0, catatan: "", woId: null,
+          jasa: [{ layananId: 6, harga: 75000 }],
+          parts: [{ partId: 9, qty: 1, harga: 320000 }] }
+      ],
+      workorder: [
+        { id: 1, no: "WO-001", estimasiId: 2, kendaraanId: 8, tanggal: tglOffset(-1, 13, 0), mekanikId: 4, diagnosa: "Ganti oli + servis CVT", status: "Selesai", diskon: 0,
+          jasa: [{ layananId: 1, harga: 75000 }, { layananId: 4, harga: 90000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 8, qty: 1, harga: 145000 }] },
+        { id: 2, no: "WO-002", estimasiId: 8, kendaraanId: 4, tanggal: tglOffset(-20, 14, 0), mekanikId: 1, diagnosa: "Servis berkala 25.000 km", status: "Selesai", diskon: 25000,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] }
+      ],
+      seqEstimasi: 11,
+      seqWO: 3
+    };
+  }
+
+  var state = seedState();
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) { saveState(); return; }
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.estimasi) || !Array.isArray(d.workorder) || !Array.isArray(d.layanan) || !Array.isArray(d.parts) || !Array.isArray(d.kendaraan) || !Array.isArray(d.pelanggan) || !Array.isArray(d.mekanik)) throw new Error("data rusak");
+      state = d;
+    } catch (e) { /* pakai data contoh */ }
+  }
+
+  // ---------- Pencarian & hitungan ----------
+  function cariMekanik(id) { return state.mekanik.find(function (x) { return x.id === id; }); }
+  function cariLayanan(id) { return state.layanan.find(function (x) { return x.id === id; }); }
+  function cariPart(id) { return state.parts.find(function (x) { return x.id === id; }); }
+  function cariKendaraan(id) { return state.kendaraan.find(function (x) { return x.id === id; }); }
+  function cariPelanggan(id) { return state.pelanggan.find(function (x) { return x.id === id; }); }
+  function cariEstimasi(id) { return state.estimasi.find(function (x) { return x.id === id; }); }
+  function cariWO(id) { return state.workorder.find(function (x) { return x.id === id; }); }
+  function namaMekanik(id) { var m = cariMekanik(id); return m ? m.nama : "—"; }
+  function labelKendaraan(k) {
+    if (!k) return "—";
+    var p = cariPelanggan(k.pelangganId);
+    return k.plat + " — " + k.merek + " " + k.tahun + (p ? " (" + p.nama + ")" : "");
+  }
+  function totalJasa(rincian) {
+    return (rincian.jasa || []).reduce(function (a, j) { return a + Number(j.harga || 0); }, 0);
+  }
+  function totalParts(rincian) {
+    return (rincian.parts || []).reduce(function (a, p) { return a + Number(p.harga || 0) * Number(p.qty || 1); }, 0);
+  }
+  function totalEstimasi(es) {
+    return Math.max(0, totalJasa(es) + totalParts(es) - Number(es.diskon || 0));
+  }
+  function totalWO(wo) {
+    return Math.max(0, totalJasa(wo) + totalParts(wo) - Number(wo.diskon || 0));
+  }
+  function selisihWO(wo) {
+    var es = wo && wo.estimasiId ? cariEstimasi(wo.estimasiId) : null;
+    if (!es) return null;
+    return totalWO(wo) - totalEstimasi(es);
+  }
+  function kelasStatus(s) {
+    if (s === "Disetujui" || s === "Selesai" || s === "Dijadikan WO") return "st-aman";
+    if (s === "Dikirim" || s === "Dikerjakan") return "st-biru";
+    if (s === "Draf") return "st-emas";
+    if (s === "Ditolak") return "st-habis";
+    if (s === "Antre") return "st-biru";
+    return "st-navy";
+  }
+  function dalamPeriode(periode, tanggal) {
+    if (periode === "semua") return true;
+    var tgl = new Date(tanggal);
+    var kini = new Date();
+    kini.setHours(0, 0, 0, 0);
+    if (periode === "hari") return kunciDariIso(tanggal) === hariIniKey();
+    var mundur = periode === "7hari" ? 6 : 29;
+    var batas = new Date();
+    batas.setDate(batas.getDate() - mundur);
+    batas.setHours(0, 0, 0, 0);
+    return tgl >= batas && tgl <= new Date(kini.getTime() + 86399999);
+  }
+  function estimasiTerlihat() {
+    if (currentUser && currentUser.role === "mekanik" && currentUser.mekanikId) {
+      return state.estimasi.filter(function (es) { return es.mekanikId === currentUser.mekanikId; });
+    }
+    return state.estimasi;
+  }
+  function woTerlihat() {
+    if (currentUser && currentUser.role === "mekanik" && currentUser.mekanikId) {
+      return state.workorder.filter(function (wo) { return wo.mekanikId === currentUser.mekanikId; });
+    }
+    return state.workorder;
+  }
+  function isAdmin() { return currentUser && currentUser.role === "admin"; }
+  function bisaKasir() { return currentUser && (currentUser.role === "admin" || currentUser.role === "kasir"); }
+  function labelPeran(r) {
+    if (r === "admin") return "Admin";
+    if (r === "kasir") return "Kasir";
+    return "Mekanik";
+  }
+  function teksEstimasiWA(es) {
+    var k = cariKendaraan(es.kendaraanId);
+    var p = k ? cariPelanggan(k.pelangganId) : null;
+    var baris = [];
+    baris.push("Halo " + (p ? p.nama : "Bapak/Ibu") + ", berikut estimasi biaya perbaikan dari Bengkel Oyen:");
+    baris.push("");
+    baris.push("Kendaraan: " + (k ? k.merek + " " + k.tahun + " (" + k.plat + ")" : "—"));
+    baris.push("Keluhan: " + es.diagnosa);
+    baris.push("Mekanik: " + namaMekanik(es.mekanikId));
+    baris.push("");
+    baris.push("Jasa:");
+    (es.jasa || []).forEach(function (j) {
+      var l = cariLayanan(j.layananId);
+      baris.push("- " + (l ? l.nama : "Jasa") + ": " + rupiah(j.harga));
+    });
+    if ((es.parts || []).length) {
+      baris.push("Spare part:");
+      es.parts.forEach(function (pt) {
+        var part = cariPart(pt.partId);
+        baris.push("- " + (part ? part.nama : "Spare part") + " x " + pt.qty + ": " + rupiah(pt.harga * pt.qty));
+      });
+    }
+    if (Number(es.diskon || 0) > 0) baris.push("Diskon: -" + rupiah(es.diskon));
+    baris.push("");
+    baris.push("Total estimasi: " + rupiah(totalEstimasi(es)));
+    if (es.catatan) baris.push("Catatan: " + es.catatan);
+    baris.push("Estimasi ini bukan harga final — biaya akhir bisa berubah setelah pemeriksaan. Silakan konfirmasi bila setuju. Terima kasih. — Bengkel Oyen");
+    return baris.join("\n");
+  }
+  function waLinkPelanggan(es) {
+    var k = cariKendaraan(es.kendaraanId);
+    var p = k ? cariPelanggan(k.pelangganId) : null;
+    if (!p || !p.telp) return null;
+    var hp = String(p.telp).replace(/^0/, "62").replace(/[^0-9]/g, "");
+    return "https://wa.me/" + hp + "?text=" + encodeURIComponent(teksEstimasiWA(es));
+  }
+
+  // ---------- Pengguna & sesi ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true, mekanikId: null },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true, mekanikId: null },
+    { username: "mekanik", password: "mekanik123", name: "Mekanik (Agus)", role: "mekanik", aktif: true, mekanikId: 1 }
+  ];
+  var users = [];
+  var currentUser = null;
+
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
+      var d = JSON.parse(raw);
+      if (!Array.isArray(d) || !d.length) throw new Error("users rusak");
+      users = d.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name, role: x.role, aktif: x.aktif !== false, mekanikId: x.mekanikId || null };
+      });
+    } catch (e) {
+      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+    }
+  }
+  function saveUsers() {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  }
+  function terapkanSesi() {
+    var chip = $("userChip");
+    if (currentUser) {
+      chip.textContent = currentUser.name + " (" + labelPeran(currentUser.role) + ")";
+      $("namaAkunSaya").textContent = currentUser.name + " (@" + currentUser.username + ")";
+    } else {
+      chip.textContent = "Belum masuk";
+    }
+    document.querySelectorAll(".tab-btn[data-peran]").forEach(function (btn) {
+      var peran = (btn.getAttribute("data-peran") || "").split(",");
+      btn.style.display = (!currentUser || peran.indexOf(currentUser.role) >= 0) ? "" : "none";
+    });
+    $("cardPengguna").style.display = isAdmin() ? "" : "none";
+    var aktif = document.querySelector(".tab-btn.active");
+    if (aktif && aktif.style.display === "none") {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      document.querySelector('[data-tab="dashboard"]').classList.add("active");
+      $("panel-dashboard").classList.add("active");
+    }
+    renderSemua();
+  }
+  function masuk(username, password) {
+    var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
+    if (!u) return false;
+    currentUser = u;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    $("loginOverlay").classList.add("hidden");
+    $("loginError").hidden = true;
+    terapkanSesi();
+    return true;
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    $("loginOverlay").classList.remove("hidden");
+    $("loginUser").value = "";
+    $("loginPass").value = "";
+    terapkanSesi();
+  }
+  function pulihkanSesi() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return false;
+      var s = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
+      if (!u) return false;
+      currentUser = u;
+      $("loginOverlay").classList.add("hidden");
+      return true;
+    } catch (e) { return false; }
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var ok = masuk($("loginUser").value.trim(), $("loginPass").value);
+    if (!ok) $("loginError").hidden = false;
+  });
+  $("btnKeluar").addEventListener("click", function () {
+    keluar();
+    toast("Anda sudah keluar.");
+  });
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      renderSemua();
+    });
+  });
+
+  // ---------- Render: Dasbor ----------
+  function renderDashboard() {
+    var bulan = estimasiTerlihat().filter(function (es) { return dalamPeriode("30hari", es.tanggal); });
+    var nilaiBulan = bulan.reduce(function (a, es) { return a + totalEstimasi(es); }, 0);
+    var diputuskan = estimasiTerlihat().filter(function (es) { return es.status === "Disetujui" || es.status === "Ditolak" || es.status === "Dijadikan WO"; });
+    var disetujui = estimasiTerlihat().filter(function (es) { return es.status === "Disetujui" || es.status === "Dijadikan WO"; });
+    var tingkat = diputuskan.length ? Math.round(disetujui.length / diputuskan.length * 100) : 0;
+    var menunggu = estimasiTerlihat().filter(function (es) { return es.status === "Draf" || es.status === "Dikirim"; });
+    $("dEstBulan").textContent = String(bulan.length);
+    $("dNilaiBulan").textContent = rupiah(nilaiBulan);
+    $("dTingkatSetuju").textContent = tingkat + "%";
+    $("dMenunggu").textContent = String(menunggu.length);
+    $("badgeEst").textContent = String(estimasiTerlihat().length);
+    $("badgeWO").textContent = String(woTerlihat().length);
+
+    $("daftarMenunggu").innerHTML = menunggu.length ? menunggu.slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); }).map(function (es) {
+      var k = cariKendaraan(es.kendaraanId);
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(es.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(es.status) + "\">" + esc(es.status) + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(es.tanggal)) + " • " + esc(es.diagnosa) + " • Mekanik " + esc(namaMekanik(es.mekanikId)) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalEstimasi(es)) + "</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada estimasi yang menunggu keputusan.</p>";
+
+    var terbaru = estimasiTerlihat().slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); }).slice(0, 5);
+    $("daftarEstTerbaru").innerHTML = terbaru.map(function (es) {
+      var k = cariKendaraan(es.kendaraanId);
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(es.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(es.status) + "\">" + esc(es.status) + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(es.tanggal)) + " • " + esc(es.diagnosa) + " • Mekanik " + esc(namaMekanik(es.mekanikId)) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalEstimasi(es)) + "</span></div></div>";
+    }).join("");
+  }
+
+  // ---------- Render: Pengguna ----------
+  function renderPengguna() {
+    var wrap = $("daftarPengguna");
+    wrap.innerHTML = users.map(function (u) {
+      return "<div class=\"user-row\"><div><div class=\"nm\" style=\"font-weight:700\">" + esc(u.name) + " <span style=\"color:var(--muted);font-weight:400\">(@" + esc(u.username) + ")</span></div><div class=\"dt\" style=\"color:var(--muted);font-size:13px\">" + labelPeran(u.role) + (u.mekanikId ? " • Mekanik: " + esc(namaMekanik(u.mekanikId)) : "") + (u.aktif === false ? " • Nonaktif" : "") + "</div></div><div class=\"aksi\">" +
+        "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-pengguna=\"sandi\" data-user=\"" + esc(u.username) + "\">Reset Sandi</button>" +
+        "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-pengguna=\"aktif\" data-user=\"" + esc(u.username) + "\">" + (u.aktif === false ? "Aktifkan" : "Nonaktifkan") + "</button>" +
+        "</div></div>";
+    }).join("");
+  }
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!isAdmin()) { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    if (aksi === "sandi") {
+      tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ') menjadi "bk123"?', function () {
+        u.password = "bk123";
+        saveUsers();
+        renderPengguna();
+        toast("Kata sandi " + u.name + " direset menjadi bk123.");
+      });
+    } else if (aksi === "aktif") {
+      if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa menonaktifkan satu-satunya admin aktif.");
+        return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers();
+      renderPengguna();
+      toast(u.aktif ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
+    }
+  });
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (pass.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true, mekanikId: null });
+    saveUsers();
+    $("nuNama").value = "";
+    $("nuUser").value = "";
+    $("nuPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + nama + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value;
+    var baru = $("sandiBaru").value;
+    if (currentUser.password !== lama) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("sandiLama").value = "";
+    $("sandiBaru").value = "";
+    toast("Kata sandi berhasil diganti.");
+  });
+
+  // ---------- Render: Estimasi ----------
+  var esJasaTerpilih = [];
+  var esPartsTerpilih = {};
+  function isiFormEstimasi() {
+    var selK = $("esKendaraan");
+    selK.innerHTML = state.kendaraan.map(function (k) {
+      return "<option value=\"" + k.id + "\">" + esc(labelKendaraan(k)) + "</option>";
+    }).join("");
+    var selM = $("esMekanik");
+    selM.innerHTML = state.mekanik.filter(function (m) { return m.aktif !== false; }).map(function (m) {
+      return "<option value=\"" + m.id + "\">" + esc(m.nama) + " — " + esc(m.spesialisasi) + "</option>";
+    }).join("");
+    $("esJasa").innerHTML = state.layanan.map(function (l) {
+      return "<button class=\"chip\" type=\"button\" data-layanan=\"" + l.id + "\">" + esc(l.nama) + " • " + rupiah(l.harga) + "</button>";
+    }).join("");
+    $("esParts").innerHTML = state.parts.map(function (p) {
+      return "<div class=\"part-row\"><label><input type=\"checkbox\" data-part=\"" + p.id + "\"> " + esc(p.nama) + " • " + rupiah(p.harga) + "</label><input type=\"number\" min=\"1\" step=\"1\" value=\"1\" data-qty-part=\"" + p.id + "\" disabled></div>";
+    }).join("");
+    esJasaTerpilih = [];
+    esPartsTerpilih = {};
+    hitungPreviewEstimasi();
+  }
+  function hitungPreviewEstimasi() {
+    var diskon = Number($("esDiskon").value || 0);
+    var totalJasa = 0, totalPart = 0;
+    esJasaTerpilih.forEach(function (lid) {
+      var l = cariLayanan(lid);
+      if (l) totalJasa += l.harga;
+    });
+    Object.keys(esPartsTerpilih).forEach(function (pid) {
+      var p = cariPart(Number(pid));
+      if (p) totalPart += p.harga * Number(esPartsTerpilih[pid] || 1);
+    });
+    var total = Math.max(0, totalJasa + totalPart - diskon);
+    $("esTotal").textContent = "Total estimasi: " + rupiah(total);
+    return total;
+  }
+  $("esJasa").addEventListener("click", function (e) {
+    var chip = e.target.closest("[data-layanan]");
+    if (!chip) return;
+    var lid = Number(chip.getAttribute("data-layanan"));
+    var i = esJasaTerpilih.indexOf(lid);
+    if (i >= 0) { esJasaTerpilih.splice(i, 1); chip.classList.remove("active"); }
+    else { esJasaTerpilih.push(lid); chip.classList.add("active"); }
+    hitungPreviewEstimasi();
+  });
+  function tanganiPartsEstimasi(e) {
+    var cb = e.target.closest("[data-part]");
+    if (cb) {
+      var pid = cb.getAttribute("data-part");
+      var qtyInput = document.querySelector("[data-qty-part=\"" + pid + "\"]");
+      if (cb.checked) { esPartsTerpilih[pid] = Number(qtyInput.value || 1); qtyInput.disabled = false; }
+      else { delete esPartsTerpilih[pid]; qtyInput.disabled = true; }
+      hitungPreviewEstimasi();
+      return;
+    }
+    var q = e.target.closest("[data-qty-part]");
+    if (q) {
+      var pid2 = q.getAttribute("data-qty-part");
+      if (esPartsTerpilih[pid2] != null) esPartsTerpilih[pid2] = Math.max(1, Number(q.value || 1));
+      hitungPreviewEstimasi();
+    }
+  }
+  $("esParts").addEventListener("change", tanganiPartsEstimasi);
+  $("esParts").addEventListener("input", tanganiPartsEstimasi);
+  $("esDiskon").addEventListener("input", hitungPreviewEstimasi);
+  function simpanEstimasi(status) {
+    if (!bisaKasir()) { toast("Hanya admin dan kasir yang bisa membuat estimasi."); return; }
+    var kendaraanId = Number($("esKendaraan").value);
+    var tanggal = $("esTanggal").value;
+    var mekanikId = Number($("esMekanik").value);
+    var diagnosa = $("esDiagnosa").value.trim();
+    var catatan = $("esCatatan").value.trim();
+    var diskon = Number($("esDiskon").value || 0);
+    if (!kendaraanId || !tanggal || !mekanikId || !diagnosa) { toast("Kendaraan, tanggal, mekanik, dan diagnosa wajib diisi."); return; }
+    if (!esJasaTerpilih.length) { toast("Pilih minimal satu jasa."); return; }
+    var jasa = esJasaTerpilih.map(function (lid) {
+      var l = cariLayanan(lid);
+      return { layananId: lid, harga: l ? l.harga : 0 };
+    });
+    var parts = Object.keys(esPartsTerpilih).map(function (pid) {
+      var p = cariPart(Number(pid));
+      return { partId: Number(pid), qty: Number(esPartsTerpilih[pid] || 1), harga: p ? p.harga : 0 };
+    });
+    var no = "EST-" + String(state.seqEstimasi).padStart(3, "0");
+    var d = new Date(tanggal + "T09:00:00");
+    state.estimasi.push({
+      id: state.seqEstimasi++, no: no, kendaraanId: kendaraanId, tanggal: d.toISOString(),
+      mekanikId: mekanikId, diagnosa: diagnosa, status: status,
+      diskon: diskon, catatan: catatan, woId: null, jasa: jasa, parts: parts
+    });
+    saveState();
+    $("esDiagnosa").value = "";
+    $("esCatatan").value = "";
+    $("esDiskon").value = "0";
+    isiFormEstimasi();
+    renderSemua();
+    toast("Estimasi " + no + (status === "Dikirim" ? " disimpan dan dikirim ke pelanggan." : " disimpan sebagai Draf."));
+  }
+  $("btnSimpanDraf").addEventListener("click", function () { simpanEstimasi("Draf"); });
+  $("btnSimpanKirim").addEventListener("click", function () { simpanEstimasi("Dikirim"); });
+  function renderEstimasi() {
+    $("cardBuatEstimasi").style.display = bisaKasir() ? "" : "none";
+    var fStatus = $("fEsStatus").value;
+    var cari = ($("cariEs").value || "").toLowerCase();
+    var daftar = estimasiTerlihat().filter(function (es) {
+      if (fStatus !== "semua" && es.status !== fStatus) return false;
+      if (cari) {
+        var k = cariKendaraan(es.kendaraanId);
+        var p = k ? cariPelanggan(k.pelangganId) : null;
+        var teks = (es.no + " " + (k ? k.plat + " " + k.merek : "") + " " + (p ? p.nama : "") + " " + es.diagnosa).toLowerCase();
+        if (teks.indexOf(cari) < 0) return false;
+      }
+      return true;
+    }).sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    var totalNilai = daftar.reduce(function (a, es) { return a + totalEstimasi(es); }, 0);
+    $("ringkasanEs").innerHTML = "<p class=\"catatan\">Menampilkan <b>" + daftar.length + "</b> estimasi • Total nilai <b>" + rupiah(totalNilai) + "</b></p>";
+    $("daftarEstimasi").innerHTML = daftar.length ? daftar.map(function (es) {
+      var k = cariKendaraan(es.kendaraanId);
+      var wo = es.woId ? cariWO(es.woId) : null;
+      var aksi = "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-es=\"detail\" data-id=\"" + es.id + "\">Detail</button>" +
+        "<button class=\"btn wa kecil\" type=\"button\" data-aksi-es=\"wa\" data-id=\"" + es.id + "\">Salin Teks WA</button>";
+      if (bisaKasir()) {
+        if (es.status === "Draf") {
+          aksi += "<button class=\"btn biru kecil\" type=\"button\" data-aksi-es=\"kirim\" data-id=\"" + es.id + "\">Kirim ke Pelanggan</button>";
+        }
+        if (es.status === "Dikirim") {
+          aksi += "<button class=\"btn hijau kecil\" type=\"button\" data-aksi-es=\"setuju\" data-id=\"" + es.id + "\">Disetujui</button>" +
+            "<button class=\"btn merah kecil\" type=\"button\" data-aksi-es=\"tolak\" data-id=\"" + es.id + "\">Ditolak</button>";
+        }
+        if (es.status === "Disetujui") {
+          aksi += "<button class=\"btn oren kecil\" type=\"button\" data-aksi-es=\"wo\" data-id=\"" + es.id + "\">Jadikan WO</button>";
+        }
+        if (es.status === "Draf" || es.status === "Ditolak") {
+          aksi += "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-es=\"hapus\" data-id=\"" + es.id + "\">Hapus</button>";
+        }
+      }
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(es.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(es.status) + "\">" + esc(es.status) + "</span>" + (wo ? " • " + esc(wo.no) : "") + "</div><div class=\"dt\">" + tglSingkat(kunciDariIso(es.tanggal)) + " • " + esc(es.diagnosa) + " • Mekanik " + esc(namaMekanik(es.mekanikId)) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalEstimasi(es)) + "</span>" + aksi + "</div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada estimasi yang cocok.</p>";
+  }
+  $("fEsStatus").addEventListener("change", renderEstimasi);
+  $("cariEs").addEventListener("input", renderEstimasi);
+  function ubahStatusEstimasi(es, statusBaru) {
+    if (!bisaKasir()) { toast("Hanya admin dan kasir yang bisa mengubah status estimasi."); return; }
+    es.status = statusBaru;
+    saveState();
+    renderSemua();
+    toast("Estimasi " + es.no + " diubah menjadi " + statusBaru + ".");
+  }
+  function jadikanWO(es) {
+    if (!bisaKasir()) { toast("Hanya admin dan kasir yang bisa membuat work order."); return; }
+    if (es.status !== "Disetujui") { toast("Hanya estimasi Disetujui yang bisa dijadikan work order."); return; }
+    var no = "WO-" + String(state.seqWO).padStart(3, "0");
+    var wo = {
+      id: state.seqWO++, no: no, estimasiId: es.id, kendaraanId: es.kendaraanId,
+      tanggal: new Date().toISOString(), mekanikId: es.mekanikId, diagnosa: es.diagnosa,
+      status: "Antre", diskon: Number(es.diskon || 0),
+      jasa: (es.jasa || []).map(function (j) { return { layananId: j.layananId, harga: j.harga }; }),
+      parts: (es.parts || []).map(function (p) { return { partId: p.partId, qty: p.qty, harga: p.harga }; })
+    };
+    state.workorder.push(wo);
+    es.status = "Dijadikan WO";
+    es.woId = wo.id;
+    saveState();
+    renderSemua();
+    toast("Work order " + no + " dibuat dari " + es.no + ".");
+  }
+  $("daftarEstimasi").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-es]");
+    if (!btn) return;
+    var id = Number(btn.getAttribute("data-id"));
+    var es = cariEstimasi(id);
+    if (!es) return;
+    var aksi = btn.getAttribute("data-aksi-es");
+    if (aksi === "detail") {
+      var k = cariKendaraan(es.kendaraanId);
+      var p = k ? cariPelanggan(k.pelangganId) : null;
+      var wo = es.woId ? cariWO(es.woId) : null;
+      var html = "<p><b>" + esc(es.no) + "</b> — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> " + esc(k ? labelKendaraan(k) : "") + "</p>" +
+        "<p>Tanggal: " + tglSingkat(kunciDariIso(es.tanggal)) + " • Mekanik: " + esc(namaMekanik(es.mekanikId)) + " • Status: " + esc(es.status) + (wo ? " • " + esc(wo.no) : "") + "</p>" +
+        "<p style=\"margin-top:10px\"><b>Jasa:</b></p>" +
+        ((es.jasa || []).length ? "<table class=\"tabel\"><tr><th>Jasa</th><th class=\"angka\">Harga</th></tr>" + es.jasa.map(function (j) {
+          var l = cariLayanan(j.layananId);
+          return "<tr><td>" + esc(l ? l.nama : "—") + "</td><td class=\"angka\">" + rupiah(j.harga) + "</td></tr>";
+        }).join("") + "</table>" : "<p>Tidak ada jasa.</p>") +
+        "<p style=\"margin-top:10px\"><b>Spare part:</b> " + ((es.parts || []).length ? es.parts.map(function (pt) { var part = cariPart(pt.partId); return esc(part ? part.nama : "—") + " × " + pt.qty + " (" + rupiah(pt.harga * pt.qty) + ")"; }).join(", ") : "—") + "</p>" +
+        "<p style=\"margin-top:8px\">Diskon: " + rupiah(es.diskon || 0) + " • <b>Total estimasi: " + rupiah(totalEstimasi(es)) + "</b></p>" +
+        (es.catatan ? "<p style=\"margin-top:8px\">Catatan: " + esc(es.catatan) + "</p>" : "") +
+        "<p style=\"margin-top:8px\">Diagnosa: " + esc(es.diagnosa) + "</p>" +
+        "<p style=\"margin-top:10px\"><b>Teks WhatsApp untuk pelanggan:</b></p><div class=\"pesan-teks\" id=\"teksWADetail\">" + esc(teksEstimasiWA(es)) + "</div>" +
+        "<div class=\"row\"><button class=\"btn wa kecil\" type=\"button\" id=\"btnSalinWADetail\">Salin Teks WA</button>" + (waLinkPelanggan(es) ? "<a class=\"btn kecil\" href=\"" + waLinkPelanggan(es) + "\" target=\"_blank\" rel=\"noopener\">Buka WhatsApp</a>" : "") + "</div>" +
+        "<p style=\"margin-top:8px;font-size:13px\">Aplikasi hanya menyiapkan teks — pengiriman dilakukan manual lewat WhatsApp Anda.</p>";
+      bukaModalForm("Detail Estimasi", html);
+      $("btnSalinWADetail").addEventListener("click", function () {
+        salinTeks(teksEstimasiWA(es), "Teks estimasi disalin.");
+      });
+    } else if (aksi === "wa") {
+      salinTeks(teksEstimasiWA(es), "Teks estimasi disalin.");
+    } else if (aksi === "kirim") {
+      tanyaKonfirmasi("Kirim estimasi", "Kirim estimasi " + es.no + " (" + rupiah(totalEstimasi(es)) + ") ke pelanggan? Status berubah menjadi Dikirim.", function () {
+        ubahStatusEstimasi(es, "Dikirim");
+      });
+    } else if (aksi === "setuju") {
+      tanyaKonfirmasi("Estimasi disetujui", "Tandai estimasi " + es.no + " sebagai Disetujui pelanggan?", function () {
+        ubahStatusEstimasi(es, "Disetujui");
+      });
+    } else if (aksi === "tolak") {
+      tanyaKonfirmasi("Estimasi ditolak", "Tandai estimasi " + es.no + " sebagai Ditolak pelanggan?", function () {
+        ubahStatusEstimasi(es, "Ditolak");
+      });
+    } else if (aksi === "wo") {
+      tanyaKonfirmasi("Jadikan work order", "Buat work order dari estimasi " + es.no + " (" + rupiah(totalEstimasi(es)) + ")? Jasa dan spare part ikut ke work order.", function () {
+        jadikanWO(es);
+      });
+    } else if (aksi === "hapus") {
+      tanyaKonfirmasi("Hapus estimasi", "Hapus estimasi " + es.no + "? Tindakan ini tidak bisa dibatalkan.", function () {
+        state.estimasi = state.estimasi.filter(function (x) { return x.id !== es.id; });
+        saveState();
+        renderSemua();
+        toast("Estimasi " + es.no + " dihapus.");
+      });
+    }
+  });
+
+  // ---------- Render: Work Order ----------
+  function renderWO() {
+    var daftar = woTerlihat().slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    $("daftarWO").innerHTML = daftar.length ? daftar.map(function (wo) {
+      var k = cariKendaraan(wo.kendaraanId);
+      var es = wo.estimasiId ? cariEstimasi(wo.estimasiId) : null;
+      var selisih = selisihWO(wo);
+      var ketSelisih = "";
+      if (selisih != null) {
+        if (selisih > 0) ketSelisih = "<span class=\"lencana st-habis\">Melebihi estimasi +" + rupiah(selisih) + "</span>";
+        else if (selisih < 0) ketSelisih = "<span class=\"lencana st-aman\">Di bawah estimasi " + rupiah(selisih) + "</span>";
+        else ketSelisih = "<span class=\"lencana st-aman\">Sesuai estimasi</span>";
+      }
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(wo.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(wo.status) + "\">" + esc(wo.status) + "</span> " + ketSelisih + "</div><div class=\"dt\">" + tglSingkat(kunciDariIso(wo.tanggal)) + " • " + esc(wo.diagnosa) + " • Mekanik " + esc(namaMekanik(wo.mekanikId)) + (es ? " • dari " + esc(es.no) + " (estimasi " + rupiah(totalEstimasi(es)) + ")" : "") + "</div></div><div class=\"aksi\"><span class=\"harga\">Biaya akhir " + rupiah(totalWO(wo)) + "</span><button class=\"btn ghost kecil\" type=\"button\" data-aksi-wo=\"detail\" data-id=\"" + wo.id + "\">Detail &amp; Ubah</button></div></div>";
+    }).join("") : "<p class=\"kosong\">Belum ada work order. Buat dari estimasi yang Disetujui di tab Estimasi.</p>";
+  }
+  $("daftarWO").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-wo]");
+    if (!btn) return;
+    var wo = cariWO(Number(btn.getAttribute("data-id")));
+    if (!wo) return;
+    var es = wo.estimasiId ? cariEstimasi(wo.estimasiId) : null;
+    var selisih = selisihWO(wo);
+    var ketSelisih = selisih == null ? "—" : (selisih > 0 ? "Melebihi estimasi +" + rupiah(selisih) : (selisih < 0 ? "Di bawah estimasi " + rupiah(selisih) : "Sesuai estimasi"));
+    var html = "<p><b>" + esc(wo.no) + "</b>" + (es ? " — dari " + esc(es.no) : "") + "</p>" +
+      "<p>Mekanik: " + esc(namaMekanik(wo.mekanikId)) + " • Status: " + esc(wo.status) + "</p>" +
+      "<p style=\"margin-top:10px\"><b>Perbandingan biaya:</b> estimasi " + (es ? rupiah(totalEstimasi(es)) : "—") + " • biaya akhir " + rupiah(totalWO(wo)) + " • <b>" + esc(ketSelisih) + "</b></p>" +
+      "<p style=\"margin-top:10px\"><b>Jasa yang dikerjakan:</b></p>" +
+      "<div class=\"chips\" id=\"woJasaEdit\">" + state.layanan.map(function (l) {
+        var aktif = (wo.jasa || []).some(function (j) { return j.layananId === l.id; });
+        return "<button class=\"chip" + (aktif ? " active" : "") + "\" type=\"button\" data-layanan=\"" + l.id + "\">" + esc(l.nama) + " • " + rupiah(l.harga) + "</button>";
+      }).join("") + "</div>" +
+      "<p><b>Spare part yang dipakai:</b></p><div id=\"woPartsEdit\">" + state.parts.map(function (p) {
+        var pakai = (wo.parts || []).find(function (pt) { return pt.partId === p.id; });
+        return "<div class=\"part-row\"><label><input type=\"checkbox\" data-part=\"" + p.id + "\"" + (pakai ? " checked" : "") + "> " + esc(p.nama) + " • " + rupiah(p.harga) + "</label><input type=\"number\" min=\"1\" step=\"1\" value=\"" + (pakai ? pakai.qty : 1) + "\" data-qty-part=\"" + p.id + "\"" + (pakai ? "" : " disabled") + "></div>";
+      }).join("") + "</div>" +
+      "<div class=\"form-grid\"><div class=\"field\"><label>Diskon (Rp)</label><input type=\"number\" id=\"woDiskonEdit\" min=\"0\" step=\"1000\" value=\"" + Number(wo.diskon || 0) + "\"></div>" +
+      "<div class=\"field\"><label>Status pekerjaan</label><select id=\"woStatusEdit\"><option value=\"Antre\"" + (wo.status === "Antre" ? " selected" : "") + ">Antre</option><option value=\"Dikerjakan\"" + (wo.status === "Dikerjakan" ? " selected" : "") + ">Dikerjakan</option><option value=\"Selesai\"" + (wo.status === "Selesai" ? " selected" : "") + ">Selesai</option></select></div></div>" +
+      "<p id=\"woTotalEdit\" style=\"font-weight:800\">Biaya akhir: " + rupiah(totalWO(wo)) + "</p>" +
+      "<div class=\"row\"><button class=\"btn kecil\" id=\"btnSimpanWOEdit\" type=\"button\">Simpan Perubahan WO</button></div>";
+    bukaModalForm("Detail Work Order", html);
+    var jasaTerpilih = (wo.jasa || []).map(function (j) { return j.layananId; });
+    var partsTerpilih = {};
+    (wo.parts || []).forEach(function (pt) { partsTerpilih[pt.partId] = pt.qty; });
+    function hitungEdit() {
+      var tj = 0, tp = 0;
+      jasaTerpilih.forEach(function (lid) { var l = cariLayanan(lid); if (l) tj += l.harga; });
+      Object.keys(partsTerpilih).forEach(function (pid) { var p = cariPart(Number(pid)); if (p) tp += p.harga * Number(partsTerpilih[pid] || 1); });
+      var total = Math.max(0, tj + tp - Number($("woDiskonEdit").value || 0));
+      $("woTotalEdit").textContent = "Biaya akhir: " + rupiah(total);
+      return total;
+    }
+    $("woJasaEdit").addEventListener("click", function (ev) {
+      var chip = ev.target.closest("[data-layanan]");
+      if (!chip) return;
+      var lid = Number(chip.getAttribute("data-layanan"));
+      var i = jasaTerpilih.indexOf(lid);
+      if (i >= 0) { jasaTerpilih.splice(i, 1); chip.classList.remove("active"); }
+      else { jasaTerpilih.push(lid); chip.classList.add("active"); }
+      hitungEdit();
+    });
+    function tanganiPartsWO(ev) {
+      var cb = ev.target.closest("[data-part]");
+      if (cb) {
+        var pid = cb.getAttribute("data-part");
+        var qtyInput = document.querySelector("[data-qty-part=\"" + pid + "\"]");
+        if (cb.checked) { partsTerpilih[pid] = Number(qtyInput.value || 1); qtyInput.disabled = false; }
+        else { delete partsTerpilih[pid]; qtyInput.disabled = true; }
+        hitungEdit();
+        return;
+      }
+      var q = ev.target.closest("[data-qty-part]");
+      if (q) {
+        var pid2 = q.getAttribute("data-qty-part");
+        if (partsTerpilih[pid2] != null) partsTerpilih[pid2] = Math.max(1, Number(q.value || 1));
+        hitungEdit();
+      }
+    }
+    $("woPartsEdit").addEventListener("change", tanganiPartsWO);
+    $("woPartsEdit").addEventListener("input", tanganiPartsWO);
+    $("woDiskonEdit").addEventListener("input", hitungEdit);
+    $("btnSimpanWOEdit").addEventListener("click", function () {
+      if (!bisaKasir()) { toast("Hanya admin dan kasir yang bisa mengubah work order."); return; }
+      wo.jasa = jasaTerpilih.map(function (lid) { var l = cariLayanan(lid); return { layananId: lid, harga: l ? l.harga : 0 }; });
+      wo.parts = Object.keys(partsTerpilih).map(function (pid) { var p = cariPart(Number(pid)); return { partId: Number(pid), qty: Number(partsTerpilih[pid] || 1), harga: p ? p.harga : 0 }; });
+      wo.diskon = Number($("woDiskonEdit").value || 0);
+      wo.status = $("woStatusEdit").value;
+      saveState();
+      tutupModal();
+      renderSemua();
+      toast("Work order " + wo.no + " diperbarui. Biaya akhir " + rupiah(totalWO(wo)) + ".");
+    });
+  });
+
+  // ---------- Render: Riwayat ----------
+  function renderRiwayat() {
+    var selK = $("rwKendaraan");
+    var simpanK = selK.value;
+    selK.innerHTML = "<option value=\"semua\">Semua kendaraan</option>" + state.kendaraan.map(function (k) {
+      return "<option value=\"" + k.id + "\">" + esc(labelKendaraan(k)) + "</option>";
+    }).join("");
+    if (simpanK) selK.value = simpanK;
+    var selP = $("rwPelanggan");
+    var simpanP = selP.value;
+    selP.innerHTML = "<option value=\"semua\">Semua pelanggan</option>" + state.pelanggan.map(function (p) {
+      return "<option value=\"" + p.id + "\">" + esc(p.nama) + "</option>";
+    }).join("");
+    if (simpanP) selP.value = simpanP;
+    var kId = selK.value === "semua" ? null : Number(selK.value);
+    var pId = selP.value === "semua" ? null : Number(selP.value);
+    var daftarEs = estimasiTerlihat().filter(function (es) {
+      if (kId && es.kendaraanId !== kId) return false;
+      if (pId) {
+        var k = cariKendaraan(es.kendaraanId);
+        if (!k || k.pelangganId !== pId) return false;
+      }
+      return true;
+    }).sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    var daftarWO = woTerlihat().filter(function (wo) {
+      if (kId && wo.kendaraanId !== kId) return false;
+      if (pId) {
+        var k = cariKendaraan(wo.kendaraanId);
+        if (!k || k.pelangganId !== pId) return false;
+      }
+      return true;
+    });
+    var totalEs = daftarEs.reduce(function (a, es) { return a + totalEstimasi(es); }, 0);
+    var totalBiayaWO = daftarWO.reduce(function (a, wo) { return a + totalWO(wo); }, 0);
+    $("ringkasanRiwayat").innerHTML = "<p class=\"catatan\"><b>" + daftarEs.length + "</b> estimasi (total nilai <b>" + rupiah(totalEs) + "</b>) • <b>" + daftarWO.length + "</b> work order (total biaya akhir <b>" + rupiah(totalBiayaWO) + "</b>)</p>";
+    var gabung = [];
+    daftarEs.forEach(function (es) { gabung.push({ jenis: "Estimasi", tanggal: es.tanggal, no: es.no, es: es, wo: null }); });
+    daftarWO.forEach(function (wo) { gabung.push({ jenis: "Work Order", tanggal: wo.tanggal, no: wo.no, es: null, wo: wo }); });
+    gabung.sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    $("daftarRiwayat").innerHTML = gabung.length ? gabung.map(function (g) {
+      if (g.es) {
+        var es = g.es;
+        var k = cariKendaraan(es.kendaraanId);
+        var wo = es.woId ? cariWO(es.woId) : null;
+        return "<div class=\"item-bar\"><div><div class=\"nm\">Estimasi " + esc(es.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(es.status) + "\">" + esc(es.status) + "</span>" + (wo ? " • " + esc(wo.no) : "") + "</div><div class=\"dt\">" + tglSingkat(kunciDariIso(es.tanggal)) + " • " + esc(es.diagnosa) + " • Mekanik " + esc(namaMekanik(es.mekanikId)) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalEstimasi(es)) + "</span></div></div>";
+      }
+      var wo2 = g.wo;
+      var k2 = cariKendaraan(wo2.kendaraanId);
+      var es2 = wo2.estimasiId ? cariEstimasi(wo2.estimasiId) : null;
+      var selisih = selisihWO(wo2);
+      var ket = selisih == null ? "" : (selisih > 0 ? " • Melebihi estimasi +" + rupiah(selisih) : (selisih < 0 ? " • Di bawah estimasi " + rupiah(selisih) : " • Sesuai estimasi"));
+      return "<div class=\"item-bar\"><div><div class=\"nm\">Work Order " + esc(wo2.no) + " — <span class=\"plat\">" + esc(k2 ? k2.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(wo2.status) + "\">" + esc(wo2.status) + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(wo2.tanggal)) + " • " + esc(wo2.diagnosa) + " • Mekanik " + esc(namaMekanik(wo2.mekanikId)) + (es2 ? " • dari " + esc(es2.no) + " (estimasi " + rupiah(totalEstimasi(es2)) + ")" : "") + ket + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalWO(wo2)) + "</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada riwayat untuk pilihan ini.</p>";
+  }
+  ["rwKendaraan", "rwPelanggan"].forEach(function (id) {
+    $(id).addEventListener("change", renderRiwayat);
+  });
+
+  // ---------- Render: Laporan ----------
+  function renderLaporan() {
+    var periode = $("lapPeriode").value;
+    var fStatus = $("lapStatus").value;
+    var daftar = estimasiTerlihat().filter(function (es) {
+      if (!dalamPeriode(periode, es.tanggal)) return false;
+      if (fStatus !== "semua" && es.status !== fStatus) return false;
+      return true;
+    });
+    var totalNilai = daftar.reduce(function (a, es) { return a + totalEstimasi(es); }, 0);
+    var setuju = daftar.filter(function (es) { return es.status === "Disetujui" || es.status === "Dijadikan WO"; }).length;
+    var daftarWO = woTerlihat().filter(function (wo) {
+      return dalamPeriode(periode, wo.tanggal) && selisihWO(wo) != null;
+    });
+    var totalSelisih = daftarWO.reduce(function (a, wo) { return a + (selisihWO(wo) || 0); }, 0);
+    $("lJumlah").textContent = String(daftar.length);
+    $("lNilai").textContent = rupiah(totalNilai);
+    $("lSetuju").textContent = String(setuju);
+    $("lSelisih").textContent = (totalSelisih > 0 ? "+" : "") + rupiah(totalSelisih);
+    var statusList = ["Draf", "Dikirim", "Disetujui", "Ditolak", "Dijadikan WO"];
+    var baris = statusList.map(function (s) {
+      var d = daftar.filter(function (es) { return es.status === s; });
+      var n = d.reduce(function (a, es) { return a + totalEstimasi(es); }, 0);
+      return "<tr><td>" + s + "</td><td class=\"angka\">" + d.length + "</td><td class=\"angka\">" + rupiah(n) + "</td></tr>";
+    }).join("");
+    $("tabelLaporan").innerHTML = "<tr><th>Status</th><th class=\"angka\">Jumlah</th><th class=\"angka\">Total Nilai</th></tr>" + baris +
+      "<tr><td><b>Total</b></td><td class=\"angka\"><b>" + daftar.length + "</b></td><td class=\"angka\"><b>" + rupiah(totalNilai) + "</b></td></tr>";
+    var hitungJasa = {};
+    daftar.forEach(function (es) {
+      (es.jasa || []).forEach(function (j) {
+        var l = cariLayanan(j.layananId);
+        var nama = l ? l.nama : "—";
+        hitungJasa[nama] = (hitungJasa[nama] || 0) + 1;
+      });
+    });
+    var terlaris = Object.keys(hitungJasa).sort(function (a, b) { return hitungJasa[b] - hitungJasa[a]; }).slice(0, 5);
+    $("daftarTerlaris").innerHTML = terlaris.length ? terlaris.map(function (nama) {
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(nama) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + hitungJasa[nama] + "×</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada jasa pada periode ini.</p>";
+    $("daftarLaporanEs").innerHTML = daftar.length ? daftar.slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); }).map(function (es) {
+      var k = cariKendaraan(es.kendaraanId);
+      var wo = es.woId ? cariWO(es.woId) : null;
+      var ketWO = "";
+      if (wo) {
+        var s = selisihWO(wo);
+        ketWO = " • " + esc(wo.no) + " biaya akhir " + rupiah(totalWO(wo)) + (s > 0 ? " (+" + rupiah(s) + ")" : (s < 0 ? " (" + rupiah(s) + ")" : " (sesuai)"));
+      }
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(es.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> <span class=\"lencana " + kelasStatus(es.status) + "\">" + esc(es.status) + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(es.tanggal)) + " • " + esc(es.diagnosa) + " • Mekanik " + esc(namaMekanik(es.mekanikId)) + ketWO + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalEstimasi(es)) + "</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada estimasi pada periode ini.</p>";
+  }
+  ["lapPeriode", "lapStatus"].forEach(function (id) {
+    $(id).addEventListener("change", renderLaporan);
+  });
+  function csvLaporan() {
+    var periode = $("lapPeriode").value;
+    var fStatus = $("lapStatus").value;
+    var daftar = estimasiTerlihat().filter(function (es) {
+      if (!dalamPeriode(periode, es.tanggal)) return false;
+      if (fStatus !== "semua" && es.status !== fStatus) return false;
+      return true;
+    }).slice().sort(function (a, b) { return new Date(a.tanggal) - new Date(b.tanggal); });
+    var baris = ["No,Tanggal,Kendaraan,Pelanggan,Mekanik,Diagnosa,Status,Total Estimasi,Work Order,Biaya Akhir WO,Selisih"];
+    daftar.forEach(function (es) {
+      var k = cariKendaraan(es.kendaraanId);
+      var p = k ? cariPelanggan(k.pelangganId) : null;
+      var wo = es.woId ? cariWO(es.woId) : null;
+      var s = wo ? selisihWO(wo) : "";
+      baris.push([es.no, kunciDariIso(es.tanggal), k ? k.plat : "", p ? '"' + p.nama.replace(/"/g, '""') + '"' : "", namaMekanik(es.mekanikId), '"' + String(es.diagnosa).replace(/"/g, '""') + '"', es.status, totalEstimasi(es), wo ? wo.no : "", wo ? totalWO(wo) : "", s === "" ? "" : s].join(","));
+    });
+    return baris.join("\n");
+  }
+  $("btnExportCSV").addEventListener("click", function () {
+    unduh("laporan-estimasi.csv", csvLaporan(), "text/csv;charset=utf-8");
+    toast("Laporan CSV diunduh.");
+  });
+  $("btnBackupJSON").addEventListener("click", function () {
+    unduh("backup-estimasi-biaya.json", JSON.stringify({ app: "aplikasiEstimasiBiaya", version: 1, state: state }, null, 2), "application/json;charset=utf-8");
+    toast("Backup JSON diunduh.");
+  });
+  $("btnPulihkan").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var d = JSON.parse(reader.result);
+        var s = d && d.state ? d.state : d;
+        if (!s || !Array.isArray(s.estimasi) || !Array.isArray(s.workorder) || !Array.isArray(s.layanan) || !Array.isArray(s.parts) || !Array.isArray(s.kendaraan) || !Array.isArray(s.pelanggan) || !Array.isArray(s.mekanik)) throw new Error("format tidak dikenal");
+        state = s;
+        saveState();
+        isiFormEstimasi();
+        renderSemua();
+        toast("Backup dipulihkan.");
+      } catch (err) {
+        toast("File backup tidak valid.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- Reset data ----------
+  $("btnResetData").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa mengembalikan data contoh."); return; }
+    tanyaKonfirmasi("Kembalikan data contoh", "Semua perubahan Anda akan dihapus dan data contoh Bengkel Oyen dikembalikan. Lanjutkan?", function () {
+      state = seedState();
+      saveState();
+      isiFormEstimasi();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Init ----------
+  function renderSemua() {
+    $("tanggalHari").textContent = tanggalHariIni();
+    renderDashboard();
+    renderPengguna();
+    renderEstimasi();
+    renderWO();
+    renderRiwayat();
+    renderLaporan();
+  }
+  loadState();
+  loadUsers();
+  isiFormEstimasi();
+  $("esTanggal").value = hariIniKey();
+  var sesi = pulihkanSesi();
+  terapkanSesi();
+  if (!sesi) {
+    $("loginUser").focus();
+  }
+})();
+</script>
+</body>
+</html>
