@@ -140,9 +140,11 @@ def build(template_text, data):
             cards = "".join(render_news_card(n) for n in cerita)
             report["inserted"]["cerita"] = len(cerita)
             return "<!-- AUTO:cerita:start -->" + inner + cards + "<!-- AUTO:cerita:end -->"
-        cards = "".join(render_shop_card(s) for s in shop)
-        report["inserted"]["toko"] = len(shop)
-        return "<!-- AUTO:toko:start -->" + inner + cards + "<!-- AUTO:toko:end -->"
+        # 2.0: produk TIDAK lagi tampil di beranda — toko hanya di toko.html.
+        # Kartu toko baru tetap tercatat di laporan sebagai 0 agar tidak ada
+        # yang mengira produk hilang; penambahan produk dilakukan di toko.html.
+        report["inserted"]["toko"] = 0
+        return "<!-- AUTO:toko:start -->" + inner + "<!-- AUTO:toko:end -->"
 
     output, n = MARKER_RE.subn(replace_section, template_text)
     if n != len(SECTIONS):
