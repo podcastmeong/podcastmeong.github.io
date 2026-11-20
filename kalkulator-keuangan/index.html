@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalkulator Keuangan — Demo</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  .kal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .kal-head { font-weight: 800; font-size: 12.5px; text-align: center; color: var(--muted); padding: 4px 0; }
+  .kal-hari { border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; min-height: 62px; font-size: 12.5px; background: var(--surface); }
+  .kal-hari .no { font-weight: 800; font-size: 14px; }
+  .kal-hari .isi { color: var(--muted); margin-top: 2px; }
+  .kal-hari.luar { opacity: .35; }
+  .kal-hari.hari-ini { border-color: var(--oren); background: var(--oren-soft); }
+  .kal-hari.terisi { background: var(--blue-soft); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO</span>
+    <h1>Kalkulator <span class="aksen">Keuangan</span></h1>
+    <p>Hitung cicilan dan bunga, simulasi tabungan, persentase untung, dan perbandingan harga — untuk perorangan dan UMKM yang butuh hitung cepat.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="cicilan">Cicilan</button>
+    <button class="tab-btn" type="button" data-tab="tabungan">Tabungan</button>
+    <button class="tab-btn" type="button" data-tab="untung">Untung</button>
+    <button class="tab-btn" type="button" data-tab="perbandingan">Perbandingan</button>
+    <button class="tab-btn" type="button" data-tab="riwayat">Riwayat <span class="badge" id="badgeRiwayat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Keuangan</h2><p>Ringkasan perhitungan Anda dan hitung cepat dari sini.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Perhitungan</div><div class="angka" id="dTotal">0</div><div class="sub" id="dTotalSub"></div></div>
+      <div class="stat"><div class="label">Cicilan Terakhir</div><div class="angka" id="dCicilan" style="font-size:22px">—</div><div class="sub" id="dCicilanSub"></div></div>
+      <div class="stat"><div class="label">Tabungan Terakhir</div><div class="angka" id="dTabungan" style="font-size:22px">—</div><div class="sub" id="dTabunganSub"></div></div>
+      <div class="stat warn"><div class="label">Untung Terakhir</div><div class="angka" id="dUntung" style="font-size:22px">—</div><div class="sub" id="dUntungSub"></div></div>
+    </div>
+    <div class="card"><h3>Perhitungan Terbaru</h3><div id="daftarTerbaru"></div></div>
+    <div class="card" id="cardHitungCepat">
+      <h3>Hitung Cepat — Cicilan</h3>
+      <p class="sub">Masukkan angka, hasil langsung terlihat. Hasil tersimpan ke Riwayat saat tombol ditekan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qPokok">Pokok pinjaman (Rp)</label><input id="qPokok" type="number" min="0" placeholder="cth: 50000000"></div>
+        <div class="field"><label for="qBunga">Bunga per tahun (%)</label><input id="qBunga" type="number" min="0" step="0.01" placeholder="cth: 12"></div>
+        <div class="field"><label for="qTenor">Tenor (bulan)</label><input id="qTenor" type="number" min="1" placeholder="cth: 12"></div>
+      </div>
+      <div class="catatan" id="pratinjauCepat">Isi pokok, bunga, dan tenor untuk melihat angsuran per bulan.</div>
+      <button class="btn kecil" id="btnHitungCepat" type="button">Hitung &amp; Simpan ke Riwayat</button>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengguna.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-cicilan">
+    <div class="page-head"><h2>Hitung Cicilan</h2><p>Angsuran tetap per bulan (anuitas) dari pokok, bunga per tahun, dan tenor.</p></div>
+    <div class="card">
+      <h3>Data Pinjaman</h3>
+      <div class="form-grid">
+        <div class="field"><label for="cPokok">Pokok pinjaman (Rp)</label><input id="cPokok" type="number" min="0" placeholder="cth: 50000000"></div>
+        <div class="field"><label for="cBunga">Bunga per tahun (%)</label><input id="cBunga" type="number" min="0" step="0.01" placeholder="cth: 12"></div>
+        <div class="field"><label for="cTenor">Tenor (bulan)</label><input id="cTenor" type="number" min="1" max="360" placeholder="cth: 12"></div>
+        <div class="field"><label for="cNama">Nama perhitungan (opsional)</label><input id="cNama" type="text" placeholder="cth: Cicilan motor"></div>
+      </div>
+      <button class="btn kecil" id="btnHitungCicilan" type="button">Hitung Cicilan</button>
+    </div>
+    <div class="card" id="cardHasilCicilan" hidden>
+      <h3>Hasil Cicilan</h3>
+      <div class="grid-stat">
+        <div class="stat accent"><div class="label">Angsuran / Bulan</div><div class="angka" id="hAngsuran" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label">Total Dibayar</div><div class="angka" id="hTotalBayar" style="font-size:22px">Rp0</div></div>
+        <div class="stat warn"><div class="label">Total Bunga</div><div class="angka" id="hTotalBunga" style="font-size:22px">Rp0</div></div>
+      </div>
+      <p class="sub" id="hRingkasanCicilan"></p>
+      <h3 style="margin-top:14px">Jadwal Angsuran</h3>
+      <p class="sub" id="hCatatanJadwal"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelJadwal"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-tabungan">
+    <div class="page-head"><h2>Simulasi Tabungan</h2><p>Saldo akhir dari setoran awal, setoran bulanan, dan bunga majemuk per tahun.</p></div>
+    <div class="card">
+      <h3>Data Tabungan</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tAwal">Setoran awal (Rp)</label><input id="tAwal" type="number" min="0" placeholder="cth: 1000000"></div>
+        <div class="field"><label for="tBulanan">Setoran bulanan (Rp)</label><input id="tBulanan" type="number" min="0" placeholder="cth: 500000"></div>
+        <div class="field"><label for="tBunga">Bunga per tahun (%)</label><input id="tBunga" type="number" min="0" step="0.01" placeholder="cth: 6"></div>
+        <div class="field"><label for="tTahun">Jangka waktu (tahun)</label><input id="tTahun" type="number" min="1" max="30" placeholder="cth: 5"></div>
+        <div class="field"><label for="tNama">Nama perhitungan (opsional)</label><input id="tNama" type="text" placeholder="cth: Dana pendidikan"></div>
+      </div>
+      <button class="btn kecil" id="btnHitungTabungan" type="button">Hitung Tabungan</button>
+    </div>
+    <div class="card" id="cardHasilTabungan" hidden>
+      <h3>Hasil Simulasi Tabungan</h3>
+      <div class="grid-stat">
+        <div class="stat accent"><div class="label">Saldo Akhir</div><div class="angka" id="hSaldoAkhir" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label">Total Setoran</div><div class="angka" id="hTotalSetoran" style="font-size:22px">Rp0</div></div>
+        <div class="stat warn"><div class="label">Total Bunga Diterima</div><div class="angka" id="hBungaTabungan" style="font-size:22px">Rp0</div></div>
+      </div>
+      <p class="sub" id="hRingkasanTabungan"></p>
+      <h3 style="margin-top:14px">Perkembangan per Tahun</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelTabungan"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-untung">
+    <div class="page-head"><h2>Hitung Persentase Untung</h2><p>Untung rupiah dan persen dari modal dan harga jual.</p></div>
+    <div class="card">
+      <h3>Data Jualan</h3>
+      <div class="form-grid">
+        <div class="field"><label for="uModal">Modal per unit (Rp)</label><input id="uModal" type="number" min="0" placeholder="cth: 20000"></div>
+        <div class="field"><label for="uJual">Harga jual per unit (Rp)</label><input id="uJual" type="number" min="0" placeholder="cth: 30000"></div>
+        <div class="field"><label for="uJumlah">Jumlah unit</label><input id="uJumlah" type="number" min="1" value="1" placeholder="cth: 10"></div>
+        <div class="field"><label for="uNama">Nama perhitungan (opsional)</label><input id="uNama" type="text" placeholder="cth: Jualan keripik"></div>
+      </div>
+      <button class="btn kecil" id="btnHitungUntung" type="button">Hitung Untung</button>
+    </div>
+    <div class="card" id="cardHasilUntung" hidden>
+      <h3>Hasil Untung</h3>
+      <div class="grid-stat">
+        <div class="stat accent"><div class="label">Untung per Unit</div><div class="angka" id="hUntungUnit" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label">Total Untung</div><div class="angka" id="hTotalUntung" style="font-size:22px">Rp0</div></div>
+        <div class="stat warn"><div class="label">Persentase Untung</div><div class="angka" id="hPersenUntung" style="font-size:22px">0%</div></div>
+      </div>
+      <p class="sub" id="hRingkasanUntung"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-perbandingan">
+    <div class="page-head"><h2>Perbandingan Harga</h2><p>Bandingkan dua produk dari harga per satuan — mana yang lebih murah.</p></div>
+    <div class="card">
+      <h3>Produk A dan Produk B</h3>
+      <div class="form-grid">
+        <div class="field"><label for="bNamaA">Nama produk A</label><input id="bNamaA" type="text" placeholder="cth: Kopi merek A"></div>
+        <div class="field"><label for="bHargaA">Harga A (Rp)</label><input id="bHargaA" type="number" min="0" placeholder="cth: 25000"></div>
+        <div class="field"><label for="bIsiA">Isi / berat A</label><input id="bIsiA" type="number" min="0" step="0.01" placeholder="cth: 250"></div>
+        <div class="field"><label for="bSatuanA">Satuan isi A</label><select id="bSatuanA"><option>gram</option><option>ml</option><option>pcs</option><option>kg</option><option>liter</option></select></div>
+        <div class="field"><label for="bNamaB">Nama produk B</label><input id="bNamaB" type="text" placeholder="cth: Kopi merek B"></div>
+        <div class="field"><label for="bHargaB">Harga B (Rp)</label><input id="bHargaB" type="number" min="0" placeholder="cth: 40000"></div>
+        <div class="field"><label for="bIsiB">Isi / berat B</label><input id="bIsiB" type="number" min="0" step="0.01" placeholder="cth: 500"></div>
+        <div class="field"><label for="bSatuanB">Satuan isi B</label><select id="bSatuanB"><option>gram</option><option>ml</option><option>pcs</option><option>kg</option><option>liter</option></select></div>
+      </div>
+      <button class="btn kecil" id="btnHitungBanding" type="button">Bandingkan Harga</button>
+    </div>
+    <div class="card" id="cardHasilBanding" hidden>
+      <h3>Hasil Perbandingan</h3>
+      <div class="grid-stat">
+        <div class="stat"><div class="label" id="hLabelA">Harga / satuan A</div><div class="angka" id="hHargaSatuanA" style="font-size:22px">Rp0</div></div>
+        <div class="stat"><div class="label" id="hLabelB">Harga / satuan B</div><div class="angka" id="hHargaSatuanB" style="font-size:22px">Rp0</div></div>
+        <div class="stat accent"><div class="label">Lebih Murah</div><div class="angka" id="hLebihMurah" style="font-size:22px">—</div><div class="sub" id="hSelisihBanding"></div></div>
+      </div>
+      <p class="sub" id="hRingkasanBanding"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head"><h2>Riwayat Perhitungan</h2><p>Semua perhitungan tersimpan di sini. Admin melihat semua pengguna; Pengguna hanya melihat miliknya sendiri.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJenis">Jenis</label><select id="fJenis"><option value="semua">Semua jenis</option><option>Cicilan</option><option>Tabungan</option><option>Untung</option><option>Perbandingan</option></select></div>
+        <div class="field"><label for="cariRw">Cari riwayat</label><input id="cariRw" type="text" placeholder="cth: cicilan motor, dana pendidikan"></div>
+      </div>
+      <p class="sub" id="ringkasanRiwayat"></p>
+      <div id="daftarRiwayat" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor riwayat ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvRiwayat" type="button">Ekspor CSV Riwayat</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Kalkulator Keuangan.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Cicilan</b> untuk menghitung angsuran tetap per bulan dari pokok pinjaman, bunga per tahun, dan tenor.</li>
+        <li>Buka tab <b>Tabungan</b> untuk simulasi saldo akhir dari setoran awal, setoran bulanan, dan bunga majemuk.</li>
+        <li>Buka tab <b>Untung</b> untuk menghitung untung rupiah dan persentase dari modal dan harga jual.</li>
+        <li>Buka tab <b>Perbandingan</b> untuk membandingkan harga per satuan dua produk dan melihat mana yang lebih murah.</li>
+        <li>Setiap perhitungan yang dihitung tersimpan otomatis di tab <b>Riwayat</b>, lengkap dengan tanggal dan nama pengguna.</li>
+      </ol>
+      <h3>Rumus yang Dipakai</h3>
+      <ul>
+        <li><b>Cicilan (anuitas):</b> angsuran = pokok × r ÷ (1 − (1 + r)<sup>−n</sup>), dengan r = bunga tahunan ÷ 12 ÷ 100 dan n = tenor bulan. Bila bunga 0%, angsuran = pokok ÷ tenor.</li>
+        <li><b>Tabungan:</b> bunga dihitung majemuk per bulan; setoran bulanan masuk di akhir tiap bulan. Saldo akhir = setoran awal × (1 + r)<sup>m</sup> + setoran bulanan × (((1 + r)<sup>m</sup> − 1) ÷ r), dengan m = jumlah bulan.</li>
+        <li><b>Untung:</b> untung per unit = harga jual − modal; persentase untung = untung ÷ modal × 100%.</li>
+        <li><b>Perbandingan:</b> harga per satuan = harga ÷ isi; produk dengan harga per satuan lebih rendah adalah yang lebih murah.</li>
+      </ul>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna, melihat riwayat semua pengguna, dan hapus data.</li>
+        <li><b>Pengguna</b> — memakai semua kalkulator dan melihat riwayat perhitungannya sendiri. Tidak bisa kelola pengguna atau melihat riwayat pengguna lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat.</li>
+        <li>Hasil perhitungan adalah simulasi berdasarkan rumus di atas; bunga, biaya administrasi, pajak, dan promo bank tidak dihitung — sesuaikan dengan ketentuan lembaga keuangan Anda.</li>
+        <li>Angka dan nama di sini adalah contoh demo, bukan harga resmi atau data sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengguna — <b>pengguna / pengguna123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Kalkulator Keuangan — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">KALKULATOR KEUANGAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Hitung cicilan, tabungan, untung, dan perbandingan harga.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengguna — <b>pengguna / pengguna123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n, des) { return Number(n || 0).toLocaleString("id-ID", { minimumFractionDigits: des || 0, maximumFractionDigits: des || 0 }); }
+  function fmtPersen(n) { return fmtAngka(n, 2) + "%"; }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "kalkulatorKeuangan.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- Rumus (fungsi murni, bisa diuji silang) ---------- */
+  function hitungCicilan(pokok, bungaTahun, tenor) {
+    pokok = Number(pokok) || 0; bungaTahun = Number(bungaTahun) || 0; tenor = Math.max(1, Math.round(Number(tenor) || 1));
+    var r = bungaTahun / 12 / 100;
+    var angsuran = r === 0 ? pokok / tenor : pokok * r / (1 - Math.pow(1 + r, -tenor));
+    angsuran = Math.round(angsuran);
+    var sisa = pokok, jadwal = [], totalBunga = 0;
+    for (var i = 1; i <= tenor; i++) {
+      var bunga = Math.round(sisa * r);
+      var pokokAngs = angsuran - bunga;
+      var angsuranBulan = angsuran;
+      if (i === tenor) { pokokAngs = sisa; angsuranBulan = sisa + bunga; }
+      sisa = Math.max(0, sisa - pokokAngs);
+      totalBunga += bunga;
+      jadwal.push({ bulan: i, angsuran: angsuranBulan, bunga: bunga, pokok: pokokAngs, sisa: sisa });
+    }
+    var totalBayar = jadwal.reduce(function (s, x) { return s + x.angsuran; }, 0);
+    return { angsuran: angsuran, totalBayar: totalBayar, totalBunga: totalBunga, jadwal: jadwal };
+  }
+  function hitungTabungan(awal, bulanan, bungaTahun, tahun) {
+    awal = Number(awal) || 0; bulanan = Number(bulanan) || 0; bungaTahun = Number(bungaTahun) || 0; tahun = Math.max(1, Math.round(Number(tahun) || 1));
+    var r = bungaTahun / 12 / 100, bulanTotal = tahun * 12;
+    var saldo = awal, perTahun = [];
+    for (var b = 1; b <= bulanTotal; b++) {
+      saldo = saldo * (1 + r) + bulanan;
+      if (b % 12 === 0) {
+        var th = b / 12, setoran = awal + bulanan * b;
+        perTahun.push({ tahun: th, saldo: Math.round(saldo), setoran: setoran, bunga: Math.round(saldo - setoran) });
+      }
+    }
+    var totalSetoran = awal + bulanan * bulanTotal;
+    return { saldoAkhir: Math.round(saldo), totalSetoran: totalSetoran, totalBunga: Math.round(saldo - totalSetoran), perTahun: perTahun };
+  }
+  function hitungUntung(modal, jual, jumlah) {
+    modal = Number(modal) || 0; jual = Number(jual) || 0; jumlah = Math.max(1, Math.round(Number(jumlah) || 1));
+    var untungUnit = jual - modal;
+    var persen = modal === 0 ? null : untungUnit / modal * 100;
+    var marginJual = jual === 0 ? null : untungUnit / jual * 100;
+    return { untungUnit: untungUnit, totalUntung: untungUnit * jumlah, persen: persen, marginJual: marginJual, jumlah: jumlah };
+  }
+  function hitungBanding(hargaA, isiA, hargaB, isiB) {
+    hargaA = Number(hargaA) || 0; isiA = Number(isiA) || 0; hargaB = Number(hargaB) || 0; isiB = Number(isiB) || 0;
+    var perA = isiA > 0 ? hargaA / isiA : null;
+    var perB = isiB > 0 ? hargaB / isiB : null;
+    var pemenang = null, selisihPersen = null;
+    if (perA != null && perB != null) {
+      if (perA < perB) { pemenang = "A"; selisihPersen = (perB - perA) / perB * 100; }
+      else if (perB < perA) { pemenang = "B"; selisihPersen = (perA - perB) / perA * 100; }
+      else { pemenang = "Seri"; selisihPersen = 0; }
+    }
+    return { perSatuanA: perA, perSatuanB: perB, pemenang: pemenang, selisihPersen: selisihPersen };
+  }
+
+  /* ---------- State & seed ---------- */
+  function seedState() {
+    var r = [];
+    function tambah(jenis, nama, ringkasan, hasil, pengguna, hariLalu) {
+      r.push({ id: r.length + 1, tanggal: kunciPlus(hariLalu), pengguna: pengguna, jenis: jenis, nama: nama, ringkasan: ringkasan, hasil: hasil });
+    }
+    var c1 = hitungCicilan(24000000, 12, 24);
+    tambah("Cicilan", "Cicilan motor", "Pokok Rp24.000.000, bunga 12%/thn, tenor 24 bln", "Angsuran " + rupiah(c1.angsuran) + "/bln; total bunga " + rupiah(c1.totalBunga), "admin", -7);
+    var c2 = hitungCicilan(300000000, 8, 120);
+    tambah("Cicilan", "KPR rumah", "Pokok Rp300.000.000, bunga 8%/thn, tenor 120 bln", "Angsuran " + rupiah(c2.angsuran) + "/bln; total bunga " + rupiah(c2.totalBunga), "admin", -5);
+    var t1 = hitungTabungan(1000000, 500000, 6, 5);
+    tambah("Tabungan", "Dana pendidikan", "Awal Rp1.000.000, bulanan Rp500.000, bunga 6%/thn, 5 thn", "Saldo akhir " + rupiah(t1.saldoAkhir) + "; bunga " + rupiah(t1.totalBunga), "pengguna", -3);
+    var t2 = hitungTabungan(5000000, 0, 4, 3);
+    tambah("Tabungan", "Dana darurat", "Awal Rp5.000.000, bulanan Rp0, bunga 4%/thn, 3 thn", "Saldo akhir " + rupiah(t2.saldoAkhir) + "; bunga " + rupiah(t2.totalBunga), "pengguna", -2);
+    var u1 = hitungUntung(20000, 30000, 10);
+    tambah("Untung", "Jualan keripik", "Modal Rp20.000, jual Rp30.000, 10 unit", "Untung " + rupiah(u1.untungUnit) + "/unit (" + fmtPersen(u1.persen) + "); total " + rupiah(u1.totalUntung), "pengguna", -1);
+    var b1 = hitungBanding(25000, 250, 40000, 500);
+    tambah("Perbandingan", "Kopi A vs Kopi B", "A Rp25.000/250 gram; B Rp40.000/500 gram", "B lebih murah " + fmtPersen(b1.selisihPersen) + " per gram (A " + rupiah(b1.perSatuanA) + "/g, B " + rupiah(b1.perSatuanB) + "/g)", "admin", 0);
+    return { riwayat: r, nextId: r.length + 1 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengguna", nama: "Budi Santoso", peran: "pengguna", password: "pengguna123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.riwayat) state.riwayat = [];
+    if (!state.nextId) state.nextId = state.riwayat.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : "Pengguna"; }
+
+  function riwayatTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.riwayat.slice();
+    return state.riwayat.filter(function (x) { return x.pengguna === currentUser.username; });
+  }
+  function simpanRiwayat(jenis, nama, ringkasan, hasil) {
+    var entri = {
+      id: state.nextId++, tanggal: hariIniKey(), pengguna: currentUser ? currentUser.username : "—",
+      jenis: jenis, nama: nama || jenis, ringkasan: ringkasan, hasil: hasil
+    };
+    state.riwayat.unshift(entri);
+    saveState();
+    return entri;
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    var aktif = document.querySelector("#tabbar .tab-btn.active");
+    if (aktif) { /* semua tab boleh dibuka semua peran pada aplikasi ini */ }
+    renderDashboard(); renderRiwayat(); renderPengguna();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "riwayat") renderRiwayat();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function urutTerbaru(list) {
+    return list.slice().sort(function (a, b) {
+      if (a.tanggal !== b.tanggal) return a.tanggal < b.tanggal ? 1 : -1;
+      return b.id - a.id;
+    });
+  }
+  function terakhir(jenis) {
+    var list = urutTerbaru(riwayatTerlihat().filter(function (x) { return x.jenis === jenis; }));
+    return list.length ? list[0] : null;
+  }
+  function renderDashboard() {
+    var list = riwayatTerlihat();
+    $("dTotal").textContent = list.length;
+    $("dTotalSub").textContent = currentUser && currentUser.peran === "admin" ? "semua pengguna" : "perhitungan Anda";
+    var c = terakhir("Cicilan"), t = terakhir("Tabungan"), u = terakhir("Untung");
+    $("dCicilan").textContent = c ? c.hasil.split(";")[0] : "—";
+    $("dCicilanSub").textContent = c ? c.nama + " · " + tglSingkat(c.tanggal) : "belum ada perhitungan cicilan";
+    $("dTabungan").textContent = t ? t.hasil.split(";")[0] : "—";
+    $("dTabunganSub").textContent = t ? t.nama + " · " + tglSingkat(t.tanggal) : "belum ada simulasi tabungan";
+    $("dUntung").textContent = u ? u.hasil.split(";")[0] : "—";
+    $("dUntungSub").textContent = u ? u.nama + " · " + tglSingkat(u.tanggal) : "belum ada perhitungan untung";
+    $("badgeRiwayat").textContent = list.length;
+    var terbaru = urutTerbaru(list).slice(0, 5);
+    $("daftarTerbaru").innerHTML = terbaru.length ? terbaru.map(function (x) {
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> <span class="tag">' + esc(x.jenis) + '</span><br><span class="sub">' + esc(x.ringkasan) + '</span></div><div style="text-align:right"><b>' + esc(x.hasil.split(";")[0]) + '</b><br><span class="sub">' + tglSingkat(x.tanggal) + ' · ' + esc(x.pengguna) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada perhitungan.</p>';
+    perbaruiPratinjauCepat();
+  }
+  function perbaruiPratinjauCepat() {
+    var pokok = Number($("qPokok").value || 0), bunga = Number($("qBunga").value || 0), tenor = Number($("qTenor").value || 0);
+    if (pokok > 0 && tenor > 0) {
+      var h = hitungCicilan(pokok, bunga, tenor);
+      $("pratinjauCepat").textContent = "Perkiraan: angsuran " + rupiah(h.angsuran) + "/bln · total dibayar " + rupiah(h.totalBayar) + " · total bunga " + rupiah(h.totalBunga) + ".";
+    } else {
+      $("pratinjauCepat").textContent = "Isi pokok, bunga, dan tenor untuk melihat angsuran per bulan.";
+    }
+  }
+  ["qPokok", "qBunga", "qTenor"].forEach(function (id) { $(id).addEventListener("input", perbaruiPratinjauCepat); });
+  $("btnHitungCepat").addEventListener("click", function () {
+    var pokok = Number($("qPokok").value || 0), bunga = Number($("qBunga").value || 0), tenor = Number($("qTenor").value || 0);
+    if (!(pokok > 0) || !(tenor > 0)) { toast("Isi pokok pinjaman dan tenor dulu."); return; }
+    var h = hitungCicilan(pokok, bunga, tenor);
+    simpanRiwayat("Cicilan", "Hitung cepat cicilan", "Pokok " + rupiah(pokok) + ", bunga " + fmtAngka(bunga, 2) + "%/thn, tenor " + tenor + " bln",
+      "Angsuran " + rupiah(h.angsuran) + "/bln; total bunga " + rupiah(h.totalBunga));
+    renderDashboard();
+    toast("Perhitungan cicilan tersimpan ke Riwayat.");
+  });
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Riwayat perhitungannya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: "pengguna", password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Cicilan ---------- */
+  $("btnHitungCicilan").addEventListener("click", function () {
+    var pokok = Number($("cPokok").value || 0), bunga = Number($("cBunga").value || 0), tenor = Number($("cTenor").value || 0);
+    if (!(pokok > 0)) { toast("Isi pokok pinjaman dulu."); return; }
+    if (!(tenor > 0)) { toast("Isi tenor (bulan) dulu."); return; }
+    var h = hitungCicilan(pokok, bunga, tenor);
+    var nama = $("cNama").value.trim() || "Cicilan";
+    $("hAngsuran").textContent = rupiah(h.angsuran) + "/bln";
+    $("hTotalBayar").textContent = rupiah(h.totalBayar);
+    $("hTotalBunga").textContent = rupiah(h.totalBunga);
+    $("hRingkasanCicilan").textContent = "Pokok " + rupiah(pokok) + " · bunga " + fmtAngka(bunga, 2) + "% per tahun · tenor " + tenor + " bulan. Angsuran tetap setiap bulan (anuitas).";
+    var tampil = h.jadwal.slice(0, 60);
+    $("hCatatanJadwal").textContent = h.jadwal.length > 60 ? "Menampilkan 60 bulan pertama dari " + h.jadwal.length + " bulan." : "Jadwal lengkap " + h.jadwal.length + " bulan.";
+    $("tabelJadwal").innerHTML = "<tr><th>Bulan</th><th>Angsuran</th><th>Bunga</th><th>Pokok</th><th>Sisa Pinjaman</th></tr>" + tampil.map(function (x) {
+      return "<tr><td>" + x.bulan + "</td><td>" + rupiah(x.angsuran) + "</td><td>" + rupiah(x.bunga) + "</td><td>" + rupiah(x.pokok) + "</td><td>" + rupiah(x.sisa) + "</td></tr>";
+    }).join("");
+    $("cardHasilCicilan").hidden = false;
+    simpanRiwayat("Cicilan", nama, "Pokok " + rupiah(pokok) + ", bunga " + fmtAngka(bunga, 2) + "%/thn, tenor " + tenor + " bln",
+      "Angsuran " + rupiah(h.angsuran) + "/bln; total bunga " + rupiah(h.totalBunga));
+    renderDashboard();
+    toast("Perhitungan cicilan tersimpan ke Riwayat.");
+  });
+
+  /* ---------- Tabungan ---------- */
+  $("btnHitungTabungan").addEventListener("click", function () {
+    var awal = Number($("tAwal").value || 0), bulanan = Number($("tBulanan").value || 0), bunga = Number($("tBunga").value || 0), tahun = Number($("tTahun").value || 0);
+    if (!(tahun > 0)) { toast("Isi jangka waktu (tahun) dulu."); return; }
+    if (awal <= 0 && bulanan <= 0) { toast("Isi setoran awal atau setoran bulanan dulu."); return; }
+    var h = hitungTabungan(awal, bulanan, bunga, tahun);
+    var nama = $("tNama").value.trim() || "Simulasi tabungan";
+    $("hSaldoAkhir").textContent = rupiah(h.saldoAkhir);
+    $("hTotalSetoran").textContent = rupiah(h.totalSetoran);
+    $("hBungaTabungan").textContent = rupiah(h.totalBunga);
+    $("hRingkasanTabungan").textContent = "Setoran awal " + rupiah(awal) + " + setoran bulanan " + rupiah(bulanan) + " · bunga " + fmtAngka(bunga, 2) + "% per tahun (majemuk bulanan) · " + tahun + " tahun.";
+    $("tabelTabungan").innerHTML = "<tr><th>Tahun</th><th>Saldo Akhir Tahun</th><th>Total Setoran</th><th>Bunga Diterima</th></tr>" + h.perTahun.map(function (x) {
+      return "<tr><td>" + x.tahun + "</td><td>" + rupiah(x.saldo) + "</td><td>" + rupiah(x.setoran) + "</td><td>" + rupiah(x.bunga) + "</td></tr>";
+    }).join("");
+    $("cardHasilTabungan").hidden = false;
+    simpanRiwayat("Tabungan", nama, "Awal " + rupiah(awal) + ", bulanan " + rupiah(bulanan) + ", bunga " + fmtAngka(bunga, 2) + "%/thn, " + tahun + " thn",
+      "Saldo akhir " + rupiah(h.saldoAkhir) + "; bunga " + rupiah(h.totalBunga));
+    renderDashboard();
+    toast("Simulasi tabungan tersimpan ke Riwayat.");
+  });
+
+  /* ---------- Untung ---------- */
+  $("btnHitungUntung").addEventListener("click", function () {
+    var modal = Number($("uModal").value || 0), jual = Number($("uJual").value || 0), jumlah = Number($("uJumlah").value || 1);
+    if (!(modal > 0) && !(jual > 0)) { toast("Isi modal dan harga jual dulu."); return; }
+    var h = hitungUntung(modal, jual, jumlah);
+    var nama = $("uNama").value.trim() || "Hitung untung";
+    $("hUntungUnit").textContent = rupiah(h.untungUnit);
+    $("hTotalUntung").textContent = rupiah(h.totalUntung);
+    $("hPersenUntung").textContent = h.persen == null ? "—" : fmtPersen(h.persen);
+    $("hRingkasanUntung").textContent = "Modal " + rupiah(modal) + " · harga jual " + rupiah(jual) + " · " + jumlah + " unit." +
+      (h.untungUnit < 0 ? " Perhatian: harga jual di bawah modal, Anda rugi " + rupiah(-h.untungUnit) + " per unit." :
+       h.untungUnit === 0 ? " Harga jual sama dengan modal — belum ada untung." :
+       " Margin dari harga jual: " + (h.marginJual == null ? "—" : fmtPersen(h.marginJual)) + ".");
+    $("cardHasilUntung").hidden = false;
+    simpanRiwayat("Untung", nama, "Modal " + rupiah(modal) + ", jual " + rupiah(jual) + ", " + jumlah + " unit",
+      "Untung " + rupiah(h.untungUnit) + "/unit" + (h.persen == null ? "" : " (" + fmtPersen(h.persen) + ")") + "; total " + rupiah(h.totalUntung));
+    renderDashboard();
+    toast("Perhitungan untung tersimpan ke Riwayat.");
+  });
+
+  /* ---------- Perbandingan ---------- */
+  $("btnHitungBanding").addEventListener("click", function () {
+    var namaA = $("bNamaA").value.trim() || "Produk A", namaB = $("bNamaB").value.trim() || "Produk B";
+    var hA = Number($("bHargaA").value || 0), iA = Number($("bIsiA").value || 0);
+    var hB = Number($("bHargaB").value || 0), iB = Number($("bIsiB").value || 0);
+    var sA = $("bSatuanA").value, sB = $("bSatuanB").value;
+    if (!(iA > 0) || !(iB > 0)) { toast("Isi harga dan isi/berat kedua produk dulu."); return; }
+    if (sA !== sB) { toast("Satuan isi kedua produk harus sama agar bisa dibandingkan."); return; }
+    var h = hitungBanding(hA, iA, hB, iB);
+    $("hLabelA").textContent = "Harga / " + sA + " — " + namaA;
+    $("hLabelB").textContent = "Harga / " + sB + " — " + namaB;
+    $("hHargaSatuanA").textContent = rupiah(h.perSatuanA) + "/" + sA;
+    $("hHargaSatuanB").textContent = rupiah(h.perSatuanB) + "/" + sB;
+    var menang = h.pemenang === "A" ? namaA : h.pemenang === "B" ? namaB : "Seri — sama murah";
+    $("hLebihMurah").textContent = menang;
+    $("hSelisihBanding").textContent = h.pemenang === "Seri" ? "harga per satuan sama" : "lebih murah " + fmtPersen(h.selisihPersen);
+    $("hRingkasanBanding").textContent = namaA + " " + rupiah(hA) + "/" + fmtAngka(iA) + " " + sA + " (" + rupiah(h.perSatuanA) + "/" + sA + ") · " +
+      namaB + " " + rupiah(hB) + "/" + fmtAngka(iB) + " " + sB + " (" + rupiah(h.perSatuanB) + "/" + sB + ").";
+    $("cardHasilBanding").hidden = false;
+    simpanRiwayat("Perbandingan", namaA + " vs " + namaB, "A " + rupiah(hA) + "/" + fmtAngka(iA) + " " + sA + "; B " + rupiah(hB) + "/" + fmtAngka(iB) + " " + sB,
+      menang + " lebih murah " + (h.pemenang === "Seri" ? "" : fmtPersen(h.selisihPersen) + " ") + "per " + sA + " (A " + rupiah(h.perSatuanA) + "/" + sA + ", B " + rupiah(h.perSatuanB) + "/" + sA + ")");
+    renderDashboard();
+    toast("Perbandingan harga tersimpan ke Riwayat.");
+  });
+
+  /* ---------- Riwayat ---------- */
+  function renderRiwayat() {
+    var list = riwayatTerlihat();
+    var jenis = $("fJenis").value, cari = $("cariRw").value.trim().toLowerCase();
+    var tampil = list.filter(function (x) {
+      if (jenis !== "semua" && x.jenis !== jenis) return false;
+      if (cari && (x.nama + " " + x.ringkasan + " " + x.hasil).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    });
+    $("ringkasanRiwayat").textContent = tampil.length + " dari " + list.length + " perhitungan" +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)");
+    $("daftarRiwayat").innerHTML = tampil.length ? tampil.map(function (x) {
+      var bisaHapus = currentUser && (currentUser.peran === "admin" || x.pengguna === currentUser.username);
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> <span class="tag">' + esc(x.jenis) + '</span><br><span class="sub">' + esc(x.ringkasan) + '</span><br><b>' + esc(x.hasil) + '</b></div><div style="text-align:right"><span class="sub">' + tglSingkat(x.tanggal) + ' · ' + esc(x.pengguna) + '</span><br>' +
+        (bisaHapus ? '<button class="btn ghost kecil" data-hapus-rw="' + x.id + '" type="button">Hapus</button>' : "") + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada riwayat yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-rw]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-rw"));
+        tanyaKonfirmasi("Hapus Riwayat", "Hapus perhitungan ini dari riwayat?", function () {
+          state.riwayat = state.riwayat.filter(function (x) { return x.id !== id; });
+          saveState(); renderRiwayat(); renderDashboard(); toast("Riwayat dihapus.");
+        });
+      });
+    });
+  }
+  $("fJenis").addEventListener("change", renderRiwayat);
+  $("cariRw").addEventListener("input", renderRiwayat);
+  $("btnCsvRiwayat").addEventListener("click", function () {
+    var list = riwayatTerlihat();
+    var baris = [["Jenis", "Tanggal", "Pengguna", "Nama", "Ringkasan", "Hasil"].map(csvCell).join(",")];
+    list.forEach(function (x) {
+      baris.push([x.jenis, x.tanggal, x.pengguna, x.nama, x.ringkasan, x.hasil].map(csvCell).join(","));
+    });
+    unduh("riwayat-kalkulator-keuangan.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV riwayat diunduh (" + list.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("kalkulator-keuangan-backup.json", JSON.stringify({ aplikasi: "kalkulator-keuangan", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.riwayat) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        saveState(); saveUsers();
+        renderDashboard(); renderRiwayat(); renderPengguna();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Perhitungan dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      saveState(); saveUsers();
+      renderDashboard(); renderRiwayat(); renderPengguna();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderDashboard(); renderRiwayat(); renderPengguna(); }
+})();
+</script>
+</body>
+</html>
