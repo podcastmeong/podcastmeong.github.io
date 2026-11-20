@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farm Management System</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · FARM MANAGEMENT</span>
+    <h1>Farm <span class="aksen">Management System</span></h1>
+    <p>Data lahan dan tanaman, jadwal tanam dan panen, pencatatan biaya dan hasil, stok pupuk dan benih, serta laporan produksi — dalam satu aplikasi untuk petani dan pengelola lahan.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="lahan">Lahan</button>
+    <button class="tab-btn" type="button" data-tab="tanaman">Tanaman <span class="badge" id="badgeTanaman">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" type="button" data-tab="biaya">Biaya &amp; Hasil</button>
+    <button class="tab-btn" type="button" data-tab="stok">Stok <span class="badge" id="badgeStok">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Pertanian</h2><p>Ringkasan lahan, tanaman, jadwal panen, biaya, hasil, dan stok pupuk serta benih.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Biaya (Semua)</div><div class="angka" id="dBiaya" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaSub"></div></div>
+      <div class="stat"><div class="label">Total Hasil Panen (Semua)</div><div class="angka" id="dHasil" style="font-size:22px">Rp0</div><div class="sub" id="dHasilSub"></div></div>
+      <div class="stat"><div class="label">Laba / Rugi (Semua)</div><div class="angka" id="dLaba" style="font-size:22px">Rp0</div><div class="sub" id="dLabaSub"></div></div>
+      <div class="stat"><div class="label">Lahan Aktif</div><div class="angka" id="dLahan" style="font-size:22px">0</div><div class="sub" id="dLahanSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Tanaman Tumbuh</div><div class="angka" id="dTanamanTumbuh" style="font-size:22px">0</div><div class="sub" id="dTanamanTumbuhSub"></div></div>
+      <div class="stat warn"><div class="label">Jadwal Segera (≤7 hari)</div><div class="angka" id="dJadwalSegera" style="font-size:22px">0</div><div class="sub" id="dJadwalSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Jadwal Lewat Tanggal</div><div class="angka" id="dJadwalLewat" style="font-size:22px">0</div><div class="sub" id="dJadwalLewatSub"></div></div>
+      <div class="stat warn"><div class="label">Stok Menipis</div><div class="angka" id="dStokMenipis" style="font-size:22px">0</div><div class="sub" id="dStokMenipisSub"></div></div>
+    </div>
+    <div class="card"><h3>Jadwal yang Perlu Perhatian</h3><p class="sub">Panen dan kegiatan yang segera (≤7 hari) atau sudah lewat tanggal.</p><div id="daftarJadwalPerhatian"></div></div>
+    <div class="card"><h3>Laba per Lahan</h3><p class="sub">Hasil panen dikurangi biaya, per lahan.</p><div id="daftarLabaLahan"></div></div>
+    <div class="card"><h3>Stok Menipis</h3><p class="sub">Pupuk dan benih yang jumlahnya sudah di bawah batas minimum.</p><div id="daftarStokMenipis"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat biaya baru atau hasil panen baru. Semua peran bisa mencatat.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeBiaya" type="button">Catat Biaya</button>
+        <button class="btn kecil hijau" id="btnKeHasil" type="button">Catat Hasil Panen</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Petani.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="petani">Petani</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-lahan">
+    <div class="page-head"><h2>Data Lahan</h2><p>Lahan pertanian: nama, lokasi, luas, dan status. Petani hanya bisa melihat.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Lahan</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="lNama">Nama lahan</label><input id="lNama" type="text" placeholder="cth: Sawah Selatan"></div>
+        <div class="field"><label for="lLokasi">Lokasi</label><input id="lLokasi" type="text" placeholder="cth: Desa Sukamaju"></div>
+        <div class="field"><label for="lLuas">Luas (hektare)</label><input id="lLuas" type="number" min="0.1" step="0.1" placeholder="cth: 1.5"></div>
+        <div class="field"><label for="lStatus">Status</label><select id="lStatus"><option value="Aktif">Aktif</option><option value="Istirahat">Istirahat</option><option value="Panen">Panen</option></select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahLahan" type="button">Tambah Lahan</button>
+    </div>
+    <div class="card"><h3>Daftar Lahan</h3><p class="sub" id="ringkasanLahan"></p><div id="daftarLahan"></div></div>
+  </section>
+
+  <section class="panel" id="panel-tanaman">
+    <div class="page-head"><h2>Data Tanaman</h2><p>Tanaman per lahan: jenis, varietas, tanggal tanam, dan perkiraan panen. Petani hanya bisa melihat.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Tanaman</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="tLahan">Lahan</label><select id="tLahan"></select></div>
+        <div class="field"><label for="tJenis">Jenis tanaman</label><input id="tJenis" type="text" placeholder="cth: Padi IR64"></div>
+        <div class="field"><label for="tVarietas">Varietas (opsional)</label><input id="tVarietas" type="text" placeholder="cth: IR64"></div>
+        <div class="field"><label for="tTanam">Tanggal tanam</label><input id="tTanam" type="date"></div>
+        <div class="field"><label for="tPanen">Perkiraan panen</label><input id="tPanen" type="date"></div>
+        <div class="field"><label for="tLuas">Luas tanam (hektare)</label><input id="tLuas" type="number" min="0.1" step="0.1" placeholder="cth: 1"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahTanaman" type="button">Tambah Tanaman</button>
+    </div>
+    <div class="card"><h3>Daftar Tanaman</h3><p class="sub" id="ringkasanTanaman"></p><div id="daftarTanaman"></div></div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal Tanam &amp; Panen</h2><p>Panen tanaman dan kegiatan lapangan. Segera = ≤7 hari lagi, Lewat = tanggal sudah lewat dan belum selesai.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Kegiatan Lapangan</h3>
+      <p class="sub">Hanya Admin dan Manajer. Contoh: pemupukan, penyemprotan, penyiangan, persiapan lahan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="kNama">Nama kegiatan</label><input id="kNama" type="text" placeholder="cth: Pemupukan susulan Padi"></div>
+        <div class="field"><label for="kLahan">Lahan</label><select id="kLahan"></select></div>
+        <div class="field"><label for="kTanggal">Tanggal</label><input id="kTanggal" type="date"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahKegiatan" type="button">Tambah Kegiatan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJadwal">Filter jadwal</label><select id="fJadwal">
+          <option value="semua">Semua</option>
+          <option value="segera">Segera (≤7 hari)</option>
+          <option value="lewat">Lewat tanggal</option>
+          <option value="bulan">Bulan ini</option>
+        </select></div>
+        <div class="field"><label for="cariJadwal">Cari</label><input id="cariJadwal" type="text" placeholder="cth: Cabai atau Pemupukan"></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div id="daftarJadwal"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-biaya">
+    <div class="page-head"><h2>Biaya &amp; Hasil Panen</h2><p>Catat biaya per lahan (benih, pupuk, tenaga kerja, obat) dan hasil panen (kg × harga/kg). Petani hanya melihat catatan miliknya sendiri.</p></div>
+    <div class="card">
+      <h3>Catat Biaya</h3>
+      <p class="sub">Semua peran bisa mencatat biaya.</p>
+      <div class="form-grid">
+        <div class="field"><label for="bLahan">Lahan</label><select id="bLahan"></select></div>
+        <div class="field"><label for="bKategori">Kategori</label><select id="bKategori">
+          <option value="Benih">Benih</option><option value="Pupuk">Pupuk</option><option value="Tenaga Kerja">Tenaga Kerja</option><option value="Obat">Obat</option><option value="Alat">Alat</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+        <div class="field"><label for="bKeterangan">Keterangan</label><input id="bKeterangan" type="text" placeholder="cth: Pupuk Urea 100 kg"></div>
+        <div class="field"><label for="bTanggal">Tanggal</label><input id="bTanggal" type="date"></div>
+        <div class="field"><label for="bJumlah">Jumlah (Rp)</label><input id="bJumlah" type="number" min="0" placeholder="cth: 900000"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBiaya" type="button">Simpan Biaya</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Biaya</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fBulanBiaya">Bulan</label><select id="fBulanBiaya"></select></div>
+        <div class="field"><label for="fLahanBiaya">Lahan</label><select id="fLahanBiaya"></select></div>
+        <div class="field"><label for="fKatBiaya">Kategori</label><select id="fKatBiaya">
+          <option value="semua">Semua kategori</option><option value="Benih">Benih</option><option value="Pupuk">Pupuk</option><option value="Tenaga Kerja">Tenaga Kerja</option><option value="Obat">Obat</option><option value="Alat">Alat</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanBiaya"></p>
+      <div id="daftarBiaya"></div>
+    </div>
+    <div class="card">
+      <h3>Catat Hasil Panen</h3>
+      <p class="sub">Semua peran bisa mencatat hasil panen. Nilai = jumlah kg × harga per kg.</p>
+      <div class="form-grid">
+        <div class="field"><label for="hTanaman">Tanaman</label><select id="hTanaman"></select></div>
+        <div class="field"><label for="hTanggal">Tanggal panen</label><input id="hTanggal" type="date"></div>
+        <div class="field"><label for="hKg">Jumlah (kg)</label><input id="hKg" type="number" min="0" step="0.1" placeholder="cth: 500"></div>
+        <div class="field"><label for="hHarga">Harga per kg (Rp)</label><input id="hHarga" type="number" min="0" placeholder="cth: 5500"></div>
+      </div>
+      <p class="sub" id="hNilai">Nilai panen: Rp0</p>
+      <button class="btn kecil hijau" id="btnTambahHasil" type="button">Simpan Hasil Panen</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Hasil Panen</h3>
+      <p class="sub" id="ringkasanHasil"></p>
+      <div id="daftarHasil"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-stok">
+    <div class="page-head"><h2>Stok Pupuk &amp; Benih</h2><p>Stok pupuk, benih, dan obat. Peringatan muncul bila jumlah di bawah batas minimum. Petani hanya bisa melihat.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Item Stok</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="sNama">Nama item</label><input id="sNama" type="text" placeholder="cth: Pupuk Urea"></div>
+        <div class="field"><label for="sJenis">Jenis</label><select id="sJenis"><option value="Pupuk">Pupuk</option><option value="Benih">Benih</option><option value="Obat">Obat</option></select></div>
+        <div class="field"><label for="sSatuan">Satuan</label><input id="sSatuan" type="text" placeholder="cth: kg"></div>
+        <div class="field"><label for="sJumlah">Jumlah awal</label><input id="sJumlah" type="number" min="0" step="0.1" placeholder="cth: 100"></div>
+        <div class="field"><label for="sMin">Batas minimum</label><input id="sMin" type="number" min="0" step="0.1" placeholder="cth: 50"></div>
+        <div class="field"><label for="sHarga">Harga satuan (Rp)</label><input id="sHarga" type="number" min="0" placeholder="cth: 12000"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahStok" type="button">Tambah Item Stok</button>
+    </div>
+    <div class="card"><h3>Daftar Stok</h3><p class="sub" id="ringkasanStok"></p><div id="daftarStok"></div></div>
+    <div class="card"><h3>Riwayat Stok Masuk &amp; Keluar</h3><p class="sub">Setiap penambahan dan pemakaian stok tercatat di sini.</p><div id="daftarRiwayatStok"></div></div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Produksi</h2><p>Biaya, hasil panen, dan laba per lahan, per bulan, dan per kategori biaya.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Lahan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerLahan"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Biaya per Kategori</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelKatBiaya"></table></div>
+      <h3 style="margin-top:18px">Hasil per Tanaman</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerTanaman"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor biaya dan hasil panen bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Biaya &amp; Hasil</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Farm Management System.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Lahan</b> untuk melihat atau menambah lahan pertanian (nama, lokasi, luas, status).</li>
+        <li>Buka tab <b>Tanaman</b> untuk mencatat tanaman per lahan beserta tanggal tanam dan perkiraan panen.</li>
+        <li>Buka tab <b>Jadwal</b> untuk melihat panen yang segera (≤7 hari) atau sudah lewat tanggal, plus kegiatan lapangan. Tekan <b>Catat Panen</b> pada jadwal panen untuk mencatat hasil panen sekaligus menandai tanaman sudah dipanen.</li>
+        <li>Buka tab <b>Biaya &amp; Hasil</b> untuk mencatat biaya (benih, pupuk, tenaga kerja, obat) dan hasil panen (kg × harga/kg). Laba per lahan = hasil panen − biaya.</li>
+        <li>Buka tab <b>Stok</b> untuk mencatat stok pupuk, benih, dan obat. Tekan <b>Masuk</b> saat membeli stok baru dan <b>Keluar</b> saat memakai stok. Bila jumlah di bawah batas minimum, tampil peringatan "Menipis".</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per lahan, per bulan, dan per kategori biaya, serta ekspor ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua catatan.</li>
+        <li><b>Manajer</b> — mengelola lahan, tanaman, jadwal, biaya, stok, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Petani</b> — melihat jadwal, lahan, tanaman, dan stok; mencatat biaya dan hasil panen miliknya sendiri. Tidak bisa menambah lahan/tanaman/kegiatan/stok dan tidak bisa menghapus catatan orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Harga panen dan biaya di sini adalah catatan contoh. Sesuaikan dengan harga pasar di daerah Anda.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Petani — <b>petani / petani123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Farm Management System — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalPanenBack">
+  <div class="modal">
+    <h3 id="modalPanenJudul">Catat Panen</h3>
+    <p id="modalPanenInfo"></p>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="field"><label for="pKg">Jumlah panen (kg)</label><input id="pKg" type="number" min="0" step="0.1" placeholder="cth: 500"></div>
+      <div class="field"><label for="pHarga">Harga per kg (Rp)</label><input id="pHarga" type="number" min="0" placeholder="cth: 5500"></div>
+    </div>
+    <p class="sub" id="pNilai">Nilai panen: Rp0</p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalPanenBatal" type="button">Batal</button>
+      <button class="btn kecil hijau" id="modalPanenYa" type="button">Simpan &amp; Tandai Panen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalStokBack">
+  <div class="modal">
+    <h3 id="modalStokJudul">Stok</h3>
+    <p id="modalStokInfo"></p>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="field"><label for="stJumlah">Jumlah</label><input id="stJumlah" type="number" min="0" step="0.1" placeholder="cth: 50"></div>
+      <div class="field"><label for="stKet">Keterangan</label><input id="stKet" type="text" placeholder="cth: Beli dari toko tani"></div>
+    </div>
+    <p class="sub" id="pesanStok" style="margin-top:8px"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalStokBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalStokYa" type="button">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">FARM · PERTANIAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Kelola lahan, tanaman, jadwal panen, biaya, hasil, dan stok pupuk serta benih.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Petani — <b>petani / petani123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "farmManagement.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var KAT_BIAYA = ["Benih", "Pupuk", "Tenaga Kerja", "Obat", "Alat", "Lainnya"];
+  var JENIS_STOK = ["Pupuk", "Benih", "Obat"];
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_farm.py):
+       Lahan 5 (Aktif 4), luas total 9,0 ha.
+       Tanaman 7: Tumbuh 4, Siap Panen 2, Panen 1.
+       Biaya 21 entri, total Rp15.300.000. Hasil 4 entri, total Rp29.950.000. Laba Rp14.650.000.
+         Per lahan: L1 biaya 8.100.000, hasil 24.750.000, laba 16.650.000;
+           L2 1.600.000 / 2.800.000 / 1.200.000; L3 3.300.000 / 2.400.000 / -900.000;
+           L4 2.300.000 / 0 / -2.300.000; L5 0 / 0 / 0.
+         Per kategori biaya: Benih 4.600.000, Pupuk 3.550.000, Tenaga Kerja 6.400.000, Obat 750.000.
+         Per bulan: Nov biaya 2.600.000 (5) hasil 5.200.000 (3) laba 2.600.000;
+           Okt biaya 4.450.000 (8) hasil 0; Sep biaya 4.900.000 (4) hasil 24.750.000 (1) laba 19.850.000;
+           Agu biaya 1.550.000 (2); Jun biaya 800.000 (1); Mei biaya 1.000.000 (1).
+         Petani: biaya 950.000, hasil 400.000, laba -550.000.
+       Jadwal (belum selesai): segera 5 (Panen Cabai T+5, Panen Tomat T+2, Pemupukan Padi T+1,
+         Penyemprotan Cabai T+3, Persiapan Lahan T+6); lewat 2 (Panen Bayam T-2, Panen Singkong T-5);
+         bulan ini 9 (7 belum + 2 kegiatan selesai).
+       Stok 6 item, nilai Rp5.180.000; menipis 2 (Pupuk NPK 35<50, Benih Jagung 8<10). */
+  function seedState() {
+    var lahan = [
+      { id: 1, nama: "Sawah Utara", lokasi: "Desa Sukamaju", luas: 2.5, status: "Aktif" },
+      { id: 2, nama: "Kebun Sayur Timur", lokasi: "Desa Sukamaju", luas: 1.2, status: "Aktif" },
+      { id: 3, nama: "Ladang Jagung Barat", lokasi: "Desa Sukamaju", luas: 3.0, status: "Aktif" },
+      { id: 4, nama: "Kebun Cabai Selatan", lokasi: "Desa Sukamaju", luas: 0.8, status: "Aktif" },
+      { id: 5, nama: "Sawah Istirahat", lokasi: "Desa Sukamaju", luas: 1.5, status: "Istirahat" }
+    ];
+    var tanaman = [
+      { id: 1, lahanId: 1, jenis: "Padi IR64", varietas: "IR64", tanam: kunciPlus(-80), panen: kunciPlus(20), luasTanam: 2.5, status: "Tumbuh" },
+      { id: 2, lahanId: 4, jenis: "Cabai Merah", varietas: "Keriting", tanam: kunciPlus(-46), panen: kunciPlus(5), luasTanam: 0.8, status: "Tumbuh" },
+      { id: 3, lahanId: 3, jenis: "Jagung Manis", varietas: "Manis", tanam: kunciPlus(-31), panen: kunciPlus(30), luasTanam: 3.0, status: "Tumbuh" },
+      { id: 4, lahanId: 2, jenis: "Tomat", varietas: "Servo", tanam: kunciPlus(-41), panen: kunciPlus(2), luasTanam: 0.6, status: "Siap Panen" },
+      { id: 5, lahanId: 1, jenis: "Padi Ciherang", varietas: "Ciherang", tanam: kunciPlus(-172), panen: kunciPlus(-66), luasTanam: 2.5, status: "Panen" },
+      { id: 6, lahanId: 2, jenis: "Bayam", varietas: "Hijau", tanam: kunciPlus(-19), panen: kunciPlus(-2), luasTanam: 0.4, status: "Siap Panen" },
+      { id: 7, lahanId: 3, jenis: "Singkong", varietas: "Ketela", tanam: kunciPlus(-97), panen: kunciPlus(-5), luasTanam: 1.0, status: "Tumbuh" }
+    ];
+    var kegiatan = [
+      { id: 1, lahanId: 1, nama: "Pemupukan susulan Padi IR64", tanggal: kunciPlus(1), status: "Belum" },
+      { id: 2, lahanId: 4, nama: "Penyemprotan hama Cabai", tanggal: kunciPlus(3), status: "Belum" },
+      { id: 3, lahanId: 3, nama: "Penyiangan Jagung", tanggal: kunciPlus(-3), status: "Selesai" },
+      { id: 4, lahanId: 2, nama: "Pemupukan Tomat", tanggal: kunciPlus(-10), status: "Selesai" },
+      { id: 5, lahanId: 5, nama: "Persiapan lahan Sawah Istirahat", tanggal: kunciPlus(6), status: "Belum" }
+    ];
+    function b(id, lahanId, kategori, keterangan, tanggal, jumlah, pemilik) {
+      return { id: id, lahanId: lahanId, kategori: kategori, keterangan: keterangan, tanggal: tanggal, jumlah: jumlah, pemilik: pemilik };
+    }
+    var biaya = [
+      b(1, 1, "Benih", "Benih Padi IR64 25 kg", kunciPlus(-84), 1250000, "manajer"),
+      b(2, 1, "Pupuk", "Pupuk Urea 100 kg", kunciPlus(-66), 900000, "manajer"),
+      b(3, 1, "Tenaga Kerja", "Upah tanam & rawat", kunciPlus(-79), 2000000, "manajer"),
+      b(4, 1, "Obat", "Pestisida", kunciPlus(-39), 350000, "manajer"),
+      b(5, 1, "Benih", "Benih Padi Ciherang 20 kg", kunciPlus(-176), 1000000, "manajer"),
+      b(6, 1, "Pupuk", "Pupuk NPK 50 kg", kunciPlus(-153), 800000, "manajer"),
+      b(7, 1, "Tenaga Kerja", "Upah panen Ciherang", kunciPlus(-66), 1800000, "manajer"),
+      b(8, 2, "Benih", "Benih Tomat", kunciPlus(-43), 400000, "manajer"),
+      b(9, 2, "Pupuk", "Pupuk kandang Tomat", kunciPlus(-31), 350000, "manajer"),
+      b(10, 2, "Tenaga Kerja", "Upah panen Tomat", kunciPlus(-2), 600000, "petani"),
+      b(11, 2, "Benih", "Benih Bayam", kunciPlus(-21), 150000, "petani"),
+      b(12, 2, "Pupuk", "Pupuk Bayam", kunciPlus(-15), 100000, "manajer"),
+      b(13, 3, "Benih", "Benih Jagung 15 kg", kunciPlus(-33), 900000, "manajer"),
+      b(14, 3, "Pupuk", "Pupuk NPK Jagung", kunciPlus(-18), 700000, "manajer"),
+      b(15, 3, "Tenaga Kerja", "Upah tanam Jagung", kunciPlus(-31), 1200000, "manajer"),
+      b(16, 3, "Benih", "Bibit Singkong", kunciPlus(-98), 300000, "manajer"),
+      b(17, 3, "Pupuk", "Pupuk Singkong", kunciPlus(-71), 200000, "petani"),
+      b(18, 4, "Benih", "Benih Cabai", kunciPlus(-48), 600000, "manajer"),
+      b(19, 4, "Pupuk", "Pupuk Cabai", kunciPlus(-26), 500000, "manajer"),
+      b(20, 4, "Tenaga Kerja", "Upah rawat Cabai", kunciPlus(-12), 800000, "manajer"),
+      b(21, 4, "Obat", "Pestisida Cabai", kunciPlus(-8), 400000, "manajer")
+    ];
+    function h(id, lahanId, tanamanId, tanggal, kg, harga, pemilik) {
+      return { id: id, lahanId: lahanId, tanamanId: tanamanId, tanggal: tanggal, kg: kg, hargaPerKg: harga, nilai: kg * harga, pemilik: pemilik };
+    }
+    var hasil = [
+      h(1, 1, 5, kunciPlus(-66), 4500, 5500, "manajer"),
+      h(2, 2, 4, kunciPlus(-2), 300, 8000, "manajer"),
+      h(3, 2, 6, kunciPlus(-5), 100, 4000, "petani"),
+      h(4, 3, 7, kunciPlus(-10), 800, 3000, "manajer")
+    ];
+    var stok = [
+      { id: 1, nama: "Pupuk Urea", jenis: "Pupuk", satuan: "kg", jumlah: 120, minimum: 50, hargaSatuan: 12000 },
+      { id: 2, nama: "Pupuk NPK", jenis: "Pupuk", satuan: "kg", jumlah: 35, minimum: 50, hargaSatuan: 14000 },
+      { id: 3, nama: "Benih Padi IR64", jenis: "Benih", satuan: "kg", jumlah: 25, minimum: 10, hargaSatuan: 15000 },
+      { id: 4, nama: "Benih Jagung", jenis: "Benih", satuan: "kg", jumlah: 8, minimum: 10, hargaSatuan: 20000 },
+      { id: 5, nama: "Pestisida Cair", jenis: "Obat", satuan: "liter", jumlah: 15, minimum: 5, hargaSatuan: 85000 },
+      { id: 6, nama: "Benih Cabai", jenis: "Benih", satuan: "kg", jumlah: 12, minimum: 5, hargaSatuan: 120000 }
+    ];
+    var riwayatStok = [
+      { id: 1, stokId: 1, arah: "Masuk", jumlah: 100, tanggal: kunciPlus(-19), keterangan: "Beli dari toko tani" },
+      { id: 2, stokId: 1, arah: "Keluar", jumlah: 80, tanggal: kunciPlus(-17), keterangan: "Pemupukan Sawah Utara" },
+      { id: 3, stokId: 2, arah: "Masuk", jumlah: 50, tanggal: kunciPlus(-15), keterangan: "Beli dari toko tani" },
+      { id: 4, stokId: 2, arah: "Keluar", jumlah: 15, tanggal: kunciPlus(-12), keterangan: "Pemupukan Cabai" },
+      { id: 5, stokId: 3, arah: "Masuk", jumlah: 25, tanggal: kunciPlus(-31), keterangan: "Beli benih padi" },
+      { id: 6, stokId: 4, arah: "Keluar", jumlah: 12, tanggal: kunciPlus(-33), keterangan: "Tanam Jagung" }
+    ];
+    return { lahan: lahan, tanaman: tanaman, kegiatan: kegiatan, biaya: biaya, hasil: hasil, stok: stok, riwayatStok: riwayatStok,
+      nextLahanId: 6, nextTanamanId: 8, nextKegiatanId: 6, nextBiayaId: 22, nextHasilId: 5, nextStokId: 7, nextRiwayatId: 7 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "petani", nama: "Budi Santoso", peran: "petani", password: "petani123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null, panenTanamanId = null, stokArahId = null, stokArah = "Masuk";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.lahan) state.lahan = [];
+    if (!state.tanaman) state.tanaman = [];
+    if (!state.kegiatan) state.kegiatan = [];
+    if (!state.biaya) state.biaya = [];
+    if (!state.hasil) state.hasil = [];
+    if (!state.stok) state.stok = [];
+    if (!state.riwayatStok) state.riwayatStok = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Petani"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariLahan(id) { return state.lahan.find(function (x) { return x.id === id; }); }
+  function cariTanaman(id) { return state.tanaman.find(function (x) { return x.id === id; }); }
+  function cariStok(id) { return state.stok.find(function (x) { return x.id === id; }); }
+  function namaLahan(id) { var l = cariLahan(id); return l ? l.nama : "—"; }
+  function biayaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.biaya.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.biaya.slice();
+  }
+  function hasilTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.hasil.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.hasil.slice();
+  }
+  function bolehUbahCatatan(pemilik) {
+    return currentUser && (currentUser.peran !== "petani" || pemilik === currentUser.username);
+  }
+  function totalBiaya(list) { var t = 0; list.forEach(function (x) { t += Number(x.jumlah) || 0; }); return t; }
+  function totalHasil(list) { var t = 0; list.forEach(function (x) { t += Number(x.nilai) || 0; }); return t; }
+  function labaLahan(lahanId) {
+    var b = 0, h = 0;
+    state.biaya.forEach(function (x) { if (x.lahanId === lahanId) b += Number(x.jumlah) || 0; });
+    state.hasil.forEach(function (x) { if (x.lahanId === lahanId) h += Number(x.nilai) || 0; });
+    return { biaya: b, hasil: h, laba: h - b };
+  }
+  function stokMenipis() { return state.stok.filter(function (s) { return Number(s.jumlah) < Number(s.minimum); }); }
+  function nilaiStok() { var t = 0; state.stok.forEach(function (s) { t += Number(s.jumlah) * Number(s.hargaSatuan); }); return t; }
+  function daftarJadwal() {
+    var ev = [];
+    state.tanaman.forEach(function (t) {
+      if (t.status === "Panen") return;
+      ev.push({ tipe: "panen", refId: t.id, lahanId: t.lahanId, judul: "Panen " + t.jenis, tanggal: t.panen, status: t.status });
+    });
+    state.kegiatan.forEach(function (k) {
+      ev.push({ tipe: "kegiatan", refId: k.id, lahanId: k.lahanId, judul: k.nama, tanggal: k.tanggal, status: k.status });
+    });
+    ev.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : 0; });
+    return ev;
+  }
+  function jadwalBelum() {
+    return daftarJadwal().filter(function (e) {
+      return e.tipe === "kegiatan" ? e.status !== "Selesai" : true;
+    });
+  }
+  function bulanListBiayaHasil() {
+    var seen = {}, list = [];
+    state.biaya.concat(state.hasil).forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; list.push(bk); }
+    });
+    list.sort().reverse();
+    return list;
+  }
+  function isiPilihanBulan(sel, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    bulanListBiayaHasil().forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    sel.innerHTML = opts.join("");
+    if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+  function isiPilihanLahan(sel, defValue) {
+    sel.innerHTML = state.lahan.map(function (l) {
+      return '<option value="' + l.id + '">' + esc(l.nama) + ' (' + l.luas + ' ha)</option>';
+    }).join("");
+    if (defValue) sel.value = defValue;
+  }
+  function lencanaStatusTanaman(s) {
+    if (s === "Panen") return '<span class="lencana st-aman">Panen</span>';
+    if (s === "Siap Panen") return '<span class="lencana st-emas">Siap Panen</span>';
+    return '<span class="lencana st-biru">Tumbuh</span>';
+  }
+  function lencanaStok(s) {
+    if (Number(s.jumlah) <= 0) return '<span class="lencana st-habis">Habis</span>';
+    if (Number(s.jumlah) < Number(s.minimum)) return '<span class="lencana st-rendah">Menipis</span>';
+    return '<span class="lencana st-aman">Aman</span>';
+  }
+  function labelJadwal(e) {
+    var d = selisihHari(e.tanggal);
+    if (d < 0) return '<span class="lencana st-habis">Lewat ' + Math.abs(d) + ' hari</span>';
+    if (d === 0) return '<span class="lencana st-rendah">Hari ini</span>';
+    if (d <= 7) return '<span class="lencana st-rendah">Dalam ' + d + ' hari</span>';
+    return '<span class="lencana st-biru">Dalam ' + d + ' hari</span>';
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "lahan") renderLahan();
+    if (nama === "tanaman") renderTanaman();
+    if (nama === "jadwal") renderJadwal();
+    if (nama === "biaya") renderBiaya();
+    if (nama === "stok") renderStok();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var biaya = biayaTerlihat(), hasil = hasilTerlihat();
+    var tb = totalBiaya(biaya), th = totalHasil(hasil), laba = th - tb;
+    var aktif = state.lahan.filter(function (l) { return l.status === "Aktif"; });
+    var luasTotal = 0; state.lahan.forEach(function (l) { luasTotal += Number(l.luas) || 0; });
+    var tumbuh = state.tanaman.filter(function (t) { return t.status === "Tumbuh"; }).length;
+    var siap = state.tanaman.filter(function (t) { return t.status === "Siap Panen"; }).length;
+    var belum = jadwalBelum();
+    var segera = belum.filter(function (e) { var d = selisihHari(e.tanggal); return d >= 0 && d <= 7; });
+    var lewat = belum.filter(function (e) { return selisihHari(e.tanggal) < 0; });
+    var menipis = stokMenipis();
+    $("dBiaya").textContent = rupiah(tb);
+    $("dBiayaSub").textContent = biaya.length + " catatan" + (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)");
+    $("dHasil").textContent = rupiah(th);
+    $("dHasilSub").textContent = hasil.length + " panen" + (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)");
+    $("dLaba").textContent = (laba < 0 ? "−" : "") + rupiah(Math.abs(laba));
+    $("dLabaSub").textContent = laba >= 0 ? "untung" : "rugi";
+    $("dLahan").textContent = aktif.length;
+    $("dLahanSub").textContent = state.lahan.length + " lahan · " + luasTotal + " ha";
+    $("dTanamanTumbuh").textContent = tumbuh;
+    $("dTanamanTumbuhSub").textContent = siap + " siap panen · " + state.tanaman.length + " tanaman";
+    $("dJadwalSegera").textContent = segera.length;
+    $("dJadwalSegeraSub").textContent = "panen & kegiatan ≤7 hari";
+    $("dJadwalLewat").textContent = lewat.length;
+    $("dJadwalLewatSub").textContent = "belum selesai dan lewat tanggal";
+    $("dStokMenipis").textContent = menipis.length;
+    $("dStokMenipisSub").textContent = "di bawah batas minimum · nilai stok " + rupiah(nilaiStok());
+    $("badgeTanaman").textContent = state.tanaman.length;
+    $("badgeJadwal").textContent = segera.length + lewat.length;
+    $("badgeStok").textContent = menipis.length;
+    var perhatian = belum.filter(function (e) { var d = selisihHari(e.tanggal); return d < 0 || d <= 7; });
+    perhatian.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : 0; });
+    $("daftarJadwalPerhatian").innerHTML = perhatian.length ? perhatian.map(function (e) {
+      return '<div class="baris"><div><b>' + esc(e.judul) + '</b> ' + labelJadwal(e) +
+        '<br><span class="sub">' + esc(namaLahan(e.lahanId)) + ' · ' + tglSingkat(e.tanggal) + ' · ' + (e.tipe === "panen" ? "Panen tanaman" : "Kegiatan lapangan") + '</span></div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang perlu perhatian.</p>';
+    $("daftarLabaLahan").innerHTML = state.lahan.map(function (l) {
+      var r = labaLahan(l.id);
+      return '<div class="baris"><div><b>' + esc(l.nama) + '</b>' +
+        '<br><span class="sub">' + l.luas + ' ha · biaya ' + rupiah(r.biaya) + ' · hasil ' + rupiah(r.hasil) + '</span></div>' +
+        '<div style="text-align:right"><b style="color:' + (r.laba >= 0 ? "var(--green)" : "var(--red)") + '">' + (r.laba < 0 ? "−" : "") + rupiah(Math.abs(r.laba)) + '</b><br><span class="sub">' + (r.laba >= 0 ? "laba" : "rugi") + '</span></div></div>';
+    }).join("");
+    $("daftarStokMenipis").innerHTML = menipis.length ? menipis.map(function (s) {
+      return '<div class="baris"><div><b>' + esc(s.nama) + '</b> <span class="lencana st-rendah">Menipis</span>' +
+        '<br><span class="sub">' + esc(s.jenis) + ' · tersisa ' + s.jumlah + ' ' + esc(s.satuan) + ' · minimum ' + s.minimum + ' ' + esc(s.satuan) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(Number(s.jumlah) * Number(s.hargaSatuan)) + '</b></div></div>';
+    }).join("") : '<p class="sub">Semua stok masih aman.</p>';
+    renderPengguna();
+  }
+  $("btnKeBiaya").addEventListener("click", function () { pindahTab("biaya"); });
+  $("btnKeHasil").addEventListener("click", function () { pindahTab("biaya"); setTimeout(function () { var el = $("hTanggal"); if (el) el.focus(); }, 100); });
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Catatan yang dibuatnya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    var peran = $("pgPeran").value || "petani";
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: peran, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Lahan ---------- */
+  function renderLahan() {
+    var totalLuas = 0; state.lahan.forEach(function (l) { totalLuas += Number(l.luas) || 0; });
+    $("ringkasanLahan").textContent = state.lahan.length + " lahan · total " + totalLuas + " ha.";
+    $("daftarLahan").innerHTML = state.lahan.length ? state.lahan.map(function (l) {
+      var jmlTanaman = state.tanaman.filter(function (t) { return t.lahanId === l.id; }).length;
+      var r = labaLahan(l.id);
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<button class="btn ghost kecil" data-hapus-lahan="' + l.id + '" type="button">Hapus</button>';
+      }
+      var lencana = l.status === "Aktif" ? '<span class="lencana st-aman">Aktif</span>' : l.status === "Panen" ? '<span class="lencana st-emas">Panen</span>' : '<span class="lencana st-navy">Istirahat</span>';
+      return '<div class="baris"><div><b>' + esc(l.nama) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(l.lokasi) + ' · ' + l.luas + ' ha · ' + jmlTanaman + ' tanaman · biaya ' + rupiah(r.biaya) + ' · hasil ' + rupiah(r.hasil) + '</span></div>' +
+        '<div style="text-align:right"><b style="color:' + (r.laba >= 0 ? "var(--green)" : "var(--red)") + '">' + (r.laba < 0 ? "−" : "") + rupiah(Math.abs(r.laba)) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada lahan.</p>';
+    document.querySelectorAll("[data-hapus-lahan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var l = cariLahan(Number(b.getAttribute("data-hapus-lahan")));
+        if (!l) return;
+        var adaTanaman = state.tanaman.some(function (t) { return t.lahanId === l.id; });
+        var adaBiaya = state.biaya.some(function (x) { return x.lahanId === l.id; });
+        var adaHasil = state.hasil.some(function (x) { return x.lahanId === l.id; });
+        if (adaTanaman || adaBiaya || adaHasil) { toast("Lahan \"" + l.nama + "\" tidak bisa dihapus — masih ada tanaman, biaya, atau hasil panen tercatat."); return; }
+        tanyaKonfirmasi("Hapus Lahan", "Hapus lahan \"" + l.nama + "\"?", function () {
+          state.lahan = state.lahan.filter(function (x) { return x.id !== l.id; });
+          saveState(); renderSemua(); toast("Lahan dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahLahan").addEventListener("click", function () {
+    var nama = $("lNama").value.trim(), lokasi = $("lLokasi").value.trim();
+    var luas = Number($("lLuas").value), status = $("lStatus").value;
+    if (!nama) { toast("Isi nama lahan dulu."); return; }
+    if (!lokasi) { toast("Isi lokasi lahan dulu."); return; }
+    if (!(luas > 0)) { toast("Isi luas lahan (hektare) yang benar."); return; }
+    state.lahan.push({ id: state.nextLahanId++, nama: nama, lokasi: lokasi, luas: luas, status: status });
+    saveState();
+    $("lNama").value = ""; $("lLokasi").value = ""; $("lLuas").value = "";
+    renderSemua();
+    toast("Lahan \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Tanaman ---------- */
+  function renderTanaman() {
+    isiPilihanLahan($("tLahan"));
+    if (!$("tTanam").value) $("tTanam").value = hariIniKey();
+    if (!$("tPanen").value) $("tPanen").value = kunciPlus(60);
+    var tumbuh = state.tanaman.filter(function (t) { return t.status === "Tumbuh"; }).length;
+    var siap = state.tanaman.filter(function (t) { return t.status === "Siap Panen"; }).length;
+    var panen = state.tanaman.filter(function (t) { return t.status === "Panen"; }).length;
+    $("ringkasanTanaman").textContent = state.tanaman.length + " tanaman · tumbuh " + tumbuh + " · siap panen " + siap + " · sudah panen " + panen + ".";
+    var list = state.tanaman.slice().sort(function (a, b) { return a.panen < b.panen ? -1 : a.panen > b.panen ? 1 : 0; });
+    $("daftarTanaman").innerHTML = list.length ? list.map(function (t) {
+      var d = selisihHari(t.panen);
+      var infoPanen = t.status === "Panen" ? "sudah dipanen " + tglSingkat(t.panen) : (d < 0 ? "panen lewat " + Math.abs(d) + " hari" : d === 0 ? "panen hari ini" : "panen dalam " + d + " hari");
+      var aksi = "";
+      if (bolehKelola()) {
+        if (t.status !== "Panen") aksi += '<button class="btn hijau kecil" data-catat-panen="' + t.id + '" type="button">Catat Panen</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-tanaman="' + t.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(t.jenis) + '</b> ' + lencanaStatusTanaman(t.status) +
+        '<br><span class="sub">' + esc(namaLahan(t.lahanId)) + (t.varietas ? ' · varietas ' + esc(t.varietas) : '') + ' · ' + t.luasTanam + ' ha · tanam ' + tglSingkat(t.tanam) + ' · perkiraan panen ' + tglSingkat(t.panen) + ' · ' + infoPanen + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada tanaman.</p>';
+    document.querySelectorAll("[data-catat-panen]").forEach(function (b) {
+      b.addEventListener("click", function () { bukaModalPanen(Number(b.getAttribute("data-catat-panen"))); });
+    });
+    document.querySelectorAll("[data-hapus-tanaman]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = cariTanaman(Number(b.getAttribute("data-hapus-tanaman")));
+        if (!t) return;
+        var adaHasil = state.hasil.some(function (x) { return x.tanamanId === t.id; });
+        if (adaHasil) { toast("Tanaman \"" + t.jenis + "\" tidak bisa dihapus — sudah ada hasil panen tercatat."); return; }
+        tanyaKonfirmasi("Hapus Tanaman", "Hapus tanaman \"" + t.jenis + "\" di " + namaLahan(t.lahanId) + "?", function () {
+          state.tanaman = state.tanaman.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Tanaman dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahTanaman").addEventListener("click", function () {
+    var lahanId = Number($("tLahan").value), jenis = $("tJenis").value.trim();
+    var varietas = $("tVarietas").value.trim(), tanam = $("tTanam").value, panen = $("tPanen").value;
+    var luas = Number($("tLuas").value);
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!jenis) { toast("Isi jenis tanaman dulu."); return; }
+    if (!tanam || !panen) { toast("Isi tanggal tanam dan perkiraan panen."); return; }
+    if (!(luas > 0)) { toast("Isi luas tanam (hektare) yang benar."); return; }
+    state.tanaman.push({ id: state.nextTanamanId++, lahanId: lahanId, jenis: jenis, varietas: varietas, tanam: tanam, panen: panen, luasTanam: luas, status: "Tumbuh" });
+    saveState();
+    $("tJenis").value = ""; $("tVarietas").value = ""; $("tLuas").value = "";
+    renderSemua();
+    toast("Tanaman \"" + jenis + "\" ditambahkan.");
+  });
+
+  /* ---------- Modal Catat Panen ---------- */
+  function bukaModalPanen(tanamanId) {
+    var t = cariTanaman(tanamanId);
+    if (!t) return;
+    panenTanamanId = tanamanId;
+    $("modalPanenJudul").textContent = "Catat Panen — " + t.jenis;
+    $("modalPanenInfo").textContent = namaLahan(t.lahanId) + " · perkiraan panen " + tglSingkat(t.panen) + ". Isi jumlah dan harga — tanaman akan ditandai sudah dipanen.";
+    $("pKg").value = ""; $("pHarga").value = ""; $("pNilai").textContent = "Nilai panen: Rp0";
+    $("modalPanenBack").classList.add("open");
+  }
+  function tutupModalPanen() { $("modalPanenBack").classList.remove("open"); panenTanamanId = null; }
+  $("modalPanenBatal").addEventListener("click", tutupModalPanen);
+  $("modalPanenBack").addEventListener("click", function (e) { if (e.target === $("modalPanenBack")) tutupModalPanen(); });
+  function hitungNilaiPanen() {
+    var kg = Number($("pKg").value) || 0, harga = Number($("pHarga").value) || 0;
+    $("pNilai").textContent = "Nilai panen: " + rupiah(kg * harga);
+  }
+  $("pKg").addEventListener("input", hitungNilaiPanen);
+  $("pHarga").addEventListener("input", hitungNilaiPanen);
+  $("modalPanenYa").addEventListener("click", function () {
+    var t = cariTanaman(panenTanamanId);
+    if (!t) { tutupModalPanen(); return; }
+    var kg = Number($("pKg").value), harga = Number($("pHarga").value);
+    if (!(kg > 0)) { toast("Isi jumlah panen (kg) yang benar."); return; }
+    if (!(harga > 0)) { toast("Isi harga per kg yang benar."); return; }
+    state.hasil.push({ id: state.nextHasilId++, lahanId: t.lahanId, tanamanId: t.id, tanggal: hariIniKey(), kg: kg, hargaPerKg: harga, nilai: kg * harga, pemilik: currentUser ? currentUser.username : "—" });
+    t.status = "Panen";
+    saveState();
+    tutupModalPanen();
+    renderSemua();
+    toast("Panen \"" + t.jenis + "\" tercatat (" + rupiah(kg * harga) + ").");
+  });
+
+  /* ---------- Jadwal ---------- */
+  function renderJadwal() {
+    isiPilihanLahan($("kLahan"));
+    if (!$("kTanggal").value) $("kTanggal").value = hariIniKey();
+    var filter = $("fJadwal").value || "semua";
+    var cari = ($("cariJadwal").value || "").trim().toLowerCase();
+    var semua = daftarJadwal();
+    var belum = jadwalBelum();
+    var segera = belum.filter(function (e) { var d = selisihHari(e.tanggal); return d >= 0 && d <= 7; });
+    var lewat = belum.filter(function (e) { return selisihHari(e.tanggal) < 0; });
+    var bulanIni = semua.filter(function (e) { return bulanKey(e.tanggal) === bulanKey(hariIniKey()); });
+    var list = semua;
+    if (filter === "segera") list = segera;
+    else if (filter === "lewat") list = lewat;
+    else if (filter === "bulan") list = bulanIni;
+    if (cari) list = list.filter(function (e) { return e.judul.toLowerCase().indexOf(cari) !== -1 || namaLahan(e.lahanId).toLowerCase().indexOf(cari) !== -1; });
+    $("ringkasanJadwal").textContent = list.length + " jadwal · segera " + segera.length + " · lewat " + lewat.length + " · bulan ini " + bulanIni.length + ".";
+    $("daftarJadwal").innerHTML = list.length ? list.map(function (e) {
+      var aksi = "";
+      if (e.tipe === "panen") {
+        var t = cariTanaman(e.refId);
+        if (t && t.status !== "Panen" && bolehKelola()) aksi += '<button class="btn hijau kecil" data-catat-panen="' + t.id + '" type="button">Catat Panen</button> ';
+        if (t && t.status === "Panen") aksi += '<span class="lencana st-aman">Sudah Panen</span>';
+      } else {
+        var k = state.kegiatan.find(function (x) { return x.id === e.refId; });
+        if (k && bolehKelola()) {
+          if (k.status === "Selesai") aksi += '<button class="btn ghost kecil" data-kegiatan-belum="' + k.id + '" type="button">Batalkan Selesai</button> ';
+          else aksi += '<button class="btn hijau kecil" data-kegiatan-selesai="' + k.id + '" type="button">Tandai Selesai</button> ';
+          aksi += '<button class="btn ghost kecil" data-hapus-kegiatan="' + k.id + '" type="button">Hapus</button>';
+        } else if (k && k.status === "Selesai") {
+          aksi += '<span class="lencana st-aman">Selesai</span>';
+        }
+      }
+      return '<div class="baris"><div><b>' + esc(e.judul) + '</b> ' + labelJadwal(e) +
+        '<br><span class="sub">' + esc(namaLahan(e.lahanId)) + ' · ' + tglSingkat(e.tanggal) + ' · ' + (e.tipe === "panen" ? "Panen tanaman" : "Kegiatan lapangan") + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang cocok.</p>';
+    document.querySelectorAll("[data-catat-panen]").forEach(function (b) {
+      b.addEventListener("click", function () { bukaModalPanen(Number(b.getAttribute("data-catat-panen"))); });
+    });
+    document.querySelectorAll("[data-kegiatan-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = state.kegiatan.find(function (x) { return x.id === Number(b.getAttribute("data-kegiatan-selesai")); });
+        if (!k) return;
+        k.status = "Selesai"; saveState(); renderSemua(); toast("Kegiatan \"" + k.nama + "\" ditandai selesai.");
+      });
+    });
+    document.querySelectorAll("[data-kegiatan-belum]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = state.kegiatan.find(function (x) { return x.id === Number(b.getAttribute("data-kegiatan-belum")); });
+        if (!k) return;
+        k.status = "Belum"; saveState(); renderSemua(); toast("Kegiatan \"" + k.nama + "\" dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-kegiatan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = state.kegiatan.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-kegiatan")); });
+        if (!k) return;
+        tanyaKonfirmasi("Hapus Kegiatan", "Hapus kegiatan \"" + k.nama + "\"?", function () {
+          state.kegiatan = state.kegiatan.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Kegiatan dihapus.");
+        });
+      });
+    });
+  }
+  $("fJadwal").addEventListener("change", renderJadwal);
+  $("cariJadwal").addEventListener("input", renderJadwal);
+  $("btnTambahKegiatan").addEventListener("click", function () {
+    var nama = $("kNama").value.trim(), lahanId = Number($("kLahan").value), tanggal = $("kTanggal").value;
+    if (!nama) { toast("Isi nama kegiatan dulu."); return; }
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal kegiatan."); return; }
+    state.kegiatan.push({ id: state.nextKegiatanId++, lahanId: lahanId, nama: nama, tanggal: tanggal, status: "Belum" });
+    saveState();
+    $("kNama").value = "";
+    renderSemua();
+    toast("Kegiatan \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Biaya & Hasil ---------- */
+  function renderBiaya() {
+    isiPilihanLahan($("bLahan"));
+    if (!$("bTanggal").value) $("bTanggal").value = hariIniKey();
+    if (!$("hTanggal").value) $("hTanggal").value = hariIniKey();
+    $("hTanaman").innerHTML = state.tanaman.map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.jenis) + ' — ' + esc(namaLahan(t.lahanId)) + (t.status === "Panen" ? " (sudah panen)" : "") + '</option>';
+    }).join("");
+    var selBulan = $("fBulanBiaya");
+    var simpanBulan = selBulan.value;
+    isiPilihanBulan(selBulan, simpanBulan ? simpanBulan : "semua");
+    var selLahan = $("fLahanBiaya");
+    var simpanLahan = selLahan.value;
+    selLahan.innerHTML = '<option value="semua">Semua lahan</option>' + state.lahan.map(function (l) {
+      return '<option value="' + l.id + '">' + esc(l.nama) + '</option>';
+    }).join("");
+    if (simpaLahanSafe(simpanLahan)) selLahan.value = simpanLahan;
+    function simpaLahanSafe(v) { return v && state.lahan.some(function (l) { return String(l.id) === String(v); }); }
+    var bk = selBulan.value, lahanId = selLahan.value, kat = $("fKatBiaya").value || "semua";
+    var list = biayaTerlihat();
+    if (bk !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    if (lahanId !== "semua") list = list.filter(function (x) { return String(x.lahanId) === String(lahanId); });
+    if (kat !== "semua") list = list.filter(function (x) { return x.kategori === kat; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var total = totalBiaya(list);
+    $("ringkasanBiaya").textContent = list.length + " catatan biaya — total " + rupiah(total) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarBiaya").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehUbahCatatan(x.pemilik)) aksi = '<button class="btn ghost kecil" data-hapus-biaya="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(x.keterangan) + '</b> <span class="tag">' + esc(x.kategori) + '</span>' +
+        '<br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + ' · dicatat oleh ' + esc(x.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada biaya yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-biaya]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.biaya.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-biaya")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Biaya", "Hapus biaya \"" + x.keterangan + "\" (" + rupiah(x.jumlah) + ")?", function () {
+          state.biaya = state.biaya.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Biaya dihapus.");
+        });
+      });
+    });
+    var hasil = hasilTerlihat().slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var totalH = totalHasil(hasil);
+    $("ringkasanHasil").textContent = hasil.length + " hasil panen — total " + rupiah(totalH) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarHasil").innerHTML = hasil.length ? hasil.map(function (x) {
+      var t = cariTanaman(x.tanamanId);
+      var aksi = "";
+      if (bolehUbahCatatan(x.pemilik)) aksi = '<button class="btn ghost kecil" data-hapus-hasil="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(t ? t.jenis : "Tanaman") + '</b>' +
+        '<br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + ' · ' + x.kg + ' kg × ' + rupiah(x.hargaPerKg) + ' · dicatat oleh ' + esc(x.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(x.nilai) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada hasil panen.</p>';
+    document.querySelectorAll("[data-hapus-hasil]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.hasil.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-hasil")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Hasil Panen", "Hapus hasil panen " + x.kg + " kg (" + rupiah(x.nilai) + ")?", function () {
+          state.hasil = state.hasil.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Hasil panen dihapus.");
+        });
+      });
+    });
+    hitungNilaiHasil();
+  }
+  $("fBulanBiaya").addEventListener("change", renderBiaya);
+  $("fLahanBiaya").addEventListener("change", renderBiaya);
+  $("fKatBiaya").addEventListener("change", renderBiaya);
+  $("btnTambahBiaya").addEventListener("click", function () {
+    var lahanId = Number($("bLahan").value), kategori = $("bKategori").value;
+    var keterangan = $("bKeterangan").value.trim(), tanggal = $("bTanggal").value;
+    var jumlah = Number($("bJumlah").value);
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!keterangan) { toast("Isi keterangan biaya dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal biaya."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah biaya yang benar."); return; }
+    state.biaya.push({ id: state.nextBiayaId++, lahanId: lahanId, kategori: kategori, keterangan: keterangan, tanggal: tanggal, jumlah: jumlah, pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("bKeterangan").value = ""; $("bJumlah").value = "";
+    renderSemua();
+    toast("Biaya \"" + keterangan + "\" tercatat (" + rupiah(jumlah) + ").");
+  });
+  function hitungNilaiHasil() {
+    var kg = Number($("hKg").value) || 0, harga = Number($("hHarga").value) || 0;
+    $("hNilai").textContent = "Nilai panen: " + rupiah(kg * harga);
+  }
+  $("hKg").addEventListener("input", hitungNilaiHasil);
+  $("hHarga").addEventListener("input", hitungNilaiHasil);
+  $("btnTambahHasil").addEventListener("click", function () {
+    var tanamanId = Number($("hTanaman").value), tanggal = $("hTanggal").value;
+    var kg = Number($("hKg").value), harga = Number($("hHarga").value);
+    if (!tanamanId) { toast("Pilih tanaman dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal panen."); return; }
+    if (!(kg > 0)) { toast("Isi jumlah panen (kg) yang benar."); return; }
+    if (!(harga > 0)) { toast("Isi harga per kg yang benar."); return; }
+    var t = cariTanaman(tanamanId);
+    state.hasil.push({ id: state.nextHasilId++, lahanId: t ? t.lahanId : 0, tanamanId: tanamanId, tanggal: tanggal, kg: kg, hargaPerKg: harga, nilai: kg * harga, pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("hKg").value = ""; $("hHarga").value = ""; hitungNilaiHasil();
+    renderSemua();
+    toast("Hasil panen tercatat (" + rupiah(kg * harga) + ").");
+  });
+
+  /* ---------- Stok ---------- */
+  function renderStok() {
+    var totalNilai = nilaiStok();
+    var menipis = stokMenipis();
+    $("ringkasanStok").textContent = state.stok.length + " item · nilai stok " + rupiah(totalNilai) + " · menipis " + menipis.length + ".";
+    $("daftarStok").innerHTML = state.stok.length ? state.stok.map(function (s) {
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<button class="btn biru kecil" data-stok-masuk="' + s.id + '" type="button">Masuk</button> ' +
+          '<button class="btn oren kecil" data-stok-keluar="' + s.id + '" type="button">Keluar</button> ' +
+          '<button class="btn ghost kecil" data-hapus-stok="' + s.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(s.nama) + '</b> ' + lencanaStok(s) +
+        '<br><span class="sub">' + esc(s.jenis) + ' · ' + s.jumlah + ' ' + esc(s.satuan) + ' · minimum ' + s.minimum + ' ' + esc(s.satuan) + ' · ' + rupiah(s.hargaSatuan) + '/' + esc(s.satuan) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(Number(s.jumlah) * Number(s.hargaSatuan)) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada stok.</p>';
+    document.querySelectorAll("[data-stok-masuk]").forEach(function (b) {
+      b.addEventListener("click", function () { bukaModalStok(Number(b.getAttribute("data-stok-masuk")), "Masuk"); });
+    });
+    document.querySelectorAll("[data-stok-keluar]").forEach(function (b) {
+      b.addEventListener("click", function () { bukaModalStok(Number(b.getAttribute("data-stok-keluar")), "Keluar"); });
+    });
+    document.querySelectorAll("[data-hapus-stok]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = cariStok(Number(b.getAttribute("data-hapus-stok")));
+        if (!s) return;
+        var adaRiwayat = state.riwayatStok.some(function (r) { return r.stokId === s.id; });
+        if (adaRiwayat) { toast("Item \"" + s.nama + "\" tidak bisa dihapus — sudah ada riwayat stok tercatat."); return; }
+        tanyaKonfirmasi("Hapus Stok", "Hapus item stok \"" + s.nama + "\"?", function () {
+          state.stok = state.stok.filter(function (x) { return x.id !== s.id; });
+          saveState(); renderSemua(); toast("Item stok dihapus.");
+        });
+      });
+    });
+    var riw = state.riwayatStok.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 12);
+    $("daftarRiwayatStok").innerHTML = riw.length ? riw.map(function (r) {
+      var s = cariStok(r.stokId);
+      var lencana = r.arah === "Masuk" ? '<span class="lencana st-aman">Masuk</span>' : '<span class="lencana st-rendah">Keluar</span>';
+      return '<div class="baris"><div><b>' + esc(s ? s.nama : "Item") + '</b> ' + lencana +
+        '<br><span class="sub">' + tglSingkat(r.tanggal) + ' · ' + esc(r.keterangan || "") + '</span></div>' +
+        '<div style="text-align:right"><b>' + (r.arah === "Masuk" ? "+" : "−") + r.jumlah + ' ' + esc(s ? s.satuan : "") + '</b></div></div>';
+    }).join("") : '<p class="sub">Belum ada riwayat stok.</p>';
+  }
+  $("btnTambahStok").addEventListener("click", function () {
+    var nama = $("sNama").value.trim(), jenis = $("sJenis").value, satuan = $("sSatuan").value.trim();
+    var jumlah = Number($("sJumlah").value), minimum = Number($("sMin").value), harga = Number($("sHarga").value);
+    if (!nama) { toast("Isi nama item dulu."); return; }
+    if (!satuan) { toast("Isi satuan dulu (cth: kg)."); return; }
+    if (isNaN(jumlah) || jumlah < 0) { toast("Isi jumlah awal yang benar."); return; }
+    if (isNaN(minimum) || minimum < 0) { toast("Isi batas minimum yang benar."); return; }
+    if (!(harga > 0)) { toast("Isi harga satuan yang benar."); return; }
+    state.stok.push({ id: state.nextStokId++, nama: nama, jenis: jenis, satuan: satuan, jumlah: jumlah, minimum: minimum, hargaSatuan: harga });
+    saveState();
+    $("sNama").value = ""; $("sSatuan").value = ""; $("sJumlah").value = ""; $("sMin").value = ""; $("sHarga").value = "";
+    renderSemua();
+    toast("Item stok \"" + nama + "\" ditambahkan.");
+  });
+  function bukaModalStok(stokId, arah) {
+    var s = cariStok(stokId);
+    if (!s) return;
+    stokArahId = stokId; stokArah = arah;
+    $("modalStokJudul").textContent = "Stok " + arah + " — " + s.nama;
+    $("modalStokInfo").textContent = "Stok saat ini: " + s.jumlah + " " + s.satuan + " · minimum " + s.minimum + " " + s.satuan + ".";
+    $("stJumlah").value = ""; $("stKet").value = ""; $("pesanStok").textContent = "";
+    $("modalStokBack").classList.add("open");
+  }
+  function tutupModalStok() { $("modalStokBack").classList.remove("open"); stokArahId = null; }
+  $("modalStokBatal").addEventListener("click", tutupModalStok);
+  $("modalStokBack").addEventListener("click", function (e) { if (e.target === $("modalStokBack")) tutupModalStok(); });
+  $("modalStokYa").addEventListener("click", function () {
+    var s = cariStok(stokArahId);
+    if (!s) { tutupModalStok(); return; }
+    var jumlah = Number($("stJumlah").value), ket = $("stKet").value.trim();
+    if (!(jumlah > 0)) { $("pesanStok").textContent = "Isi jumlah yang benar."; return; }
+    if (stokArah === "Keluar" && jumlah > Number(s.jumlah)) { $("pesanStok").textContent = "Jumlah keluar melebihi stok yang ada (" + s.jumlah + " " + s.satuan + ")."; return; }
+    if (stokArah === "Masuk") s.jumlah = Number(s.jumlah) + jumlah;
+    else s.jumlah = Number(s.jumlah) - jumlah;
+    state.riwayatStok.push({ id: state.nextRiwayatId++, stokId: s.id, arah: stokArah, jumlah: jumlah, tanggal: hariIniKey(), keterangan: ket || (stokArah === "Masuk" ? "Pembelian stok" : "Pemakaian stok") });
+    saveState();
+    tutupModalStok();
+    renderSemua();
+    toast("Stok " + s.nama + " " + (stokArah === "Masuk" ? "bertambah" : "berkurang") + " " + jumlah + " " + s.satuan + ".");
+  });
+
+  /* ---------- Laporan ---------- */
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    isiPilihanBulan(selBulan, simpan ? simpan : bulanKey(hariIniKey()));
+    var biaya = biayaTerlihat(), hasil = hasilTerlihat();
+    var tb = totalBiaya(biaya), th = totalHasil(hasil);
+    $("ringkasanLaporan").textContent = biaya.length + " catatan biaya (" + rupiah(tb) + ") · " + hasil.length + " hasil panen (" + rupiah(th) + ") · laba " + rupiah(th - tb) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("tabelPerLahan").innerHTML = "<tr><th>Lahan</th><th class=\"angka\">Biaya</th><th class=\"angka\">Hasil</th><th class=\"angka\">Laba / Rugi</th></tr>" +
+      state.lahan.map(function (l) {
+        var r = labaLahan(l.id);
+        return "<tr><td><b>" + esc(l.nama) + "</b></td><td class=\"angka\">" + rupiah(r.biaya) + "</td><td class=\"angka\">" + rupiah(r.hasil) + "</td><td class=\"angka\"><b style=\"color:" + (r.laba >= 0 ? "var(--green)" : "var(--red)") + "\">" + (r.laba < 0 ? "−" : "") + rupiah(Math.abs(r.laba)) + "</b></td></tr>";
+      }).join("");
+    var perBulan = {};
+    biaya.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { biaya: 0, hasil: 0, jmlBiaya: 0, jmlHasil: 0 };
+      perBulan[k].biaya += Number(x.jumlah) || 0; perBulan[k].jmlBiaya += 1;
+    });
+    hasil.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { biaya: 0, hasil: 0, jmlBiaya: 0, jmlHasil: 0 };
+      perBulan[k].hasil += Number(x.nilai) || 0; perBulan[k].jmlHasil += 1;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Biaya</th><th class=\"angka\">Hasil</th><th class=\"angka\">Laba / Rugi</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k], laba = r.hasil - r.biaya;
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + rupiah(r.biaya) + " (" + r.jmlBiaya + ")</td><td class=\"angka\">" + rupiah(r.hasil) + " (" + r.jmlHasil + ")</td><td class=\"angka\"><b style=\"color:" + (laba >= 0 ? "var(--green)" : "var(--red)") + "\">" + (laba < 0 ? "−" : "") + rupiah(Math.abs(laba)) + "</b></td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perKat = {};
+    KAT_BIAYA.forEach(function (k) { perKat[k] = 0; });
+    biaya.forEach(function (x) { if (!perKat[x.kategori]) perKat[x.kategori] = 0; perKat[x.kategori] += Number(x.jumlah) || 0; });
+    $("tabelKatBiaya").innerHTML = "<tr><th>Kategori</th><th class=\"angka\">Total</th><th class=\"angka\">% dari Biaya</th></tr>" +
+      KAT_BIAYA.map(function (k) {
+        var persen = tb > 0 ? Math.round(perKat[k] / tb * 1000) / 10 : 0;
+        return "<tr><td><b>" + k + "</b></td><td class=\"angka\">" + rupiah(perKat[k]) + "</td><td class=\"angka\">" + persen + "%</td></tr>";
+      }).join("");
+    var perTanaman = {};
+    hasil.forEach(function (x) {
+      if (!perTanaman[x.tanamanId]) perTanaman[x.tanamanId] = { kg: 0, nilai: 0, jml: 0 };
+      perTanaman[x.tanamanId].kg += Number(x.kg) || 0;
+      perTanaman[x.tanamanId].nilai += Number(x.nilai) || 0;
+      perTanaman[x.tanamanId].jml += 1;
+    });
+    var kunciTanaman = Object.keys(perTanaman);
+    $("tabelPerTanaman").innerHTML = "<tr><th>Tanaman</th><th class=\"angka\">Panen</th><th class=\"angka\">Total Kg</th><th class=\"angka\">Nilai</th></tr>" +
+      (kunciTanaman.length ? kunciTanaman.map(function (id) {
+        var t = cariTanaman(Number(id));
+        var r = perTanaman[id];
+        return "<tr><td><b>" + esc(t ? t.jenis : "Tanaman") + "</b></td><td class=\"angka\">" + r.jml + "×</td><td class=\"angka\">" + Number(r.kg).toLocaleString("id-ID") + " kg</td><td class=\"angka\">" + rupiah(r.nilai) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada hasil panen.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var biaya = biayaTerlihat(), hasil = hasilTerlihat();
+    if (bk !== "semua") {
+      biaya = biaya.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+      hasil = hasil.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    }
+    var baris = [["Jenis", "Tanggal", "Lahan", "Keterangan", "Kategori", "Jumlah (Rp)", "Dicatat oleh"].map(csvCell).join(",")];
+    var n = 0;
+    biaya.forEach(function (x) {
+      n++;
+      baris.push(["Biaya", x.tanggal, namaLahan(x.lahanId), x.keterangan, x.kategori, x.jumlah, x.pemilik].map(csvCell).join(","));
+    });
+    hasil.forEach(function (x) {
+      n++;
+      var t = cariTanaman(x.tanamanId);
+      baris.push(["Hasil Panen", x.tanggal, namaLahan(x.lahanId), (t ? t.jenis : "Tanaman") + " " + x.kg + " kg @ " + x.hargaPerKg, "Panen", x.nilai, x.pemilik].map(csvCell).join(","));
+    });
+    unduh("laporan-farm-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("farm-management-backup.json", JSON.stringify({ aplikasi: "farm-management", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.lahan) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Lahan, tanaman, biaya, hasil, dan stok tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderLahan(); renderTanaman(); renderJadwal(); renderBiaya(); renderStok(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
