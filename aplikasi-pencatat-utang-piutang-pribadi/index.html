@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pencatat Utang &amp; Piutang Pribadi — Demo</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO</span>
+    <h1>Pencatat Utang &amp; <span class="aksen">Piutang Pribadi</span></h1>
+    <p>Catat utang dan piutang per orang, pantau jatuh tempo, tandai lunas, dan kirim pengingat tagih — untuk perorangan dan UMKM.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="utang">Utang <span class="badge" id="badgeUtang">0</span></button>
+    <button class="tab-btn" type="button" data-tab="piutang">Piutang <span class="badge" id="badgePiutang">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jatuhtempo">Jatuh Tempo <span class="badge" id="badgeTempo">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pengingat">Pengingat <span class="badge" id="badgeIngat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="riwayat">Riwayat <span class="badge" id="badgeRiwayat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Utang &amp; Piutang</h2><p>Ringkasan saldo yang masih berjalan dan yang perlu segera ditagih atau dilunasi.</p></div>
+    <div class="grid-stat">
+      <div class="stat bahaya"><div class="label">Total Utang Belum Lunas</div><div class="angka" id="dUtang" style="font-size:22px">Rp0</div><div class="sub" id="dUtangSub"></div></div>
+      <div class="stat accent"><div class="label">Total Piutang Belum Lunas</div><div class="angka" id="dPiutang" style="font-size:22px">Rp0</div><div class="sub" id="dPiutangSub"></div></div>
+      <div class="stat warn"><div class="label">Jatuh Tempo ≤ 7 Hari</div><div class="angka" id="dSegera">0</div><div class="sub" id="dSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Lewat Jatuh Tempo</div><div class="angka" id="dLewat">0</div><div class="sub" id="dLewatSub"></div></div>
+    </div>
+    <div class="card"><h3>Selisih Bersih</h3><p class="sub" id="dSelisih">—</p></div>
+    <div class="card"><h3>Jatuh Tempo Terdekat</h3><div id="daftarTerbaru"></div></div>
+    <div class="card" id="cardTambahCepat">
+      <h3>Tambah Cepat</h3>
+      <p class="sub">Catat utang atau piutang baru. Catatan masuk atas nama Anda.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qJenis">Jenis</label><select id="qJenis"><option value="utang">Utang (saya berutang)</option><option value="piutang">Piutang (orang berutang ke saya)</option></select></div>
+        <div class="field"><label for="qOrang">Nama orang</label><input id="qOrang" type="text" placeholder="cth: Budi Hartono"></div>
+        <div class="field"><label for="qJumlah">Jumlah (Rp)</label><input id="qJumlah" type="number" min="0" placeholder="cth: 500000"></div>
+        <div class="field"><label for="qTempo">Jatuh tempo</label><input id="qTempo" type="date"></div>
+        <div class="field" style="grid-column:1 / -1"><label for="qCatatan">Catatan (opsional)</label><input id="qCatatan" type="text" placeholder="cth: Pinjam untuk modal warung"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahCepat" type="button">Simpan Catatan</button>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengguna.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-utang">
+    <div class="page-head"><h2>Utang Saya</h2><p>Uang yang saya pinjam dan wajib saya lunasi. Admin melihat semua pengguna; Pengguna hanya melihat catatannya sendiri.</p></div>
+    <div class="card">
+      <h3>Tambah Utang</h3>
+      <div class="form-grid">
+        <div class="field"><label for="uOrang">Berutang kepada</label><input id="uOrang" type="text" placeholder="cth: Budi Hartono"></div>
+        <div class="field"><label for="uJumlah">Jumlah (Rp)</label><input id="uJumlah" type="number" min="0" placeholder="cth: 2500000"></div>
+        <div class="field"><label for="uTempo">Jatuh tempo</label><input id="uTempo" type="date"></div>
+        <div class="field"><label for="uTanggal">Tanggal pinjam</label><input id="uTanggal" type="date"></div>
+        <div class="field" style="grid-column:1 / -1"><label for="uCatatan">Catatan (opsional)</label><input id="uCatatan" type="text" placeholder="cth: Pinjam untuk bayar supplier"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahUtang" type="button">Simpan Utang</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fStatusUtang">Status</label><select id="fStatusUtang"><option value="semua">Semua status</option><option value="belum">Belum lunas</option><option value="lunas">Lunas</option></select></div>
+        <div class="field"><label for="cariUtang">Cari utang</label><input id="cariUtang" type="text" placeholder="cth: Budi, supplier"></div>
+      </div>
+      <p class="sub" id="ringkasanUtang"></p>
+      <div id="daftarUtang" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-piutang">
+    <div class="page-head"><h2>Piutang Saya</h2><p>Uang yang dipinjam orang dari saya dan wajib mereka lunasi. Admin melihat semua pengguna; Pengguna hanya melihat catatannya sendiri.</p></div>
+    <div class="card">
+      <h3>Tambah Piutang</h3>
+      <div class="form-grid">
+        <div class="field"><label for="pOrang">Nama peminjam</label><input id="pOrang" type="text" placeholder="cth: Dewi Lestari"></div>
+        <div class="field"><label for="pJumlah">Jumlah (Rp)</label><input id="pJumlah" type="number" min="0" placeholder="cth: 1500000"></div>
+        <div class="field"><label for="pTempo">Jatuh tempo</label><input id="pTempo" type="date"></div>
+        <div class="field"><label for="pTanggal">Tanggal pinjam</label><input id="pTanggal" type="date"></div>
+        <div class="field" style="grid-column:1 / -1"><label for="pCatatan">Catatan (opsional)</label><input id="pCatatan" type="text" placeholder="cth: Pinjaman modal usaha"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPiutang" type="button">Simpan Piutang</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fStatusPiutang">Status</label><select id="fStatusPiutang"><option value="semua">Semua status</option><option value="belum">Belum lunas</option><option value="lunas">Lunas</option></select></div>
+        <div class="field"><label for="cariPiutang">Cari piutang</label><input id="cariPiutang" type="text" placeholder="cth: Dewi, modal usaha"></div>
+      </div>
+      <p class="sub" id="ringkasanPiutang"></p>
+      <div id="daftarPiutang" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jatuhtempo">
+    <div class="page-head"><h2>Jatuh Tempo</h2><p>Semua utang dan piutang yang belum lunas, diurutkan dari yang paling dekat jatuh temponya.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fTempo">Kondisi</label><select id="fTempo"><option value="semua">Semua belum lunas</option><option value="lewat">Lewat jatuh tempo</option><option value="segera">Jatuh tempo ≤ 7 hari</option><option value="aman">Masih aman (&gt; 7 hari)</option></select></div>
+        <div class="field"><label for="cariTempo">Cari</label><input id="cariTempo" type="text" placeholder="cth: nama orang, catatan"></div>
+      </div>
+      <p class="sub" id="ringkasanTempo"></p>
+      <div id="daftarTempo" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pengingat">
+    <div class="page-head"><h2>Pengingat Tagih</h2><p>Utang dan piutang yang sudah lewat jatuh tempo atau jatuh tempo dalam 7 hari ke depan. Salin teks pengingatnya, lalu kirim sendiri lewat WhatsApp — aplikasi ini tidak mengirim pesan.</p></div>
+    <div class="card">
+      <p class="sub" id="ringkasanIngat"></p>
+      <div id="daftarIngat" style="margin-top:10px"></div>
+    </div>
+    <div class="card" id="cardPesan" hidden>
+      <h3>Teks Pengingat WhatsApp</h3>
+      <div class="pesan-teks" id="kotakPesan"></div>
+      <p class="sub">Salin teks di atas lalu tempel di WhatsApp. Aplikasi ini tidak mengirim pesan sendiri.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head"><h2>Riwayat Catatan</h2><p>Semua utang dan piutang, termasuk yang sudah lunas. Admin melihat semua pengguna; Pengguna hanya melihat miliknya sendiri.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJenisRw">Jenis</label><select id="fJenisRw"><option value="semua">Semua jenis</option><option value="utang">Utang</option><option value="piutang">Piutang</option></select></div>
+        <div class="field"><label for="fStatusRw">Status</label><select id="fStatusRw"><option value="semua">Semua status</option><option value="belum">Belum lunas</option><option value="lunas">Lunas</option></select></div>
+        <div class="field"><label for="cariRw">Cari riwayat</label><input id="cariRw" type="text" placeholder="cth: Budi, modal usaha"></div>
+      </div>
+      <p class="sub" id="ringkasanRiwayat"></p>
+      <div id="daftarRiwayat" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Utang &amp; Piutang</h2><p>Total per periode, per orang, dan per status — berdasarkan tanggal catatan dibuat.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPeriode">Periode (tanggal catat)</label><select id="fPeriode"><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="semua" selected>Semua</option></select></div>
+      </div>
+      <div class="grid-stat" style="margin-top:14px">
+        <div class="stat bahaya"><div class="label">Total Utang (periode)</div><div class="angka" id="lUtang" style="font-size:22px">Rp0</div><div class="sub" id="lUtangSub"></div></div>
+        <div class="stat accent"><div class="label">Total Piutang (periode)</div><div class="angka" id="lPiutang" style="font-size:22px">Rp0</div><div class="sub" id="lPiutangSub"></div></div>
+        <div class="stat"><div class="label">Total Sudah Lunas</div><div class="angka" id="lLunas" style="font-size:22px">Rp0</div><div class="sub" id="lLunasSub"></div></div>
+        <div class="stat warn"><div class="label">Total Belum Lunas</div><div class="angka" id="lBelum" style="font-size:22px">Rp0</div><div class="sub" id="lBelumSub"></div></div>
+      </div>
+      <p class="sub" id="lSelisih"></p>
+    </div>
+    <div class="card">
+      <h3>Per Orang</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelOrang"></table></div>
+    </div>
+    <div class="card">
+      <h3>Per Status</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelStatus"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor laporan periode ini ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Laporan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Pencatat Utang &amp; Piutang Pribadi.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Utang</b> untuk mencatat uang yang Anda pinjam dari orang lain, lengkap dengan jatuh tempo.</li>
+        <li>Buka tab <b>Piutang</b> untuk mencatat uang yang dipinjam orang dari Anda.</li>
+        <li>Buka tab <b>Jatuh Tempo</b> untuk melihat semua catatan yang belum lunas, diurutkan dari yang paling dekat jatuh temponya.</li>
+        <li>Buka tab <b>Pengingat</b> untuk menyalin teks pengingat WhatsApp atas catatan yang sudah lewat atau jatuh tempo dalam 7 hari. Aplikasi tidak mengirim pesan — Anda yang mengirim sendiri lewat WhatsApp.</li>
+        <li>Bila sudah dibayar, tekan <b>Tandai Lunas</b> pada catatan tersebut — tanggal lunas tercatat otomatis. Bila salah tekan, pakai <b>Batal Lunas</b>.</li>
+        <li>Tab <b>Riwayat</b> menyimpan semua catatan, termasuk yang sudah lunas. Tab <b>Laporan</b> merangkum total per periode, per orang, dan per status, serta menyediakan ekspor CSV dan cadangan JSON.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna, melihat catatan semua pengguna, dan hapus data.</li>
+        <li><b>Pengguna</b> — mencatat utang/piutang miliknya sendiri, melihat pengingat dan laporan miliknya sendiri. Tidak bisa kelola pengguna atau melihat catatan pengguna lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran di dalam aplikasi.</li>
+        <li>Pengingat hanya berupa teks yang Anda salin dan kirim sendiri lewat WhatsApp — aplikasi tidak mengirim pesan otomatis dan tidak tahu apakah pesan sudah dibaca.</li>
+        <li>Angka dan nama di sini adalah contoh demo, bukan harga resmi atau data sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengguna — <b>pengguna / pengguna123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Pencatat Utang &amp; Piutang Pribadi — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PENCATAT UTANG &amp; PIUTANG</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Catat utang dan piutang, pantau jatuh tempo, dan kirim pengingat tagih.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengguna — <b>pengguna / pengguna123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function parseTanggal(kunci) {
+    var bg = kunci.split("-");
+    return new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+  }
+  function selisihHari(kunci) {
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((parseTanggal(kunci) - kini) / 86400000);
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "pencatatUtangPiutang.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini) ---------- */
+  function seedState() {
+    var c = [];
+    function tambah(jenis, orang, jumlah, hariLalu, tempoPlus, status, lunasHariLalu, pengguna, catatan) {
+      c.push({
+        id: c.length + 1, jenis: jenis, orang: orang, jumlah: jumlah,
+        tanggal: kunciPlus(hariLalu), jatuhTempo: kunciPlus(tempoPlus),
+        status: status, tanggalLunas: status === "lunas" ? kunciPlus(lunasHariLalu) : "",
+        pengguna: pengguna, catatan: catatan || ""
+      });
+    }
+    tambah("utang", "Budi Hartono", 2500000, -10, 5, "belum", null, "admin", "Pinjam untuk bayar supplier");
+    tambah("utang", "Sari Dewi", 1000000, -15, -5, "belum", null, "admin", "Pinjam untuk stok warung");
+    tambah("utang", "Andi Pratama", 750000, -31, -19, "lunas", -21, "pengguna", "Pinjam untuk servis motor");
+    tambah("utang", "Joko Susilo", 3000000, -2, 28, "belum", null, "pengguna", "Pinjam untuk renovasi dapur");
+    tambah("piutang", "Dewi Lestari", 1500000, -12, 2, "belum", null, "admin", "Pinjaman modal usaha");
+    tambah("piutang", "Rina Marlina", 4000000, -19, -2, "belum", null, "pengguna", "Pinjaman untuk biaya sekolah anak");
+    tambah("piutang", "Agus Wijaya", 2000000, -36, -21, "lunas", -23, "admin", "Pinjaman modal dagang");
+    tambah("piutang", "Maya Putri", 900000, -1, 20, "belum", null, "pengguna", "Pinjaman untuk beli HP");
+    return { catatan: c, nextId: c.length + 1 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengguna", nama: "Budi Santoso", peran: "pengguna", password: "pengguna123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.catatan) state.catatan = [];
+    if (!state.nextId) state.nextId = state.catatan.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : "Pengguna"; }
+
+  function catatanTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.catatan.slice();
+    return state.catatan.filter(function (x) { return x.pengguna === currentUser.username; });
+  }
+  function tambahCatatan(jenis, orang, jumlah, tanggal, jatuhTempo, catatan) {
+    var entri = {
+      id: state.nextId++, jenis: jenis, orang: orang, jumlah: jumlah,
+      tanggal: tanggal || hariIniKey(), jatuhTempo: jatuhTempo,
+      status: "belum", tanggalLunas: "",
+      pengguna: currentUser ? currentUser.username : "—", catatan: catatan || ""
+    };
+    state.catatan.push(entri);
+    saveState();
+    return entri;
+  }
+  function cariCatatan(id) {
+    return state.catatan.find(function (x) { return x.id === id; });
+  }
+  function bolehUbah(x) {
+    return currentUser && (currentUser.peran === "admin" || x.pengguna === currentUser.username);
+  }
+
+  /* ---------- Status jatuh tempo ---------- */
+  function kondisiTempo(x) {
+    if (x.status === "lunas") return "lunas";
+    var s = selisihHari(x.jatuhTempo);
+    if (s < 0) return "lewat";
+    if (s <= 7) return "segera";
+    return "aman";
+  }
+  function lencanaTempo(x) {
+    var k = kondisiTempo(x), s = selisihHari(x.jatuhTempo);
+    if (k === "lunas") return '<span class="lencana st-aman">Lunas ' + tglSingkat(x.tanggalLunas) + '</span>';
+    if (k === "lewat") return '<span class="lencana st-habis">Lewat ' + (-s) + ' hari</span>';
+    if (k === "segera") return '<span class="lencana st-rendah">' + (s === 0 ? "Jatuh tempo hari ini" : s + " hari lagi") + '</span>';
+    return '<span class="lencana st-biru">' + s + ' hari lagi</span>';
+  }
+  function teksJenis(x) { return x.jenis === "utang" ? "Utang" : "Piutang"; }
+  function barisCatatan(x, aksi) {
+    var ket = x.jenis === "utang" ? "Saya berutang kepada" : "Berutang kepada saya";
+    return '<div class="baris"><div><b>' + esc(x.orang) + '</b> <span class="tag">' + teksJenis(x) + '</span> ' + lencanaTempo(x) +
+      '<br><span class="sub">' + ket + ' · dicatat ' + tglSingkat(x.tanggal) +
+      ' · jatuh tempo ' + tglSingkat(x.jatuhTempo) + (x.catatan ? ' · ' + esc(x.catatan) : '') + '</span></div>' +
+      '<div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b><br><span class="sub">' + esc(x.pengguna) + '</span><br>' + (aksi || "") + '</div></div>';
+  }
+  function tombolAksi(x) {
+    if (!bolehUbah(x)) return "";
+    var t = "";
+    if (x.status === "belum") t += '<button class="btn hijau kecil" data-lunas="' + x.id + '" type="button">Tandai Lunas</button> ';
+    else t += '<button class="btn ghost kecil" data-batal="' + x.id + '" type="button">Batal Lunas</button> ';
+    t += '<button class="btn ghost kecil" data-hapus="' + x.id + '" type="button">Hapus</button>';
+    return t;
+  }
+  function ikatAksiCatatan(wadah) {
+    wadah.querySelectorAll("[data-lunas]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = cariCatatan(Number(b.getAttribute("data-lunas")));
+        if (!x) return;
+        x.status = "lunas"; x.tanggalLunas = hariIniKey(); saveState();
+        renderSemua(); toast("Catatan " + x.orang + " ditandai lunas.");
+      });
+    });
+    wadah.querySelectorAll("[data-batal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = cariCatatan(Number(b.getAttribute("data-batal")));
+        if (!x) return;
+        x.status = "belum"; x.tanggalLunas = ""; saveState();
+        renderSemua(); toast("Status lunas " + x.orang + " dibatalkan.");
+      });
+    });
+    wadah.querySelectorAll("[data-hapus]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = cariCatatan(Number(b.getAttribute("data-hapus")));
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Catatan", "Hapus catatan " + teksJenis(x).toLowerCase() + " " + x.orang + " " + rupiah(x.jumlah) + "?", function () {
+          state.catatan = state.catatan.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Catatan dihapus.");
+        });
+      });
+    });
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "utang") renderUtang();
+    if (nama === "piutang") renderPiutang();
+    if (nama === "jatuhtempo") renderTempo();
+    if (nama === "pengingat") renderIngat();
+    if (nama === "riwayat") renderRiwayat();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function totalJenis(list, jenis, status) {
+    return list.filter(function (x) { return x.jenis === jenis && (!status || x.status === status); })
+      .reduce(function (s, x) { return s + Number(x.jumlah); }, 0);
+  }
+  function hitungJenis(list, jenis, status) {
+    return list.filter(function (x) { return x.jenis === jenis && (!status || x.status === status); }).length;
+  }
+  function renderDashboard() {
+    var list = catatanTerlihat();
+    var belum = list.filter(function (x) { return x.status === "belum"; });
+    var utang = totalJenis(list, "utang", "belum"), piutang = totalJenis(list, "piutang", "belum");
+    var segera = belum.filter(function (x) { return kondisiTempo(x) === "segera"; }).length;
+    var lewat = belum.filter(function (x) { return kondisiTempo(x) === "lewat"; }).length;
+    $("dUtang").textContent = rupiah(utang);
+    $("dUtangSub").textContent = hitungJenis(list, "utang", "belum") + " utang belum lunas";
+    $("dPiutang").textContent = rupiah(piutang);
+    $("dPiutangSub").textContent = hitungJenis(list, "piutang", "belum") + " piutang belum lunas";
+    $("dSegera").textContent = segera;
+    $("dSegeraSub").textContent = segera ? "segera ditagih / dilunasi" : "tidak ada yang mendesak";
+    $("dLewat").textContent = lewat;
+    $("dLewatSub").textContent = lewat ? "segera tindak lanjuti" : "tidak ada yang lewat";
+    var selisih = piutang - utang;
+    $("dSelisih").textContent = "Piutang belum lunas " + rupiah(piutang) + " − utang belum lunas " + rupiah(utang) + " = " +
+      (selisih >= 0 ? "selisih +" + rupiah(selisih) + " (piutang Anda lebih besar)" : "selisih " + rupiah(selisih) + " (utang Anda lebih besar " + rupiah(-selisih) + ")");
+    $("badgeUtang").textContent = hitungJenis(list, "utang", "belum");
+    $("badgePiutang").textContent = hitungJenis(list, "piutang", "belum");
+    $("badgeTempo").textContent = segera + lewat;
+    $("badgeIngat").textContent = segera + lewat;
+    $("badgeRiwayat").textContent = list.length;
+    var terdekat = belum.slice().sort(function (a, b) {
+      if (a.jatuhTempo !== b.jatuhTempo) return a.jatuhTempo < b.jatuhTempo ? -1 : 1;
+      return a.id - b.id;
+    }).slice(0, 5);
+    $("daftarTerbaru").innerHTML = terdekat.length ? terdekat.map(function (x) {
+      return barisCatatan(x, tombolAksi(x));
+    }).join("") : '<p class="sub">Tidak ada catatan yang belum lunas.</p>';
+    ikatAksiCatatan($("daftarTerbaru"));
+    renderPengguna();
+  }
+
+  /* ---------- Tambah cepat (dasbor) ---------- */
+  $("btnTambahCepat").addEventListener("click", function () {
+    var jenis = $("qJenis").value, orang = $("qOrang").value.trim();
+    var jumlah = Number($("qJumlah").value || 0), tempo = $("qTempo").value, catatan = $("qCatatan").value.trim();
+    if (!orang) { toast("Isi nama orang dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah (Rp) dulu."); return; }
+    if (!tempo) { toast("Isi tanggal jatuh tempo dulu."); return; }
+    tambahCatatan(jenis, orang, jumlah, hariIniKey(), tempo, catatan);
+    $("qOrang").value = ""; $("qJumlah").value = ""; $("qCatatan").value = "";
+    renderSemua();
+    toast((jenis === "utang" ? "Utang" : "Piutang") + " " + orang + " tersimpan.");
+  });
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Catatan utang-piutangnya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: "pengguna", password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Tab Utang ---------- */
+  function renderUtang() {
+    var list = catatanTerlihat().filter(function (x) { return x.jenis === "utang"; });
+    var status = $("fStatusUtang").value, cari = $("cariUtang").value.trim().toLowerCase();
+    var tampil = list.filter(function (x) {
+      if (status !== "semua" && x.status !== status) return false;
+      if (cari && (x.orang + " " + x.catatan).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      if (a.status !== b.status) return a.status === "belum" ? -1 : 1;
+      if (a.jatuhTempo !== b.jatuhTempo) return a.jatuhTempo < b.jatuhTempo ? -1 : 1;
+      return b.id - a.id;
+    });
+    $("ringkasanUtang").textContent = tampil.length + " dari " + list.length + " utang · total belum lunas " + rupiah(totalJenis(list, "utang", "belum"));
+    $("daftarUtang").innerHTML = tampil.length ? tampil.map(function (x) { return barisCatatan(x, tombolAksi(x)); }).join("") : '<p class="sub">Tidak ada utang yang cocok.</p>';
+    ikatAksiCatatan($("daftarUtang"));
+  }
+  $("fStatusUtang").addEventListener("change", renderUtang);
+  $("cariUtang").addEventListener("input", renderUtang);
+  $("btnTambahUtang").addEventListener("click", function () {
+    var orang = $("uOrang").value.trim(), jumlah = Number($("uJumlah").value || 0);
+    var tempo = $("uTempo").value, tanggal = $("uTanggal").value || hariIniKey(), catatan = $("uCatatan").value.trim();
+    if (!orang) { toast("Isi nama orang dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah (Rp) dulu."); return; }
+    if (!tempo) { toast("Isi tanggal jatuh tempo dulu."); return; }
+    tambahCatatan("utang", orang, jumlah, tanggal, tempo, catatan);
+    $("uOrang").value = ""; $("uJumlah").value = ""; $("uCatatan").value = "";
+    renderSemua(); renderUtang();
+    toast("Utang " + orang + " tersimpan.");
+  });
+
+  /* ---------- Tab Piutang ---------- */
+  function renderPiutang() {
+    var list = catatanTerlihat().filter(function (x) { return x.jenis === "piutang"; });
+    var status = $("fStatusPiutang").value, cari = $("cariPiutang").value.trim().toLowerCase();
+    var tampil = list.filter(function (x) {
+      if (status !== "semua" && x.status !== status) return false;
+      if (cari && (x.orang + " " + x.catatan).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      if (a.status !== b.status) return a.status === "belum" ? -1 : 1;
+      if (a.jatuhTempo !== b.jatuhTempo) return a.jatuhTempo < b.jatuhTempo ? -1 : 1;
+      return b.id - a.id;
+    });
+    $("ringkasanPiutang").textContent = tampil.length + " dari " + list.length + " piutang · total belum lunas " + rupiah(totalJenis(list, "piutang", "belum"));
+    $("daftarPiutang").innerHTML = tampil.length ? tampil.map(function (x) { return barisCatatan(x, tombolAksi(x)); }).join("") : '<p class="sub">Tidak ada piutang yang cocok.</p>';
+    ikatAksiCatatan($("daftarPiutang"));
+  }
+  $("fStatusPiutang").addEventListener("change", renderPiutang);
+  $("cariPiutang").addEventListener("input", renderPiutang);
+  $("btnTambahPiutang").addEventListener("click", function () {
+    var orang = $("pOrang").value.trim(), jumlah = Number($("pJumlah").value || 0);
+    var tempo = $("pTempo").value, tanggal = $("pTanggal").value || hariIniKey(), catatan = $("pCatatan").value.trim();
+    if (!orang) { toast("Isi nama orang dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah (Rp) dulu."); return; }
+    if (!tempo) { toast("Isi tanggal jatuh tempo dulu."); return; }
+    tambahCatatan("piutang", orang, jumlah, tanggal, tempo, catatan);
+    $("pOrang").value = ""; $("pJumlah").value = ""; $("pCatatan").value = "";
+    renderSemua(); renderPiutang();
+    toast("Piutang " + orang + " tersimpan.");
+  });
+
+  /* ---------- Tab Jatuh Tempo ---------- */
+  function renderTempo() {
+    var list = catatanTerlihat().filter(function (x) { return x.status === "belum"; });
+    var kondisi = $("fTempo").value, cari = $("cariTempo").value.trim().toLowerCase();
+    var tampil = list.filter(function (x) {
+      if (kondisi !== "semua" && kondisiTempo(x) !== kondisi) return false;
+      if (cari && (x.orang + " " + x.catatan).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      if (a.jatuhTempo !== b.jatuhTempo) return a.jatuhTempo < b.jatuhTempo ? -1 : 1;
+      return a.id - b.id;
+    });
+    $("ringkasanTempo").textContent = tampil.length + " dari " + list.length + " catatan belum lunas";
+    $("daftarTempo").innerHTML = tampil.length ? tampil.map(function (x) { return barisCatatan(x, tombolAksi(x)); }).join("") : '<p class="sub">Tidak ada catatan jatuh tempo yang cocok.</p>';
+    ikatAksiCatatan($("daftarTempo"));
+  }
+  $("fTempo").addEventListener("change", renderTempo);
+  $("cariTempo").addEventListener("input", renderTempo);
+
+  /* ---------- Tab Pengingat ---------- */
+  function teksPengingat(x) {
+    var nama = currentUser ? currentUser.nama : "saya";
+    if (x.jenis === "piutang") {
+      return "Halo " + x.orang + ", saya " + nama + ". Mengingatkan piutang " + rupiah(x.jumlah) +
+        " jatuh tempo " + tglSingkat(x.jatuhTempo) + ". Mohon dilunasi ya, terima kasih.";
+    }
+    return "Halo " + x.orang + ", saya " + nama + ". Mengingatkan utang saya " + rupiah(x.jumlah) +
+      " jatuh tempo " + tglSingkat(x.jatuhTempo) + ". Saya usahakan segera lunasi, terima kasih.";
+  }
+  function renderIngat() {
+    var list = catatanTerlihat().filter(function (x) {
+      if (x.status !== "belum") return false;
+      var k = kondisiTempo(x);
+      return k === "lewat" || k === "segera";
+    }).sort(function (a, b) {
+      if (a.jatuhTempo !== b.jatuhTempo) return a.jatuhTempo < b.jatuhTempo ? -1 : 1;
+      return a.id - b.id;
+    });
+    $("ringkasanIngat").textContent = list.length + " catatan perlu diingatkan (" +
+      list.filter(function (x) { return kondisiTempo(x) === "lewat"; }).length + " lewat jatuh tempo, " +
+      list.filter(function (x) { return kondisiTempo(x) === "segera"; }).length + " jatuh tempo ≤ 7 hari).";
+    $("daftarIngat").innerHTML = list.length ? list.map(function (x) {
+      return '<div class="baris"><div><b>' + esc(x.orang) + '</b> <span class="tag">' + teksJenis(x) + '</span> ' + lencanaTempo(x) +
+        '<br><span class="sub">Jatuh tempo ' + tglSingkat(x.jatuhTempo) + (x.catatan ? ' · ' + esc(x.catatan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b><br><button class="btn wa kecil" data-wa="' + x.id + '" type="button">Salin Teks WA</button></div></div>';
+    }).join("") : '<p class="sub">Tidak ada pengingat saat ini — semua catatan masih aman.</p>';
+    document.querySelectorAll("[data-wa]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = cariCatatan(Number(b.getAttribute("data-wa")));
+        if (!x) return;
+        var teks = teksPengingat(x);
+        $("kotakPesan").textContent = teks;
+        $("cardPesan").hidden = false;
+        var tersalin = false;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(teks).then(function () { tersalin = true; }).catch(function () {});
+          }
+        } catch (e) {}
+        try {
+          var ta = document.createElement("textarea");
+          ta.value = teks; document.body.appendChild(ta); ta.select();
+          if (document.execCommand("copy")) tersalin = true;
+          document.body.removeChild(ta);
+        } catch (e) {}
+        toast(tersalin ? "Teks pengingat disalin." : "Teks pengingat ditampilkan di bawah — salin manual.");
+      });
+    });
+  }
+
+  /* ---------- Tab Riwayat ---------- */
+  function renderRiwayat() {
+    var list = catatanTerlihat();
+    var jenis = $("fJenisRw").value, status = $("fStatusRw").value, cari = $("cariRw").value.trim().toLowerCase();
+    var tampil = list.filter(function (x) {
+      if (jenis !== "semua" && x.jenis !== jenis) return false;
+      if (status !== "semua" && x.status !== status) return false;
+      if (cari && (x.orang + " " + x.catatan).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      if (a.tanggal !== b.tanggal) return a.tanggal < b.tanggal ? 1 : -1;
+      return b.id - a.id;
+    });
+    $("ringkasanRiwayat").textContent = tampil.length + " dari " + list.length + " catatan" +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (milik Anda)");
+    $("daftarRiwayat").innerHTML = tampil.length ? tampil.map(function (x) { return barisCatatan(x, tombolAksi(x)); }).join("") : '<p class="sub">Tidak ada riwayat yang cocok.</p>';
+    ikatAksiCatatan($("daftarRiwayat"));
+  }
+  $("fJenisRw").addEventListener("change", renderRiwayat);
+  $("fStatusRw").addEventListener("change", renderRiwayat);
+  $("cariRw").addEventListener("input", renderRiwayat);
+
+  /* ---------- Tab Laporan ---------- */
+  function laporanTerfilter() {
+    var list = catatanTerlihat();
+    var periode = $("fPeriode").value;
+    if (periode === "semua") return list;
+    var batas = kunciPlus(-Number(periode));
+    return list.filter(function (x) { return x.tanggal >= batas; });
+  }
+  function renderLaporan() {
+    var list = laporanTerfilter();
+    var utang = totalJenis(list, "utang"), piutang = totalJenis(list, "piutang");
+    var lunas = list.filter(function (x) { return x.status === "lunas"; }).reduce(function (s, x) { return s + Number(x.jumlah); }, 0);
+    var belum = list.filter(function (x) { return x.status === "belum"; }).reduce(function (s, x) { return s + Number(x.jumlah); }, 0);
+    $("lUtang").textContent = rupiah(utang);
+    $("lUtangSub").textContent = hitungJenis(list, "utang") + " catatan utang";
+    $("lPiutang").textContent = rupiah(piutang);
+    $("lPiutangSub").textContent = hitungJenis(list, "piutang") + " catatan piutang";
+    $("lLunas").textContent = rupiah(lunas);
+    $("lLunasSub").textContent = list.filter(function (x) { return x.status === "lunas"; }).length + " catatan lunas";
+    $("lBelum").textContent = rupiah(belum);
+    $("lBelumSub").textContent = list.filter(function (x) { return x.status === "belum"; }).length + " catatan belum lunas";
+    $("lSelisih").textContent = "Selisih periode ini: piutang " + rupiah(piutang) + " − utang " + rupiah(utang) + " = " + rupiah(piutang - utang) + ".";
+    var perOrang = {};
+    list.forEach(function (x) {
+      if (!perOrang[x.orang]) perOrang[x.orang] = { utang: 0, piutang: 0, jumlah: 0 };
+      perOrang[x.orang][x.jenis] += Number(x.jumlah);
+      perOrang[x.orang].jumlah++;
+    });
+    var namaOrang = Object.keys(perOrang).sort();
+    $("tabelOrang").innerHTML = "<tr><th>Orang</th><th>Catatan</th><th>Utang</th><th>Piutang</th><th>Selisih (Piutang − Utang)</th></tr>" +
+      (namaOrang.length ? namaOrang.map(function (n) {
+        var o = perOrang[n];
+        return "<tr><td>" + esc(n) + "</td><td>" + o.jumlah + "</td><td class=\"angka\">" + rupiah(o.utang) + "</td><td class=\"angka\">" + rupiah(o.piutang) + "</td><td class=\"angka\">" + rupiah(o.piutang - o.utang) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Tidak ada data pada periode ini.</td></tr>');
+    var perStatus = { belum: { n: 0, total: 0 }, lunas: { n: 0, total: 0 } };
+    list.forEach(function (x) { perStatus[x.status].n++; perStatus[x.status].total += Number(x.jumlah); });
+    $("tabelStatus").innerHTML = "<tr><th>Status</th><th>Catatan</th><th>Total</th></tr>" +
+      "<tr><td>Belum lunas</td><td>" + perStatus.belum.n + "</td><td class=\"angka\">" + rupiah(perStatus.belum.total) + "</td></tr>" +
+      "<tr><td>Lunas</td><td>" + perStatus.lunas.n + "</td><td class=\"angka\">" + rupiah(perStatus.lunas.total) + "</td></tr>";
+  }
+  $("fPeriode").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var list = laporanTerfilter();
+    var baris = [["Jenis", "Orang", "Jumlah (Rp)", "Tanggal Catat", "Jatuh Tempo", "Status", "Tanggal Lunas", "Pengguna", "Catatan"].map(csvCell).join(",")];
+    list.forEach(function (x) {
+      baris.push([teksJenis(x), x.orang, x.jumlah, x.tanggal, x.jatuhTempo, x.status === "lunas" ? "Lunas" : "Belum lunas", x.tanggalLunas || "-", x.pengguna, x.catatan].map(csvCell).join(","));
+    });
+    unduh("laporan-utang-piutang.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV laporan diunduh (" + list.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("pencatat-utang-piutang-backup.json", JSON.stringify({ aplikasi: "pencatat-utang-piutang-pribadi", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.catatan) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Catatan dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderUtang(); renderPiutang(); renderTempo(); renderIngat(); renderRiwayat(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  $("qTempo").value = kunciPlus(30);
+  $("uTempo").value = kunciPlus(30);
+  $("pTempo").value = kunciPlus(30);
+  $("uTanggal").value = hariIniKey();
+  $("pTanggal").value = hariIniKey();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
