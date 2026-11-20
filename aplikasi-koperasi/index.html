@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aplikasi Koperasi (Pencatatan)</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+  .simulasi-box {
+    margin-top: 14px; background: rgba(246, 169, 60, .16); border: 1px solid #f6a93c;
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5;
+  }
+  .simulasi-box b { color: #f6a93c; }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.peringatan > span { background: #d99a1f; }
+  .progres.lewat > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .simulasi-kuning {
+    background: var(--amber-soft); border: 1px solid #e3c98a; border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin-bottom: 12px;
+  }
+  .simulasi-kuning b { color: var(--amber); }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · PENCATATAN</span>
+    <h1>Aplikasi <span class="aksen">Koperasi</span></h1>
+    <p>Pencatatan anggota, simpanan, pinjaman anggota, dan jadwal angsuran untuk koperasi simpan pinjam kecil — semua tercatat rapi dalam satu aplikasi.</p>
+    <div class="simulasi-box"><b>PENCATATAN SAJA — BUKAN LEMBAGA KEUANGAN.</b> Aplikasi ini hanya <b>mencatat simpanan dan pinjaman anggota</b>. Ini bukan lembaga keuangan, tidak menghimpun dana nyata, dan pinjaman anggota di sini adalah <b>rencana/pencatatan</b>, bukan pencairan dana sungguhan.</div>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="anggota">Anggota</button>
+    <button class="tab-btn" type="button" data-tab="simpanan">Simpanan</button>
+    <button class="tab-btn" type="button" data-tab="pinjaman">Pinjaman</button>
+    <button class="tab-btn" type="button" data-tab="angsuran">Angsuran <span class="badge" id="badgeAngsuran">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Koperasi</h2><p>Ringkasan pencatatan koperasi: anggota, simpanan, pinjaman aktif, dan angsuran yang segera atau lewat jatuh tempo.</p></div>
+    <div class="simulasi-kuning"><b>PENCATATAN SAJA — BUKAN LEMBAGA KEUANGAN.</b> Semua angka di bawah ini adalah catatan, bukan dana nyata. Tidak ada penghimpunan atau pencairan dana sungguhan.</div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Anggota</div><div class="angka" id="dAnggota" style="font-size:22px">0</div><div class="sub" id="dAnggotaSub"></div></div>
+      <div class="stat"><div class="label">Total Simpanan</div><div class="angka" id="dSimpanan" style="font-size:22px">Rp0</div><div class="sub" id="dSimpananSub"></div></div>
+      <div class="stat"><div class="label">Sisa Pokok Pinjaman Aktif</div><div class="angka" id="dSisaPokok" style="font-size:22px">Rp0</div><div class="sub" id="dSisaPokokSub"></div></div>
+      <div class="stat"><div class="label">Angsuran / Bulan</div><div class="angka" id="dAngsuranBln" style="font-size:22px">Rp0</div><div class="sub" id="dAngsuranBlnSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat warn"><div class="label">Segera Jatuh Tempo (≤7 hari)</div><div class="angka" id="dSegera" style="font-size:22px">0</div><div class="sub" id="dSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Lewat Jatuh Tempo</div><div class="angka" id="dLewat" style="font-size:22px">0</div><div class="sub" id="dLewatSub"></div></div>
+      <div class="stat"><div class="label">Pinjaman Aktif</div><div class="angka" id="dPinjamanAktif" style="font-size:22px">0</div><div class="sub" id="dPinjamanAktifSub"></div></div>
+      <div class="stat"><div class="label">Angsuran Belum Dibayar</div><div class="angka" id="dBelum" style="font-size:22px">0</div><div class="sub" id="dBelumSub"></div></div>
+    </div>
+    <div class="card"><h3>Jatuh Tempo Terdekat</h3><p class="sub">5 angsuran yang paling dekat jatuh temponya.</p><div id="daftarTempoTerdekat"></div></div>
+    <div class="card" id="cardTambahAnggota">
+      <h3>Tambah Anggota</h3>
+      <p class="sub">Admin dan Pengurus bisa menambah anggota baru. Nomor anggota dibuat otomatis.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qNamaAnggota">Nama lengkap</label><input id="qNamaAnggota" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="qTelpAnggota">No. telepon</label><input id="qTelpAnggota" type="text" placeholder="cth: 081234567890"></div>
+        <div class="field"><label for="qAlamatAnggota">Alamat</label><input id="qAlamatAnggota" type="text" placeholder="cth: Jl. Merdeka No. 10"></div>
+        <div class="field"><label for="qGabungAnggota">Tanggal gabung</label><input id="qGabungAnggota" type="date"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahAnggota" type="button">Tambah Anggota</button>
+      <p class="sub" id="pesanTambahAnggota" style="margin-top:8px"></p>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengurus atau Anggota.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="pengurus">Pengurus</option>
+          <option value="anggota">Anggota</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-anggota">
+    <div class="page-head"><h2>Data Anggota</h2><p>Daftar anggota koperasi beserta total simpanan, pinjaman aktif, dan progres angsurannya.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="cariAnggota">Cari nama / nomor anggota</label><input id="cariAnggota" type="text" placeholder="cth: Budi atau KOP-001"></div>
+      </div>
+      <p class="sub" id="ringkasanAnggota"></p>
+      <div id="daftarAnggota" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-simpanan">
+    <div class="page-head"><h2>Pencatatan Simpanan</h2><p>Simpanan anggota: pokok, wajib, dan sukarela. Semua yang dicatat di sini adalah catatan, bukan dana nyata.</p></div>
+    <div class="card" id="cardTambahSimpanan">
+      <h3>Catat Simpanan</h3>
+      <p class="sub">Admin dan Pengurus bisa mencatat simpanan anggota.</p>
+      <div class="form-grid">
+        <div class="field"><label for="sAnggota">Anggota</label><select id="sAnggota"></select></div>
+        <div class="field"><label for="sJenis">Jenis simpanan</label><select id="sJenis">
+          <option value="pokok">Pokok</option>
+          <option value="wajib" selected>Wajib</option>
+          <option value="sukarela">Sukarela</option>
+        </select></div>
+        <div class="field"><label for="sJumlah">Jumlah (Rp)</label><input id="sJumlah" type="number" min="1" placeholder="cth: 100000"></div>
+        <div class="field"><label for="sTanggal">Tanggal</label><input id="sTanggal" type="date"></div>
+        <div class="field"><label for="sKet">Keterangan (opsional)</label><input id="sKet" type="text" placeholder="cth: Simpanan wajib November"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahSimpanan" type="button">Simpan Catatan Simpanan</button>
+      <p class="sub" id="pesanSimpanan" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fAnggotaSimpanan">Anggota</label><select id="fAnggotaSimpanan"></select></div>
+        <div class="field"><label for="fJenisSimpanan">Jenis</label><select id="fJenisSimpanan">
+          <option value="semua">Semua jenis</option>
+          <option value="pokok">Pokok</option>
+          <option value="wajib">Wajib</option>
+          <option value="sukarela">Sukarela</option>
+        </select></div>
+        <div class="field"><label for="cariSimpanan">Cari keterangan</label><input id="cariSimpanan" type="text" placeholder="cth: wajib"></div>
+      </div>
+      <p class="sub" id="ringkasanSimpanan"></p>
+      <div id="daftarSimpanan" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pinjaman">
+    <div class="page-head"><h2>Pinjaman Anggota (Rencana)</h2><p>Pinjaman anggota yang dicatat sebagai rencana: pokok, bunga, tenor, angsuran per bulan, sisa pokok, dan progres pembayaran. Bukan pencairan dana sungguhan.</p></div>
+    <div class="card" id="cardTambahPinjaman">
+      <h3>Catat Pinjaman Anggota</h3>
+      <p class="sub">Admin dan Pengurus bisa mencatat pinjaman anggota (rencana). Angsuran dihitung dengan rumus anuitas.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pAnggota">Anggota</label><select id="pAnggota"></select></div>
+        <div class="field"><label for="pNama">Nama pinjaman</label><input id="pNama" type="text" placeholder="cth: Pinjaman Usaha"></div>
+        <div class="field"><label for="pPokok">Pokok pinjaman (Rp)</label><input id="pPokok" type="number" min="1" placeholder="cth: 10000000"></div>
+        <div class="field"><label for="pBunga">Bunga per tahun (%)</label><input id="pBunga" type="number" min="0" step="0.1" placeholder="cth: 12"></div>
+        <div class="field"><label for="pTenor">Tenor (bulan)</label><input id="pTenor" type="number" min="1" placeholder="cth: 12"></div>
+        <div class="field"><label for="pMulai">Tanggal mulai (angsuran pertama)</label><input id="pMulai" type="date"></div>
+        <div class="field"><label for="pKet">Keterangan (opsional)</label><input id="pKet" type="text" placeholder="cth: Modal warung"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPinjaman" type="button">Simpan Catatan Pinjaman</button>
+      <p class="sub" id="pesanPinjaman" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fStatusPinjaman">Status</label><select id="fStatusPinjaman">
+          <option value="semua">Semua</option>
+          <option value="aktif" selected>Aktif</option>
+          <option value="lunas">Lunas</option>
+        </select></div>
+        <div class="field"><label for="cariPinjaman">Cari nama pinjaman / anggota</label><input id="cariPinjaman" type="text" placeholder="cth: Usaha atau Budi"></div>
+      </div>
+      <p class="sub" id="ringkasanPinjaman"></p>
+      <div id="daftarPinjaman" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-angsuran">
+    <div class="page-head"><h2>Jadwal &amp; Pemantauan Angsuran</h2><p>Angsuran pinjaman anggota yang belum dibayar, diurutkan dari jatuh tempo terdekat. Tandai sudah bayar bila angsuran sudah dibayar (pencatatan), atau salin teks pengingat untuk dikirim sendiri.</p></div>
+    <div class="card">
+      <div class="chips" id="chipsAngsuran">
+        <button class="chip active" type="button" data-f="semua">Semua belum bayar</button>
+        <button class="chip" type="button" data-f="segera">Segera (≤7 hari)</button>
+        <button class="chip" type="button" data-f="lewat">Lewat tempo</button>
+        <button class="chip" type="button" data-f="bulanini">Bulan ini</button>
+      </div>
+      <p class="sub" id="ringkasanAngsuran"></p>
+      <div id="daftarAngsuran" style="margin-top:10px"></div>
+      <div class="pesan-teks" id="kotakPengingat" hidden></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Anggota</h2><p>Rekap per anggota: total simpanan per jenis, pinjaman aktif, dan angsuran yang sudah atau belum dibayar.</p></div>
+    <div class="card">
+      <p class="sub" id="ringkasanLaporan"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLaporan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor laporan per anggota ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Laporan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Koperasi (Pencatatan).</p></div>
+    <div class="card panduan">
+      <div class="simulasi-kuning"><b>PENCATATAN SAJA — BUKAN LEMBAGA KEUANGAN.</b> Aplikasi ini hanya mencatat simpanan dan pinjaman anggota. Ini bukan lembaga keuangan, tidak menghimpun dana nyata, dan pinjaman anggota di sini adalah rencana/pencatatan, bukan pencairan dana sungguhan.</div>
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Anggota</b> untuk melihat data anggota beserta total simpanan, pinjaman aktif, dan progres angsurannya. Admin dan Pengurus bisa menambah anggota baru dari Dasbor.</li>
+        <li>Buka tab <b>Simpanan</b> untuk mencatat simpanan anggota (pokok, wajib, atau sukarela) dan melihat riwayatnya.</li>
+        <li>Buka tab <b>Pinjaman</b> untuk mencatat pinjaman anggota (rencana) — angsuran dihitung otomatis dengan rumus anuitas. Tekan tombol <b>Jadwal</b> pada pinjaman untuk melihat jadwal angsuran per bulan.</li>
+        <li>Buka tab <b>Angsuran</b> untuk memantau angsuran yang segera atau lewat jatuh tempo; tandai sudah bayar bila angsuran sudah dibayar (pencatatan), atau salin teks pengingat untuk dikirim sendiri.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per anggota dan ekspor ke CSV.</li>
+      </ol>
+      <h3>Rumus yang Dipakai</h3>
+      <ul>
+        <li><b>Angsuran anuitas</b> = pokok × r × (1+r)<sup>n</sup> ÷ ((1+r)<sup>n</sup> − 1), dengan r = bunga per tahun ÷ 12. Bila bunga 0%, angsuran = pokok ÷ tenor.</li>
+        <li><b>Bunga bulan ke-n</b> = sisa pokok sebelum bulan itu × r. <b>Pokok bulan ke-n</b> = angsuran − bunga bulan itu.</li>
+        <li><b>Bulan terakhir disesuaikan</b> agar sisa pokok tepat Rp0.</li>
+        <li><b>Total simpanan anggota</b> = simpanan pokok + wajib + sukarela. <b>Sisa pokok pinjaman</b> = pokok − pokok yang sudah dibayar sampai bulan terakhir yang lunas.</li>
+        <li><b>Segera</b> = jatuh tempo dalam 7 hari ke depan (termasuk hari ini). <b>Lewat</b> = jatuh tempo sudah lewat dan belum dibayar.</li>
+      </ul>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data anggota.</li>
+        <li><b>Pengurus</b> — mengelola anggota, simpanan, pinjaman, dan angsuran, serta melihat laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Anggota</b> — hanya melihat simpanan, pinjaman, dan angsuran miliknya sendiri, serta menandai angsurannya sendiri sudah dibayar. Tidak bisa menambah atau menghapus data.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Ini <b>pencatatan saja</b>, bukan lembaga keuangan: tidak ada penghimpunan dana nyata, tidak ada pencairan dana, dan pinjaman di sini adalah rencana/pencatatan.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Teks pengingat hanya disalin — aplikasi tidak mengirim pesan apa pun.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengurus — <b>pengurus / pengurus123</b></li>
+        <li>Anggota — <b>anggota / anggota123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Koperasi — demo pencatatan satu file HTML. Semua simpanan dan pinjaman adalah catatan, bukan dana nyata. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalJadwalBack">
+  <div class="modal" style="max-width:760px">
+    <h3 id="modalJadwalJudul">Jadwal Angsuran</h3>
+    <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelJadwalModal"></table></div>
+    <div class="aksi">
+      <button class="btn kecil" id="modalJadwalTutup" type="button">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">KOPERASI · PENCATATAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Catat anggota, simpanan, pinjaman anggota, dan jadwal angsuran koperasi.</p>
+    <div class="simulasi-kuning"><b>PENCATATAN SAJA — BUKAN LEMBAGA KEUANGAN.</b> Aplikasi ini hanya mencatat simpanan dan pinjaman anggota. Tidak ada penghimpunan atau pencairan dana nyata.</div>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengurus — <b>pengurus / pengurus123</b><br>
+      Anggota — <b>anggota / anggota123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function tambahBulan(kunci, n) {
+    var bg = kunci.split("-");
+    var d = new Date(Number(bg[0]), Number(bg[1]) - 1 + n, Number(bg[2]));
+    return kunciTanggal(d);
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+  function salinTeks(teks) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).catch(function () {});
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = teks; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  var STORAGE_KEY = "aplikasiKoperasi.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- Rumus anuitas (diuji silang dengan Python) ---------- */
+  function hitungAngsuran(pokok, bungaTahun, tenor) {
+    var r = (Number(bungaTahun) || 0) / 100 / 12;
+    if (r === 0) return pokok / tenor;
+    var f = Math.pow(1 + r, tenor);
+    return pokok * r * f / (f - 1);
+  }
+  function buatJadwal(pinjaman) {
+    var r = (Number(pinjaman.bunga) || 0) / 100 / 12;
+    var a = hitungAngsuran(pinjaman.pokok, pinjaman.bunga, pinjaman.tenor);
+    var sisa = Number(pinjaman.pokok);
+    var rows = [];
+    for (var n = 1; n <= pinjaman.tenor; n++) {
+      var bunga = sisa * r;
+      var pokokBayar, angsuran;
+      if (n === pinjaman.tenor) {
+        pokokBayar = sisa;
+        angsuran = bunga + pokokBayar;
+      } else {
+        pokokBayar = a - bunga;
+        angsuran = a;
+      }
+      sisa -= pokokBayar;
+      rows.push({
+        bulan: n,
+        tanggal: tambahBulan(pinjaman.tanggalMulai, n - 1),
+        angsuran: Math.round(angsuran),
+        bunga: Math.round(bunga),
+        pokok: Math.round(pokokBayar),
+        sisa: Math.round(sisa)
+      });
+    }
+    return rows;
+  }
+  function totalBayar(pinjaman) {
+    var t = 0;
+    buatJadwal(pinjaman).forEach(function (row) { t += row.angsuran; });
+    return t;
+  }
+  function statusPinjaman(pinjaman) {
+    var dibayar = state.pembayaran.filter(function (p) { return p.pinjamanId === pinjaman.id; }).length;
+    return dibayar >= pinjaman.tenor ? "Lunas" : "Aktif";
+  }
+  function bulanDibayar(pinjaman) {
+    return state.pembayaran.filter(function (p) { return p.pinjamanId === pinjaman.id; }).length;
+  }
+  function sisaPokok(pinjaman) {
+    var jadwal = buatJadwal(pinjaman);
+    var dibayar = bulanDibayar(pinjaman);
+    if (dibayar >= jadwal.length) return 0;
+    return dibayar === 0 ? Number(pinjaman.pokok) : jadwal[dibayar - 1].sisa;
+  }
+  function sudahBayarBulan(pinjamanId, bulanKe) {
+    return state.pembayaran.some(function (p) { return p.pinjamanId === pinjamanId && p.bulanKe === bulanKe; });
+  }
+  function statusAngsuran(row, pinjamanId) {
+    if (sudahBayarBulan(pinjamanId, row.bulan)) return "Lunas";
+    if (row.tanggal < hariIniKey()) return "Lewat";
+    if (row.tanggal <= kunciPlus(7)) return "Segera";
+    return "Belum";
+  }
+  function lencanaStatusAngsuran(st) {
+    if (st === "Lunas") return '<span class="lencana st-aman">Lunas</span>';
+    if (st === "Lewat") return '<span class="lencana st-habis">Lewat</span>';
+    if (st === "Segera") return '<span class="lencana st-rendah">Segera</span>';
+    return '<span class="lencana st-biru">Belum</span>';
+  }
+  function jenisSimpananTxt(j) {
+    return j === "pokok" ? "Pokok" : j === "wajib" ? "Wajib" : "Sukarela";
+  }
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Simpanan seed (30 catatan): total Rp6.700.000 (pokok 4.000.000, wajib 1.800.000, sukarela 900.000).
+       Budi 1.050.000 (pokok 500rb + wajib 3x100rb + sukarela 250rb)
+       Sari 900.000 (500rb + 3x100rb + 100rb) | Andi 700.000 (500rb + 2x100rb)
+       Dewi 1.300.000 (500rb + 3x100rb + 500rb) | Joko 600.000 (500rb + 100rb)
+       Rina 700.000 (500rb + 2x100rb) | Agus 800.000 (500rb + 3x100rb)
+       Maya 650.000 (500rb + 100rb + 50rb)
+     Pinjaman seed (7 rencana, anuitas — diuji silang Python):
+       Budi "Pinjaman Usaha" 10jt/12%/12, mulai 21 Sep 2026: angsuran 888.488, total 10.661.856, bunga 661.856; bln 1-2 dibayar; sisa 8.415.139; bln 3 (21 Nov) Segera.
+       Sari "Pinjaman Pendidikan" 5jt/10%/10, mulai 22 Agu 2026: angsuran 523.202, total 5.232.020, bunga 232.020; bln 1-3 dibayar; sisa 3.543.322; bln 4 (22 Nov) Segera.
+       Andi "Pinjaman Renovasi" 15jt/12%/18, mulai 23 Jul 2026: angsuran 914.731, total 16.465.158, bunga 1.465.158; bln 1-4 dibayar; sisa 11.894.887; bln 5 (23 Nov) Segera.
+       Dewi "Pinjaman Modal" 8jt/12%/12, mulai 21 Okt 2026: angsuran 710.790, total 8.529.480, bunga 529.480; bln 1 dibayar; sisa 7.369.210; bln 2 (21 Nov) Segera.
+       Joko "Pinjaman Konsumsi" 3jt/18%/6, mulai 6 Okt 2026: angsuran 526.576, total 3.159.456, bunga 159.456; bln 1 (6 Okt) + bln 2 (6 Nov) Lewat; sisa 3.000.000.
+       Rina "Pinjaman Usaha" 12jt/10%/24, mulai 4 Mei 2026: angsuran 553.739, total 13.289.736, bunga 1.289.736; bln 1-6 dibayar; sisa 9.220.214; bln 7 (4 Nov) Lewat.
+       Agus "Pinjaman Motor" 6jt/0%/6, mulai 23 Jun 2026: angsuran 1.000.000, total 6.000.000; bln 1-5 dibayar; sisa 1.000.000; bln 6 (23 Nov) Segera.
+     Dasbor seed: admin anggota 8, simpanan 6.700.000, sisa pokok aktif 44.442.772,
+       angsuran/bln 5.117.526, segera 5, lewat 3, pinjaman aktif 7, belum bayar 67.
+     Anggota Budi: simpanan 1.050.000, sisa pokok 8.415.139, angsuran/bln 888.488, segera 1, lewat 0, belum 10. */
+  function seedState() {
+    var anggota = [
+      { id: 1, noAnggota: "KOP-001", nama: "Budi Santoso", telepon: "081234567801", alamat: "Jl. Merdeka No. 10", tanggalGabung: "2025-01-15" },
+      { id: 2, noAnggota: "KOP-002", nama: "Sari Dewi", telepon: "081234567802", alamat: "Jl. Sudirman No. 25", tanggalGabung: "2025-02-10" },
+      { id: 3, noAnggota: "KOP-003", nama: "Andi Pratama", telepon: "081234567803", alamat: "Jl. Gatot Subroto No. 7", tanggalGabung: "2025-03-05" },
+      { id: 4, noAnggota: "KOP-004", nama: "Dewi Lestari", telepon: "081234567804", alamat: "Jl. Diponegoro No. 33", tanggalGabung: "2025-04-12" },
+      { id: 5, noAnggota: "KOP-005", nama: "Joko Susilo", telepon: "081234567805", alamat: "Jl. Ahmad Yani No. 18", tanggalGabung: "2025-05-20" },
+      { id: 6, noAnggota: "KOP-006", nama: "Rina Marlina", telepon: "081234567806", alamat: "Jl. Pahlawan No. 52", tanggalGabung: "2025-06-08" },
+      { id: 7, noAnggota: "KOP-007", nama: "Agus Wijaya", telepon: "081234567807", alamat: "Jl. Veteran No. 9", tanggalGabung: "2025-07-14" },
+      { id: 8, noAnggota: "KOP-008", nama: "Maya Putri", telepon: "081234567808", alamat: "Jl. Kenanga No. 21", tanggalGabung: "2025-08-25" }
+    ];
+    var simpanan = [];
+    function simpan(anggotaId, jenis, jumlah, offsetHari, ket) {
+      simpanan.push({ id: simpanan.length + 1, anggotaId: anggotaId, jenis: jenis, jumlah: jumlah, tanggal: kunciPlus(offsetHari), keterangan: ket || "" });
+    }
+    simpan(1, "pokok", 500000, -300, "Simpanan pokok awal");
+    simpan(1, "wajib", 100000, -90, "Simpanan wajib"); simpan(1, "wajib", 100000, -60, "Simpanan wajib"); simpan(1, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(1, "sukarela", 250000, -15, "Simpanan sukarela");
+    simpan(2, "pokok", 500000, -280, "Simpanan pokok awal");
+    simpan(2, "wajib", 100000, -90, "Simpanan wajib"); simpan(2, "wajib", 100000, -60, "Simpanan wajib"); simpan(2, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(2, "sukarela", 100000, -10, "Simpanan sukarela");
+    simpan(3, "pokok", 500000, -250, "Simpanan pokok awal");
+    simpan(3, "wajib", 100000, -60, "Simpanan wajib"); simpan(3, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(4, "pokok", 500000, -200, "Simpanan pokok awal");
+    simpan(4, "wajib", 100000, -90, "Simpanan wajib"); simpan(4, "wajib", 100000, -60, "Simpanan wajib"); simpan(4, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(4, "sukarela", 500000, -5, "Simpanan sukarela");
+    simpan(5, "pokok", 500000, -180, "Simpanan pokok awal");
+    simpan(5, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(6, "pokok", 500000, -150, "Simpanan pokok awal");
+    simpan(6, "wajib", 100000, -60, "Simpanan wajib"); simpan(6, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(7, "pokok", 500000, -120, "Simpanan pokok awal");
+    simpan(7, "wajib", 100000, -90, "Simpanan wajib"); simpan(7, "wajib", 100000, -60, "Simpanan wajib"); simpan(7, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(8, "pokok", 500000, -90, "Simpanan pokok awal");
+    simpan(8, "wajib", 100000, -30, "Simpanan wajib");
+    simpan(8, "sukarela", 50000, -3, "Simpanan sukarela");
+    var pinjaman = [
+      { id: 1, anggotaId: 1, nama: "Pinjaman Usaha", pokok: 10000000, bunga: 12, tenor: 12, tanggalMulai: kunciPlus(-60), keterangan: "Modal warung" },
+      { id: 2, anggotaId: 2, nama: "Pinjaman Pendidikan", pokok: 5000000, bunga: 10, tenor: 10, tanggalMulai: kunciPlus(-90), keterangan: "Biaya kuliah anak" },
+      { id: 3, anggotaId: 3, nama: "Pinjaman Renovasi", pokok: 15000000, bunga: 12, tenor: 18, tanggalMulai: kunciPlus(-120), keterangan: "Renovasi rumah" },
+      { id: 4, anggotaId: 4, nama: "Pinjaman Modal", pokok: 8000000, bunga: 12, tenor: 12, tanggalMulai: kunciPlus(-30), keterangan: "Modal jualan" },
+      { id: 5, anggotaId: 5, nama: "Pinjaman Konsumsi", pokok: 3000000, bunga: 18, tenor: 6, tanggalMulai: kunciPlus(-45), keterangan: "Kebutuhan keluarga" },
+      { id: 6, anggotaId: 6, nama: "Pinjaman Usaha", pokok: 12000000, bunga: 10, tenor: 24, tanggalMulai: kunciPlus(-200), keterangan: "Modal toko" },
+      { id: 7, anggotaId: 7, nama: "Pinjaman Motor", pokok: 6000000, bunga: 0, tenor: 6, tanggalMulai: kunciPlus(-150), keterangan: "Motor baru, 0%" }
+    ];
+    var pembayaran = [];
+    function bayar(pinjamanId, bulanKe, tanggal) {
+      var p = pinjaman.find(function (x) { return x.id === pinjamanId; });
+      var jadwal = buatJadwal(p);
+      pembayaran.push({ id: pembayaran.length + 1, pinjamanId: pinjamanId, bulanKe: bulanKe, tanggal: tanggal, jumlah: jadwal[bulanKe - 1].angsuran });
+    }
+    bayar(1, 1, "2026-09-21"); bayar(1, 2, "2026-10-21");
+    bayar(2, 1, "2026-08-22"); bayar(2, 2, "2026-09-22"); bayar(2, 3, "2026-10-22");
+    bayar(3, 1, "2026-07-23"); bayar(3, 2, "2026-08-23"); bayar(3, 3, "2026-09-23"); bayar(3, 4, "2026-10-23");
+    bayar(4, 1, "2026-10-21");
+    bayar(6, 1, "2026-05-04"); bayar(6, 2, "2026-06-04"); bayar(6, 3, "2026-07-04");
+    bayar(6, 4, "2026-08-04"); bayar(6, 5, "2026-09-04"); bayar(6, 6, "2026-10-04");
+    bayar(7, 1, "2026-06-23"); bayar(7, 2, "2026-07-23"); bayar(7, 3, "2026-08-23");
+    bayar(7, 4, "2026-09-23"); bayar(7, 5, "2026-10-23");
+    return {
+      anggota: anggota, simpanan: simpanan, pinjaman: pinjaman, pembayaran: pembayaran,
+      nextAnggotaId: 9, nextSimpananId: simpanan.length + 1,
+      nextPinjamanId: 8, nextBayarId: pembayaran.length + 1
+    };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengurus", nama: "Dedi Kurniawan", peran: "pengurus", password: "pengurus123", aktif: true },
+      { username: "anggota", nama: "Budi Santoso", peran: "anggota", password: "anggota123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  var filterAngsuran = "semua";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.anggota) state.anggota = [];
+    if (!state.simpanan) state.simpanan = [];
+    if (!state.pinjaman) state.pinjaman = [];
+    if (!state.pembayaran) state.pembayaran = [];
+    if (!state.nextAnggotaId) state.nextAnggotaId = state.anggota.length + 1;
+    if (!state.nextSimpananId) state.nextSimpananId = state.simpanan.length + 1;
+    if (!state.nextPinjamanId) state.nextPinjamanId = state.pinjaman.length + 1;
+    if (!state.nextBayarId) state.nextBayarId = state.pembayaran.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) {
+    return r === "admin" ? "Admin" : r === "pengurus" ? "Pengurus" : "Anggota";
+  }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function isPengelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "pengurus"); }
+
+  function cariAnggota(id) { return state.anggota.find(function (x) { return x.id === id; }); }
+  function anggotaSaya() {
+    if (!currentUser) return null;
+    return state.anggota.find(function (x) { return x.nama === currentUser.nama; }) || null;
+  }
+  function anggotaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "anggota") {
+      var saya = anggotaSaya();
+      return saya ? [saya] : [];
+    }
+    return state.anggota.slice();
+  }
+  function simpananTerlihat() {
+    var ids = {};
+    anggotaTerlihat().forEach(function (a) { ids[a.id] = true; });
+    return state.simpanan.filter(function (s) { return ids[s.anggotaId]; });
+  }
+  function pinjamanTerlihat() {
+    var ids = {};
+    anggotaTerlihat().forEach(function (a) { ids[a.id] = true; });
+    return state.pinjaman.filter(function (p) { return ids[p.anggotaId]; });
+  }
+  function cariPinjaman(id) { return state.pinjaman.find(function (x) { return x.id === id; }); }
+  function bolehKelolaData() { return isPengelola(); }
+  function bolehBayar(item) {
+    if (isPengelola()) return true;
+    if (!currentUser || currentUser.peran !== "anggota") return false;
+    var saya = anggotaSaya();
+    return saya && item.pinjaman.anggotaId === saya.id;
+  }
+  function rekapAnggota(a) {
+    var sim = state.simpanan.filter(function (s) { return s.anggotaId === a.id; });
+    var pokok = 0, wajib = 0, sukarela = 0;
+    sim.forEach(function (s) {
+      if (s.jenis === "pokok") pokok += Number(s.jumlah) || 0;
+      else if (s.jenis === "wajib") wajib += Number(s.jumlah) || 0;
+      else sukarela += Number(s.jumlah) || 0;
+    });
+    var pin = state.pinjaman.filter(function (p) { return p.anggotaId === a.id; });
+    var aktif = pin.filter(function (p) { return statusPinjaman(p) === "Aktif"; });
+    var sisa = 0, angsuranBln = 0, dibayar = 0, belum = 0;
+    pin.forEach(function (p) {
+      sisa += sisaPokok(p);
+      angsuranBln += Math.round(hitungAngsuran(p.pokok, p.bunga, p.tenor));
+      var b = bulanDibayar(p);
+      dibayar += b; belum += p.tenor - b;
+    });
+    return { pokok: pokok, wajib: wajib, sukarela: sukarela, totalSimpanan: pokok + wajib + sukarela,
+      pinjaman: pin.length, pinjamanAktif: aktif.length, sisaPokok: sisa, angsuranBln: angsuranBln,
+      dibayar: dibayar, belum: belum };
+  }
+  function angsuranBelumBayar() {
+    var hasil = [];
+    pinjamanTerlihat().forEach(function (p) {
+      buatJadwal(p).forEach(function (row) {
+        var st = statusAngsuran(row, p.id);
+        if (st === "Lunas") return;
+        hasil.push({ pinjaman: p, anggota: cariAnggota(p.anggotaId), row: row, status: st });
+      });
+    });
+    hasil.sort(function (a, b) {
+      return (a.row.tanggal < b.row.tanggal ? -1 : a.row.tanggal > b.row.tanggal ? 1 : a.pinjaman.id - b.pinjaman.id);
+    });
+    return hasil;
+  }
+  function teksPengingat(item) {
+    var nama = item.anggota ? item.anggota.nama : "Anggota";
+    return "Halo " + nama + ", ini pengingat (pencatatan) dari Aplikasi Koperasi: angsuran pinjaman \"" + item.pinjaman.nama +
+      "\" bulan ke-" + item.row.bulan + " sebesar " + rupiah(item.row.angsuran) +
+      " jatuh tempo " + tglSingkat(item.row.tanggal) + " (" + item.status + "). " +
+      "Ini hanya contoh pengingat pencatatan — bukan tagihan resmi.";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    $("cardTambahAnggota").style.display = isPengelola() ? "" : "none";
+    $("cardTambahSimpanan").style.display = isPengelola() ? "" : "none";
+    $("cardTambahPinjaman").style.display = isPengelola() ? "" : "none";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "anggota") renderAnggota();
+    if (nama === "simpanan") renderSimpanan();
+    if (nama === "pinjaman") renderPinjaman();
+    if (nama === "angsuran") renderAngsuran();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var listAnggota = anggotaTerlihat();
+    var listSimpanan = simpananTerlihat();
+    var listPinjaman = pinjamanTerlihat();
+    var totalSimpanan = 0, pokokSim = 0, wajibSim = 0, sukarelaSim = 0;
+    listSimpanan.forEach(function (s) {
+      totalSimpanan += Number(s.jumlah) || 0;
+      if (s.jenis === "pokok") pokokSim += Number(s.jumlah) || 0;
+      else if (s.jenis === "wajib") wajibSim += Number(s.jumlah) || 0;
+      else sukarelaSim += Number(s.jumlah) || 0;
+    });
+    var aktif = listPinjaman.filter(function (p) { return statusPinjaman(p) === "Aktif"; });
+    var sisaPokokTotal = 0, angsuranBln = 0;
+    aktif.forEach(function (p) {
+      sisaPokokTotal += sisaPokok(p);
+      angsuranBln += Math.round(hitungAngsuran(p.pokok, p.bunga, p.tenor));
+    });
+    var belum = angsuranBelumBayar();
+    var segera = belum.filter(function (x) { return x.status === "Segera"; });
+    var lewat = belum.filter(function (x) { return x.status === "Lewat"; });
+    $("dAnggota").textContent = listAnggota.length;
+    $("dAnggotaSub").textContent = currentUser && currentUser.peran === "anggota" ? "data Anda" : "anggota terdaftar";
+    $("dSimpanan").textContent = rupiah(totalSimpanan);
+    $("dSimpananSub").textContent = "pokok " + rupiah(pokokSim) + " · wajib " + rupiah(wajibSim) + " · sukarela " + rupiah(sukarelaSim);
+    $("dSisaPokok").textContent = rupiah(sisaPokokTotal);
+    $("dSisaPokokSub").textContent = aktif.length + " pinjaman aktif";
+    $("dAngsuranBln").textContent = rupiah(angsuranBln);
+    $("dAngsuranBlnSub").textContent = "total angsuran per bulan pinjaman aktif";
+    $("dSegera").textContent = segera.length;
+    $("dSegeraSub").textContent = "jatuh tempo dalam 7 hari ke depan";
+    $("dLewat").textContent = lewat.length;
+    $("dLewatSub").textContent = "jatuh tempo sudah lewat, belum dibayar";
+    $("dPinjamanAktif").textContent = aktif.length;
+    $("dPinjamanAktifSub").textContent = "dari " + listPinjaman.length + " pinjaman tercatat";
+    $("dBelum").textContent = belum.length;
+    $("dBelumSub").textContent = "angsuran belum dibayar";
+    $("badgeAngsuran").textContent = belum.length;
+    $("daftarTempoTerdekat").innerHTML = belum.length ? belum.slice(0, 5).map(function (item) {
+      return '<div class="baris"><div><b>' + esc(item.pinjaman.nama) + '</b> — bulan ke-' + item.row.bulan + ' ' + lencanaStatusAngsuran(item.status) +
+        '<br><span class="sub">' + esc(item.anggota ? item.anggota.nama : "—") + ' · jatuh tempo ' + tglSingkat(item.row.tanggal) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(item.row.angsuran) + '</b></div></div>';
+    }).join("") : '<p class="sub">Tidak ada angsuran yang belum dibayar.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Data koperasi tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    var peran = $("pgPeran").value || "pengurus";
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: peran, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Tambah anggota (dasbor) ---------- */
+  $("btnTambahAnggota").addEventListener("click", function () {
+    if (!isPengelola()) { $("pesanTambahAnggota").textContent = "Hanya Admin dan Pengurus yang bisa menambah anggota."; return; }
+    var nama = $("qNamaAnggota").value.trim();
+    var telp = $("qTelpAnggota").value.trim();
+    var alamat = $("qAlamatAnggota").value.trim();
+    var gabung = $("qGabungAnggota").value || hariIniKey();
+    if (!nama) { $("pesanTambahAnggota").textContent = "Isi nama lengkap anggota dulu."; return; }
+    var id = state.nextAnggotaId++;
+    var no = "KOP-" + String(id).padStart(3, "0");
+    state.anggota.push({ id: id, noAnggota: no, nama: nama, telepon: telp, alamat: alamat, tanggalGabung: gabung });
+    saveState(); renderSemua();
+    $("qNamaAnggota").value = ""; $("qTelpAnggota").value = ""; $("qAlamatAnggota").value = ""; $("qGabungAnggota").value = "";
+    $("pesanTambahAnggota").textContent = "Anggota \"" + nama + "\" tersimpan dengan nomor " + no + ".";
+    toast("Anggota tersimpan.");
+  });
+
+  /* ---------- Tab Anggota ---------- */
+  function renderAnggota() {
+    var cari = ($("cariAnggota").value || "").trim().toLowerCase();
+    var list = anggotaTerlihat();
+    if (cari) list = list.filter(function (a) {
+      return a.nama.toLowerCase().indexOf(cari) !== -1 || a.noAnggota.toLowerCase().indexOf(cari) !== -1;
+    });
+    $("ringkasanAnggota").textContent = list.length + " anggota" +
+      (currentUser && currentUser.peran === "anggota" ? " (data Anda)" : " (semua anggota)") + ".";
+    $("daftarAnggota").innerHTML = list.length ? list.map(function (a) {
+      var r = rekapAnggota(a);
+      var aksi = "";
+      if (isPengelola()) {
+        aksi = '<button class="btn ghost kecil" data-hapus-anggota="' + a.id + '" type="button">Hapus</button>';
+      }
+      var persen = r.pinjaman > 0 ? Math.round(r.dibayar / (r.dibayar + r.belum) * 100) : 0;
+      return '<div class="baris"><div><b>' + esc(a.nama) + '</b> <span class="tag">' + esc(a.noAnggota) + '</span>' +
+        '<br><span class="sub">Gabung ' + tglSingkat(a.tanggalGabung) + (a.telepon ? ' · ' + esc(a.telepon) : '') + (a.alamat ? ' · ' + esc(a.alamat) : '') + '</span>' +
+        '<br><span class="sub">Simpanan ' + rupiah(r.totalSimpanan) + ' (pokok ' + rupiah(r.pokok) + ' · wajib ' + rupiah(r.wajib) + ' · sukarela ' + rupiah(r.sukarela) + ')</span>' +
+        '<br><span class="sub">Pinjaman aktif ' + r.pinjamanAktif + '/' + r.pinjaman + ' · sisa pokok ' + rupiah(r.sisaPokok) + ' · angsuran ' + rupiah(r.angsuranBln) + '/bulan · dibayar ' + r.dibayar + ' bulan (' + persen + '%) · belum ' + r.belum + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada anggota yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-anggota]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-anggota"));
+        var a = cariAnggota(id);
+        if (!a) return;
+        var punyaSimpanan = state.simpanan.some(function (s) { return s.anggotaId === id; });
+        var punyaPinjaman = state.pinjaman.some(function (p) { return p.anggotaId === id; });
+        if (punyaSimpanan || punyaPinjaman) {
+          toast("Anggota \"" + a.nama + "\" tidak bisa dihapus karena masih ada simpanan atau pinjaman tercatat.");
+          return;
+        }
+        tanyaKonfirmasi("Hapus Anggota", "Hapus anggota \"" + a.nama + "\" (" + a.noAnggota + ")?", function () {
+          state.anggota = state.anggota.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Anggota dihapus.");
+        });
+      });
+    });
+  }
+  $("cariAnggota").addEventListener("input", renderAnggota);
+
+  /* ---------- Tab Simpanan ---------- */
+  function isiPilihanAnggota() {
+    var list = anggotaTerlihat();
+    var opsi = list.map(function (a) {
+      return '<option value="' + a.id + '">' + esc(a.nama) + ' (' + esc(a.noAnggota) + ')</option>';
+    }).join("");
+    ["sAnggota", "pAnggota"].forEach(function (id) {
+      var nilai = $(id).value;
+      $(id).innerHTML = opsi;
+      if (nilai && list.some(function (a) { return String(a.id) === nilai; })) $(id).value = nilai;
+    });
+    var fNilai = $("fAnggotaSimpanan").value;
+    $("fAnggotaSimpanan").innerHTML = '<option value="semua">Semua anggota</option>' + opsi;
+    if (fNilai && (fNilai === "semua" || list.some(function (a) { return String(a.id) === fNilai; }))) $("fAnggotaSimpanan").value = fNilai;
+  }
+  $("btnTambahSimpanan").addEventListener("click", function () {
+    if (!isPengelola()) { $("pesanSimpanan").textContent = "Hanya Admin dan Pengurus yang bisa mencatat simpanan."; return; }
+    var anggotaId = Number($("sAnggota").value || 0);
+    var jenis = $("sJenis").value;
+    var jumlah = Math.round(Number($("sJumlah").value || 0));
+    var tanggal = $("sTanggal").value || hariIniKey();
+    var ket = $("sKet").value.trim();
+    if (!anggotaId) { $("pesanSimpanan").textContent = "Pilih anggota dulu."; return; }
+    if (!(jumlah > 0)) { $("pesanSimpanan").textContent = "Isi jumlah simpanan (lebih dari Rp0)."; return; }
+    state.simpanan.push({ id: state.nextSimpananId++, anggotaId: anggotaId, jenis: jenis, jumlah: jumlah, tanggal: tanggal, keterangan: ket });
+    saveState(); renderSemua();
+    $("sJumlah").value = ""; $("sKet").value = "";
+    var a = cariAnggota(anggotaId);
+    $("pesanSimpanan").textContent = "Simpanan " + jenisSimpananTxt(jenis) + " " + rupiah(jumlah) + " untuk " + (a ? a.nama : "anggota") + " tersimpan (pencatatan).";
+    toast("Simpanan tersimpan.");
+  });
+  function simpananTersaring() {
+    var fAnggota = $("fAnggotaSimpanan").value || "semua";
+    var fJenis = $("fJenisSimpanan").value || "semua";
+    var cari = ($("cariSimpanan").value || "").trim().toLowerCase();
+    var list = simpananTerlihat();
+    if (fAnggota !== "semua") list = list.filter(function (s) { return String(s.anggotaId) === fAnggota; });
+    if (fJenis !== "semua") list = list.filter(function (s) { return s.jenis === fJenis; });
+    if (cari) list = list.filter(function (s) {
+      return (s.keterangan || "").toLowerCase().indexOf(cari) !== -1 || jenisSimpananTxt(s.jenis).toLowerCase().indexOf(cari) !== -1;
+    });
+    list.sort(function (a, b) { return a.tanggal < b.tanggal ? 1 : a.tanggal > b.tanggal ? -1 : b.id - a.id; });
+    return list;
+  }
+  function renderSimpanan() {
+    isiPilihanAnggota();
+    if (!$("sTanggal").value) $("sTanggal").value = hariIniKey();
+    var list = simpananTersaring();
+    var total = 0, pokok = 0, wajib = 0, sukarela = 0;
+    list.forEach(function (s) {
+      total += Number(s.jumlah) || 0;
+      if (s.jenis === "pokok") pokok += Number(s.jumlah) || 0;
+      else if (s.jenis === "wajib") wajib += Number(s.jumlah) || 0;
+      else sukarela += Number(s.jumlah) || 0;
+    });
+    $("ringkasanSimpanan").textContent = list.length + " catatan simpanan, total " + rupiah(total) +
+      " (pokok " + rupiah(pokok) + " · wajib " + rupiah(wajib) + " · sukarela " + rupiah(sukarela) + ")" +
+      (currentUser && currentUser.peran === "anggota" ? " (milik Anda)" : "") + ".";
+    $("daftarSimpanan").innerHTML = list.length ? list.map(function (s) {
+      var a = cariAnggota(s.anggotaId);
+      var aksi = "";
+      if (isPengelola()) {
+        aksi = '<button class="btn ghost kecil" data-hapus-simpanan="' + s.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(a ? a.nama : "—") + '</b> <span class="lencana st-biru">' + jenisSimpananTxt(s.jenis) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(s.tanggal) + (s.keterangan ? ' · ' + esc(s.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(s.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan simpanan yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-simpanan]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-simpanan"));
+        var s = state.simpanan.find(function (x) { return x.id === id; });
+        if (!s) return;
+        var a = cariAnggota(s.anggotaId);
+        tanyaKonfirmasi("Hapus Simpanan", "Hapus catatan simpanan " + jenisSimpananTxt(s.jenis) + " " + rupiah(s.jumlah) + " milik " + (a ? a.nama : "anggota") + "?", function () {
+          state.simpanan = state.simpanan.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Catatan simpanan dihapus.");
+        });
+      });
+    });
+  }
+  $("fAnggotaSimpanan").addEventListener("change", renderSimpanan);
+  $("fJenisSimpanan").addEventListener("change", renderSimpanan);
+  $("cariSimpanan").addEventListener("input", renderSimpanan);
+
+  /* ---------- Tab Pinjaman ---------- */
+  $("btnTambahPinjaman").addEventListener("click", function () {
+    if (!isPengelola()) { $("pesanPinjaman").textContent = "Hanya Admin dan Pengurus yang bisa mencatat pinjaman."; return; }
+    var anggotaId = Number($("pAnggota").value || 0);
+    var nama = $("pNama").value.trim();
+    var pokok = Math.round(Number($("pPokok").value || 0));
+    var bunga = Number($("pBunga").value || 0);
+    var tenor = Math.round(Number($("pTenor").value || 0));
+    var mulai = $("pMulai").value || hariIniKey();
+    var ket = $("pKet").value.trim();
+    if (!anggotaId) { $("pesanPinjaman").textContent = "Pilih anggota dulu."; return; }
+    if (!nama) { $("pesanPinjaman").textContent = "Isi nama pinjaman dulu."; return; }
+    if (!(pokok > 0) || !(tenor > 0) || bunga < 0) { $("pesanPinjaman").textContent = "Isi pokok (lebih dari Rp0), bunga (0 atau lebih), dan tenor (lebih dari 0 bulan)."; return; }
+    state.pinjaman.push({ id: state.nextPinjamanId++, anggotaId: anggotaId, nama: nama, pokok: pokok, bunga: bunga, tenor: tenor, tanggalMulai: mulai, keterangan: ket });
+    saveState(); renderSemua();
+    var a = cariAnggota(anggotaId);
+    $("pesanPinjaman").textContent = "Pinjaman \"" + nama + "\" untuk " + (a ? a.nama : "anggota") + " tersimpan (pencatatan). Angsuran " + rupiah(Math.round(hitungAngsuran(pokok, bunga, tenor))) + "/bulan.";
+    $("pNama").value = ""; $("pPokok").value = ""; $("pBunga").value = ""; $("pTenor").value = ""; $("pKet").value = "";
+    toast("Pinjaman tersimpan.");
+  });
+  function pinjamanTersaring() {
+    var status = $("fStatusPinjaman").value || "semua";
+    var cari = ($("cariPinjaman").value || "").trim().toLowerCase();
+    var list = pinjamanTerlihat();
+    if (status !== "semua") list = list.filter(function (p) { return statusPinjaman(p) === (status === "aktif" ? "Aktif" : "Lunas"); });
+    if (cari) list = list.filter(function (p) {
+      var a = cariAnggota(p.anggotaId);
+      return p.nama.toLowerCase().indexOf(cari) !== -1 || (a && a.nama.toLowerCase().indexOf(cari) !== -1);
+    });
+    return list;
+  }
+  function tabelJadwalHTML(jadwal, pinjamanId) {
+    return "<tr><th>Bulan</th><th>Jatuh Tempo</th><th class=\"angka\">Angsuran</th><th class=\"angka\">Bunga</th><th class=\"angka\">Pokok</th><th class=\"angka\">Sisa Pokok</th><th>Status</th></tr>" +
+      jadwal.map(function (row) {
+        var st = pinjamanId ? statusAngsuran(row, pinjamanId) : "Belum";
+        return "<tr><td>" + row.bulan + "</td><td>" + tglSingkat(row.tanggal) + "</td><td class=\"angka\">" + rupiah(row.angsuran) + "</td><td class=\"angka\">" + rupiah(row.bunga) + "</td><td class=\"angka\">" + rupiah(row.pokok) + "</td><td class=\"angka\">" + rupiah(row.sisa) + "</td><td>" + lencanaStatusAngsuran(st) + "</td></tr>";
+      }).join("");
+  }
+  function renderPinjaman() {
+    isiPilihanAnggota();
+    if (!$("pMulai").value) $("pMulai").value = hariIniKey();
+    var list = pinjamanTersaring();
+    var aktif = list.filter(function (p) { return statusPinjaman(p) === "Aktif"; });
+    var sisaAktif = 0;
+    aktif.forEach(function (p) { sisaAktif += sisaPokok(p); });
+    $("ringkasanPinjaman").textContent = list.length + " pinjaman (" + aktif.length + " aktif), sisa pokok aktif " + rupiah(sisaAktif) +
+      (currentUser && currentUser.peran === "anggota" ? " (milik Anda)" : " (semua anggota)") + ".";
+    $("daftarPinjaman").innerHTML = list.length ? list.map(function (p) {
+      var a = cariAnggota(p.anggotaId);
+      var st = statusPinjaman(p);
+      var dibayar = bulanDibayar(p);
+      var total = totalBayar(p);
+      var lencana = st === "Lunas" ? '<span class="lencana st-aman">Lunas</span>' : '<span class="lencana st-biru">Aktif</span>';
+      var persen = p.tenor > 0 ? Math.round(dibayar / p.tenor * 100) : 0;
+      var aksi = '<button class="btn biru kecil" data-jadwal="' + p.id + '" type="button">Jadwal</button> ';
+      if (isPengelola()) {
+        aksi += '<button class="btn ghost kecil" data-hapus-pinjaman="' + p.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(p.nama) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(a ? a.nama : "—") + ' · pokok ' + rupiah(p.pokok) + ' · bunga ' + p.bunga + '%/tahun · tenor ' + p.tenor + ' bulan · mulai ' + tglSingkat(p.tanggalMulai) +
+        (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span>' +
+        '<br><span class="sub">Angsuran ' + rupiah(Math.round(hitungAngsuran(p.pokok, p.bunga, p.tenor))) + '/bulan · total bunga ' + rupiah(total - p.pokok) + ' · total bayar ' + rupiah(total) + '</span>' +
+        '<br><span class="sub">Dibayar ' + dibayar + '/' + p.tenor + ' bulan (' + persen + '%) · sisa pokok ' + rupiah(sisaPokok(p)) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada pinjaman yang cocok.</p>';
+    document.querySelectorAll("[data-jadwal]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var p = cariPinjaman(Number(btn.getAttribute("data-jadwal")));
+        if (!p) return;
+        var a = cariAnggota(p.anggotaId);
+        $("modalJadwalJudul").textContent = "Jadwal Angsuran — " + p.nama + " (" + (a ? a.nama : "—") + ")";
+        $("tabelJadwalModal").innerHTML = tabelJadwalHTML(buatJadwal(p), p.id);
+        $("modalJadwalBack").classList.add("open");
+      });
+    });
+    document.querySelectorAll("[data-hapus-pinjaman]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = Number(btn.getAttribute("data-hapus-pinjaman"));
+        var p = cariPinjaman(id);
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Pinjaman", "Hapus pinjaman \"" + p.nama + "\" beserta semua pembayaran angsurannya?", function () {
+          state.pinjaman = state.pinjaman.filter(function (x) { return x.id !== id; });
+          state.pembayaran = state.pembayaran.filter(function (x) { return x.pinjamanId !== id; });
+          saveState(); renderSemua(); toast("Pinjaman dihapus.");
+        });
+      });
+    });
+  }
+  $("fStatusPinjaman").addEventListener("change", renderPinjaman);
+  $("cariPinjaman").addEventListener("input", renderPinjaman);
+  $("modalJadwalTutup").addEventListener("click", function () { $("modalJadwalBack").classList.remove("open"); });
+  $("modalJadwalBack").addEventListener("click", function (e) { if (e.target === $("modalJadwalBack")) $("modalJadwalBack").classList.remove("open"); });
+
+  /* ---------- Tab Angsuran ---------- */
+  document.querySelectorAll("#chipsAngsuran .chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      document.querySelectorAll("#chipsAngsuran .chip").forEach(function (c) { c.classList.remove("active"); });
+      chip.classList.add("active");
+      filterAngsuran = chip.getAttribute("data-f");
+      renderAngsuran();
+    });
+  });
+  function renderAngsuran() {
+    var list = angsuranBelumBayar();
+    if (filterAngsuran === "segera") list = list.filter(function (x) { return x.status === "Segera"; });
+    if (filterAngsuran === "lewat") list = list.filter(function (x) { return x.status === "Lewat"; });
+    if (filterAngsuran === "bulanini") {
+      var kunciBulan = hariIniKey().slice(0, 7);
+      list = list.filter(function (x) { return x.row.tanggal.slice(0, 7) === kunciBulan; });
+    }
+    var semua = angsuranBelumBayar();
+    var segera = semua.filter(function (x) { return x.status === "Segera"; }).length;
+    var lewat = semua.filter(function (x) { return x.status === "Lewat"; }).length;
+    $("ringkasanAngsuran").textContent = list.length + " angsuran belum dibayar (total segera " + segera + ", lewat " + lewat + ")" +
+      (currentUser && currentUser.peran === "anggota" ? " (milik Anda)" : " (semua anggota)") + ".";
+    $("daftarAngsuran").innerHTML = list.length ? list.map(function (item, idx) {
+      var aksi = "";
+      if (bolehBayar(item)) {
+        aksi = '<button class="btn hijau kecil" data-bayar="' + item.pinjaman.id + ':' + item.row.bulan + '" type="button">Tandai Sudah Bayar</button> ';
+      }
+      aksi += '<button class="btn wa kecil" data-ingat="' + idx + '" type="button">Salin Pengingat WA</button>';
+      return '<div class="baris" data-angsuran-idx="' + idx + '"><div><b>' + esc(item.pinjaman.nama) + '</b> — bulan ke-' + item.row.bulan + ' ' + lencanaStatusAngsuran(item.status) +
+        '<br><span class="sub">' + esc(item.anggota ? item.anggota.nama : "—") + ' · jatuh tempo ' + tglSingkat(item.row.tanggal) + ' · sisa pokok setelah bulan ini ' + rupiah(item.row.sisa) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(item.row.angsuran) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada angsuran yang cocok.</p>';
+    renderAngsuran._tampil = list;
+    document.querySelectorAll("[data-bayar]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bg = btn.getAttribute("data-bayar").split(":");
+        var pinjamanId = Number(bg[0]), bulanKe = Number(bg[1]);
+        var p = cariPinjaman(pinjamanId);
+        if (!p || sudahBayarBulan(pinjamanId, bulanKe)) return;
+        var jadwal = buatJadwal(p);
+        var row = jadwal[bulanKe - 1];
+        state.pembayaran.push({ id: state.nextBayarId++, pinjamanId: pinjamanId, bulanKe: bulanKe, tanggal: hariIniKey(), jumlah: row.angsuran });
+        saveState(); renderSemua();
+        toast("Angsuran bulan ke-" + bulanKe + " \"" + p.nama + "\" ditandai sudah dibayar (pencatatan).");
+      });
+    });
+    document.querySelectorAll("[data-ingat]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var item = renderAngsuran._tampil[Number(btn.getAttribute("data-ingat"))];
+        if (!item) return;
+        var teks = teksPengingat(item);
+        salinTeks(teks);
+        $("kotakPengingat").hidden = false;
+        $("kotakPengingat").textContent = teks;
+        toast("Teks pengingat disalin — kirim sendiri lewat WhatsApp.");
+      });
+    });
+  }
+
+  /* ---------- Tab Laporan ---------- */
+  function barisLaporan() {
+    return anggotaTerlihat().map(function (a) {
+      var r = rekapAnggota(a);
+      return { anggota: a, pokok: r.pokok, wajib: r.wajib, sukarela: r.sukarela, totalSimpanan: r.totalSimpanan,
+        pinjaman: r.pinjaman, pinjamanAktif: r.pinjamanAktif, sisaPokok: r.sisaPokok,
+        angsuranBln: r.angsuranBln, dibayar: r.dibayar, belum: r.belum };
+    });
+  }
+  function renderLaporan() {
+    var rows = barisLaporan();
+    var totalSimpanan = 0, totalSisa = 0, totalDibayar = 0, totalBelum = 0;
+    rows.forEach(function (r) {
+      totalSimpanan += r.totalSimpanan; totalSisa += r.sisaPokok; totalDibayar += r.dibayar; totalBelum += r.belum;
+    });
+    $("ringkasanLaporan").textContent = rows.length + " anggota — total simpanan " + rupiah(totalSimpanan) +
+      ", sisa pokok pinjaman aktif " + rupiah(totalSisa) + ", angsuran dibayar " + totalDibayar + " bulan, belum " + totalBelum + " bulan" +
+      (currentUser && currentUser.peran === "anggota" ? " (data Anda)" : "") + ".";
+    $("tabelLaporan").innerHTML = "<tr><th>Anggota</th><th class=\"angka\">Simpanan Pokok</th><th class=\"angka\">Simpanan Wajib</th><th class=\"angka\">Simpanan Sukarela</th><th class=\"angka\">Total Simpanan</th><th class=\"angka\">Pinjaman Aktif</th><th class=\"angka\">Sisa Pokok</th><th class=\"angka\">Angsuran/Bln</th><th class=\"angka\">Dibayar</th><th class=\"angka\">Belum</th></tr>" +
+      rows.map(function (r) {
+        return "<tr><td>" + esc(r.anggota.nama) + " (" + esc(r.anggota.noAnggota) + ")</td>" +
+          "<td class=\"angka\">" + rupiah(r.pokok) + "</td><td class=\"angka\">" + rupiah(r.wajib) + "</td><td class=\"angka\">" + rupiah(r.sukarela) + "</td>" +
+          "<td class=\"angka\">" + rupiah(r.totalSimpanan) + "</td><td class=\"angka\">" + r.pinjamanAktif + "/" + r.pinjaman + "</td>" +
+          "<td class=\"angka\">" + rupiah(r.sisaPokok) + "</td><td class=\"angka\">" + rupiah(r.angsuranBln) + "</td>" +
+          "<td class=\"angka\">" + r.dibayar + "</td><td class=\"angka\">" + r.belum + "</td></tr>";
+      }).join("");
+  }
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var rows = barisLaporan();
+    var baris = [["Nama Anggota", "No Anggota", "Simpanan Pokok (Rp)", "Simpanan Wajib (Rp)", "Simpanan Sukarela (Rp)", "Total Simpanan (Rp)", "Pinjaman Aktif", "Sisa Pokok (Rp)", "Angsuran/Bulan (Rp)", "Angsuran Dibayar (bulan)", "Angsuran Belum (bulan)"].map(csvCell).join(",")];
+    rows.forEach(function (r) {
+      baris.push([r.anggota.nama, r.anggota.noAnggota, r.pokok, r.wajib, r.sukarela, r.totalSimpanan, r.pinjamanAktif + "/" + r.pinjaman, r.sisaPokok, r.angsuranBln, r.dibayar, r.belum].map(csvCell).join(","));
+    });
+    unduh("laporan-koperasi.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV laporan diunduh (" + rows.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("aplikasi-koperasi-backup.json", JSON.stringify({ aplikasi: "aplikasi-koperasi", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.anggota) || !Array.isArray(d.state.simpanan) || !Array.isArray(d.state.pinjaman) || !Array.isArray(d.state.pembayaran) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Anggota, simpanan, pinjaman, dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderAnggota(); renderSimpanan(); renderPinjaman(); renderAngsuran(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
