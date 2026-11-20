@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Oyen Susun Balok — Game Puzzle Blok | Podcast Meong</title>
+<meta name="description" content="Oyen Susun Balok — game puzzle blok ala Tetris bersama Oyen si kucing oranye. Susun baris penuh, kumpulkan skor, main gratis di browser.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: #f7f9fc; color: #14263d; line-height: 1.6; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px 14px 48px; }
+  .banner { background: #fff3cd; color: #7a5b00; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+  header { text-align: center; background: #14263d; color: #fff; border-radius: 16px; padding: 22px 16px 18px; margin-bottom: 16px; }
+  header h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 6vw, 36px); line-height: 1.1; color: #fff; }
+  header p { color: #c9d8ea; margin-top: 6px; font-size: 14px; }
+  .oyen { width: 84px; height: 84px; margin: 0 auto 8px; display: block; }
+  .oyen.bounce { animation: lompat .5s ease; }
+  @keyframes lompat { 0% { transform: translateY(0); } 40% { transform: translateY(-14px) rotate(-4deg); } 100% { transform: translateY(0); } }
+  .hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(20,38,61,.08); padding: 8px 4px; text-align: center; }
+  .stat .label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #4a6b8a; }
+  .stat .value { font-size: 20px; font-weight: 800; color: #14263d; }
+  .game-area { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+  .board-wrap { position: relative; }
+  #papan { display: block; background: #0f1c2e; border-radius: 12px; border: 4px solid #14263d; touch-action: none; }
+  .side { display: flex; flex-direction: column; gap: 10px; width: 110px; }
+  .panel { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(20,38,61,.08); padding: 10px; text-align: center; }
+  .panel .label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #4a6b8a; margin-bottom: 4px; }
+  #berikutnya { display: block; margin: 0 auto; background: #f7f9fc; border-radius: 8px; }
+  .btn { display: block; width: 100%; padding: 10px 12px; border-radius: 999px; border: none; background: #14263d; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #0f1c2e; }
+  .btn.orange { background: #f5820b; }
+  .btn.orange:hover { background: #d96f06; }
+  .btn.ghost { background: #fff; color: #14263d; border: 1px solid #8fb4d9; }
+  .btn.ghost:hover { border-color: #14263d; }
+  .btn:disabled { background: #e8eef4; color: #7a8a9c; cursor: default; }
+  .toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%) scale(.8); background: #f5820b; color: #fff; font-weight: 800; font-size: 20px; padding: 10px 18px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; white-space: nowrap; z-index: 5; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+  .toast.tampil { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .overlay { position: absolute; inset: 0; background: rgba(15, 28, 46, .88); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center; z-index: 4; }
+  .overlay.hidden { display: none; }
+  .overlay h2 { color: #fff; font-family: Georgia, serif; font-size: 26px; }
+  .overlay p { color: #c9d8ea; font-size: 14px; max-width: 260px; }
+  .overlay .skor-besar { color: #f4ce82; font-size: 34px; font-weight: 800; }
+  .controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+  .controls button { padding: 14px 4px; font-size: 20px; border-radius: 12px; border: 1px solid #8fb4d9; background: #fff; color: #14263d; cursor: pointer; font-family: inherit; }
+  .controls button:active { background: #d3e2f1; }
+  .cara { background: #fff; border-radius: 16px; box-shadow: 0 4px 16px rgba(20,38,61,.08); padding: 20px; margin-top: 16px; }
+  .cara h2 { font-family: Georgia, serif; font-size: 20px; margin-bottom: 8px; }
+  .cara ul { margin-left: 18px; color: #33475e; font-size: 15px; }
+  .cara li { margin-bottom: 4px; }
+  .cara kbd { background: #e8f0f8; border: 1px solid #8fb4d9; border-radius: 6px; padding: 1px 7px; font-family: inherit; font-weight: 700; }
+  .info-harga { background: #fff8e1; color: #7a5b00; border-radius: 12px; padding: 12px 16px; margin-top: 16px; font-size: 14px; text-align: center; }
+  .nav-bawah { margin-top: 16px; text-align: center; font-size: 14px; }
+  .nav-bawah a { color: #14263d; font-weight: 700; text-decoration: none; }
+  .nav-bawah a:hover { text-decoration: underline; }
+  footer { margin-top: 24px; text-align: center; color: #4a6b8a; font-size: 13px; }
+  @media (max-width: 420px) {
+    .game-area { gap: 8px; }
+    #papan { width: 240px; height: 480px; }
+    .side { width: 92px; }
+    .hud { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">DEMO GRATIS &mdash; main sepuasnya di browser, tanpa install</div>
+
+  <header>
+    <!-- Oyen: kucing oranye, digambar SVG (bukan foto asli) -->
+    <svg class="oyen" id="oyenSvg" viewBox="0 0 100 100" role="img" aria-label="Oyen si kucing oranye">
+      <polygon points="18,38 8,10 42,24" fill="#f5820b"/>
+      <polygon points="82,38 92,10 58,24" fill="#f5820b"/>
+      <polygon points="20,34 14,18 34,26" fill="#f8b4c4"/>
+      <polygon points="80,34 86,18 66,26" fill="#f8b4c4"/>
+      <circle cx="50" cy="55" r="36" fill="#f5820b"/>
+      <circle cx="50" cy="55" r="36" fill="none" stroke="#d96f06" stroke-width="2"/>
+      <ellipse cx="36" cy="50" rx="5" ry="7" fill="#14263d"/>
+      <ellipse cx="64" cy="50" rx="5" ry="7" fill="#14263d"/>
+      <circle cx="38" cy="47" r="1.8" fill="#fff"/>
+      <circle cx="66" cy="47" r="1.8" fill="#fff"/>
+      <path d="M46 62 L54 62 L50 68 Z" fill="#e2607a"/>
+      <path d="M50 68 Q50 74 44 74 M50 68 Q50 74 56 74" fill="none" stroke="#14263d" stroke-width="2" stroke-linecap="round"/>
+      <g stroke="#f4ce82" stroke-width="2" stroke-linecap="round">
+        <line x1="14" y1="58" x2="30" y2="62"/><line x1="14" y1="66" x2="30" y2="64"/>
+        <line x1="86" y1="58" x2="70" y2="62"/><line x1="86" y1="66" x2="70" y2="64"/>
+      </g>
+      <path d="M30 30 Q38 24 46 28" fill="none" stroke="#d96f06" stroke-width="3" stroke-linecap="round"/>
+      <path d="M54 28 Q62 24 70 30" fill="none" stroke="#d96f06" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1>Oyen Susun Balok</h1>
+    <p>Game puzzle blok bersama Oyen &mdash; susun baris penuh, kumpulkan skor setinggi-tingginya!</p>
+  </header>
+
+  <div class="hud">
+    <div class="stat"><div class="label">Skor</div><div class="value" id="skor">0</div></div>
+    <div class="stat"><div class="label">Level</div><div class="value" id="level">1</div></div>
+    <div class="stat"><div class="label">Baris</div><div class="value" id="baris">0</div></div>
+    <div class="stat"><div class="label">Rekor</div><div class="value" id="rekor">0</div></div>
+  </div>
+
+  <div class="game-area">
+    <div class="board-wrap">
+      <canvas id="papan" width="300" height="600"></canvas>
+      <div class="toast" id="toast"></div>
+      <div class="overlay" id="overlayAwal">
+        <h2>Siap main?</h2>
+        <p>Balok jatuh dari atas. Geser dan putar baloknya, susun sampai satu baris penuh &mdash; baris penuh akan hilang dan jadi skor!</p>
+        <button class="btn orange" id="btnMulai" type="button">Mulai Main</button>
+        <p style="font-size:12px">Keyboard: &larr; &rarr; geser &middot; &uarr; putar &middot; &darr; turun cepat &middot; Spasi jatuh langsung</p>
+      </div>
+      <div class="overlay hidden" id="overlayAkhir">
+        <h2>Game Over!</h2>
+        <p id="teksAkhir">Balok sudah menumpuk sampai atas.</p>
+        <div class="skor-besar" id="skorAkhir">0</div>
+        <p id="teksRekor"></p>
+        <button class="btn orange" id="btnUlang" type="button">Main Lagi</button>
+      </div>
+      <div class="overlay hidden" id="overlayJeda">
+        <h2>Jeda</h2>
+        <p>Permainan dijeda. Tarik napas dulu, Oyen menunggu.</p>
+        <button class="btn orange" id="btnLanjut" type="button">Lanjutkan</button>
+      </div>
+    </div>
+    <div class="side">
+      <div class="panel">
+        <div class="label">Berikutnya</div>
+        <canvas id="berikutnya" width="96" height="64"></canvas>
+      </div>
+      <button class="btn" id="btnJeda" type="button" disabled>Jeda</button>
+      <button class="btn ghost" id="btnSuara" type="button">Suara: Nyala</button>
+      <button class="btn ghost" id="btnUlangKecil" type="button">Ulang</button>
+    </div>
+  </div>
+
+  <div class="controls" aria-label="Tombol kontrol sentuh">
+    <button type="button" data-aksi="kiri" aria-label="Geser kiri">&larr;</button>
+    <button type="button" data-aksi="kanan" aria-label="Geser kanan">&rarr;</button>
+    <button type="button" data-aksi="putar" aria-label="Putar balok">&#8635;</button>
+    <button type="button" data-aksi="turun" aria-label="Turun cepat">&darr;</button>
+    <button type="button" data-aksi="jatuh" aria-label="Jatuh langsung">&#11015;</button>
+  </div>
+
+  <section class="cara">
+    <h2>Cara main</h2>
+    <ul>
+      <li>Balok jatuh satu per satu dari atas papan (10 kolom &times; 20 baris).</li>
+      <li>Geser dengan <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, putar dengan <kbd>&uarr;</kbd>, turun cepat dengan <kbd>&darr;</kbd>, jatuh langsung dengan <kbd>Spasi</kbd>.</li>
+      <li>Satu baris penuh akan hilang: 1 baris = 100 poin, 2 baris = 300, 3 baris = 500, 4 baris sekaligus (&ldquo;Tetris&rdquo;) = 800 &mdash; dikali level.</li>
+      <li>Tiap 10 baris, naik 1 level dan balok jatuh makin cepat. Game selesai bila balok menumpuk sampai atas.</li>
+      <li>Skor tertinggi tersimpan di perangkat ini (localStorage) &mdash; kalahkan rekormu sendiri!</li>
+      <li>Di HP, pakai tombol di bawah papan. Suara bisa dimatikan dengan tombol &ldquo;Suara&rdquo;.</li>
+    </ul>
+  </section>
+
+  <p class="info-harga"><strong>Harga menyusul</strong> &mdash; demo gratis ini bisa dimainkan sepuasnya di browser. Harga final menyusul saat rilis.</p>
+
+  <p class="nav-bawah"><a href="https://podcastmeong.github.io/game/">&larr; Kembali ke Game</a> &nbsp;&middot;&nbsp; <a href="https://podcastmeong.github.io/toko.html#game">Lihat di Toko</a></p>
+
+  <footer>
+    <p>Game HTML5 satu file dari Podcast Meong &mdash; Oyen si kucing oranye. Gambar Oyen digambar (SVG), bukan foto asli.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var KOLOM = 10, BARIS = 20, SEL = 30;
+  var kanvas = document.getElementById("papan");
+  var ctx = kanvas.getContext("2d");
+  var kanvasNext = document.getElementById("berikutnya");
+  var ctxNext = kanvasNext.getContext("2d");
+
+  var BENTUK = {
+    I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+    O: [[1,1],[1,1]],
+    T: [[0,1,0],[1,1,1],[0,0,0]],
+    S: [[0,1,1],[1,1,0],[0,0,0]],
+    Z: [[1,1,0],[0,1,1],[0,0,0]],
+    J: [[1,0,0],[1,1,1],[0,0,0]],
+    L: [[0,0,1],[1,1,1],[0,0,0]]
+  };
+  var WARNA = { I:"#38bdf8", O:"#f4ce82", T:"#b388eb", S:"#4ade80", Z:"#fb7185", J:"#8fb4d9", L:"#f5820b" };
+  var URUTAN = ["I","O","T","S","Z","J","L"];
+
+  var KUNCI_REKOR = "oyenSusunBalok.rekor";
+  var KUNCI_SUARA = "oyenSusunBalok.suara";
+
+  var papan, balok, berikut, skor, baris, level, status, timer, suaraNyala, rekor;
+  var elSkor = document.getElementById("skor"),
+      elLevel = document.getElementById("level"),
+      elBaris = document.getElementById("baris"),
+      elRekor = document.getElementById("rekor"),
+      elToast = document.getElementById("toast"),
+      elAwal = document.getElementById("overlayAwal"),
+      elAkhir = document.getElementById("overlayAkhir"),
+      elJeda = document.getElementById("overlayJeda"),
+      elSkorAkhir = document.getElementById("skorAkhir"),
+      elTeksAkhir = document.getElementById("teksAkhir"),
+      elTeksRekor = document.getElementById("teksRekor"),
+      oyenSvg = document.getElementById("oyenSvg");
+
+  try { rekor = parseInt(localStorage.getItem(KUNCI_REKOR) || "0", 10) || 0; } catch (e) { rekor = 0; }
+  try { suaraNyala = localStorage.getItem(KUNCI_SUARA) !== "mati"; } catch (e) { suaraNyala = true; }
+  elRekor.textContent = rekor;
+
+  // --- suara (WebAudio, hanya setelah interaksi pengguna) ---
+  var audioCtx = null;
+  function bunyi(freq, dur, tipe, vol) {
+    if (!suaraNyala) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = tipe || "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.08, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch (e) { /* suara gagal: game tetap jalan */ }
+  }
+  function nadaBerurutan(freqs, dur) {
+    freqs.forEach(function (f, i) { setTimeout(function () { bunyi(f, dur, "triangle", 0.09); }, i * 90); });
+  }
+
+  function papanKosong() {
+    var p = [];
+    for (var y = 0; y < BARIS; y++) { p.push(new Array(KOLOM).fill(null)); }
+    return p;
+  }
+  function acakBalok() {
+    var jenis = URUTAN[Math.floor(Math.random() * URUTAN.length)];
+    return { jenis: jenis, matriks: BENTUK[jenis].map(function (r) { return r.slice(); }), x: 3, y: 0 };
+  }
+  function putarMatriks(m) {
+    var n = m.length, hasil = [];
+    for (var r = 0; r < n; r++) {
+      hasil.push([]);
+      for (var c = 0; c < n; c++) hasil[r].push(m[n - 1 - c][r]);
+    }
+    return hasil;
+  }
+  function bertabrakan(matriks, px, py) {
+    for (var y = 0; y < matriks.length; y++) {
+      for (var x = 0; x < matriks[y].length; x++) {
+        if (!matriks[y][x]) continue;
+        var bx = px + x, by = py + y;
+        if (bx < 0 || bx >= KOLOM || by >= BARIS) return true;
+        if (by >= 0 && papan[by][bx]) return true;
+      }
+    }
+    return false;
+  }
+  function kecepatan() { return Math.max(90, 800 - (level - 1) * 70); }
+
+  function mulaiTimer() {
+    hentikanTimer();
+    timer = setInterval(function () { if (status === "main") turunSatu(); }, kecepatan());
+  }
+  function hentikanTimer() { if (timer) { clearInterval(timer); timer = null; } }
+
+  function tampilkanToast(teks) {
+    elToast.textContent = teks;
+    elToast.classList.add("tampil");
+    oyenSvg.classList.remove("bounce"); void oyenSvg.offsetWidth; oyenSvg.classList.add("bounce");
+    setTimeout(function () { elToast.classList.remove("tampil"); }, 1100);
+  }
+
+  function gambar() {
+    ctx.clearRect(0, 0, kanvas.width, kanvas.height);
+    ctx.fillStyle = "#0f1c2e"; ctx.fillRect(0, 0, kanvas.width, kanvas.height);
+    ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth = 1;
+    for (var gx = 1; gx < KOLOM; gx++) { ctx.beginPath(); ctx.moveTo(gx * SEL, 0); ctx.lineTo(gx * SEL, kanvas.height); ctx.stroke(); }
+    for (var gy = 1; gy < BARIS; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * SEL); ctx.lineTo(kanvas.width, gy * SEL); ctx.stroke(); }
+    gambarBalokHantu();
+    for (var y = 0; y < BARIS; y++)
+      for (var x = 0; x < KOLOM; x++)
+        if (papan[y][x]) gambarSel(x, y, WARNA[papan[y][x]]);
+    if (balok) {
+      var m = balok.matriks;
+      for (var yy = 0; yy < m.length; yy++)
+        for (var xx = 0; xx < m[yy].length; xx++)
+          if (m[yy][xx]) gambarSel(balok.x + xx, balok.y + yy, WARNA[balok.jenis]);
+    }
+    gambarBerikut();
+  }
+  function gambarSel(x, y, warna) {
+    if (y < 0) return;
+    var px = x * SEL, py = y * SEL;
+    ctx.fillStyle = warna;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(px + 1, py + 1, SEL - 2, SEL - 2, 6); ctx.fill(); }
+    else { ctx.fillRect(px + 1, py + 1, SEL - 2, SEL - 2); }
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.fillRect(px + 4, py + 4, SEL - 8, 6);
+  }
+  function gambarBalokHantu() {
+    if (!balok || status !== "main") return;
+    var gy = balok.y;
+    while (!bertabrakan(balok.matriks, balok.x, gy + 1)) gy++;
+    if (gy === balok.y) return;
+    ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.lineWidth = 2;
+    var m = balok.matriks;
+    for (var y = 0; y < m.length; y++)
+      for (var x = 0; x < m[y].length; x++)
+        if (m[y][x]) ctx.strokeRect((balok.x + x) * SEL + 2, (gy + y) * SEL + 2, SEL - 4, SEL - 4);
+  }
+  function gambarBerikut() {
+    ctxNext.clearRect(0, 0, kanvasNext.width, kanvasNext.height);
+    if (!berikut) return;
+    var m = BENTUK[berikut.jenis], n = m.length, ukuran = 20, ox = (kanvasNext.width - n * ukuran) / 2, oy = (kanvasNext.height - n * ukuran) / 2;
+    for (var y = 0; y < n; y++)
+      for (var x = 0; x < n; x++)
+        if (m[y][x]) {
+          ctxNext.fillStyle = WARNA[berikut.jenis];
+          ctxNext.fillRect(ox + x * ukuran + 1, oy + y * ukuran + 1, ukuran - 2, ukuran - 2);
+        }
+  }
+
+  function perbaruiHud() {
+    elSkor.textContent = skor;
+    elLevel.textContent = level;
+    elBaris.textContent = baris;
+    elRekor.textContent = rekor;
+  }
+
+  function munculkanBalok() {
+    balok = berikut || acakBalok();
+    berikut = acakBalok();
+    balok.x = 3; balok.y = 0;
+    if (bertabrakan(balok.matriks, balok.x, balok.y)) { akhiriGame(); return; }
+    gambar();
+  }
+
+  function kunciBalok() {
+    var m = balok.matriks;
+    for (var y = 0; y < m.length; y++)
+      for (var x = 0; x < m[y].length; x++)
+        if (m[y][x] && balok.y + y >= 0) papan[balok.y + y][balok.x + x] = balok.jenis;
+    bunyi(130, 0.08, "square", 0.05);
+    bersihkanBaris();
+    munculkanBalok();
+  }
+  function bersihkanBaris() {
+    var penuh = 0;
+    for (var y = BARIS - 1; y >= 0; y--) {
+      if (papan[y].every(function (sel) { return sel !== null; })) {
+        papan.splice(y, 1);
+        papan.unshift(new Array(KOLOM).fill(null));
+        penuh++; y++;
+      }
+    }
+    if (!penuh) return;
+    var poin = [0, 100, 300, 500, 800][penuh] * level;
+    skor += poin;
+    baris += penuh;
+    var levelBaru = Math.floor(baris / 10) + 1;
+    if (levelBaru > level) {
+      level = levelBaru;
+      tampilkanToast("Level " + level + " — makin cepat!");
+      nadaBerurutan([523, 659, 784, 1047], 0.12);
+      mulaiTimer();
+    } else if (penuh === 4) {
+      tampilkanToast("MEONG! Tetris! +" + poin);
+      nadaBerurutan([523, 659, 784, 1047], 0.12);
+    } else {
+      tampilkanToast("+" + poin + (penuh > 1 ? " — " + penuh + " baris!" : ""));
+      nadaBerurutan([523, 659, 784], 0.1);
+    }
+    perbaruiHud();
+  }
+
+  function turunSatu() {
+    if (!balok) return;
+    if (!bertabrakan(balok.matriks, balok.x, balok.y + 1)) { balok.y++; gambar(); }
+    else kunciBalok();
+  }
+  function geser(dx) {
+    if (status !== "main" || !balok) return;
+    if (!bertabrakan(balok.matriks, balok.x + dx, balok.y)) { balok.x += dx; bunyi(180, 0.04, "sine", 0.04); gambar(); }
+  }
+  function putar() {
+    if (status !== "main" || !balok) return;
+    var hasil = putarMatriks(balok.matriks);
+    var tendangan = [0, -1, 1, -2, 2];
+    for (var i = 0; i < tendangan.length; i++) {
+      if (!bertabrakan(hasil, balok.x + tendangan[i], balok.y)) {
+        balok.matriks = hasil; balok.x += tendangan[i];
+        bunyi(240, 0.05, "sine", 0.05); gambar(); return;
+      }
+    }
+  }
+  function jatuhLangsung() {
+    if (status !== "main" || !balok) return;
+    while (!bertabrakan(balok.matriks, balok.x, balok.y + 1)) balok.y++;
+    gambar(); kunciBalok();
+  }
+
+  function mulaiGame() {
+    papan = papanKosong();
+    skor = 0; baris = 0; level = 1;
+    balok = null; berikut = null;
+    status = "main";
+    elAwal.classList.add("hidden");
+    elAkhir.classList.add("hidden");
+    elJeda.classList.add("hidden");
+    document.getElementById("btnJeda").disabled = false;
+    perbaruiHud();
+    munculkanBalok();
+    mulaiTimer();
+    bunyi(440, 0.1, "triangle", 0.08);
+  }
+  function akhiriGame() {
+    status = "selesai";
+    hentikanTimer();
+    document.getElementById("btnJeda").disabled = true;
+    var rekorBaru = false;
+    if (skor > rekor) { rekor = skor; rekorBaru = true; try { localStorage.setItem(KUNCI_REKOR, String(rekor)); } catch (e) {} }
+    elSkorAkhir.textContent = skor;
+    elTeksAkhir.textContent = "Balok sudah menumpuk sampai atas. Kamu membersihkan " + baris + " baris di level " + level + ".";
+    elTeksRekor.textContent = rekorBaru ? "Rekor baru! Skor tertinggi sekarang " + rekor + "." : "Rekor tertinggi: " + rekor + ".";
+    elAkhir.classList.remove("hidden");
+    perbaruiHud();
+    nadaBerurutan([392, 330, 262, 196], 0.16);
+    gambar();
+  }
+  function jedaGame() {
+    if (status !== "main") return;
+    status = "jeda"; hentikanTimer();
+    elJeda.classList.remove("hidden");
+  }
+  function lanjutGame() {
+    if (status !== "jeda") return;
+    status = "main";
+    elJeda.classList.add("hidden");
+    mulaiTimer();
+  }
+
+  document.getElementById("btnMulai").addEventListener("click", mulaiGame);
+  document.getElementById("btnUlang").addEventListener("click", mulaiGame);
+  document.getElementById("btnUlangKecil").addEventListener("click", mulaiGame);
+  document.getElementById("btnJeda").addEventListener("click", jedaGame);
+  document.getElementById("btnLanjut").addEventListener("click", lanjutGame);
+  var btnSuara = document.getElementById("btnSuara");
+  function perbaruiTombolSuara() { btnSuara.textContent = suaraNyala ? "Suara: Nyala" : "Suara: Mati"; }
+  perbaruiTombolSuara();
+  btnSuara.addEventListener("click", function () {
+    suaraNyala = !suaraNyala;
+    try { localStorage.setItem(KUNCI_SUARA, suaraNyala ? "nyala" : "mati"); } catch (e) {}
+    perbaruiTombolSuara();
+    if (suaraNyala) bunyi(440, 0.08, "sine", 0.06);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (status !== "main") {
+      if ((e.key === "Enter" || e.key === " ") && (status === "siap" || status === "selesai")) { e.preventDefault(); mulaiGame(); }
+      return;
+    }
+    if (e.key === "ArrowLeft") { e.preventDefault(); geser(-1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); geser(1); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); turunSatu(); }
+    else if (e.key === "ArrowUp" || e.key === "x" || e.key === "X") { e.preventDefault(); putar(); }
+    else if (e.key === " ") { e.preventDefault(); jatuhLangsung(); }
+    else if (e.key === "p" || e.key === "P") { jedaGame(); }
+  });
+
+  // tombol sentuh (tahan untuk mengulang)
+  var pengulang = null;
+  function hentikanUlang() { if (pengulang) { clearInterval(pengulang); pengulang = null; } }
+  document.querySelectorAll(".controls button").forEach(function (btn) {
+    var aksi = btn.getAttribute("data-aksi");
+    function jalan() {
+      if (aksi === "kiri") geser(-1);
+      else if (aksi === "kanan") geser(1);
+      else if (aksi === "putar") putar();
+      else if (aksi === "turun") turunSatu();
+      else if (aksi === "jatuh") jatuhLangsung();
+    }
+    btn.addEventListener("pointerdown", function (e) {
+      e.preventDefault(); jalan();
+      if (aksi === "kiri" || aksi === "kanan" || aksi === "turun") {
+        hentikanUlang();
+        pengulang = setInterval(jalan, 110);
+      }
+    });
+    btn.addEventListener("pointerup", hentikanUlang);
+    btn.addEventListener("pointerleave", hentikanUlang);
+    btn.addEventListener("pointercancel", hentikanUlang);
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && status === "main") jedaGame();
+  });
+
+  // keadaan awal
+  papan = papanKosong(); skor = 0; baris = 0; level = 1; status = "siap";
+  balok = null; berikut = acakBalok();
+  perbaruiHud(); gambar();
+
+  // kait kecil untuk pengujian otomatis (tidak memengaruhi pemain)
+  window.OYEN_TEST = {
+    status: function () { return { status: status, skor: skor, baris: baris, level: level, rekor: rekor, balokX: balok ? balok.x : null, balokY: balok ? balok.y : null, balokJenis: balok ? balok.jenis : null, matriks: balok ? balok.matriks : null }; },
+    isiBaris: function (barisKe, kosongKolom) {
+      for (var x = 0; x < KOLOM; x++) papan[barisKe][x] = (kosongKolom.indexOf(x) === -1) ? "L" : null;
+      gambar();
+    },
+    paksaBalok: function (jenis) {
+      balok = { jenis: jenis, matriks: BENTUK[jenis].map(function (r) { return r.slice(); }), x: 3, y: 0 };
+      gambar();
+    },
+    isiAtas: function () {
+      for (var y = 0; y < 3; y++) for (var x = 0; x < KOLOM; x++) papan[y][x] = "L";
+      gambar();
+    },
+    cobaSpawn: function () { munculkanBalok(); }
+  };
+})();
+</script>
+</body>
+</html>
