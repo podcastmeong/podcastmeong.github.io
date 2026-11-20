@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Manajemen Kos-Kosan</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .angka.uang { font-size: 20px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .item {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .item .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .item .nama { font-weight: 800; font-size: 15.5px; }
+  .item .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .item .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .item .harga {
+    font-weight: 800; color: var(--blue); background: var(--blue-soft);
+    border-radius: 8px; padding: 3px 10px; font-size: 13.5px; white-space: nowrap;
+  }
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-terisi { background: var(--blue-soft); color: var(--blue); }
+  .st-kosong { background: var(--green-soft); color: var(--green); }
+  .st-aktif { background: var(--blue-soft); color: var(--blue); }
+  .st-keluar { background: var(--surface-2); color: var(--muted); }
+  .st-lunas { background: var(--green-soft); color: var(--green); }
+  .st-belum { background: var(--amber-soft); color: var(--amber); }
+  .st-telat { background: var(--red-soft); color: var(--red); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 420px; width: 100%;
+  }
+  .modal h3 { margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Manajemen Kos-Kosan</h1>
+    <p>Kelola kamar, penghuni, dan pembayaran bulanan kos-kosan Anda dalam satu tempat.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
+    <button class="tab-btn" data-tab="kamar">Kamar</button>
+    <button class="tab-btn" data-tab="penghuni">Penghuni</button>
+    <button class="tab-btn" data-tab="pembayaran">Pembayaran <span class="badge" id="badgeTagihan">0</span></button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-ringkasan">
+    <div class="page-head">
+      <h2 id="judulRingkasan">Ringkasan Bulan Ini</h2>
+      <p>Kamar, penghuni, dan tagihan pada bulan berjalan.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Kamar Terisi</div><div class="angka" id="statTerisi">0</div></div>
+      <div class="stat"><div class="label">Kamar Kosong</div><div class="angka" id="statKosong">0</div></div>
+      <div class="stat"><div class="label">Penghuni Aktif</div><div class="angka" id="statPenghuni">0</div></div>
+      <div class="stat"><div class="label">Tagihan Lunas</div><div class="angka" id="statLunas">0/0</div></div>
+      <div class="stat accent"><div class="label">Pemasukan Bulan Ini</div><div class="angka uang" id="statPemasukan">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3>Tagihan belum lunas</h3>
+      <p class="sub">Penghuni yang tagihan bulan ini belum dibayar, diurutkan dari jatuh tempo paling dekat.</p>
+      <div id="daftarBelumLunas"></div>
+    </div>
+    <div class="card">
+      <h3>Kamar kosong</h3>
+      <p class="sub">Kamar yang siap diisi penghuni baru.</p>
+      <div id="daftarKamarKosong"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kamar">
+    <div class="page-head">
+      <h2 id="judulFormKamar">Tambah Kamar</h2>
+      <p>Nomor kamar, tipe, dan harga sewa per bulan. Kamar yang terisi tidak bisa dihapus.</p>
+    </div>
+    <div class="card">
+      <form id="formKamar">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNomorKamar">Nomor kamar *</label>
+            <input type="text" id="fNomorKamar" placeholder="Contoh: A1" required>
+          </div>
+          <div class="field">
+            <label for="fTipeKamar">Tipe kamar *</label>
+            <input type="text" id="fTipeKamar" placeholder="Contoh: Standar" required>
+          </div>
+          <div class="field">
+            <label for="fHargaKamar">Harga sewa / bulan (Rp) *</label>
+            <input type="number" id="fHargaKamar" min="0" step="1000" placeholder="Contoh: 800000" required>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanKamar">Simpan Kamar</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahKamar" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Kamar</h3>
+      <p class="sub">Klik "Ubah" untuk mengganti tipe atau harga kamar. Nomor kamar tidak bisa diubah.</p>
+      <div id="daftarKamar"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-penghuni">
+    <div class="page-head">
+      <h2 id="judulFormPenghuni">Tambah Penghuni</h2>
+      <p>Penghuni baru menempati kamar yang masih kosong.</p>
+    </div>
+    <div class="card">
+      <form id="formPenghuni">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNamaPenghuni">Nama penghuni *</label>
+            <input type="text" id="fNamaPenghuni" placeholder="Contoh: Budi Santoso" required>
+          </div>
+          <div class="field">
+            <label for="fHpPenghuni">No. HP / WhatsApp (opsional)</label>
+            <input type="tel" id="fHpPenghuni" placeholder="Contoh: 081234567890">
+          </div>
+          <div class="field">
+            <label for="fKamarPenghuni">Kamar *</label>
+            <select id="fKamarPenghuni" required></select>
+          </div>
+          <div class="field">
+            <label for="fTanggalMasuk">Tanggal masuk *</label>
+            <input type="date" id="fTanggalMasuk" required>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanPenghuni">Simpan Penghuni</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahPenghuni" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterPenghuni">Status penghuni</label>
+          <select id="filterPenghuni">
+            <option value="">Semua</option>
+            <option value="Aktif">Aktif</option>
+            <option value="Keluar">Sudah keluar</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarPenghuni"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pembayaran">
+    <div class="page-head">
+      <h2 id="judulPembayaran">Pembayaran</h2>
+      <p>Tagihan sewa bulanan per penghuni. Buat tagihan untuk bulan yang dipilih, lalu tandai lunas saat dibayar.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulan">Bulan tagihan</label>
+          <input type="month" id="filterBulan">
+        </div>
+        <div class="grow">
+          <label for="filterStatusTagihan">Status</label>
+          <select id="filterStatusTagihan">
+            <option value="">Semua status</option>
+            <option value="Lunas">Lunas</option>
+            <option value="Belum Lunas">Belum Lunas</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:14px">
+        <button type="button" class="btn" id="btnBuatTagihan">Buat Tagihan Bulan Ini</button>
+      </div>
+      <div class="grid-stat" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat"><div class="label">Tagihan</div><div class="angka" id="statBulanTagihan">0</div></div>
+        <div class="stat"><div class="label">Lunas</div><div class="angka" id="statBulanLunas">0</div></div>
+        <div class="stat accent"><div class="label">Pemasukan Bulan Ini</div><div class="angka uang" id="statBulanPemasukan">Rp0</div></div>
+      </div>
+      <div id="daftarTagihan"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan Penggunaan</h2>
+      <p>Cara memakai aplikasi Manajemen Kos-Kosan, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Atur dulu <b>Kamar</b>: tambahkan nomor kamar, tipe, dan harga sewa per bulannya.</li>
+        <li>Di tab <b>Penghuni</b>, tambahkan penghuni baru ke kamar yang masih kosong, beserta tanggal masuknya.</li>
+        <li>Di tab <b>Pembayaran</b>, tekan <b>Buat Tagihan Bulan Ini</b> setiap awal bulan — tagihan dibuat otomatis untuk semua penghuni aktif, sebesar harga kamar, jatuh tempo tanggal 10. Tekan <b>Tandai Lunas</b> saat penghuni sudah membayar.</li>
+        <li>Tab <b>Ringkasan</b> menampilkan kamar terisi dan kosong, penghuni aktif, tagihan bulan ini, dan pemasukan bulan ini.</li>
+        <li>Penghuni yang keluar: tekan <b>Keluar</b> di daftar penghuni — kamarnya langsung kosong dan bisa diisi penghuni baru.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
+    </div>
+    <div class="card">
+      <h3>Garansi</h3>
+      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Pemula 30 hari</b>, <b>Profesional 60 hari</b>, <b>Bisnis 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p style="font-size:14px">Data kamar, penghuni, dan pembayaran <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi). Data tidak tersinkron ke perangkat lain dan tidak bisa diakses dari HP atau laptop lain. Untuk pemakaian bersama oleh banyak pengelola di perangkat berbeda (multi-user lintas perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <div style="margin-top:14px">
+        <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Manajemen Kos-Kosan v1.</b> Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Pemula 30 hari / Profesional 60 hari / Bisnis 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Manajemen%20Kos-Kosan." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "manajemenKosKosan.v1";
+
+  function $(id) { return document.getElementById(id); }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function hariIniISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function bulanIni() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2);
+  }
+  function tanggalCantik(iso) {
+    var p = iso.split("-");
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    return Number(p[2]) + " " + bulan[Number(p[1]) - 1] + " " + p[0];
+  }
+  function bulanCantik(bulan) {
+    var p = bulan.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    return nama[Number(p[1]) - 1] + " " + p[0];
+  }
+
+  // ---------- Data contoh ----------
+  function dataContoh() {
+    var bln = bulanIni();
+    return {
+      nextKamarId: 11,
+      nextPenghuniId: 7,
+      nextTagihanId: 7,
+      kamar: [
+        { id: 1, nomor: "A1", tipe: "Standar", harga: 800000 },
+        { id: 2, nomor: "A2", tipe: "Standar", harga: 800000 },
+        { id: 3, nomor: "A3", tipe: "Standar", harga: 850000 },
+        { id: 4, nomor: "B1", tipe: "Deluxe", harga: 1200000 },
+        { id: 5, nomor: "B2", tipe: "Deluxe", harga: 1200000 },
+        { id: 6, nomor: "B3", tipe: "Deluxe", harga: 1250000 },
+        { id: 7, nomor: "C1", tipe: "Standar", harga: 750000 },
+        { id: 8, nomor: "C2", tipe: "Standar", harga: 750000 },
+        { id: 9, nomor: "D1", tipe: "Eksklusif", harga: 1800000 },
+        { id: 10, nomor: "D2", tipe: "Eksklusif", harga: 1800000 }
+      ],
+      penghuni: [
+        { id: 1, nama: "Budi Santoso", hp: "081234567001", kamar: "A1", tanggalMasuk: "2026-01-05", status: "Aktif" },
+        { id: 2, nama: "Siti Rahma", hp: "081234567002", kamar: "A2", tanggalMasuk: "2026-02-10", status: "Aktif" },
+        { id: 3, nama: "Agus Wijaya", hp: "081234567003", kamar: "B1", tanggalMasuk: "2025-11-20", status: "Aktif" },
+        { id: 4, nama: "Dewi Lestari", hp: "081234567004", kamar: "B3", tanggalMasuk: "2026-03-01", status: "Aktif" },
+        { id: 5, nama: "Rizky Pratama", hp: "081234567005", kamar: "C1", tanggalMasuk: "2026-04-15", status: "Aktif" },
+        { id: 6, nama: "Maya Putri", hp: "081234567006", kamar: "D1", tanggalMasuk: "2025-12-01", status: "Aktif" }
+      ],
+      tagihan: [
+        { id: 1, penghuniId: 1, nama: "Budi Santoso", kamar: "A1", bulan: bln, jumlah: 800000, jatuhTempo: bln + "-10", status: "Lunas" },
+        { id: 2, penghuniId: 2, nama: "Siti Rahma", kamar: "A2", bulan: bln, jumlah: 800000, jatuhTempo: bln + "-10", status: "Lunas" },
+        { id: 3, penghuniId: 3, nama: "Agus Wijaya", kamar: "B1", bulan: bln, jumlah: 1200000, jatuhTempo: bln + "-10", status: "Belum Lunas" },
+        { id: 4, penghuniId: 4, nama: "Dewi Lestari", kamar: "B3", bulan: bln, jumlah: 1250000, jatuhTempo: bln + "-10", status: "Lunas" },
+        { id: 5, penghuniId: 5, nama: "Rizky Pratama", kamar: "C1", bulan: bln, jumlah: 750000, jatuhTempo: bln + "-10", status: "Belum Lunas" },
+        { id: 6, penghuniId: 6, nama: "Maya Putri", kamar: "D1", bulan: bln, jumlah: 1800000, jatuhTempo: bln + "-10", status: "Belum Lunas" }
+      ]
+    };
+  }
+
+  // ---------- Penyimpanan ----------
+  var state = null;
+  function saveData() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.kamar && parsed.penghuni && parsed.tagihan) { state = parsed; return; }
+      }
+    } catch (e) { /* pakai data contoh */ }
+    state = dataContoh();
+    saveData();
+  }
+
+  // ---------- Util tampilan ----------
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    if (toastTimer) { clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  var modalCallback = null;
+  function mintaKonfirmasi(judul, isi, labelYa, cb) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalYa").textContent = labelYa;
+    modalCallback = cb;
+    $("modalBack").classList.add("open");
+  }
+  $("modalBatal").addEventListener("click", function () {
+    $("modalBack").classList.remove("open"); modalCallback = null;
+  });
+  $("modalBack").addEventListener("click", function (e) {
+    if (e.target === this) { this.classList.remove("open"); modalCallback = null; }
+  });
+  $("modalYa").addEventListener("click", function () {
+    $("modalBack").classList.remove("open");
+    var cb = modalCallback; modalCallback = null;
+    if (cb) { cb(); }
+  });
+
+  function cariKamar(nomor) {
+    for (var i = 0; i < state.kamar.length; i++) { if (state.kamar[i].nomor === nomor) { return state.kamar[i]; } }
+    return null;
+  }
+  function penghuniAktifDiKamar(nomor) {
+    for (var i = 0; i < state.penghuni.length; i++) {
+      if (state.penghuni[i].kamar === nomor && state.penghuni[i].status === "Aktif") { return state.penghuni[i]; }
+    }
+    return null;
+  }
+  function kamarKosong() {
+    return state.kamar.filter(function (k) { return !penghuniAktifDiKamar(k.nomor); });
+  }
+  function kelasTagihan(t) {
+    if (t.status === "Lunas") { return "st-lunas"; }
+    return t.jatuhTempo < hariIniISO() ? "st-telat" : "st-belum";
+  }
+  function labelTagihan(t) {
+    if (t.status === "Lunas") { return "Lunas"; }
+    return t.jatuhTempo < hariIniISO() ? "Telat" : "Belum Lunas";
+  }
+
+  // ---------- Tab ----------
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  function bukaTab(nama) {
+    tabBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () { bukaTab(btn.getAttribute("data-tab")); });
+  });
+
+  // ---------- Render ----------
+  function renderRingkasan() {
+    var bln = bulanIni();
+    var terisi = state.kamar.filter(function (k) { return penghuniAktifDiKamar(k.nomor); }).length;
+    var kosong = state.kamar.length - terisi;
+    var aktif = state.penghuni.filter(function (p) { return p.status === "Aktif"; }).length;
+    var tagihanBln = state.tagihan.filter(function (t) { return t.bulan === bln; });
+    var lunas = tagihanBln.filter(function (t) { return t.status === "Lunas"; }).length;
+    var pemasukan = tagihanBln.filter(function (t) { return t.status === "Lunas"; })
+      .reduce(function (s, t) { return s + Number(t.jumlah || 0); }, 0);
+    $("statTerisi").textContent = terisi;
+    $("statKosong").textContent = kosong;
+    $("statPenghuni").textContent = aktif;
+    $("statLunas").textContent = lunas + "/" + tagihanBln.length;
+    $("statPemasukan").textContent = rupiah(pemasukan);
+    $("judulRingkasan").textContent = "Ringkasan " + bulanCantik(bln);
+    var belum = tagihanBln.filter(function (t) { return t.status !== "Lunas"; });
+    belum.sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); });
+    var boxB = $("daftarBelumLunas");
+    if (!belum.length) {
+      boxB.innerHTML = "<div class=\"kosong\">Semua tagihan bulan ini sudah lunas.</div>";
+    } else {
+      boxB.innerHTML = belum.map(function (t) {
+        return "<div class=\"item\"><div class=\"atas\"><div>" +
+          "<div class=\"nama\">" + esc(t.nama) + " <span class=\"lencana " + kelasTagihan(t) + "\">" + labelTagihan(t) + "</span></div>" +
+          "<div class=\"detail\">Kamar " + esc(t.kamar) + " · Jatuh tempo " + esc(tanggalCantik(t.jatuhTempo)) + "</div></div>" +
+          "<span class=\"harga\">" + rupiah(t.jumlah) + "</span></div></div>";
+      }).join("");
+    }
+    var kosongList = kamarKosong();
+    var boxK = $("daftarKamarKosong");
+    if (!kosongList.length) {
+      boxK.innerHTML = "<div class=\"kosong\">Tidak ada kamar kosong saat ini.</div>";
+    } else {
+      boxK.innerHTML = kosongList.map(function (k) {
+        return "<div class=\"item\"><div class=\"atas\"><div>" +
+          "<div class=\"nama\">Kamar " + esc(k.nomor) + " <span class=\"lencana st-kosong\">Kosong</span></div>" +
+          "<div class=\"detail\">Tipe " + esc(k.tipe) + "</div></div>" +
+          "<span class=\"harga\">" + rupiah(k.harga) + "/bln</span></div></div>";
+      }).join("");
+    }
+    $("badgeTagihan").textContent = belum.length;
+  }
+
+  function renderKamar() {
+    var box = $("daftarKamar");
+    if (!state.kamar.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada kamar. Tambahkan kamar di atas.</div>";
+      return;
+    }
+    var daftar = state.kamar.slice().sort(function (a, b) { return a.nomor.localeCompare(b.nomor); });
+    box.innerHTML = daftar.map(function (k) {
+      var p = penghuniAktifDiKamar(k.nomor);
+      var st = p ? "Terisi" : "Kosong";
+      var cls = p ? "st-terisi" : "st-kosong";
+      var html = "<div class=\"item\" data-nomor=\"" + esc(k.nomor) + "\"><div class=\"atas\"><div>" +
+        "<div class=\"nama\">Kamar " + esc(k.nomor) + " <span class=\"lencana " + cls + "\">" + st + "</span></div>" +
+        "<div class=\"detail\">Tipe " + esc(k.tipe) + (p ? " · Dihuni " + esc(p.nama) : "") + "</div></div>" +
+        "<span class=\"harga\">" + rupiah(k.harga) + "/bln</span></div><div class=\"aksi\">" +
+        "<button class=\"btn kecil ghost\" data-aksi-kamar=\"ubah\" data-id=\"" + k.id + "\">Ubah</button>" +
+        "<button class=\"btn kecil merah\" data-aksi-kamar=\"hapus\" data-id=\"" + k.id + "\">Hapus</button>" +
+        "</div></div>";
+      return html;
+    }).join("");
+  }
+
+  function isiPilihanKamar(selectEl, sertakanNomor) {
+    var kosongList = kamarKosong();
+    var opsi = kosongList.map(function (k) {
+      return "<option value=\"" + esc(k.nomor) + "\">Kamar " + esc(k.nomor) + " — " + esc(k.tipe) + " (" + rupiah(k.harga) + "/bln)</option>";
+    });
+    if (sertakanNomor) {
+      var k = cariKamar(sertakanNomor);
+      if (k) {
+        opsi.unshift("<option value=\"" + esc(k.nomor) + "\">Kamar " + esc(k.nomor) + " — " + esc(k.tipe) + " (" + rupiah(k.harga) + "/bln) (saat ini)</option>");
+      }
+    }
+    selectEl.innerHTML = opsi.join("");
+    if (!opsi.length) {
+      selectEl.innerHTML = "<option value=\"\">Tidak ada kamar kosong</option>";
+    }
+  }
+
+  function renderPenghuni() {
+    isiPilihanKamar($("fKamarPenghuni"), null);
+    var fs = $("filterPenghuni").value;
+    var list = state.penghuni.filter(function (p) { return !fs || p.status === fs; });
+    var box = $("daftarPenghuni");
+    if (!list.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada penghuni" + (fs ? " dengan status " + esc(fs) : "") + ".</div>";
+      return;
+    }
+    box.innerHTML = list.map(function (p) {
+      var cls = p.status === "Aktif" ? "st-aktif" : "st-keluar";
+      var html = "<div class=\"item\" data-id=\"" + p.id + "\"><div class=\"atas\"><div>" +
+        "<div class=\"nama\">" + esc(p.nama) + " <span class=\"lencana " + cls + "\">" + esc(p.status) + "</span></div>" +
+        "<div class=\"detail\">Kamar " + esc(p.kamar) + " · Masuk " + esc(tanggalCantik(p.tanggalMasuk)) + (p.hp ? " · " + esc(p.hp) : "") + "</div></div></div><div class=\"aksi\">";
+      if (p.status === "Aktif") {
+        html += "<button class=\"btn kecil biru\" data-aksi-penghuni=\"keluar\" data-id=\"" + p.id + "\">Keluar</button>";
+      }
+      html += "<button class=\"btn kecil ghost\" data-aksi-penghuni=\"ubah\" data-id=\"" + p.id + "\">Ubah</button>" +
+        "<button class=\"btn kecil merah\" data-aksi-penghuni=\"hapus\" data-id=\"" + p.id + "\">Hapus</button>" +
+        "</div></div>";
+      return html;
+    }).join("");
+  }
+
+  function renderPembayaran() {
+    var bln = $("filterBulan").value || bulanIni();
+    var fs = $("filterStatusTagihan").value;
+    var list = state.tagihan.filter(function (t) {
+      return t.bulan === bln && (!fs || t.status === fs);
+    });
+    list.sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo) || a.nama.localeCompare(b.nama); });
+    var semua = state.tagihan.filter(function (t) { return t.bulan === bln; });
+    var lunas = semua.filter(function (t) { return t.status === "Lunas"; });
+    $("statBulanTagihan").textContent = semua.length;
+    $("statBulanLunas").textContent = lunas.length;
+    $("statBulanPemasukan").textContent = rupiah(lunas.reduce(function (s, t) { return s + Number(t.jumlah || 0); }, 0));
+    $("judulPembayaran").textContent = "Pembayaran — " + bulanCantik(bln);
+    var box = $("daftarTagihan");
+    if (!list.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada tagihan untuk " + esc(bulanCantik(bln)) + (fs ? " dengan status " + esc(fs) : "") + ". Tekan \"Buat Tagihan Bulan Ini\" untuk membuat tagihan penghuni aktif.</div>";
+      return;
+    }
+    box.innerHTML = list.map(function (t) {
+      var html = "<div class=\"item\" data-id=\"" + t.id + "\"><div class=\"atas\"><div>" +
+        "<div class=\"nama\">" + esc(t.nama) + " <span class=\"lencana " + kelasTagihan(t) + "\">" + labelTagihan(t) + "</span></div>" +
+        "<div class=\"detail\">Kamar " + esc(t.kamar) + " · " + esc(bulanCantik(t.bulan)) + " · Jatuh tempo " + esc(tanggalCantik(t.jatuhTempo)) + "</div></div>" +
+        "<span class=\"harga\">" + rupiah(t.jumlah) + "</span></div><div class=\"aksi\">";
+      if (t.status === "Lunas") {
+        html += "<button class=\"btn kecil ghost\" data-aksi-tagihan=\"batal-lunas\" data-id=\"" + t.id + "\">Batalkan Lunas</button>";
+      } else {
+        html += "<button class=\"btn kecil hijau\" data-aksi-tagihan=\"lunas\" data-id=\"" + t.id + "\">Tandai Lunas</button>";
+      }
+      html += "<button class=\"btn kecil merah\" data-aksi-tagihan=\"hapus\" data-id=\"" + t.id + "\">Hapus</button>" +
+        "</div></div>";
+      return html;
+    }).join("");
+  }
+
+  function renderSemua() {
+    renderRingkasan();
+    renderKamar();
+    renderPenghuni();
+    renderPembayaran();
+    saveData();
+  }
+
+  // ---------- Form kamar ----------
+  var sedangUbahKamarId = null;
+  $("formKamar").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nomor = $("fNomorKamar").value.trim().toUpperCase();
+    var tipe = $("fTipeKamar").value.trim();
+    var harga = Number($("fHargaKamar").value);
+    if (!nomor || !tipe || !(harga >= 0)) { toast("Lengkapi nomor, tipe, dan harga kamar."); return; }
+    if (sedangUbahKamarId) {
+      var k = state.kamar.find(function (x) { return x.id === sedangUbahKamarId; });
+      if (k) {
+        k.tipe = tipe; k.harga = harga;
+        toast("Kamar " + k.nomor + " berhasil diubah.");
+      }
+      sedangUbahKamarId = null;
+      $("judulFormKamar").textContent = "Tambah Kamar";
+      $("btnSimpanKamar").textContent = "Simpan Kamar";
+      $("btnBatalUbahKamar").style.display = "none";
+      $("fNomorKamar").disabled = false;
+    } else {
+      if (cariKamar(nomor)) { toast("Nomor kamar " + nomor + " sudah ada."); return; }
+      state.kamar.push({ id: state.nextKamarId++, nomor: nomor, tipe: tipe, harga: harga });
+      toast("Kamar " + nomor + " ditambahkan.");
+    }
+    $("formKamar").reset();
+    renderSemua();
+  });
+  $("btnBatalUbahKamar").addEventListener("click", function () {
+    sedangUbahKamarId = null;
+    $("formKamar").reset();
+    $("fNomorKamar").disabled = false;
+    $("judulFormKamar").textContent = "Tambah Kamar";
+    $("btnSimpanKamar").textContent = "Simpan Kamar";
+    $("btnBatalUbahKamar").style.display = "none";
+  });
+  $("daftarKamar").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-kamar]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-id"));
+    var aksi = btn.getAttribute("data-aksi-kamar");
+    var k = state.kamar.find(function (x) { return x.id === id; });
+    if (!k) { return; }
+    if (aksi === "ubah") {
+      sedangUbahKamarId = k.id;
+      $("fNomorKamar").value = k.nomor;
+      $("fNomorKamar").disabled = true;
+      $("fTipeKamar").value = k.tipe;
+      $("fHargaKamar").value = k.harga;
+      $("judulFormKamar").textContent = "Ubah Kamar — " + k.nomor;
+      $("btnSimpanKamar").textContent = "Simpan Perubahan";
+      $("btnBatalUbahKamar").style.display = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (aksi === "hapus") {
+      if (penghuniAktifDiKamar(k.nomor)) { toast("Kamar " + k.nomor + " masih terisi — tidak bisa dihapus."); return; }
+      mintaKonfirmasi("Hapus kamar?", "Kamar " + k.nomor + " (" + k.tipe + ") akan dihapus.", "Ya, hapus", function () {
+        state.kamar = state.kamar.filter(function (x) { return x.id !== id; });
+        renderSemua(); toast("Kamar " + k.nomor + " dihapus.");
+      });
+    }
+  });
+
+  // ---------- Form penghuni ----------
+  var sedangUbahPenghuniId = null;
+  $("formPenghuni").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNamaPenghuni").value.trim();
+    var kamarNomor = $("fKamarPenghuni").value;
+    var tgl = $("fTanggalMasuk").value;
+    if (!nama || !kamarNomor || !tgl) { toast("Lengkapi nama, kamar, dan tanggal masuk."); return; }
+    if (sedangUbahPenghuniId) {
+      var p = state.penghuni.find(function (x) { return x.id === sedangUbahPenghuniId; });
+      if (p) {
+        p.nama = nama; p.hp = $("fHpPenghuni").value.trim();
+        p.kamar = kamarNomor; p.tanggalMasuk = tgl;
+        toast("Penghuni " + p.nama + " berhasil diubah.");
+      }
+      sedangUbahPenghuniId = null;
+      $("judulFormPenghuni").textContent = "Tambah Penghuni";
+      $("btnSimpanPenghuni").textContent = "Simpan Penghuni";
+      $("btnBatalUbahPenghuni").style.display = "none";
+    } else {
+      if (penghuniAktifDiKamar(kamarNomor)) { toast("Kamar " + kamarNomor + " sudah terisi."); return; }
+      state.penghuni.push({
+        id: state.nextPenghuniId++, nama: nama, hp: $("fHpPenghuni").value.trim(),
+        kamar: kamarNomor, tanggalMasuk: tgl, status: "Aktif"
+      });
+      toast("Penghuni " + nama + " ditambahkan ke kamar " + kamarNomor + ".");
+    }
+    $("formPenghuni").reset();
+    $("fTanggalMasuk").value = hariIniISO();
+    renderSemua();
+  });
+  $("btnBatalUbahPenghuni").addEventListener("click", function () {
+    sedangUbahPenghuniId = null;
+    $("formPenghuni").reset();
+    $("fTanggalMasuk").value = hariIniISO();
+    $("judulFormPenghuni").textContent = "Tambah Penghuni";
+    $("btnSimpanPenghuni").textContent = "Simpan Penghuni";
+    $("btnBatalUbahPenghuni").style.display = "none";
+  });
+  $("daftarPenghuni").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-penghuni]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-id"));
+    var aksi = btn.getAttribute("data-aksi-penghuni");
+    var p = state.penghuni.find(function (x) { return x.id === id; });
+    if (!p) { return; }
+    if (aksi === "keluar") {
+      mintaKonfirmasi("Penghuni keluar?", p.nama + " (kamar " + p.kamar + ") akan dicatat keluar. Kamarnya langsung kosong dan bisa diisi penghuni baru.", "Ya, catat keluar", function () {
+        p.status = "Keluar"; renderSemua(); toast(p.nama + " dicatat keluar. Kamar " + p.kamar + " kini kosong.");
+      });
+    } else if (aksi === "ubah") {
+      sedangUbahPenghuniId = p.id;
+      $("fNamaPenghuni").value = p.nama;
+      $("fHpPenghuni").value = p.hp || "";
+      isiPilihanKamar($("fKamarPenghuni"), p.kamar);
+      $("fKamarPenghuni").value = p.kamar;
+      $("fTanggalMasuk").value = p.tanggalMasuk;
+      $("judulFormPenghuni").textContent = "Ubah Penghuni — " + p.nama;
+      $("btnSimpanPenghuni").textContent = "Simpan Perubahan";
+      $("btnBatalUbahPenghuni").style.display = "";
+      bukaTab("penghuni");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (aksi === "hapus") {
+      mintaKonfirmasi("Hapus penghuni?", "Data " + p.nama + " (kamar " + p.kamar + ") akan dihapus permanen. Tagihan yang sudah dibuat tidak ikut terhapus.", "Ya, hapus", function () {
+        state.penghuni = state.penghuni.filter(function (x) { return x.id !== id; });
+        renderSemua(); toast("Penghuni " + p.nama + " dihapus.");
+      });
+    }
+  });
+  $("filterPenghuni").addEventListener("change", renderPenghuni);
+
+  // ---------- Pembayaran ----------
+  $("btnBuatTagihan").addEventListener("click", function () {
+    var bln = $("filterBulan").value || bulanIni();
+    var dibuat = 0, sudah = 0;
+    state.penghuni.forEach(function (p) {
+      if (p.status !== "Aktif") { return; }
+      var ada = state.tagihan.some(function (t) { return t.penghuniId === p.id && t.bulan === bln; });
+      if (ada) { sudah++; return; }
+      var k = cariKamar(p.kamar);
+      state.tagihan.push({
+        id: state.nextTagihanId++, penghuniId: p.id, nama: p.nama, kamar: p.kamar,
+        bulan: bln, jumlah: k ? k.harga : 0, jatuhTempo: bln + "-10", status: "Belum Lunas"
+      });
+      dibuat++;
+    });
+    renderSemua();
+    if (dibuat > 0) {
+      toast(dibuat + " tagihan " + bulanCantik(bln) + " dibuat." + (sudah ? " " + sudah + " sudah ada sebelumnya." : ""));
+    } else {
+      toast("Semua penghuni aktif sudah punya tagihan " + bulanCantik(bln) + ".");
+    }
+  });
+  $("daftarTagihan").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-tagihan]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-id"));
+    var aksi = btn.getAttribute("data-aksi-tagihan");
+    var t = state.tagihan.find(function (x) { return x.id === id; });
+    if (!t) { return; }
+    if (aksi === "lunas") {
+      t.status = "Lunas"; renderSemua(); toast("Tagihan " + t.nama + " (" + bulanCantik(t.bulan) + ") lunas. Pemasukan tercatat.");
+    } else if (aksi === "batal-lunas") {
+      t.status = "Belum Lunas"; renderSemua(); toast("Tagihan " + t.nama + " dikembalikan ke Belum Lunas.");
+    } else if (aksi === "hapus") {
+      mintaKonfirmasi("Hapus tagihan?", "Tagihan " + t.nama + " (" + bulanCantik(t.bulan) + ", " + rupiah(t.jumlah) + ") akan dihapus.", "Ya, hapus", function () {
+        state.tagihan = state.tagihan.filter(function (x) { return x.id !== id; });
+        renderSemua(); toast("Tagihan dihapus.");
+      });
+    }
+  });
+  $("filterBulan").addEventListener("change", renderPembayaran);
+  $("filterStatusTagihan").addEventListener("change", renderPembayaran);
+
+  // ---------- Reset data contoh ----------
+  $("btnResetData").addEventListener("click", function () {
+    mintaKonfirmasi("Kembalikan data contoh?", "Semua data kamar, penghuni, dan pembayaran akan diganti dengan data contoh awal.", "Ya, kembalikan", function () {
+      state = dataContoh();
+      sedangUbahKamarId = null;
+      sedangUbahPenghuniId = null;
+      $("formKamar").reset();
+      $("formPenghuni").reset();
+      $("fNomorKamar").disabled = false;
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- MULAI ----------
+  var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  var skrg = new Date();
+  $("tanggalHariIni").textContent = hari[skrg.getDay()] + ", " + skrg.getDate() + " " + bulan[skrg.getMonth()] + " " + skrg.getFullYear();
+  $("filterBulan").value = bulanIni();
+  $("fTanggalMasuk").value = hariIniISO();
+  loadData();
+  renderSemua();
+})();
+</script>
+</body>
+</html>
