@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Organizer</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.accent .sub { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · EVENT ORGANIZER</span>
+    <h1>Event <span class="aksen">Organizer</span></h1>
+    <p>Data acara dan klien, anggaran acara, jadwal dan rundown, vendor dan tim, checklist acara, serta laporan acara — dalam satu aplikasi untuk event organizer dan penyelenggara acara.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="acara">Acara <span class="badge" id="badgeAcara">0</span></button>
+    <button class="tab-btn" type="button" data-tab="anggaran">Anggaran</button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal</button>
+    <button class="tab-btn" type="button" data-tab="vendor">Vendor</button>
+    <button class="tab-btn" type="button" data-tab="checklist">Checklist</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Event</h2><p>Ringkasan acara, nilai kontrak, biaya, laba, dan progres checklist bulan ini.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Nilai Kontrak</div><div class="angka" id="dKontrak" style="font-size:22px">Rp0</div><div class="sub" id="dKontrakSub"></div></div>
+      <div class="stat"><div class="label">Total Biaya</div><div class="angka" id="dBiaya" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaSub"></div></div>
+      <div class="stat"><div class="label">Laba</div><div class="angka" id="dLaba" style="font-size:22px">Rp0</div><div class="sub" id="dLabaSub"></div></div>
+      <div class="stat"><div class="label">Total Acara</div><div class="angka" id="dAcara" style="font-size:22px">0</div><div class="sub" id="dAcaraSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Acara Hari Ini</div><div class="angka" id="dHariIni" style="font-size:22px">0</div><div class="sub" id="dHariIniSub"></div></div>
+      <div class="stat warn"><div class="label">Acara Segera (1–7 hari)</div><div class="angka" id="dSegera" style="font-size:22px">0</div><div class="sub" id="dSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Acara Lewat</div><div class="angka" id="dLewat" style="font-size:22px">0</div><div class="sub" id="dLewatSub"></div></div>
+      <div class="stat"><div class="label">Checklist Selesai</div><div class="angka" id="dChecklist" style="font-size:22px">0</div><div class="sub" id="dChecklistSub"></div></div>
+    </div>
+    <div class="card"><h3>Acara Terdekat</h3><p class="sub">Acara hari ini dan 7 hari ke depan beserta nilai kontrak dan progres checklist.</p><div id="daftarAcaraDekat"></div></div>
+    <div class="card"><h3>Progres Checklist per Acara</h3><p class="sub">Persentase checklist yang sudah selesai untuk setiap acara.</p><div id="daftarProgres"></div></div>
+    <div class="card">
+      <h3>Aksi Cepat</h3>
+      <p class="sub">Buat acara baru, buka checklist, atau lihat jadwal dan rundown.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeAcara" type="button">Buat Acara</button>
+        <button class="btn kecil hijau" id="btnKeChecklist" type="button">Buka Checklist</button>
+        <button class="btn kecil biru" id="btnKeJadwal" type="button">Lihat Jadwal</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Koordinator.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: budi"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Budi Santoso"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: budi123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="koordinator">Koordinator</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-acara">
+    <div class="page-head"><h2>Acara</h2><p>Data acara dan klien. Laba = nilai kontrak − total biaya anggaran. Peringatan muncul bila biaya melebihi nilai kontrak.</p></div>
+    <div class="card hanya-kelola" id="cardTambahAcara">
+      <h3>Tambah Acara</h3>
+      <p class="sub">Acara baru dimulai dengan status Perencanaan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="acNama">Nama acara</label><input id="acNama" type="text" placeholder="cth: Pernikahan Andi &amp; Sari"></div>
+        <div class="field"><label for="acKlien">Klien</label><select id="acKlien"></select></div>
+        <div class="field"><label for="acTanggal">Tanggal acara</label><input id="acTanggal" type="date"></div>
+        <div class="field"><label for="acLokasi">Lokasi</label><input id="acLokasi" type="text" placeholder="cth: Gedung Serbaguna Jakarta"></div>
+        <div class="field"><label for="acKontrak">Nilai kontrak (Rp)</label><input id="acKontrak" type="number" min="0" step="50000" placeholder="cth: 85000000"></div>
+        <div class="field"><label for="acKoordinator">Koordinator (penanggung jawab)</label><select id="acKoordinator"></select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahAcara" type="button">Simpan Acara</button>
+    </div>
+    <div class="card hanya-kelola" id="cardTambahKlien">
+      <h3>Tambah Klien</h3>
+      <p class="sub">Klien baru langsung bisa dipilih saat membuat acara.</p>
+      <div class="form-grid">
+        <div class="field"><label for="klNama">Nama klien / penanggung jawab</label><input id="klNama" type="text" placeholder="cth: Andi Pratama"></div>
+        <div class="field"><label for="klPerusahaan">Perusahaan / organisasi</label><input id="klPerusahaan" type="text" placeholder="cth: PT Kreasi Digital (kosongkan bila perorangan)"></div>
+        <div class="field"><label for="klTelepon">Nomor telepon</label><input id="klTelepon" type="text" placeholder="cth: 0812-1111-0001"></div>
+        <div class="field"><label for="klEmail">Email (opsional)</label><input id="klEmail" type="text" placeholder="cth: andi@mail.com"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahKlien" type="button">Simpan Klien</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Klien</h3>
+      <p class="sub" id="ringkasanKlien"></p>
+      <div id="daftarKlien"></div>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fAcara">Filter status</label><select id="fAcara">
+          <option value="semua">Semua acara</option>
+          <option value="Perencanaan">Perencanaan</option>
+          <option value="Berjalan">Berjalan</option>
+          <option value="Selesai">Selesai</option>
+          <option value="Dibatalkan">Dibatalkan</option>
+        </select></div>
+        <div class="field"><label for="fAcaraKategori">Filter kategori tanggal</label><select id="fAcaraKategori">
+          <option value="semua">Semua kategori</option>
+          <option value="Hari Ini">Hari Ini</option>
+          <option value="Segera">Segera (1–7 hari)</option>
+          <option value="Mendatang">Mendatang (&gt; 7 hari)</option>
+          <option value="Lewat">Lewat</option>
+          <option value="Selesai">Selesai</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanAcara"></p>
+      <div id="daftarAcara"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-anggaran">
+    <div class="page-head"><h2>Anggaran Acara</h2><p>Item biaya per acara. Total biaya dibandingkan dengan nilai kontrak — laba = kontrak − biaya. Bila biaya melebihi kontrak, muncul peringatan.</p></div>
+    <div class="card hanya-kelola" id="cardTambahAnggaran">
+      <h3>Tambah Item Anggaran</h3>
+      <p class="sub">Biaya vendor dicatat di sini sebagai item anggaran agar total biaya tidak dobel hitung.</p>
+      <div class="form-grid">
+        <div class="field"><label for="agAcara">Acara</label><select id="agAcara"></select></div>
+        <div class="field"><label for="agItem">Item biaya</label><input id="agItem" type="text" placeholder="cth: Catering"></div>
+        <div class="field"><label for="agKategori">Kategori</label><select id="agKategori">
+          <option value="Venue">Venue</option>
+          <option value="Dekorasi">Dekorasi</option>
+          <option value="Catering">Catering</option>
+          <option value="Sound & Lighting">Sound &amp; Lighting</option>
+          <option value="Dokumentasi">Dokumentasi</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="agJumlah">Jumlah (Rp)</label><input id="agJumlah" type="number" min="0" step="50000" placeholder="cth: 25000000"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahAnggaran" type="button">Simpan Item Anggaran</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fAnggaranAcara">Filter acara</label><select id="fAnggaranAcara">
+          <option value="semua">Semua acara</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanAnggaran"></p>
+      <div id="daftarAnggaran"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal &amp; Rundown</h2><p>Rundown per acara, diurutkan berdasarkan jam. Jam yang sama untuk acara yang sama ditolak (bentrok).</p></div>
+    <div class="card hanya-kelola" id="cardTambahJadwal">
+      <h3>Tambah Rundown</h3>
+      <p class="sub">Satu jam hanya boleh dipakai satu kegiatan dalam satu acara.</p>
+      <div class="form-grid">
+        <div class="field"><label for="jdAcara">Acara</label><select id="jdAcara"></select></div>
+        <div class="field"><label for="jdJam">Jam</label><input id="jdJam" type="time"></div>
+        <div class="field"><label for="jdKegiatan">Kegiatan</label><input id="jdKegiatan" type="text" placeholder="cth: Gladi resik"></div>
+        <div class="field"><label for="jdPenanggungJawab">Penanggung jawab</label><input id="jdPenanggungJawab" type="text" placeholder="cth: Budi Santoso"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahJadwal" type="button">Simpan Rundown</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJadwalAcara">Filter acara</label><select id="fJadwalAcara">
+          <option value="semua">Semua acara</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div id="daftarJadwal"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-vendor">
+    <div class="page-head"><h2>Vendor &amp; Tim</h2><p>Vendor per acara beserta biaya dan statusnya, serta anggota tim EO. Biaya vendor sudah tercakup dalam item anggaran, jadi total biaya dihitung dari anggaran saja.</p></div>
+    <div class="card hanya-kelola" id="cardTambahVendor">
+      <h3>Tambah Vendor</h3>
+      <p class="sub">Biaya vendor di sini bersifat informatif — pastikan ada item anggaran yang sesuai agar laporan biaya tetap benar.</p>
+      <div class="form-grid">
+        <div class="field"><label for="vdAcara">Acara</label><select id="vdAcara"></select></div>
+        <div class="field"><label for="vdNama">Nama vendor</label><input id="vdNama" type="text" placeholder="cth: Rasa Catering"></div>
+        <div class="field"><label for="vdLayanan">Layanan</label><input id="vdLayanan" type="text" placeholder="cth: Catering"></div>
+        <div class="field"><label for="vdBiaya">Biaya (Rp)</label><input id="vdBiaya" type="number" min="0" step="50000" placeholder="cth: 30000000"></div>
+        <div class="field"><label for="vdStatus">Status</label><select id="vdStatus">
+          <option value="Dipesan">Dipesan</option>
+          <option value="Dikonfirmasi">Dikonfirmasi</option>
+          <option value="Selesai">Selesai</option>
+        </select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahVendor" type="button">Simpan Vendor</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fVendorAcara">Filter acara</label><select id="fVendorAcara">
+          <option value="semua">Semua acara</option>
+        </select></div>
+        <div class="field"><label for="fVendorStatus">Filter status vendor</label><select id="fVendorStatus">
+          <option value="semua">Semua status</option>
+          <option value="Dipesan">Dipesan</option>
+          <option value="Dikonfirmasi">Dikonfirmasi</option>
+          <option value="Selesai">Selesai</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanVendor"></p>
+      <div id="daftarVendor"></div>
+    </div>
+    <div class="card hanya-kelola" id="cardTambahTim">
+      <h3>Tambah Anggota Tim</h3>
+      <p class="sub">Tim EO yang bisa ditugaskan sebagai penanggung jawab rundown dan checklist.</p>
+      <div class="form-grid">
+        <div class="field"><label for="tmNama">Nama anggota tim</label><input id="tmNama" type="text" placeholder="cth: Agus Wijaya"></div>
+        <div class="field"><label for="tmPeran">Peran</label><input id="tmPeran" type="text" placeholder="cth: Teknisi"></div>
+        <div class="field"><label for="tmTelepon">Nomor telepon</label><input id="tmTelepon" type="text" placeholder="cth: 0812-9999-0005"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahTim" type="button">Simpan Anggota Tim</button>
+    </div>
+    <div class="card">
+      <h3>Anggota Tim</h3>
+      <p class="sub" id="ringkasanTim"></p>
+      <div id="daftarTim"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-checklist">
+    <div class="page-head"><h2>Checklist Acara</h2><p>Checklist persiapan per acara. Koordinator boleh menandai checklist acaranya sendiri sebagai selesai.</p></div>
+    <div class="card hanya-kelola" id="cardTambahChecklist">
+      <h3>Tambah Item Checklist</h3>
+      <p class="sub">Item baru dimulai dengan status Belum selesai.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ckAcara">Acara</label><select id="ckAcara"></select></div>
+        <div class="field"><label for="ckItem">Item checklist</label><input id="ckItem" type="text" placeholder="cth: Venue dipesan"></div>
+        <div class="field"><label for="ckPenanggungJawab">Penanggung jawab</label><input id="ckPenanggungJawab" type="text" placeholder="cth: Budi Santoso"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahChecklist" type="button">Simpan Item Checklist</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fChecklistAcara">Filter acara</label><select id="fChecklistAcara">
+          <option value="semua">Semua acara</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanChecklist"></p>
+      <div id="daftarChecklist"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Acara</h2><p>Rekap nilai kontrak, biaya, dan laba per klien, per bulan, dan per acara — serta ekspor acara ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Klien</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKlien"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Acara</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerAcara"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor acara bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Acara</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Event Organizer.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Acara</b> untuk mencatat klien lalu membuat acara (nama, tanggal, lokasi, nilai kontrak, koordinator). Laba = nilai kontrak − total biaya anggaran; bila biaya melebihi kontrak muncul peringatan.</li>
+        <li>Buka tab <b>Anggaran</b> untuk mencatat item biaya per acara. Biaya vendor dicatat di sini juga sebagai item anggaran agar total biaya tidak dobel hitung.</li>
+        <li>Buka tab <b>Jadwal</b> untuk menyusun rundown per acara. Jam yang sama dalam satu acara ditolak karena bentrok.</li>
+        <li>Buka tab <b>Vendor</b> untuk mencatat vendor per acara dan anggota tim EO.</li>
+        <li>Buka tab <b>Checklist</b> untuk memantau persiapan per acara. Koordinator boleh menandai checklist acaranya sendiri sebagai selesai.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap kontrak, biaya, dan laba per klien, per bulan, dan per acara, serta ekspor acara ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola acara, klien, anggaran, jadwal, vendor, tim, checklist, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Koordinator</b> — hanya melihat acara yang ditugaskan kepadanya beserta jadwal, rundown, dan checklist-nya; boleh menandai checklist acaranya selesai. Tidak bisa mengubah anggaran, menambah acara, atau kelola pengguna.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis — nilai kontrak hanya dicatat, pembayarannya tetap di luar aplikasi.</li>
+        <li>Total biaya dihitung dari item anggaran saja. Biaya vendor bersifat informatif dan sudah tercakup dalam anggaran — bila vendor dicatat tanpa item anggaran yang sesuai, laporan biaya akan kurang dari biaya sebenarnya.</li>
+        <li>Acara yang sudah Selesai atau Dibatalkan tidak masuk kategori Lewat, dan tanggalnya tetap tercatat untuk laporan per bulan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Koordinator — <b>koordinator / koordinator123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Event Organizer — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">JASA · EVENT ORGANIZER</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data acara dan klien, anggaran acara, jadwal dan rundown, vendor dan tim, checklist acara, serta laporan acara.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Koordinator — <b>koordinator / koordinator123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function persenSatu(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%"; }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "eventOrganizer.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini) ----------
+     Diuji silang Python (/tmp/cek_eo.py).
+       Acara 6: A1 Pernikahan Andi & Sari, klien Andi Pratama, +3, kontrak 85jt, Perencanaan, koordinator;
+         A2 Seminar Digital Marketing 2026, PT Kreasi Digital, +7, 120jt, Perencanaan, koordinator;
+         A3 Konser Amal Suara untuk Negeri, Yayasan Peduli Bangsa, +14, 250jt, Perencanaan, manajer;
+         A4 Peluncuran Produk XYZ Phone, PT Teknologi Maju, -2, 95jt, Berjalan, manajer;
+         A5 Gathering Perusahaan Tahunan, PT Sinar Abadi, -10, 60jt, Selesai, koordinator;
+         A6 Pameran Otomotif 2026, PT Auto Prima, +21, 180jt, Perencanaan, manajer.
+         Kontrak total Rp790.000.000. Status: Perencanaan 4, Berjalan 1, Selesai 1, Dibatalkan 0.
+         Kategori tanggal: Hari Ini 0, Segera (1-7 hari) 2, Mendatang 2, Lewat 1 (A4), Selesai 1 (A5).
+       Anggaran 23 item, total Rp575.000.000 (A1 90jt, A2 79jt, A3 175jt, A4 50jt, A5 41jt, A6 140jt).
+         Laba total Rp215.000.000. A1 MELEBIHI anggaran Rp5.000.000 (peringatan).
+       Jadwal/rundown 26 item. Vendor 8 (biaya total Rp196.000.000 — informatif, sudah tercakup di anggaran).
+       Tim 5 anggota. Checklist 29 item, selesai 17 (58,6%).
+       Koordinator (A1, A2, A5): kontrak 265jt, biaya 210jt, laba 55jt, checklist 10/15.
+       Per bulan: Nov 4 acara (kontrak 360jt), Des 2 acara (kontrak 430jt).
+       CSV acara: Nov 4 baris + header = 5; semua 6 baris + header = 7. */
+  function seedState() {
+    var klien = [
+      { id: 1, nama: "Andi Pratama", perusahaan: "", telepon: "0812-1111-0001", email: "andi@mail.com" },
+      { id: 2, nama: "Ratna Wijaya", perusahaan: "PT Kreasi Digital", telepon: "0812-2222-0002", email: "ratna@kreasidigital.id" },
+      { id: 3, nama: "Hendra Gunawan", perusahaan: "Yayasan Peduli Bangsa", telepon: "0812-3333-0003", email: "hendra@pedulibangsa.org" },
+      { id: 4, nama: "Sinta Maharani", perusahaan: "PT Teknologi Maju", telepon: "0812-4444-0004", email: "sinta@teknologimaju.id" },
+      { id: 5, nama: "Bambang Riyanto", perusahaan: "PT Sinar Abadi", telepon: "0812-5555-0005", email: "bambang@sinarabadi.id" },
+      { id: 6, nama: "Dewi Lestari", perusahaan: "PT Auto Prima", telepon: "0812-6666-0006", email: "dewi@autoprima.id" }
+    ];
+    function ac(id, nama, klienId, delta, lokasi, kontrak, status, koordinator) {
+      return { id: id, nama: nama, klienId: klienId, tanggal: kunciPlus(delta), lokasi: lokasi, kontrak: kontrak, status: status, koordinator: koordinator };
+    }
+    var acara = [
+      ac(1, "Pernikahan Andi & Sari", 1, 3, "Gedung Serbaguna Jakarta", 85000000, "Perencanaan", "koordinator"),
+      ac(2, "Seminar Digital Marketing 2026", 2, 7, "Hotel Grand Sahid", 120000000, "Perencanaan", "koordinator"),
+      ac(3, "Konser Amal Suara untuk Negeri", 3, 14, "Istora Senayan", 250000000, "Perencanaan", "manajer"),
+      ac(4, "Peluncuran Produk XYZ Phone", 4, -2, "Jakarta Convention Center", 95000000, "Berjalan", "manajer"),
+      ac(5, "Gathering Perusahaan Tahunan", 5, -10, "Taman Mini Indonesia Indah", 60000000, "Selesai", "koordinator"),
+      ac(6, "Pameran Otomotif 2026", 6, 21, "JIExpo Kemayoran", 180000000, "Perencanaan", "manajer")
+    ];
+    function ag(id, acaraId, item, kategori, jumlah) {
+      return { id: id, acaraId: acaraId, item: item, kategori: kategori, jumlah: jumlah };
+    }
+    var anggaran = [
+      ag(1, 1, "Venue", "Venue", 25000000),
+      ag(2, 1, "Dekorasi", "Dekorasi", 15000000),
+      ag(3, 1, "Catering", "Catering", 30000000),
+      ag(4, 1, "Dokumentasi", "Dokumentasi", 8000000),
+      ag(5, 1, "Sound & Lighting", "Sound & Lighting", 12000000),
+      ag(6, 2, "Venue", "Venue", 30000000),
+      ag(7, 2, "Sound & Lighting", "Sound & Lighting", 18000000),
+      ag(8, 2, "Catering", "Catering", 25000000),
+      ag(9, 2, "Dokumentasi", "Dokumentasi", 6000000),
+      ag(10, 3, "Venue", "Venue", 60000000),
+      ag(11, 3, "Sound & Lighting", "Sound & Lighting", 45000000),
+      ag(12, 3, "Dekorasi", "Dekorasi", 30000000),
+      ag(13, 3, "Catering", "Catering", 40000000),
+      ag(14, 4, "Venue", "Venue", 28000000),
+      ag(15, 4, "Dekorasi", "Dekorasi", 12000000),
+      ag(16, 4, "Dokumentasi", "Dokumentasi", 10000000),
+      ag(17, 5, "Venue", "Venue", 15000000),
+      ag(18, 5, "Catering", "Catering", 18000000),
+      ag(19, 5, "Dekorasi", "Dekorasi", 8000000),
+      ag(20, 6, "Venue", "Venue", 50000000),
+      ag(21, 6, "Sound & Lighting", "Sound & Lighting", 35000000),
+      ag(22, 6, "Dekorasi", "Dekorasi", 25000000),
+      ag(23, 6, "Catering", "Catering", 30000000)
+    ];
+    function jd(id, acaraId, jam, kegiatan, penanggungJawab) {
+      return { id: id, acaraId: acaraId, jam: jam, kegiatan: kegiatan, penanggungJawab: penanggungJawab };
+    }
+    var jadwal = [
+      jd(1, 1, "07:00", "Persiapan venue", "Budi Santoso"),
+      jd(2, 1, "09:00", "Gladi resik", "Sinta Maharani"),
+      jd(3, 1, "10:00", "Akad nikah", "Budi Santoso"),
+      jd(4, 1, "12:00", "Resepsi makan siang", "Sinta Maharani"),
+      jd(5, 1, "15:00", "Sesi foto keluarga", "Dedi Kurniawan"),
+      jd(6, 2, "08:00", "Registrasi peserta", "Sinta Maharani"),
+      jd(7, 2, "09:00", "Pembukaan", "Dedi Kurniawan"),
+      jd(8, 2, "10:30", "Sesi materi 1", "Budi Santoso"),
+      jd(9, 2, "13:00", "Istirahat & makan siang", "Sinta Maharani"),
+      jd(10, 2, "14:00", "Sesi materi 2", "Dedi Kurniawan"),
+      jd(11, 3, "15:00", "Sound check", "Budi Santoso"),
+      jd(12, 3, "17:00", "Pintu dibuka", "Sinta Maharani"),
+      jd(13, 3, "18:00", "Penampilan pembuka", "Dedi Kurniawan"),
+      jd(14, 3, "19:30", "Penampilan utama", "Budi Santoso"),
+      jd(15, 3, "21:00", "Penutupan & donasi", "Sinta Maharani"),
+      jd(16, 4, "08:00", "Persiapan panggung", "Dedi Kurniawan"),
+      jd(17, 4, "10:00", "Konferensi pers", "Sinta Maharani"),
+      jd(18, 4, "11:00", "Demo produk", "Budi Santoso"),
+      jd(19, 5, "09:00", "Registrasi", "Sinta Maharani"),
+      jd(20, 5, "10:00", "Sambutan direksi", "Dedi Kurniawan"),
+      jd(21, 5, "12:00", "Makan siang bersama", "Budi Santoso"),
+      jd(22, 5, "14:00", "Games & doorprize", "Sinta Maharani"),
+      jd(23, 6, "09:00", "Pembukaan pameran", "Dedi Kurniawan"),
+      jd(24, 6, "10:00", "Test drive", "Budi Santoso"),
+      jd(25, 6, "13:00", "Sesi tanya jawab", "Sinta Maharani"),
+      jd(26, 6, "16:00", "Penutupan hari pertama", "Dedi Kurniawan")
+    ];
+    function vd(id, acaraId, nama, layanan, biaya, status) {
+      return { id: id, acaraId: acaraId, nama: nama, layanan: layanan, biaya: biaya, status: status };
+    }
+    var vendor = [
+      vd(1, 1, "Rasa Catering", "Catering", 30000000, "Dikonfirmasi"),
+      vd(2, 1, "Dekor Indah", "Dekorasi", 15000000, "Selesai"),
+      vd(3, 2, "AudioPro", "Sound & Lighting", 18000000, "Dikonfirmasi"),
+      vd(4, 3, "Panggung Jaya", "Sound & Lighting", 45000000, "Dipesan"),
+      vd(5, 4, "Lensa Foto", "Dokumentasi", 10000000, "Selesai"),
+      vd(6, 5, "Rasa Catering", "Catering", 18000000, "Selesai"),
+      vd(7, 6, "Dekor Indah", "Dekorasi", 25000000, "Dikonfirmasi"),
+      vd(8, 6, "AudioPro", "Sound & Lighting", 35000000, "Dipesan")
+    ];
+    var tim = [
+      { id: 1, nama: "Budi Santoso", peran: "Koordinator Lapangan", telepon: "0812-9000-0001" },
+      { id: 2, nama: "Sinta Maharani", peran: "Koordinator Acara", telepon: "0812-9000-0002" },
+      { id: 3, nama: "Dedi Kurniawan", peran: "Manajer Produksi", telepon: "0812-9000-0003" },
+      { id: 4, nama: "Rina Kusuma", peran: "Administrasi", telepon: "0812-9000-0004" },
+      { id: 5, nama: "Agus Wijaya", peran: "Teknisi", telepon: "0812-9000-0005" }
+    ];
+    function ck(id, acaraId, item, penanggungJawab, selesai) {
+      return { id: id, acaraId: acaraId, item: item, penanggungJawab: penanggungJawab, selesai: !!selesai };
+    }
+    var checklist = [
+      ck(1, 1, "Venue dipesan", "Budi Santoso", true),
+      ck(2, 1, "Undangan disebar", "Sinta Maharani", true),
+      ck(3, 1, "Catering dikonfirmasi", "Budi Santoso", true),
+      ck(4, 1, "Dekorasi selesai", "Sinta Maharani", false),
+      ck(5, 1, "Sound check", "Agus Wijaya", false),
+      ck(6, 1, "Dokumentasi siap", "Dedi Kurniawan", false),
+      ck(7, 2, "Materi pembicara diterima", "Sinta Maharani", true),
+      ck(8, 2, "Registrasi online dibuka", "Rina Kusuma", true),
+      ck(9, 2, "Venue dipesan", "Budi Santoso", true),
+      ck(10, 2, "Konsumsi dipesan", "Sinta Maharani", false),
+      ck(11, 2, "Sertifikat disiapkan", "Rina Kusuma", false),
+      ck(12, 3, "Izin keramaian", "Dedi Kurniawan", true),
+      ck(13, 3, "Artis dikonfirmasi", "Sinta Maharani", false),
+      ck(14, 3, "Tiket dijual", "Rina Kusuma", true),
+      ck(15, 3, "Panggung dibangun", "Budi Santoso", false),
+      ck(16, 3, "Keamanan disiapkan", "Agus Wijaya", false),
+      ck(17, 4, "Panggung siap", "Dedi Kurniawan", true),
+      ck(18, 4, "Media diundang", "Sinta Maharani", true),
+      ck(19, 4, "Produk demo siap", "Budi Santoso", true),
+      ck(20, 4, "Press kit dibagikan", "Rina Kusuma", true),
+      ck(21, 5, "Venue dipesan", "Budi Santoso", true),
+      ck(22, 5, "Konsumsi dipesan", "Sinta Maharani", true),
+      ck(23, 5, "Doorprize disiapkan", "Rina Kusuma", true),
+      ck(24, 5, "Dokumentasi selesai", "Dedi Kurniawan", true),
+      ck(25, 6, "Booth disiapkan", "Budi Santoso", false),
+      ck(26, 6, "Mobil demo tiba", "Dedi Kurniawan", false),
+      ck(27, 6, "Izin pameran", "Rina Kusuma", true),
+      ck(28, 6, "Katalog dicetak", "Sinta Maharani", false),
+      ck(29, 6, "Tim keamanan", "Agus Wijaya", false)
+    ];
+    return { acara: acara, klien: klien, anggaran: anggaran, jadwal: jadwal, vendor: vendor, tim: tim, checklist: checklist,
+      nextAcaraId: 7, nextKlienId: 7, nextAnggaranId: 24, nextJadwalId: 27, nextVendorId: 9, nextTimId: 6, nextChecklistId: 30 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "koordinator", nama: "Budi Santoso", peran: "koordinator", password: "koordinator123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.acara) state.acara = [];
+    if (!state.klien) state.klien = [];
+    if (!state.anggaran) state.anggaran = [];
+    if (!state.jadwal) state.jadwal = [];
+    if (!state.vendor) state.vendor = [];
+    if (!state.tim) state.tim = [];
+    if (!state.checklist) state.checklist = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Koordinator"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariAcara(id) { return state.acara.find(function (x) { return x.id === id; }); }
+  function namaAcara(id) { var a = cariAcara(id); return a ? a.nama : "—"; }
+  function cariKlien(id) { return state.klien.find(function (x) { return x.id === id; }); }
+  function namaKlien(id) { var k = cariKlien(id); return k ? (k.perusahaan ? k.perusahaan + " (" + k.nama + ")" : k.nama) : "—"; }
+  function namaKlienSingkat(id) { var k = cariKlien(id); return k ? k.nama : "—"; }
+  /* ---------- Visibilitas per peran (pelajaran #48: semua angka dari data terlihat) ---------- */
+  function acaraTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "koordinator") return state.acara.filter(function (a) { return a.koordinator === currentUser.username; });
+    return state.acara.slice();
+  }
+  function idAcaraTerlihat() {
+    var ids = {};
+    acaraTerlihat().forEach(function (a) { ids[a.id] = true; });
+    return ids;
+  }
+  function klienTerlihat() {
+    var ids = idAcaraTerlihat();
+    return state.klien.filter(function (k) { return state.acara.some(function (a) { return a.klienId === k.id && ids[a.id]; }); });
+  }
+  function anggaranTerlihat() {
+    var ids = idAcaraTerlihat();
+    return state.anggaran.filter(function (x) { return ids[x.acaraId]; });
+  }
+  function jadwalTerlihat() {
+    var ids = idAcaraTerlihat();
+    return state.jadwal.filter(function (x) { return ids[x.acaraId]; });
+  }
+  function vendorTerlihat() {
+    var ids = idAcaraTerlihat();
+    return state.vendor.filter(function (x) { return ids[x.acaraId]; });
+  }
+  function checklistTerlihat() {
+    var ids = idAcaraTerlihat();
+    return state.checklist.filter(function (x) { return ids[x.acaraId]; });
+  }
+  function kategoriTanggalAcara(a) {
+    if (a.status === "Selesai" || a.status === "Dibatalkan") return "Selesai";
+    var d = selisihHari(a.tanggal);
+    if (d < 0) return "Lewat";
+    if (d === 0) return "Hari Ini";
+    if (d <= 7) return "Segera";
+    return "Mendatang";
+  }
+  function biayaAcara(acaraId) {
+    var t = 0;
+    state.anggaran.forEach(function (x) { if (x.acaraId === acaraId) t += Number(x.jumlah) || 0; });
+    return t;
+  }
+  function labaAcara(a) { return (Number(a.kontrak) || 0) - biayaAcara(a.id); }
+  function progresAcara(acaraId) {
+    var list = state.checklist.filter(function (x) { return x.acaraId === acaraId; });
+    var selesai = list.filter(function (x) { return x.selesai; }).length;
+    return { selesai: selesai, total: list.length, persen: list.length ? Math.round(selesai / list.length * 100) : 0 };
+  }
+  function lencanaStatusAcara(status) {
+    if (status === "Selesai") return '<span class="lencana st-aman">Selesai</span>';
+    if (status === "Berjalan") return '<span class="lencana st-biru">Berjalan</span>';
+    if (status === "Dibatalkan") return '<span class="lencana st-habis">Dibatalkan</span>';
+    return '<span class="lencana st-rendah">Perencanaan</span>';
+  }
+  function lencanaKategoriAcara(kat) {
+    if (kat === "Selesai") return '<span class="lencana st-navy">Selesai</span>';
+    if (kat === "Hari Ini") return '<span class="lencana st-habis">Hari Ini</span>';
+    if (kat === "Segera") return '<span class="lencana st-rendah">Segera</span>';
+    if (kat === "Lewat") return '<span class="lencana st-habis">Lewat</span>';
+    return '<span class="lencana st-biru">Mendatang</span>';
+  }
+  function bulanListAcara() {
+    var seen = {}, out = [];
+    state.acara.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+  function isiSelectAcara(sel, denganSemua) {
+    var simpan = sel.value;
+    var opts = denganSemua ? ['<option value="semua">Semua acara</option>'] : [];
+    acaraTerlihat().forEach(function (a) {
+      opts.push('<option value="' + a.id + '">' + esc(a.nama) + ' — ' + tglSingkat(a.tanggal) + '</option>');
+    });
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || acaraTerlihat().some(function (a) { return String(a.id) === simpan; }))) sel.value = simpan;
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "acara") renderAcara();
+    if (nama === "anggaran") renderAnggaran();
+    if (nama === "jadwal") renderJadwal();
+    if (nama === "vendor") renderVendor();
+    if (nama === "checklist") renderChecklist();
+    if (nama === "laporan") renderLaporan();
+  }
+  function renderSemua() {
+    renderDashboard(); renderAcara(); renderAnggaran(); renderJadwal();
+    renderVendor(); renderChecklist(); renderLaporan(); renderPengguna();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var terlihat = acaraTerlihat();
+    var kontrakTotal = 0, biayaTotal = 0;
+    terlihat.forEach(function (a) {
+      kontrakTotal += Number(a.kontrak) || 0;
+      biayaTotal += biayaAcara(a.id);
+    });
+    var labaTotal = kontrakTotal - biayaTotal;
+    var nHariIni = terlihat.filter(function (a) { return kategoriTanggalAcara(a) === "Hari Ini"; }).length;
+    var nSegera = terlihat.filter(function (a) { return kategoriTanggalAcara(a) === "Segera"; }).length;
+    var nLewat = terlihat.filter(function (a) { return kategoriTanggalAcara(a) === "Lewat"; }).length;
+    var nMendatang = terlihat.filter(function (a) { return kategoriTanggalAcara(a) === "Mendatang"; }).length;
+    var nSelesai = terlihat.filter(function (a) { return a.status === "Selesai"; }).length;
+    var ckList = checklistTerlihat();
+    var ckSelesai = ckList.filter(function (x) { return x.selesai; }).length;
+    var ckPersen = ckList.length ? Math.round(ckSelesai / ckList.length * 100) : 0;
+    var nOver = terlihat.filter(function (a) { return biayaAcara(a.id) > (Number(a.kontrak) || 0); }).length;
+    $("dKontrak").textContent = rupiah(kontrakTotal);
+    $("dKontrakSub").textContent = terlihat.length + " acara";
+    $("dBiaya").textContent = rupiah(biayaTotal);
+    $("dBiayaSub").textContent = anggaranTerlihat().length + " item anggaran" + (nOver ? " · " + nOver + " acara melebihi anggaran" : "");
+    $("dLaba").textContent = rupiah(labaTotal);
+    $("dLabaSub").textContent = labaTotal < 0 ? "rugi — biaya melebihi kontrak" : "kontrak − biaya";
+    $("dAcara").textContent = terlihat.length + " acara";
+    $("dAcaraSub").textContent = "selesai " + nSelesai + " · mendatang " + nMendatang;
+    $("dHariIni").textContent = nHariIni + " acara";
+    $("dHariIniSub").textContent = "berlangsung hari ini";
+    $("dSegera").textContent = nSegera + " acara";
+    $("dSegeraSub").textContent = "berangkat 1–7 hari lagi";
+    $("dLewat").textContent = nLewat + " acara";
+    $("dLewatSub").textContent = "tanggal lewat, belum selesai";
+    $("dChecklist").textContent = ckSelesai + " / " + ckList.length;
+    $("dChecklistSub").textContent = ckPersen + "% selesai";
+    $("badgeAcara").textContent = terlihat.length;
+    var dekat = terlihat.filter(function (a) {
+      var d = selisihHari(a.tanggal);
+      return a.status !== "Selesai" && a.status !== "Dibatalkan" && d >= 0 && d <= 7;
+    }).sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; });
+    $("daftarAcaraDekat").innerHTML = dekat.length ? dekat.map(function (a) {
+      var d = selisihHari(a.tanggal);
+      var label = d === 0 ? "Hari ini" : "dalam " + d + " hari";
+      var pr = progresAcara(a.id);
+      return '<div class="baris"><div><b>' + esc(a.nama) + '</b> · ' + esc(namaKlienSingkat(a.klienId)) + '<br><span style="color:var(--muted);font-size:13px">' + tglSingkat(a.tanggal) + ' · ' + label + ' · ' + esc(a.lokasi) + '</span></div><div style="text-align:right">' + lencanaStatusAcara(a.status) + '<br><b>' + rupiah(a.kontrak) + '</b><br><span style="color:var(--muted);font-size:13px">checklist ' + pr.selesai + '/' + pr.total + ' (' + pr.persen + '%)</span></div></div>';
+    }).join("") : '<p class="kosong">Tidak ada acara dalam 7 hari ke depan.</p>';
+    var urutProgres = terlihat.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; });
+    $("daftarProgres").innerHTML = urutProgres.length ? urutProgres.map(function (a) {
+      var pr = progresAcara(a.id);
+      var barClass = pr.persen === 100 ? "progres" : pr.persen < 50 ? "progres habis" : "progres menipis";
+      return '<div class="bar-stok"><span class="nama">' + esc(a.nama) + '</span><span class="' + barClass + '"><span style="width:' + pr.persen + '%"></span></span><span class="nilai">' + pr.selesai + '/' + pr.total + ' · ' + pr.persen + '%</span></div>';
+    }).join("") : '<p class="kosong">Belum ada acara.</p>';
+  }
+  $("btnKeAcara").addEventListener("click", function () { pindahTab("acara"); });
+  $("btnKeChecklist").addEventListener("click", function () { pindahTab("checklist"); });
+  $("btnKeJadwal").addEventListener("click", function () { pindahTab("jadwal"); });
+
+  /* ---------- Kelola pengguna ---------- */
+  function renderPengguna() {
+    if (!isAdmin()) { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var resetBtn = u.username === "admin" ? "" : '<button class="btn kecil ghost" data-reset-user="' + esc(u.username) + '" type="button">Reset → bk123</button>';
+      return '<div class="baris"><div><b>' + esc(u.username) + '</b> · ' + esc(u.nama) + ' (' + peranTxt(u.peran) + ')</div><div>' + resetBtn + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset-user"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.username + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.username + " direset ke bk123.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya Admin yang bisa menambah pengguna."); return; }
+    var u = $("pgUser").value.trim(), nm = $("pgNama").value.trim(), ps = $("pgPass").value, peran = $("pgPeran").value;
+    if (!u || !nm || !ps) { toast("Lengkapi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (ps.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: u, nama: nm, peran: peran, password: ps, aktif: true });
+    saveUsers();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    renderPengguna(); toast("Pengguna " + u + " ditambahkan.");
+  });
+
+  /* ---------- Ganti kata sandi sendiri ---------- */
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) { toast("Masuk dulu."); return; }
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    toast("Kata sandi berhasil diubah.");
+  });
+
+  /* ---------- Acara & Klien ---------- */
+  function isiSelectAcaraForm() {
+    var selKlien = $("acKlien");
+    var simpanK = selKlien.value;
+    selKlien.innerHTML = state.klien.map(function (k) { return '<option value="' + k.id + '">' + esc(namaKlien(k.id)) + '</option>'; }).join("");
+    if (simpanK && state.klien.some(function (k) { return String(k.id) === simpanK; })) selKlien.value = simpanK;
+    var selKoor = $("acKoordinator");
+    var simpanO = selKoor.value;
+    selKoor.innerHTML = users.filter(function (u) { return u.peran === "manajer" || u.peran === "koordinator"; }).map(function (u) {
+      return '<option value="' + esc(u.username) + '">' + esc(u.nama) + ' (' + peranTxt(u.peran) + ')</option>';
+    }).join("");
+    if (simpanO && users.some(function (u) { return u.username === simpanO; })) selKoor.value = simpanO;
+    if (!$("acTanggal").value) $("acTanggal").value = hariIniKey();
+  }
+  function renderAcara() {
+    isiSelectAcaraForm();
+    var fStatus = $("fAcara").value || "semua";
+    var fKat = $("fAcaraKategori").value || "semua";
+    var list = acaraTerlihat().filter(function (a) {
+      if (fStatus !== "semua" && a.status !== fStatus) return false;
+      if (fKat !== "semua" && kategoriTanggalAcara(a) !== fKat) return false;
+      return true;
+    }).sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; });
+    var nOver = acaraTerlihat().filter(function (a) { return biayaAcara(a.id) > (Number(a.kontrak) || 0); }).length;
+    $("ringkasanAcara").textContent = list.length + " acara ditampilkan · " + (nOver ? nOver + " acara melebihi anggaran" : "tidak ada acara yang melebihi anggaran");
+    $("daftarAcara").innerHTML = list.length ? list.map(function (a) {
+      var biaya = biayaAcara(a.id);
+      var laba = labaAcara(a);
+      var pr = progresAcara(a.id);
+      var kat = kategoriTanggalAcara(a);
+      var peringatan = biaya > (Number(a.kontrak) || 0) ? '<br><span class="lencana st-habis">Melebihi anggaran ' + rupiah(biaya - (Number(a.kontrak) || 0)) + '</span>' : "";
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<div class="row" style="margin-top:10px"><label style="margin:0">Status <select class="input-kecil" data-status-acara="' + a.id + '">' +
+          ["Perencanaan", "Berjalan", "Selesai", "Dibatalkan"].map(function (s) { return '<option value="' + s + '"' + (a.status === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></label>' +
+          '<button class="btn kecil ghost" data-hapus-acara="' + a.id + '" type="button">Hapus</button></div>';
+      }
+      return '<div class="card" style="margin-bottom:12px"><div class="baris"><div><b>' + esc(a.nama) + '</b> · ' + esc(namaKlien(a.klienId)) + '<br><span style="color:var(--muted);font-size:13px">' + tglSingkat(a.tanggal) + ' · ' + esc(a.lokasi) + ' · koordinator ' + esc(a.koordinator) + '</span></div><div style="text-align:right">' + lencanaStatusAcara(a.status) + ' ' + lencanaKategoriAcara(kat) + '<br><b>' + rupiah(a.kontrak) + '</b><br><span style="color:var(--muted);font-size:13px">biaya ' + rupiah(biaya) + ' · laba ' + rupiah(laba) + ' · checklist ' + pr.selesai + '/' + pr.total + '</span>' + peringatan + '</div></div>' + aksi + '</div>';
+    }).join("") : '<p class="kosong">Tidak ada acara yang cocok dengan filter.</p>';
+    document.querySelectorAll("[data-status-acara]").forEach(function (sel) {
+      sel.addEventListener("change", function () {
+        var a = cariAcara(Number(sel.getAttribute("data-status-acara")));
+        if (!a) return;
+        a.status = sel.value; saveState(); renderSemua(); toast("Status " + a.nama + " diubah menjadi " + a.status + ".");
+      });
+    });
+    document.querySelectorAll("[data-hapus-acara]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-acara"));
+        var a = cariAcara(id);
+        if (!a) return;
+        var adaData = state.anggaran.some(function (x) { return x.acaraId === id; }) ||
+          state.jadwal.some(function (x) { return x.acaraId === id; }) ||
+          state.vendor.some(function (x) { return x.acaraId === id; }) ||
+          state.checklist.some(function (x) { return x.acaraId === id; });
+        if (adaData) { toast("Acara tidak bisa dihapus karena masih ada anggaran, jadwal, vendor, atau checklist."); return; }
+        tanyaKonfirmasi("Hapus Acara", "Hapus acara " + a.nama + "?", function () {
+          state.acara = state.acara.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Acara dihapus.");
+        });
+      });
+    });
+    /* Klien: Admin/Manajer melihat semua klien (klien baru tanpa acara pun
+       harus terlihat setelah ditambah); Koordinator hanya klien acaranya. */
+    var klList = bolehKelola() ? state.klien.slice() : klienTerlihat();
+    var totalKlien = klList.length;
+    $("ringkasanKlien").textContent = totalKlien + " klien";
+    $("daftarKlien").innerHTML = klList.length ? klList.map(function (k) {
+      var acKlien = state.acara.filter(function (a) { return a.klienId === k.id; });
+      var nilaiKlien = 0;
+      acKlien.forEach(function (a) { nilaiKlien += Number(a.kontrak) || 0; });
+      var hapusBtn = bolehKelola() ? '<button class="btn kecil ghost" data-hapus-klien="' + k.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(k.nama) + '</b>' + (k.perusahaan ? ' · ' + esc(k.perusahaan) : '') + '<br><span style="color:var(--muted);font-size:13px">' + esc(k.telepon) + (k.email ? ' · ' + esc(k.email) : '') + '</span></div><div style="text-align:right">' + acKlien.length + ' acara · ' + rupiah(nilaiKlien) + ' ' + hapusBtn + '</div></div>';
+    }).join("") : '<p class="kosong">Belum ada klien.</p>';
+    document.querySelectorAll("[data-hapus-klien]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-klien"));
+        var k = cariKlien(id);
+        if (!k) return;
+        if (state.acara.some(function (a) { return a.klienId === id; })) { toast("Klien tidak bisa dihapus karena sudah ada acara."); return; }
+        tanyaKonfirmasi("Hapus Klien", "Hapus klien " + k.nama + "?", function () {
+          state.klien = state.klien.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Klien dihapus.");
+        });
+      });
+    });
+  }
+  $("fAcara").addEventListener("change", renderAcara);
+  $("fAcaraKategori").addEventListener("change", renderAcara);
+  $("btnTambahAcara").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah acara."); return; }
+    var nama = $("acNama").value.trim();
+    var klienId = Number($("acKlien").value);
+    var tanggal = $("acTanggal").value;
+    var lokasi = $("acLokasi").value.trim();
+    var kontrak = Number($("acKontrak").value);
+    var koordinator = $("acKoordinator").value;
+    if (!nama || !klienId || !tanggal || !lokasi || !(kontrak >= 0) || !koordinator) { toast("Lengkapi nama, klien, tanggal, lokasi, nilai kontrak, dan koordinator."); return; }
+    state.acara.push({ id: state.nextAcaraId++, nama: nama, klienId: klienId, tanggal: tanggal, lokasi: lokasi, kontrak: kontrak, status: "Perencanaan", koordinator: koordinator });
+    saveState();
+    $("acNama").value = ""; $("acLokasi").value = ""; $("acKontrak").value = "";
+    renderSemua(); toast("Acara " + nama + " ditambahkan.");
+  });
+  $("btnTambahKlien").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah klien."); return; }
+    var nama = $("klNama").value.trim(), perusahaan = $("klPerusahaan").value.trim();
+    var tel = $("klTelepon").value.trim(), email = $("klEmail").value.trim();
+    if (!nama || !tel) { toast("Lengkapi nama klien dan nomor telepon."); return; }
+    state.klien.push({ id: state.nextKlienId++, nama: nama, perusahaan: perusahaan, telepon: tel, email: email });
+    saveState();
+    $("klNama").value = ""; $("klPerusahaan").value = ""; $("klTelepon").value = ""; $("klEmail").value = "";
+    renderSemua(); toast("Klien " + nama + " ditambahkan.");
+  });
+
+  /* ---------- Anggaran ---------- */
+  function renderAnggaran() {
+    isiSelectAcara($("agAcara"), false);
+    isiSelectAcara($("fAnggaranAcara"), true);
+    var fAcaraId = $("fAnggaranAcara").value || "semua";
+    var list = anggaranTerlihat().filter(function (x) {
+      return fAcaraId === "semua" || String(x.acaraId) === fAcaraId;
+    });
+    var biayaTotal = 0;
+    list.forEach(function (x) { biayaTotal += Number(x.jumlah) || 0; });
+    $("ringkasanAnggaran").textContent = list.length + " item anggaran · total " + rupiah(biayaTotal);
+    var perAcara = {};
+    list.forEach(function (x) {
+      var g = perAcara[x.acaraId] || (perAcara[x.acaraId] = { items: [], total: 0 });
+      g.items.push(x); g.total += Number(x.jumlah) || 0;
+    });
+    var urutAcara = Object.keys(perAcara).map(Number).sort(function (a, b) {
+      var aa = cariAcara(a), bb = cariAcara(b);
+      return (aa ? aa.tanggal : "") < (bb ? bb.tanggal : "") ? -1 : 1;
+    });
+    $("daftarAnggaran").innerHTML = urutAcara.length ? urutAcara.map(function (acaraId) {
+      var g = perAcara[acaraId];
+      var a = cariAcara(acaraId);
+      var kontrak = a ? (Number(a.kontrak) || 0) : 0;
+      var laba = kontrak - g.total;
+      var peringatan = g.total > kontrak ? '<span class="lencana st-habis">Melebihi anggaran ' + rupiah(g.total - kontrak) + '</span>' : '<span class="lencana st-aman">Dalam anggaran</span>';
+      var baris = g.items.map(function (x) {
+        var hapusBtn = bolehKelola() ? '<button class="btn kecil ghost" data-hapus-anggaran="' + x.id + '" type="button">Hapus</button>' : "";
+        return '<div class="baris"><div><b>' + esc(x.item) + '</b> · ' + esc(x.kategori) + '</div><div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b> ' + hapusBtn + '</div></div>';
+      }).join("");
+      return '<div class="card" style="margin-bottom:12px"><div class="baris"><div><b>' + esc(a ? a.nama : "—") + '</b><br><span style="color:var(--muted);font-size:13px">kontrak ' + rupiah(kontrak) + ' · ' + tglSingkat(a ? a.tanggal : "") + '</span></div><div style="text-align:right">' + peringatan + '<br><b>Biaya ' + rupiah(g.total) + '</b><br><span style="color:var(--muted);font-size:13px">laba ' + rupiah(laba) + '</span></div></div>' + baris + '</div>';
+    }).join("") : '<p class="kosong">Belum ada item anggaran.</p>';
+    document.querySelectorAll("[data-hapus-anggaran]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-anggaran"));
+        tanyaKonfirmasi("Hapus Item Anggaran", "Hapus item anggaran ini?", function () {
+          state.anggaran = state.anggaran.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Item anggaran dihapus.");
+        });
+      });
+    });
+  }
+  $("fAnggaranAcara").addEventListener("change", renderAnggaran);
+  $("btnTambahAnggaran").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah anggaran."); return; }
+    var acaraId = Number($("agAcara").value);
+    var item = $("agItem").value.trim();
+    var kategori = $("agKategori").value;
+    var jumlah = Number($("agJumlah").value);
+    var jumlahTerakhirValid = $("agJumlah").getAttribute("data-terakhir-valid");
+    if (!acaraId || !item || !(jumlah >= 0)) {
+      if (jumlahTerakhirValid) $("agJumlah").value = jumlahTerakhirValid;
+      toast("Lengkapi acara, item, dan jumlah (minimal 0)."); return;
+    }
+    state.anggaran.push({ id: state.nextAnggaranId++, acaraId: acaraId, item: item, kategori: kategori, jumlah: jumlah });
+    $("agJumlah").setAttribute("data-terakhir-valid", String(jumlah));
+    saveState();
+    $("agItem").value = ""; $("agJumlah").value = "";
+    renderSemua(); toast("Item anggaran " + item + " (" + rupiah(jumlah) + ") ditambahkan.");
+  });
+  $("agJumlah").addEventListener("input", function () {
+    /* Simpan nilai terakhir yang VALID saja (pelajaran 58): event change
+       menyala saat blur — sudah terlambat, nilai tidak valid sempat tersimpan. */
+    var v = Number($("agJumlah").value);
+    if (v >= 0) $("agJumlah").setAttribute("data-terakhir-valid", String(v));
+  });
+
+  /* ---------- Jadwal & Rundown ---------- */
+  function renderJadwal() {
+    isiSelectAcara($("jdAcara"), false);
+    isiSelectAcara($("fJadwalAcara"), true);
+    var fAcaraId = $("fJadwalAcara").value || "semua";
+    var list = jadwalTerlihat().filter(function (x) {
+      return fAcaraId === "semua" || String(x.acaraId) === fAcaraId;
+    });
+    $("ringkasanJadwal").textContent = list.length + " rundown";
+    var perAcara = {};
+    list.forEach(function (x) {
+      var g = perAcara[x.acaraId] || (perAcara[x.acaraId] = []);
+      g.push(x);
+    });
+    var urutAcara = Object.keys(perAcara).map(Number).sort(function (a, b) {
+      var aa = cariAcara(a), bb = cariAcara(b);
+      return (aa ? aa.tanggal : "") < (bb ? bb.tanggal : "") ? -1 : 1;
+    });
+    $("daftarJadwal").innerHTML = urutAcara.length ? urutAcara.map(function (acaraId) {
+      var a = cariAcara(acaraId);
+      var items = perAcara[acaraId].slice().sort(function (x, y) { return x.jam < y.jam ? -1 : 1; });
+      var baris = items.map(function (x) {
+        var hapusBtn = bolehKelola() ? '<button class="btn kecil ghost" data-hapus-jadwal="' + x.id + '" type="button">Hapus</button>' : "";
+        return '<div class="baris"><div><b>' + esc(x.jam) + '</b> · ' + esc(x.kegiatan) + '<br><span style="color:var(--muted);font-size:13px">Penanggung jawab: ' + esc(x.penanggungJawab) + '</span></div><div>' + hapusBtn + '</div></div>';
+      }).join("");
+      return '<div class="card" style="margin-bottom:12px"><h3>' + esc(a ? a.nama : "—") + '</h3><p class="sub">' + tglSingkat(a ? a.tanggal : "") + ' · ' + esc(a ? a.lokasi : "") + ' · ' + items.length + ' rundown</p>' + baris + '</div>';
+    }).join("") : '<p class="kosong">Belum ada rundown.</p>';
+    document.querySelectorAll("[data-hapus-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-jadwal"));
+        tanyaKonfirmasi("Hapus Rundown", "Hapus rundown ini?", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Rundown dihapus.");
+        });
+      });
+    });
+  }
+  $("fJadwalAcara").addEventListener("change", renderJadwal);
+  $("btnTambahJadwal").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah rundown."); return; }
+    var acaraId = Number($("jdAcara").value);
+    var jam = $("jdJam").value;
+    var kegiatan = $("jdKegiatan").value.trim();
+    var pj = $("jdPenanggungJawab").value.trim();
+    if (!acaraId || !jam || !kegiatan || !pj) { toast("Lengkapi acara, jam, kegiatan, dan penanggung jawab."); return; }
+    if (state.jadwal.some(function (x) { return x.acaraId === acaraId && x.jam === jam; })) {
+      toast("Jam " + jam + " sudah dipakai rundown lain di acara ini (bentrok)."); return;
+    }
+    state.jadwal.push({ id: state.nextJadwalId++, acaraId: acaraId, jam: jam, kegiatan: kegiatan, penanggungJawab: pj });
+    saveState();
+    $("jdJam").value = ""; $("jdKegiatan").value = ""; $("jdPenanggungJawab").value = "";
+    renderSemua(); toast("Rundown " + jam + " — " + kegiatan + " ditambahkan.");
+  });
+
+  /* ---------- Vendor & Tim ---------- */
+  function renderVendor() {
+    isiSelectAcara($("vdAcara"), false);
+    isiSelectAcara($("fVendorAcara"), true);
+    var fAcaraId = $("fVendorAcara").value || "semua";
+    var fStatus = $("fVendorStatus").value || "semua";
+    var list = vendorTerlihat().filter(function (x) {
+      if (fAcaraId !== "semua" && String(x.acaraId) !== fAcaraId) return false;
+      if (fStatus !== "semua" && x.status !== fStatus) return false;
+      return true;
+    }).sort(function (a, b) {
+      var aa = cariAcara(a.acaraId), bb = cariAcara(b.acaraId);
+      return (aa ? aa.tanggal : "") < (bb ? bb.tanggal : "") ? -1 : 1;
+    });
+    var biayaVendor = 0;
+    list.forEach(function (x) { biayaVendor += Number(x.biaya) || 0; });
+    $("ringkasanVendor").textContent = list.length + " vendor · total biaya vendor " + rupiah(biayaVendor) + " (informatif — sudah tercakup di anggaran)";
+    $("daftarVendor").innerHTML = list.length ? list.map(function (x) {
+      var lencana = x.status === "Selesai" ? '<span class="lencana st-aman">Selesai</span>' :
+        x.status === "Dikonfirmasi" ? '<span class="lencana st-biru">Dikonfirmasi</span>' : '<span class="lencana st-rendah">Dipesan</span>';
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<div class="row" style="margin-top:10px"><label style="margin:0">Status <select class="input-kecil" data-status-vendor="' + x.id + '">' +
+          ["Dipesan", "Dikonfirmasi", "Selesai"].map(function (s) { return '<option value="' + s + '"' + (x.status === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></label>' +
+          '<button class="btn kecil ghost" data-hapus-vendor="' + x.id + '" type="button">Hapus</button></div>';
+      }
+      return '<div class="card" style="margin-bottom:12px"><div class="baris"><div><b>' + esc(x.nama) + '</b> · ' + esc(x.layanan) + '<br><span style="color:var(--muted);font-size:13px">Acara: ' + esc(namaAcara(x.acaraId)) + '</span></div><div style="text-align:right">' + lencana + '<br><b>' + rupiah(x.biaya) + '</b></div></div>' + aksi + '</div>';
+    }).join("") : '<p class="kosong">Tidak ada vendor yang cocok dengan filter.</p>';
+    document.querySelectorAll("[data-status-vendor]").forEach(function (sel) {
+      sel.addEventListener("change", function () {
+        var v = state.vendor.find(function (x) { return x.id === Number(sel.getAttribute("data-status-vendor")); });
+        if (!v) return;
+        v.status = sel.value; saveState(); renderSemua(); toast("Status vendor " + v.nama + " diubah menjadi " + v.status + ".");
+      });
+    });
+    document.querySelectorAll("[data-hapus-vendor]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-vendor"));
+        tanyaKonfirmasi("Hapus Vendor", "Hapus vendor ini?", function () {
+          state.vendor = state.vendor.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Vendor dihapus.");
+        });
+      });
+    });
+    /* Tim */
+    $("ringkasanTim").textContent = state.tim.length + " anggota tim";
+    $("daftarTim").innerHTML = state.tim.length ? state.tim.map(function (t) {
+      var hapusBtn = bolehKelola() ? '<button class="btn kecil ghost" data-hapus-tim="' + t.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b> · ' + esc(t.peran) + '<br><span style="color:var(--muted);font-size:13px">' + esc(t.telepon) + '</span></div><div>' + hapusBtn + '</div></div>';
+    }).join("") : '<p class="kosong">Belum ada anggota tim.</p>';
+    document.querySelectorAll("[data-hapus-tim]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-tim"));
+        tanyaKonfirmasi("Hapus Anggota Tim", "Hapus anggota tim ini?", function () {
+          state.tim = state.tim.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Anggota tim dihapus.");
+        });
+      });
+    });
+  }
+  $("fVendorAcara").addEventListener("change", renderVendor);
+  $("fVendorStatus").addEventListener("change", renderVendor);
+  $("btnTambahVendor").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah vendor."); return; }
+    var acaraId = Number($("vdAcara").value);
+    var nama = $("vdNama").value.trim();
+    var layanan = $("vdLayanan").value.trim();
+    var biaya = Number($("vdBiaya").value);
+    var status = $("vdStatus").value;
+    var biayaTerakhirValid = $("vdBiaya").getAttribute("data-terakhir-valid");
+    if (!acaraId || !nama || !layanan || !(biaya >= 0)) {
+      if (biayaTerakhirValid) $("vdBiaya").value = biayaTerakhirValid;
+      toast("Lengkapi acara, nama vendor, layanan, dan biaya (minimal 0)."); return;
+    }
+    state.vendor.push({ id: state.nextVendorId++, acaraId: acaraId, nama: nama, layanan: layanan, biaya: biaya, status: status });
+    $("vdBiaya").setAttribute("data-terakhir-valid", String(biaya));
+    saveState();
+    $("vdNama").value = ""; $("vdLayanan").value = ""; $("vdBiaya").value = "";
+    renderSemua(); toast("Vendor " + nama + " ditambahkan.");
+  });
+  $("vdBiaya").addEventListener("input", function () {
+    var v = Number($("vdBiaya").value);
+    if (v >= 0) $("vdBiaya").setAttribute("data-terakhir-valid", String(v));
+  });
+  $("btnTambahTim").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah tim."); return; }
+    var nama = $("tmNama").value.trim(), peran = $("tmPeran").value.trim(), tel = $("tmTelepon").value.trim();
+    if (!nama || !peran || !tel) { toast("Lengkapi nama, peran, dan nomor telepon."); return; }
+    state.tim.push({ id: state.nextTimId++, nama: nama, peran: peran, telepon: tel });
+    saveState();
+    $("tmNama").value = ""; $("tmPeran").value = ""; $("tmTelepon").value = "";
+    renderSemua(); toast("Anggota tim " + nama + " ditambahkan.");
+  });
+
+  /* ---------- Checklist ---------- */
+  function bolehUbahChecklist(acaraId) {
+    if (bolehKelola()) return true;
+    if (!currentUser || currentUser.peran !== "koordinator") return false;
+    var a = cariAcara(acaraId);
+    return !!a && a.koordinator === currentUser.username;
+  }
+  function renderChecklist() {
+    isiSelectAcara($("ckAcara"), false);
+    isiSelectAcara($("fChecklistAcara"), true);
+    var fAcaraId = $("fChecklistAcara").value || "semua";
+    var list = checklistTerlihat().filter(function (x) {
+      return fAcaraId === "semua" || String(x.acaraId) === fAcaraId;
+    });
+    var selesaiTotal = list.filter(function (x) { return x.selesai; }).length;
+    $("ringkasanChecklist").textContent = list.length + " item · selesai " + selesaiTotal + " (" + (list.length ? Math.round(selesaiTotal / list.length * 100) : 0) + "%)";
+    var perAcara = {};
+    list.forEach(function (x) {
+      var g = perAcara[x.acaraId] || (perAcara[x.acaraId] = []);
+      g.push(x);
+    });
+    var urutAcara = Object.keys(perAcara).map(Number).sort(function (a, b) {
+      var aa = cariAcara(a), bb = cariAcara(b);
+      return (aa ? aa.tanggal : "") < (bb ? bb.tanggal : "") ? -1 : 1;
+    });
+    $("daftarChecklist").innerHTML = urutAcara.length ? urutAcara.map(function (acaraId) {
+      var a = cariAcara(acaraId);
+      var pr = progresAcara(acaraId);
+      var barClass = pr.persen === 100 ? "progres" : pr.persen < 50 ? "progres habis" : "progres menipis";
+      var baris = perAcara[acaraId].map(function (x) {
+        var tombol = "";
+        if (bolehUbahChecklist(acaraId)) {
+          tombol = x.selesai
+            ? '<button class="btn kecil ghost" data-toggle-checklist="' + x.id + '" type="button">Batalkan Selesai</button>'
+            : '<button class="btn kecil hijau" data-toggle-checklist="' + x.id + '" type="button">Tandai Selesai</button>';
+        }
+        var hapusBtn = bolehKelola() ? '<button class="btn kecil ghost" data-hapus-checklist="' + x.id + '" type="button">Hapus</button>' : "";
+        var lencana = x.selesai ? '<span class="lencana st-aman">Selesai</span>' : '<span class="lencana st-rendah">Belum</span>';
+        return '<div class="baris"><div><b>' + esc(x.item) + '</b><br><span style="color:var(--muted);font-size:13px">Penanggung jawab: ' + esc(x.penanggungJawab) + '</span></div><div style="text-align:right">' + lencana + '<br><span style="display:inline-flex;gap:6px;margin-top:6px">' + tombol + ' ' + hapusBtn + '</span></div></div>';
+      }).join("");
+      return '<div class="card" style="margin-bottom:12px"><h3>' + esc(a ? a.nama : "—") + '</h3><p class="sub">' + tglSingkat(a ? a.tanggal : "") + ' · ' + pr.selesai + '/' + pr.total + ' selesai (' + pr.persen + '%)</p><div class="bar-stok"><span class="nama">Progres</span><span class="' + barClass + '"><span style="width:' + pr.persen + '%"></span></span><span class="nilai">' + pr.persen + '%</span></div>' + baris + '</div>';
+    }).join("") : '<p class="kosong">Belum ada item checklist.</p>';
+    document.querySelectorAll("[data-toggle-checklist]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.checklist.find(function (c) { return c.id === Number(b.getAttribute("data-toggle-checklist")); });
+        if (!x) return;
+        if (!bolehUbahChecklist(x.acaraId)) { toast("Anda tidak bisa mengubah checklist acara ini."); return; }
+        x.selesai = !x.selesai; saveState(); renderSemua();
+        toast(x.selesai ? "Checklist ditandai selesai." : "Checklist dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-checklist]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hapus-checklist"));
+        tanyaKonfirmasi("Hapus Item Checklist", "Hapus item checklist ini?", function () {
+          state.checklist = state.checklist.filter(function (x) { return x.id !== id; });
+          saveState(); renderSemua(); toast("Item checklist dihapus.");
+        });
+      });
+    });
+  }
+  $("fChecklistAcara").addEventListener("change", renderChecklist);
+  $("btnTambahChecklist").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Manajer yang bisa menambah checklist."); return; }
+    var acaraId = Number($("ckAcara").value);
+    var item = $("ckItem").value.trim();
+    var pj = $("ckPenanggungJawab").value.trim();
+    if (!acaraId || !item || !pj) { toast("Lengkapi acara, item, dan penanggung jawab."); return; }
+    state.checklist.push({ id: state.nextChecklistId++, acaraId: acaraId, item: item, penanggungJawab: pj, selesai: false });
+    saveState();
+    $("ckItem").value = ""; $("ckPenanggungJawab").value = "";
+    renderSemua(); toast("Item checklist ditambahkan.");
+  });
+
+  /* ---------- Laporan ---------- */
+  function renderLaporan() {
+    var bkBerjalan = bulanKey(hariIniKey());
+    isiPilihanBulan($("fBulanLaporan"), bulanListAcara(), bkBerjalan);
+    var bulanDipilih = $("fBulanLaporan").value || "semua";
+    var terlihat = acaraTerlihat();
+    var kontrakTotal = 0, biayaTotal = 0;
+    terlihat.forEach(function (a) { kontrakTotal += Number(a.kontrak) || 0; biayaTotal += biayaAcara(a.id); });
+    $("ringkasanLaporan").textContent = "Bulan laporan: " + (bulanDipilih === "semua" ? "Semua bulan" : namaBulan(bulanDipilih)) + " · kontrak " + rupiah(kontrakTotal) + " · biaya " + rupiah(biayaTotal) + " · laba " + rupiah(kontrakTotal - biayaTotal) + " · " + terlihat.length + " acara";
+    var perKlien = {};
+    terlihat.forEach(function (a) {
+      var k = perKlien[a.klienId] || (perKlien[a.klienId] = { n: 0, kontrak: 0, biaya: 0 });
+      k.n++; k.kontrak += Number(a.kontrak) || 0; k.biaya += biayaAcara(a.id);
+    });
+    var barisKlien = Object.keys(perKlien).map(function (id) {
+      var k = perKlien[id];
+      return '<tr><td>' + esc(namaKlien(Number(id))) + '</td><td class="angka">' + k.n + '</td><td class="angka">' + rupiah(k.kontrak) + '</td><td class="angka">' + rupiah(k.biaya) + '</td><td class="angka">' + rupiah(k.kontrak - k.biaya) + '</td></tr>';
+    }).join("");
+    $("tabelPerKlien").innerHTML = '<tr><th>Klien</th><th>Acara</th><th>Kontrak</th><th>Biaya</th><th>Laba</th></tr>' + (barisKlien || '<tr><td colspan="5">Belum ada acara.</td></tr>');
+    var perBulan = {};
+    terlihat.forEach(function (a) {
+      var bk = bulanKey(a.tanggal);
+      var b = perBulan[bk] || (perBulan[bk] = { n: 0, kontrak: 0, biaya: 0 });
+      b.n++; b.kontrak += Number(a.kontrak) || 0; b.biaya += biayaAcara(a.id);
+    });
+    var barisBulan = Object.keys(perBulan).sort().reverse().map(function (bk) {
+      var b = perBulan[bk];
+      return '<tr><td>' + namaBulan(bk) + '</td><td class="angka">' + b.n + '</td><td class="angka">' + rupiah(b.kontrak) + '</td><td class="angka">' + rupiah(b.biaya) + '</td><td class="angka">' + rupiah(b.kontrak - b.biaya) + '</td></tr>';
+    }).join("");
+    $("tabelPerBulan").innerHTML = '<tr><th>Bulan</th><th>Acara</th><th>Kontrak</th><th>Biaya</th><th>Laba</th></tr>' + (barisBulan || '<tr><td colspan="5">Belum ada acara.</td></tr>');
+    var barisAcara = terlihat.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; }).map(function (a) {
+      var biaya = biayaAcara(a.id);
+      var pr = progresAcara(a.id);
+      return '<tr><td>' + esc(a.nama) + '</td><td>' + tglSingkat(a.tanggal) + '</td><td class="angka">' + rupiah(a.kontrak) + '</td><td class="angka">' + rupiah(biaya) + '</td><td class="angka">' + rupiah(labaAcara(a)) + '</td><td class="angka">' + pr.selesai + '/' + pr.total + '</td><td>' + esc(a.status) + '</td></tr>';
+    }).join("");
+    $("tabelPerAcara").innerHTML = '<tr><th>Acara</th><th>Tanggal</th><th>Kontrak</th><th>Biaya</th><th>Laba</th><th>Checklist</th><th>Status</th></tr>' + (barisAcara || '<tr><td colspan="7">Belum ada acara.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bulanDipilih = $("fBulanLaporan").value || "semua";
+    var list = acaraTerlihat().filter(function (a) {
+      return bulanDipilih === "semua" || bulanKey(a.tanggal) === bulanDipilih;
+    }).sort(function (a, b) { return a.tanggal < b.tanggal ? 1 : -1; });
+    var baris = [["ID", "Tanggal", "Acara", "Klien", "Lokasi", "Kontrak", "Biaya", "Laba", "Checklist Selesai", "Checklist Total", "Status", "Koordinator"]];
+    list.forEach(function (a) {
+      var pr = progresAcara(a.id);
+      baris.push([a.id, a.tanggal, a.nama, namaKlien(a.klienId), a.lokasi, a.kontrak, biayaAcara(a.id), labaAcara(a), pr.selesai, pr.total, a.status, a.koordinator]);
+    });
+    var csv = baris.map(function (r) { return r.map(csvCell).join(","); }).join("\n");
+    var nama = bulanDipilih === "semua" ? "acara-semua.csv" : "acara-" + bulanDipilih + ".csv";
+    unduh(nama, csv, "text/csv;charset=utf-8");
+    toast("CSV diunduh: " + list.length + " baris.");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("event-organizer-backup.json", JSON.stringify({ state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(reader.result);
+        if (!data.state || !Array.isArray(data.state.acara) || !Array.isArray(data.state.klien) || !Array.isArray(data.state.checklist)) throw new Error("format");
+        state = data.state;
+        if (Array.isArray(data.users) && data.users.length) users = data.users;
+        saveState(); saveUsers();
+        if (currentUser) {
+          var ulang = users.find(function (x) { return x.username === currentUser.username; });
+          if (ulang) currentUser = ulang; else { keluar(); renderSemua(); toast("Data dipulihkan. Masuk kembali."); return; }
+        }
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    reader.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset ke Data Demo", "Semua perubahan akan dihapus dan data kembali ke data demo awal. Lanjutkan?", function () {
+      state = seedState(); users = seedUsers();
+      saveState(); saveUsers();
+      if (currentUser) {
+        var ulang = users.find(function (x) { return x.username === currentUser.username; });
+        if (ulang) currentUser = ulang;
+      }
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Init ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) { masuk(userSesi); } else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
