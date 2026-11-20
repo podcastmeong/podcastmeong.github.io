@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manajemen Peternakan Ayam</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.accent .sub { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · MANAJEMEN PETERNAKAN AYAM</span>
+    <h1>Manajemen <span class="aksen">Peternakan Ayam</span></h1>
+    <p>Data kandang dan populasi ayam, jadwal pakan dan vaksin, pencatatan telur harian, biaya pakan dan obat, serta laporan produksi telur dan daging — dalam satu aplikasi untuk peternak ayam petelur dan pedaging.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="kandang">Kandang <span class="badge" id="badgeKandang">0</span></button>
+    <button class="tab-btn" type="button" data-tab="populasi">Populasi</button>
+    <button class="tab-btn" type="button" data-tab="pakan">Pakan <span class="badge" id="badgePakan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="telur">Telur <span class="badge" id="badgeTelur">0</span></button>
+    <button class="tab-btn" type="button" data-tab="biaya">Biaya <span class="badge" id="badgeBiaya">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Peternakan</h2><p>Ringkasan populasi, telur, jadwal, dan biaya dari data yang Anda lihat.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Populasi Ayam</div><div class="angka" id="dPopulasi" style="font-size:22px">0</div><div class="sub" id="dPopulasiSub"></div></div>
+      <div class="stat"><div class="label">Telur Bulan Ini</div><div class="angka" id="dTelurBulan" style="font-size:22px">0</div><div class="sub" id="dTelurBulanSub"></div></div>
+      <div class="stat"><div class="label">Rata-rata Produksi Telur</div><div class="angka" id="dTingkat" style="font-size:22px">0%</div><div class="sub" id="dTingkatSub"></div></div>
+      <div class="stat"><div class="label">Biaya Bulan Ini</div><div class="angka" id="dBiayaBulan" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaBulanSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat warn"><div class="label">Jadwal Pakan &amp; Vaksin Hari Ini</div><div class="angka" id="dJadwalHariIni" style="font-size:22px">0</div><div class="sub" id="dJadwalHariIniSub"></div></div>
+      <div class="stat"><div class="label">Nilai Telur Bulan Ini</div><div class="angka" id="dNilaiTelur" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiTelurSub"></div></div>
+      <div class="stat"><div class="label">Nilai Daging (Stok Pedaging)</div><div class="angka" id="dNilaiDaging" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiDagingSub"></div></div>
+      <div class="stat"><div class="label">Kandang</div><div class="angka" id="dKandang" style="font-size:22px">0</div><div class="sub" id="dKandangSub"></div></div>
+    </div>
+    <div class="card"><h3>Isi Kandang</h3><p class="sub">Populasi saat ini dibanding kapasitas tiap kandang yang Anda lihat.</p><div id="daftarIsiKandang"></div></div>
+    <div class="card"><h3>Telur Terbaru</h3><p class="sub">Lima catatan telur terbaru dari data yang Anda lihat.</p><div id="daftarTelurRingkas"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat telur hari ini, tambah catatan populasi, atau lihat jadwal pakan dan vaksin.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeTelur" type="button">Catat Telur</button>
+        <button class="btn kecil hijau" id="btnKePopulasi" type="button">Catat Populasi</button>
+        <button class="btn kecil biru" id="btnKePakan" type="button">Lihat Jadwal</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Peternak.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="peternak">Peternak</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kandang">
+    <div class="page-head"><h2>Kandang</h2><p>Data kandang petelur dan pedaging beserta kapasitas dan populasi saat ini. Peternak hanya melihat kandangnya sendiri.</p></div>
+    <div class="card" id="cardTambahKandang">
+      <h3>Tambah Kandang</h3>
+      <p class="sub">Kandang baru dimulai dengan populasi 0 ekor — isi lewat tab Populasi.</p>
+      <div class="form-grid">
+        <div class="field"><label for="kdNama">Nama kandang</label><input id="kdNama" type="text" placeholder="cth: Kandang F"></div>
+        <div class="field"><label for="kdJenis">Jenis ayam</label><select id="kdJenis">
+          <option value="Petelur">Petelur</option>
+          <option value="Pedaging">Pedaging</option>
+        </select></div>
+        <div class="field"><label for="kdKapasitas">Kapasitas (ekor)</label><input id="kdKapasitas" type="number" min="1" step="1" placeholder="cth: 1000"></div>
+        <div class="field"><label for="kdPemilik">Pemilik kandang</label><select id="kdPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option>
+          <option value="peternak">Peternak (Budi Santoso)</option>
+        </select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahKandang" type="button">Simpan Kandang</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanKandang"></p>
+      <div id="daftarKandang"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-populasi">
+    <div class="page-head"><h2>Populasi Ayam</h2><p>Catat ayam masuk, mati, dan afkir. Populasi kandang berubah otomatis. Jumlah mati atau afkir tidak boleh melebihi populasi saat ini.</p></div>
+    <div class="card" id="cardTambahPopulasi">
+      <h3>Catat Populasi</h3>
+      <p class="sub">Pilih kandang — populasi saat ini ditampilkan otomatis sebelum Anda menyimpan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ppKandang">Kandang</label><select id="ppKandang"></select></div>
+        <div class="field"><label for="ppJenis">Jenis catatan</label><select id="ppJenis">
+          <option value="Masuk">Masuk (tambah populasi)</option>
+          <option value="Mati">Mati (kurangi populasi)</option>
+          <option value="Afkir">Afkir (kurangi populasi)</option>
+        </select></div>
+        <div class="field"><label for="ppJumlah">Jumlah (ekor)</label><input id="ppJumlah" type="number" min="1" step="1" placeholder="cth: 100"></div>
+        <div class="field"><label for="ppTanggal">Tanggal</label><input id="ppTanggal" type="date"></div>
+        <div class="field"><label>Populasi kandang saat ini</label><input id="ppPopulasiKini" type="text" readonly value="—"></div>
+        <div class="field"><label for="ppKeterangan">Keterangan (opsional)</label><input id="ppKeterangan" type="text" placeholder="cth: DOC baru / sakit"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPopulasi" type="button">Simpan Catatan Populasi</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPopulasi">Filter kandang</label><select id="fPopulasi">
+          <option value="semua">Semua kandang</option>
+        </select></div>
+        <div class="field"><label for="fPopulasiJenis">Filter jenis</label><select id="fPopulasiJenis">
+          <option value="semua">Semua jenis</option>
+          <option value="Masuk">Masuk</option>
+          <option value="Mati">Mati</option>
+          <option value="Afkir">Afkir</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPopulasi"></p>
+      <div id="daftarPopulasi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pakan">
+    <div class="page-head"><h2>Jadwal Pakan &amp; Vaksin</h2><p>Jadwal pemberian pakan dan vaksinasi per kandang. Tandai Selesai setelah dilakukan — jadwal yang lewat tetap terlihat sampai diselesaikan.</p></div>
+    <div class="card" id="cardTambahPakan">
+      <h3>Tambah Jadwal</h3>
+      <p class="sub">Jadwal baru berstatus Belum. Peternak hanya bisa menambah jadwal untuk kandangnya sendiri.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pkKandang">Kandang</label><select id="pkKandang"></select></div>
+        <div class="field"><label for="pkJenis">Jenis jadwal</label><select id="pkJenis">
+          <option value="Pakan">Pakan</option>
+          <option value="Vaksin">Vaksin</option>
+        </select></div>
+        <div class="field"><label for="pkNama">Nama kegiatan</label><input id="pkNama" type="text" placeholder="cth: Pakan layer pagi / Vaksin ND"></div>
+        <div class="field"><label for="pkTanggal">Tanggal</label><input id="pkTanggal" type="date"></div>
+        <div class="field"><label for="pkKeterangan">Keterangan (opsional)</label><input id="pkKeterangan" type="text" placeholder="cth: 50 kg pakan"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPakan" type="button">Simpan Jadwal</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPakan">Filter status</label><select id="fPakan">
+          <option value="semua">Semua jadwal</option>
+          <option value="hari ini">Hari ini</option>
+          <option value="segera">Segera (1–7 hari)</option>
+          <option value="lewat">Lewat</option>
+          <option value="selesai">Selesai</option>
+        </select></div>
+        <div class="field"><label for="fPakanKandang">Filter kandang</label><select id="fPakanKandang">
+          <option value="semua">Semua kandang</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPakan"></p>
+      <div id="daftarPakan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-telur">
+    <div class="page-head"><h2>Telur Harian</h2><p>Catat telur setiap hari per kandang petelur. Tingkat produksi = butir telur ÷ populasi petelur kandang itu.</p></div>
+    <div class="card" id="cardTambahTelur">
+      <h3>Catat Telur</h3>
+      <p class="sub">Hanya kandang petelur yang bisa dicatat telurnya. Tingkat produksi dihitung langsung dari populasi kandang saat ini.</p>
+      <div class="form-grid">
+        <div class="field"><label for="tlKandang">Kandang petelur</label><select id="tlKandang"></select></div>
+        <div class="field"><label for="tlTanggal">Tanggal</label><input id="tlTanggal" type="date"></div>
+        <div class="field"><label for="tlButir">Butir telur</label><input id="tlButir" type="number" min="1" step="1" placeholder="cth: 690"></div>
+        <div class="field"><label for="tlRetak">Butir retak</label><input id="tlRetak" type="number" min="0" step="1" value="0"></div>
+        <div class="field"><label>Tingkat produksi hari itu</label><input id="tlTingkat" type="text" readonly value="—"></div>
+        <div class="field"><label for="tlKeterangan">Keterangan (opsional)</label><input id="tlKeterangan" type="text" placeholder="cth: Kandang A"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahTelur" type="button">Simpan Catatan Telur</button>
+    </div>
+    <div class="card hanya-kelola" id="cardHargaTelur">
+      <h3>Harga Acuan</h3>
+      <p class="sub">Harga telur per butir dan harga daging per ekor dipakai untuk menghitung nilai produksi. Catatan telur lama tetap memakai harga saat dicatat.</p>
+      <div class="form-grid">
+        <div class="field"><label for="hgTelur">Harga telur per butir (Rp)</label><input id="hgTelur" type="number" min="0" step="100" value="2200"></div>
+        <div class="field"><label for="hgDaging">Harga daging per ekor (Rp)</label><input id="hgDaging" type="number" min="0" step="1000" value="40000"></div>
+      </div>
+      <button class="btn kecil biru" id="btnSimpanHarga" type="button">Simpan Harga</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fTelur">Filter kandang</label><select id="fTelur">
+          <option value="semua">Semua kandang</option>
+        </select></div>
+        <div class="field"><label for="fTelurBulan">Filter bulan</label><select id="fTelurBulan">
+          <option value="semua">Semua bulan</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanTelur"></p>
+      <div id="daftarTelur"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-biaya">
+    <div class="page-head"><h2>Biaya Pakan &amp; Obat</h2><p>Biaya pakan, obat, dan lain-lain per kandang dan tanggal. Laba telur = nilai telur − biaya yang dicatat.</p></div>
+    <div class="card" id="cardTambahBiaya">
+      <h3>Catat Biaya</h3>
+      <p class="sub">Biaya dicatat per kandang supaya biaya tiap kandang bisa dihitung. Pilih "Umum" bila biaya tidak terkait satu kandang.</p>
+      <div class="form-grid">
+        <div class="field"><label for="byKandang">Kandang</label><select id="byKandang"></select></div>
+        <div class="field"><label for="byKategori">Kategori biaya</label><select id="byKategori">
+          <option value="Pakan">Pakan</option>
+          <option value="Obat">Obat</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="byJumlah">Jumlah biaya (Rp)</label><input id="byJumlah" type="number" min="0" step="1000" placeholder="cth: 2500000"></div>
+        <div class="field"><label for="byTanggal">Tanggal biaya</label><input id="byTanggal" type="date"></div>
+        <div class="field"><label for="byKeterangan">Keterangan (opsional)</label><input id="byKeterangan" type="text" placeholder="cth: Pakan layer 50 kg"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBiaya" type="button">Simpan Biaya</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBiaya">Filter kategori</label><select id="fBiaya">
+          <option value="semua">Semua kategori</option>
+          <option value="Pakan">Pakan</option>
+          <option value="Obat">Obat</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="cariBiaya">Cari</label><input id="cariBiaya" type="text" placeholder="cth: Pakan atau Kandang A"></div>
+      </div>
+      <p class="sub" id="ringkasanBiaya"></p>
+      <div id="daftarBiaya"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Produksi</h2><p>Rekap per kandang, per bulan, dan per kategori biaya — serta ekspor catatan telur ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Kandang</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKandang"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Kategori Biaya</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKategori"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor catatan telur bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Telur</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Manajemen Peternakan Ayam.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Kandang</b> untuk melihat atau menambah kandang petelur dan pedaging beserta kapasitasnya.</li>
+        <li>Buka tab <b>Populasi</b> untuk mencatat ayam masuk, mati, dan afkir. Populasi kandang berubah otomatis; jumlah mati atau afkir tidak boleh melebihi populasi saat ini.</li>
+        <li>Buka tab <b>Pakan</b> untuk jadwal pemberian pakan dan vaksinasi. Tandai Selesai setelah kegiatan dilakukan.</li>
+        <li>Buka tab <b>Telur</b> untuk mencatat telur harian per kandang petelur. Tingkat produksi dihitung langsung (butir ÷ populasi kandang).</li>
+        <li>Buka tab <b>Biaya</b> untuk mencatat biaya pakan, obat, dan lain-lain per kandang.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per kandang, per bulan, dan per kategori biaya, serta ekspor catatan telur ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola kandang, populasi, jadwal, telur, biaya, harga acuan, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Peternak</b> — mencatat telur dan populasi kandangnya sendiri, menandai jadwal kandangnya selesai, serta melihat biaya kandangnya. Tidak bisa menambah kandang, mengubah harga acuan, atau melihat data kandang orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Tingkat produksi dihitung dari populasi kandang saat ini, bukan populasi pada tanggal catatan — jadi bila populasi berubah, tingkat produksi catatan lama ikut berubah sedikit.</li>
+        <li>Nilai daging dihitung dari populasi pedaging saat ini × harga acuan per ekor — itu nilai stok, bukan nilai penjualan. Laba telur = nilai telur − biaya yang dicatat; biaya yang tidak dicatat tidak ikut terhitung.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Peternak — <b>peternak / peternak123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Manajemen Peternakan Ayam — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PETERNAKAN · MANAJEMEN PETERNAKAN AYAM</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data kandang dan populasi ayam, jadwal pakan dan vaksin, pencatatan telur harian, biaya pakan dan obat, serta laporan produksi telur dan daging.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Peternak — <b>peternak / peternak123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function angkaId(n) { return (Math.round(Number(n) * 10) / 10).toLocaleString("id-ID"); }
+  function persenSatu(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%"; }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "manajemenPeternakanAyam.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_ayam.py).
+       Kandang 5: A Petelur 1000 (peternak), B Petelur 800 (manajer), C Pedaging 1500 (manajer),
+         D Pedaging 1200 (peternak), E Petelur 500 (manajer).
+       Populasi: A 865 (900 masuk, 25 mati, 10 afkir), B 732 (750-18), C 1320 (1400-60-20),
+         D 1060 (1100-40), E 468 (480-12). Total 4.445; petelur 2.065; pedaging 2.380;
+         peternak (A+D) 1.925.
+       Telur 14 catatan, 8.448 butir (retak 40), nilai Rp18.585.600 @ Rp2.200/butir.
+         Nov (12 catatan): 7.218 butir, Rp15.879.600. Okt (2): 1.230 butir, Rp2.706.000.
+         Tingkat produksi Nov: A 79,6% (4.133/6 hari), B 80,1% (2.345/4 hari),
+           E 79,1% (740/2 hari); rata-rata tertimbang 79,7%.
+         Peternak telur Nov (A): 4.133 butir, Rp9.092.600.
+         Rata-rata harian Nov: 1.203 butir/hari tercatat (6 hari).
+       Jadwal 12: hari ini belum 4, segera (1-7 hari) 4, lewat 2, selesai 2; belum 10.
+       Biaya 11 catatan, total Rp14.250.000 (Pakan 12.000.000, Obat 1.100.000, Lain-lain 1.150.000).
+         Nov Rp13.800.000; Okt Rp450.000. Peternak (A+D) Rp5.900.000.
+       Nilai telur - biaya: total Rp4.335.600; Nov Rp2.079.600.
+       Nilai daging pedaging: 2.380 x Rp40.000 = Rp95.200.000.
+       CSV telur: Nov 12 baris + header; Okt 2 baris + header. */
+  function seedState() {
+    var kandang = [
+      { id: 1, nama: "Kandang A", jenis: "Petelur", kapasitas: 1000, pemilik: "peternak" },
+      { id: 2, nama: "Kandang B", jenis: "Petelur", kapasitas: 800, pemilik: "manajer" },
+      { id: 3, nama: "Kandang C", jenis: "Pedaging", kapasitas: 1500, pemilik: "manajer" },
+      { id: 4, nama: "Kandang D", jenis: "Pedaging", kapasitas: 1200, pemilik: "peternak" },
+      { id: 5, nama: "Kandang E", jenis: "Petelur", kapasitas: 500, pemilik: "manajer" }
+    ];
+    function pp(id, kandangId, jenis, jumlah, tanggal, pemilik, keterangan) {
+      return { id: id, kandangId: kandangId, jenis: jenis, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var populasi = [
+      pp(1, 1, "Masuk", 900, kunciPlus(-45), "peternak", "DOC baru"),
+      pp(2, 1, "Mati", 25, kunciPlus(-20), "peternak", "Sakit"),
+      pp(3, 1, "Afkir", 10, kunciPlus(-15), "peternak", "Produksi turun"),
+      pp(4, 2, "Masuk", 750, kunciPlus(-40), "manajer", "DOC baru"),
+      pp(5, 2, "Mati", 18, kunciPlus(-18), "manajer", "Sakit"),
+      pp(6, 3, "Masuk", 1400, kunciPlus(-30), "manajer", "DOC broiler"),
+      pp(7, 3, "Mati", 60, kunciPlus(-12), "manajer", "Sakit"),
+      pp(8, 3, "Afkir", 20, kunciPlus(-8), "manajer", "Kerdil"),
+      pp(9, 4, "Masuk", 1100, kunciPlus(-28), "peternak", "DOC broiler"),
+      pp(10, 4, "Mati", 40, kunciPlus(-10), "peternak", "Sakit"),
+      pp(11, 5, "Masuk", 480, kunciPlus(-35), "manajer", "DOC baru"),
+      pp(12, 5, "Mati", 12, kunciPlus(-14), "manajer", "Sakit")
+    ];
+    function jd(id, kandangId, jenis, nama, tanggal, status, pemilik, keterangan) {
+      return { id: id, kandangId: kandangId, jenis: jenis, nama: nama, tanggal: tanggal, status: status, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var jadwal = [
+      jd(1, 1, "Pakan", "Pakan layer pagi", kunciPlus(0), "Belum", "peternak", "50 kg pakan"),
+      jd(2, 2, "Pakan", "Pakan layer pagi", kunciPlus(0), "Belum", "manajer", "45 kg pakan"),
+      jd(3, 3, "Pakan", "Pakan starter pagi", kunciPlus(0), "Belum", "manajer", "70 kg pakan"),
+      jd(4, 4, "Pakan", "Pakan finisher pagi", kunciPlus(0), "Belum", "peternak", "60 kg pakan"),
+      jd(5, 1, "Vaksin", "Vaksin ND", kunciPlus(2), "Belum", "peternak", "Tetes mata"),
+      jd(6, 2, "Vaksin", "Vaksin AI", kunciPlus(3), "Belum", "manajer", "Suntik"),
+      jd(7, 3, "Pakan", "Pakan starter sore", kunciPlus(5), "Belum", "manajer", "70 kg pakan"),
+      jd(8, 5, "Vaksin", "Vaksin Gumboro", kunciPlus(6), "Belum", "manajer", "Air minum"),
+      jd(9, 4, "Vaksin", "Vaksin ND", kunciPlus(-2), "Belum", "peternak", "Tetes mata"),
+      jd(10, 5, "Pakan", "Pakan layer sore", kunciPlus(-1), "Belum", "manajer", "30 kg pakan"),
+      jd(11, 1, "Pakan", "Pakan layer sore", kunciPlus(-1), "Selesai", "peternak", "50 kg pakan"),
+      jd(12, 2, "Pakan", "Pakan layer sore", kunciPlus(-2), "Selesai", "manajer", "45 kg pakan")
+    ];
+    function tl(id, kandangId, tanggal, butir, retak, pemilik, keterangan) {
+      return { id: id, kandangId: kandangId, tanggal: tanggal, butir: butir, retak: retak, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var telur = [
+      tl(1, 1, kunciPlus(0), 690, 4, "peternak", "Kandang A"),
+      tl(2, 1, kunciPlus(-1), 685, 3, "peternak", "Kandang A"),
+      tl(3, 1, kunciPlus(-2), 700, 5, "peternak", "Kandang A"),
+      tl(4, 1, kunciPlus(-3), 678, 2, "peternak", "Kandang A"),
+      tl(5, 1, kunciPlus(-4), 692, 4, "peternak", "Kandang A"),
+      tl(6, 1, kunciPlus(-5), 688, 3, "peternak", "Kandang A"),
+      tl(7, 2, kunciPlus(0), 585, 2, "manajer", "Kandang B"),
+      tl(8, 2, kunciPlus(-1), 590, 3, "manajer", "Kandang B"),
+      tl(9, 2, kunciPlus(-2), 578, 2, "manajer", "Kandang B"),
+      tl(10, 2, kunciPlus(-3), 592, 4, "manajer", "Kandang B"),
+      tl(11, 5, kunciPlus(0), 372, 1, "manajer", "Kandang E"),
+      tl(12, 5, kunciPlus(-1), 368, 2, "manajer", "Kandang E"),
+      tl(13, 1, kunciPlus(-25), 660, 3, "peternak", "Kandang A"),
+      tl(14, 2, kunciPlus(-28), 570, 2, "manajer", "Kandang B")
+    ];
+    function by(id, kandangId, kategori, jumlah, tanggal, pemilik, keterangan) {
+      return { id: id, kandangId: kandangId, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var biaya = [
+      by(1, 1, "Pakan", 2500000, kunciPlus(-3), "peternak", "Pakan layer 50 kg"),
+      by(2, 2, "Pakan", 2100000, kunciPlus(-5), "manajer", "Pakan layer 45 kg"),
+      by(3, 3, "Pakan", 3200000, kunciPlus(-4), "manajer", "Pakan starter 70 kg"),
+      by(4, 4, "Pakan", 2800000, kunciPlus(-6), "peternak", "Pakan finisher 60 kg"),
+      by(5, 5, "Pakan", 1400000, kunciPlus(-2), "manajer", "Pakan layer 30 kg"),
+      by(6, 1, "Obat", 350000, kunciPlus(-10), "peternak", "Vitamin ayam"),
+      by(7, 3, "Obat", 500000, kunciPlus(-8), "manajer", "Antibiotik"),
+      by(8, 4, "Obat", 250000, kunciPlus(-12), "peternak", "Vitamin ayam"),
+      by(9, 2, "Lain-lain", 400000, kunciPlus(-15), "manajer", "Sekam kandang"),
+      by(10, 5, "Lain-lain", 300000, kunciPlus(-18), "manajer", "Lampu pemanas"),
+      by(11, 3, "Lain-lain", 450000, kunciPlus(-25), "manajer", "Sekam kandang")
+    ];
+    return { kandang: kandang, populasi: populasi, jadwal: jadwal, telur: telur, biaya: biaya,
+      hargaTelur: 2200, hargaDaging: 40000,
+      nextKandangId: 6, nextPopulasiId: 13, nextJadwalId: 13, nextTelurId: 15, nextBiayaId: 12 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "peternak", nama: "Budi Santoso", peran: "peternak", password: "peternak123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.kandang) state.kandang = [];
+    if (!state.populasi) state.populasi = [];
+    if (!state.jadwal) state.jadwal = [];
+    if (!state.telur) state.telur = [];
+    if (!state.biaya) state.biaya = [];
+    if (!state.hargaTelur) state.hargaTelur = 2200;
+    if (!state.hargaDaging) state.hargaDaging = 40000;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Peternak"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariKandang(id) { return state.kandang.find(function (x) { return x.id === id; }); }
+  function namaKandang(id) { var k = cariKandang(id); return k ? k.nama : "—"; }
+  function jenisKandang(id) { var k = cariKandang(id); return k ? k.jenis : ""; }
+  function jmlPopulasiKandang(kandangId) {
+    var n = 0;
+    state.populasi.forEach(function (p) {
+      if (p.kandangId !== kandangId) return;
+      n += p.jenis === "Masuk" ? (Number(p.jumlah) || 0) : -(Number(p.jumlah) || 0);
+    });
+    return n;
+  }
+  function kandangTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "peternak") return state.kandang.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.kandang.slice();
+  }
+  function idKandangTerlihat() {
+    var out = {};
+    kandangTerlihat().forEach(function (k) { out[k.id] = true; });
+    return out;
+  }
+  function populasiTerlihat() {
+    var ids = idKandangTerlihat();
+    return state.populasi.filter(function (x) { return ids[x.kandangId]; });
+  }
+  function jadwalTerlihat() {
+    var ids = idKandangTerlihat();
+    return state.jadwal.filter(function (x) { return ids[x.kandangId]; });
+  }
+  function telurTerlihat() {
+    var ids = idKandangTerlihat();
+    return state.telur.filter(function (x) { return ids[x.kandangId]; });
+  }
+  function biayaTerlihat() {
+    var ids = idKandangTerlihat();
+    return state.biaya.filter(function (x) { return !x.kandangId || ids[x.kandangId]; });
+  }
+  function totalButir(list) {
+    var t = 0;
+    list.forEach(function (x) { t += Number(x.butir) || 0; });
+    return t;
+  }
+  function totalRetak(list) {
+    var t = 0;
+    list.forEach(function (x) { t += Number(x.retak) || 0; });
+    return t;
+  }
+  function nilaiTelurList(list) { return totalButir(list) * (Number(state.hargaTelur) || 0); }
+  function totalBiayaList(list) {
+    var t = 0;
+    list.forEach(function (b) { t += Number(b.jumlah) || 0; });
+    return t;
+  }
+  function populasiTotalTerlihat() {
+    var t = 0;
+    kandangTerlihat().forEach(function (k) { t += jmlPopulasiKandang(k.id); });
+    return t;
+  }
+  function populasiPetelurTerlihat() {
+    var t = 0;
+    kandangTerlihat().forEach(function (k) { if (k.jenis === "Petelur") t += jmlPopulasiKandang(k.id); });
+    return t;
+  }
+  function populasiPedagingTerlihat() {
+    var t = 0;
+    kandangTerlihat().forEach(function (k) { if (k.jenis === "Pedaging") t += jmlPopulasiKandang(k.id); });
+    return t;
+  }
+  function tingkatProduksi(bk) {
+    /* Rata-rata tertimbang: total butir bulan itu dibagi (populasi kandang x hari tercatat). */
+    var list = telurTerlihat().filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    var penyebut = 0, pembilang = 0;
+    var perKandang = {};
+    list.forEach(function (x) {
+      if (!perKandang[x.kandangId]) perKandang[x.kandangId] = { butir: 0, hari: {} };
+      perKandang[x.kandangId].butir += Number(x.butir) || 0;
+      perKandang[x.kandangId].hari[x.tanggal] = true;
+    });
+    Object.keys(perKandang).forEach(function (kid) {
+      var r = perKandang[kid];
+      var pop = jmlPopulasiKandang(Number(kid));
+      penyebut += pop * Object.keys(r.hari).length;
+      pembilang += r.butir;
+    });
+    return penyebut > 0 ? pembilang / penyebut * 100 : 0;
+  }
+  function katJadwal(j) {
+    if (j.status === "Selesai") return "selesai";
+    var d = selisihHari(j.tanggal);
+    if (d === 0) return "hari ini";
+    if (d >= 1 && d <= 7) return "segera";
+    if (d < 0) return "lewat";
+    return "nanti";
+  }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "kandang") renderKandang();
+    if (nama === "populasi") renderPopulasi();
+    if (nama === "pakan") renderPakan();
+    if (nama === "telur") renderTelur();
+    if (nama === "biaya") renderBiaya();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var bkBerjalan = bulanKey(hariIniKey());
+    var telurBulan = telurTerlihat().filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var biayaBulan = biayaTerlihat().filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var jadwalSemua = jadwalTerlihat();
+    var hariIni = jadwalSemua.filter(function (j) { return katJadwal(j) === "hari ini"; });
+    var segera = jadwalSemua.filter(function (j) { return katJadwal(j) === "segera"; });
+    var lewat = jadwalSemua.filter(function (j) { return katJadwal(j) === "lewat"; });
+    var nPop = populasiTotalTerlihat();
+    var nPetelur = populasiPetelurTerlihat();
+    var nPedaging = populasiPedagingTerlihat();
+    var nTelurBulan = totalButir(telurBulan);
+    var nBiayaBulan = totalBiayaList(biayaBulan);
+    var tingkat = tingkatProduksi(bkBerjalan);
+    var nNilaiTelur = nilaiTelurList(telurBulan);
+    var nNilaiDaging = nPedaging * (Number(state.hargaDaging) || 0);
+    var listKandang = kandangTerlihat();
+    var penuh = listKandang.filter(function (k) { return k.kapasitas > 0 && jmlPopulasiKandang(k.id) / k.kapasitas >= 0.9; }).length;
+    $("dPopulasi").textContent = nPop.toLocaleString("id-ID") + " ekor";
+    $("dPopulasiSub").textContent = "petelur " + nPetelur.toLocaleString("id-ID") + " · pedaging " + nPedaging.toLocaleString("id-ID");
+    $("dTelurBulan").textContent = nTelurBulan.toLocaleString("id-ID") + " butir";
+    $("dTelurBulanSub").textContent = telurBulan.length + " catatan · " + namaBulan(bkBerjalan);
+    $("dTingkat").textContent = persenSatu(tingkat);
+    $("dTingkatSub").textContent = "butir ÷ populasi petelur · " + namaBulan(bkBerjalan);
+    $("dBiayaBulan").textContent = rupiah(nBiayaBulan);
+    $("dBiayaBulanSub").textContent = biayaBulan.length + " catatan biaya · " + namaBulan(bkBerjalan);
+    $("dJadwalHariIni").textContent = hariIni.length + " belum";
+    $("dJadwalHariIniSub").textContent = "segera " + segera.length + " · lewat " + lewat.length;
+    $("dNilaiTelur").textContent = rupiah(nNilaiTelur);
+    $("dNilaiTelurSub").textContent = "@ " + rupiah(state.hargaTelur) + "/butir · " + namaBulan(bkBerjalan);
+    $("dNilaiDaging").textContent = rupiah(nNilaiDaging);
+    $("dNilaiDagingSub").textContent = nPedaging.toLocaleString("id-ID") + " ekor pedaging × " + rupiah(state.hargaDaging);
+    $("dKandang").textContent = listKandang.length + " kandang";
+    $("dKandangSub").textContent = penuh + " kandang isi ≥ 90% kapasitas";
+    $("badgeKandang").textContent = listKandang.length;
+    $("badgePakan").textContent = jadwalSemua.filter(function (j) { return j.status !== "Selesai"; }).length;
+    $("badgeTelur").textContent = telurTerlihat().length;
+    $("badgeBiaya").textContent = biayaTerlihat().length;
+    var urutKandang = listKandang.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    $("daftarIsiKandang").innerHTML = urutKandang.length ? urutKandang.map(function (k) {
+      var pop = jmlPopulasiKandang(k.id);
+      var persen = k.kapasitas > 0 ? Math.round(pop / k.kapasitas * 100) : 0;
+      var kelas = persen >= 90 ? "habis" : persen >= 75 ? "menipis" : "";
+      return '<div class="bar-stok"><div class="nama">' + esc(k.nama) + ' <span class="tag">' + esc(k.jenis) + '</span></div><div class="progres ' + kelas + '"><span style="width:' + Math.min(persen, 100) + '%"></span></div><div class="nilai">' + pop.toLocaleString("id-ID") + ' / ' + k.kapasitas.toLocaleString("id-ID") + '</div></div>' +
+        '<p class="sub" style="margin:-4px 0 8px">' + persen + '% terisi · pemilik ' + esc(k.pemilik) + '</p>';
+    }).join("") : '<p class="sub">Belum ada kandang.</p>';
+    var terbaru = telurTerlihat().slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarTelurRingkas").innerHTML = terbaru.length ? terbaru.map(function (t) {
+      var pop = jmlPopulasiKandang(t.kandangId);
+      var rate = pop > 0 ? persenSatu(t.butir / pop * 100) : "—";
+      return '<div class="baris"><div><b>' + esc(namaKandang(t.kandangId)) + '</b>' +
+        '<br><span class="sub">' + t.butir.toLocaleString("id-ID") + ' butir · retak ' + t.retak + ' · ' + tglSingkat(t.tanggal) + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rate + '</b><br><span class="sub">produksi</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada catatan telur.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKeTelur").addEventListener("click", function () { pindahTab("telur"); });
+  $("btnKePopulasi").addEventListener("click", function () { pindahTab("populasi"); });
+  $("btnKePakan").addEventListener("click", function () { pindahTab("pakan"); });
+
+  /* ---------- Kandang ---------- */
+  function isiPilihanKandang(selId, hanyaPetelur) {
+    var sel = $(selId);
+    var simpan = sel.value;
+    var list = kandangTerlihat();
+    if (hanyaPetelur) list = list.filter(function (k) { return k.jenis === "Petelur"; });
+    sel.innerHTML = list.map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + ' · ' + esc(k.jenis) + ' · ' + jmlPopulasiKandang(k.id).toLocaleString("id-ID") + ' ekor</option>';
+    }).join("");
+    if (simpan && list.some(function (k) { return String(k.id) === simpan; })) sel.value = simpan;
+    return list;
+  }
+  function renderKandang() {
+    $("cardTambahKandang").style.display = bolehKelola() ? "" : "none";
+    var list = kandangTerlihat().slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    var nPop = populasiTotalTerlihat();
+    $("ringkasanKandang").textContent = list.length + " kandang · total populasi " + nPop.toLocaleString("id-ID") + " ekor" +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarKandang").innerHTML = list.length ? list.map(function (k) {
+      var pop = jmlPopulasiKandang(k.id);
+      var persen = k.kapasitas > 0 ? Math.round(pop / k.kapasitas * 100) : 0;
+      var lencana = persen >= 90 ? '<span class="lencana st-rendah">Hampir penuh</span>' : '<span class="lencana st-aman">Tersedia</span>';
+      var bolehHapus = bolehKelola();
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-kandang="' + k.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(k.nama) + '</b> <span class="tag">' + esc(k.jenis) + '</span> ' + lencana +
+        '<br><span class="sub">Kapasitas ' + k.kapasitas.toLocaleString("id-ID") + ' ekor · populasi ' + pop.toLocaleString("id-ID") + ' ekor (' + persen + '%) · pemilik ' + esc(k.pemilik) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada kandang.</p>';
+    document.querySelectorAll("[data-hapus-kandang]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKandang(Number(b.getAttribute("data-hapus-kandang")));
+        if (!k) return;
+        var dipakai = state.populasi.some(function (x) { return x.kandangId === k.id; }) ||
+          state.jadwal.some(function (x) { return x.kandangId === k.id; }) ||
+          state.telur.some(function (x) { return x.kandangId === k.id; }) ||
+          state.biaya.some(function (x) { return x.kandangId === k.id; });
+        if (dipakai) { toast("Kandang \"" + k.nama + "\" tidak bisa dihapus — masih ada populasi, jadwal, telur, atau biaya yang terkait."); return; }
+        tanyaKonfirmasi("Hapus Kandang", "Hapus kandang \"" + k.nama + "\"?", function () {
+          state.kandang = state.kandang.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Kandang \"" + k.nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahKandang").addEventListener("click", function () {
+    var nama = $("kdNama").value.trim();
+    var jenis = $("kdJenis").value;
+    var kapasitas = Number($("kdKapasitas").value);
+    var pemilik = $("kdPemilik").value;
+    if (!nama) { toast("Isi nama kandang."); return; }
+    if (!(kapasitas > 0)) { toast("Isi kapasitas kandang (lebih dari 0)."); return; }
+    if (state.kandang.some(function (x) { return x.nama.toLowerCase() === nama.toLowerCase(); })) { toast("Nama kandang sudah dipakai."); return; }
+    state.kandang.push({ id: state.nextKandangId++, nama: nama, jenis: jenis, kapasitas: kapasitas, pemilik: pemilik });
+    saveState();
+    $("kdNama").value = ""; $("kdKapasitas").value = "";
+    renderSemua();
+    toast("Kandang \"" + nama + "\" (" + jenis + ", kapasitas " + kapasitas.toLocaleString("id-ID") + ") tersimpan.");
+  });
+
+  /* ---------- Populasi ---------- */
+  function tampilPopulasiKini() {
+    var kid = Number($("ppKandang").value);
+    $("ppPopulasiKini").value = kid ? jmlPopulasiKandang(kid).toLocaleString("id-ID") + " ekor" : "—";
+  }
+  function renderPopulasi() {
+    isiPilihanKandang("ppKandang", false);
+    if (!$("ppTanggal").value) $("ppTanggal").value = hariIniKey();
+    tampilPopulasiKini();
+    var selF = $("fPopulasi");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kandang</option>'];
+    kandangTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = selF.value || "semua";
+    var filterJenis = $("fPopulasiJenis").value || "semua";
+    var list = populasiTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.kandangId) === filter; });
+    if (filterJenis !== "semua") list = list.filter(function (x) { return x.jenis === filterJenis; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var masuk = 0, mati = 0, afkir = 0;
+    populasiTerlihat().forEach(function (x) {
+      if (x.jenis === "Masuk") masuk += Number(x.jumlah) || 0;
+      else if (x.jenis === "Mati") mati += Number(x.jumlah) || 0;
+      else afkir += Number(x.jumlah) || 0;
+    });
+    $("ringkasanPopulasi").textContent = list.length + " catatan · masuk " + masuk.toLocaleString("id-ID") + " · mati " + mati.toLocaleString("id-ID") + " · afkir " + afkir.toLocaleString("id-ID") + " ekor" +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPopulasi").innerHTML = list.length ? list.map(function (p) {
+      var lencana = p.jenis === "Masuk" ? '<span class="lencana st-aman">Masuk</span>' : p.jenis === "Mati" ? '<span class="lencana st-habis">Mati</span>' : '<span class="lencana st-rendah">Afkir</span>';
+      var tanda = p.jenis === "Masuk" ? "+" : "−";
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "peternak" && p.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-populasi="' + p.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKandang(p.kandangId)) + '</b> ' + lencana + ' <span class="tag">' + esc(p.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(p.tanggal) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + tanda + (Number(p.jumlah) || 0).toLocaleString("id-ID") + ' ekor</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan populasi yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-populasi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = state.populasi.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-populasi")); });
+        if (!p) return;
+        if (p.jenis === "Masuk") {
+          var sisa = jmlPopulasiKandang(p.kandangId) - (Number(p.jumlah) || 0);
+          if (sisa < 0) { toast("Catatan masuk ini tidak bisa dihapus — populasi kandang akan menjadi negatif."); return; }
+        }
+        tanyaKonfirmasi("Hapus Catatan Populasi", "Hapus catatan " + p.jenis + " " + p.jumlah + " ekor di " + namaKandang(p.kandangId) + "?", function () {
+          state.populasi = state.populasi.filter(function (x) { return x.id !== p.id; });
+          saveState(); renderSemua(); toast("Catatan populasi dihapus.");
+        });
+      });
+    });
+  }
+  $("fPopulasi").addEventListener("change", renderPopulasi);
+  $("fPopulasiJenis").addEventListener("change", renderPopulasi);
+  $("ppKandang").addEventListener("change", tampilPopulasiKini);
+  $("btnTambahPopulasi").addEventListener("click", function () {
+    var kandangId = Number($("ppKandang").value);
+    var jenis = $("ppJenis").value;
+    var jumlah = Number($("ppJumlah").value);
+    var tanggal = $("ppTanggal").value;
+    var keterangan = $("ppKeterangan").value.trim();
+    var k = cariKandang(kandangId);
+    if (!k) { toast("Pilih kandang dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal."); return; }
+    if (jenis !== "Masuk") {
+      var kini = jmlPopulasiKandang(kandangId);
+      if (jumlah > kini) { toast("Jumlah " + (jenis === "Mati" ? "mati" : "afkir") + " (" + jumlah.toLocaleString("id-ID") + ") melebihi populasi kandang (" + kini.toLocaleString("id-ID") + " ekor)."); return; }
+    }
+    state.populasi.push({ id: state.nextPopulasiId++, kandangId: kandangId, jenis: jenis, jumlah: jumlah, tanggal: tanggal, pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("ppJumlah").value = ""; $("ppKeterangan").value = "";
+    renderSemua();
+    toast("Catatan " + jenis + " " + jumlah.toLocaleString("id-ID") + " ekor di " + k.nama + " tersimpan. Populasi kini " + jmlPopulasiKandang(kandangId).toLocaleString("id-ID") + " ekor.");
+  });
+
+  /* ---------- Pakan & Vaksin ---------- */
+  function renderPakan() {
+    isiPilihanKandang("pkKandang", false);
+    if (!$("pkTanggal").value) $("pkTanggal").value = hariIniKey();
+    var selF = $("fPakanKandang");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kandang</option>'];
+    kandangTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = $("fPakan").value || "semua";
+    var filterKandang = selF.value || "semua";
+    var list = jadwalTerlihat();
+    if (filterKandang !== "semua") list = list.filter(function (x) { return String(x.kandangId) === filterKandang; });
+    if (filter !== "semua") list = list.filter(function (x) { return katJadwal(x) === filter; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : a.id - b.id; });
+    var semua = jadwalTerlihat();
+    var nHariIni = semua.filter(function (j) { return katJadwal(j) === "hari ini"; }).length;
+    var nSegera = semua.filter(function (j) { return katJadwal(j) === "segera"; }).length;
+    var nLewat = semua.filter(function (j) { return katJadwal(j) === "lewat"; }).length;
+    var nSelesai = semua.filter(function (j) { return katJadwal(j) === "selesai"; }).length;
+    $("ringkasanPakan").textContent = list.length + " jadwal · hari ini " + nHariIni + " · segera " + nSegera + " · lewat " + nLewat + " · selesai " + nSelesai +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPakan").innerHTML = list.length ? list.map(function (j) {
+      var kat = katJadwal(j);
+      var lencana = kat === "selesai" ? '<span class="lencana st-aman">Selesai</span>' :
+        kat === "hari ini" ? '<span class="lencana st-oren">Hari ini</span>' :
+        kat === "segera" ? '<span class="lencana st-biru">Segera</span>' :
+        kat === "lewat" ? '<span class="lencana st-habis">Lewat</span>' : '<span class="lencana st-navy">Nanti</span>';
+      var bolehUbah = bolehKelola() || (currentUser && currentUser.peran === "peternak" && j.pemilik === currentUser.username);
+      var aksi = "";
+      if (bolehUbah) {
+        if (j.status === "Selesai") aksi += '<button class="btn ghost kecil" data-batal-jadwal="' + j.id + '" type="button">Batalkan Selesai</button> ';
+        else aksi += '<button class="btn hijau kecil" data-selesai-jadwal="' + j.id + '" type="button">Tandai Selesai</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-jadwal="' + j.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(j.nama) + '</b> <span class="tag">' + esc(j.jenis) + '</span> ' + lencana +
+        '<br><span class="sub">' + esc(namaKandang(j.kandangId)) + ' · ' + tglSingkat(j.tanggal) + (j.keterangan ? ' · ' + esc(j.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang cocok.</p>';
+    document.querySelectorAll("[data-selesai-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-selesai-jadwal")); });
+        if (!j) return;
+        j.status = "Selesai"; saveState(); renderSemua();
+        toast("Jadwal \"" + j.nama + "\" ditandai selesai.");
+      });
+    });
+    document.querySelectorAll("[data-batal-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-batal-jadwal")); });
+        if (!j) return;
+        j.status = "Belum"; saveState(); renderSemua();
+        toast("Jadwal \"" + j.nama + "\" dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-jadwal")); });
+        if (!j) return;
+        tanyaKonfirmasi("Hapus Jadwal", "Hapus jadwal \"" + j.nama + "\" (" + tglSingkat(j.tanggal) + ")?", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== j.id; });
+          saveState(); renderSemua(); toast("Jadwal dihapus.");
+        });
+      });
+    });
+  }
+  $("fPakan").addEventListener("change", renderPakan);
+  $("fPakanKandang").addEventListener("change", renderPakan);
+  $("btnTambahPakan").addEventListener("click", function () {
+    var kandangId = Number($("pkKandang").value);
+    var jenis = $("pkJenis").value;
+    var nama = $("pkNama").value.trim();
+    var tanggal = $("pkTanggal").value;
+    var keterangan = $("pkKeterangan").value.trim();
+    var k = cariKandang(kandangId);
+    if (!k) { toast("Pilih kandang dulu."); return; }
+    if (!nama) { toast("Isi nama kegiatan."); return; }
+    if (!tanggal) { toast("Isi tanggal jadwal."); return; }
+    state.jadwal.push({ id: state.nextJadwalId++, kandangId: kandangId, jenis: jenis, nama: nama, tanggal: tanggal, status: "Belum", pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("pkNama").value = ""; $("pkKeterangan").value = "";
+    renderSemua();
+    toast("Jadwal \"" + nama + "\" (" + tglSingkat(tanggal) + ") tersimpan.");
+  });
+
+  /* ---------- Telur ---------- */
+  function tampilTingkatTelur() {
+    var kid = Number($("tlKandang").value);
+    var butir = Number($("tlButir").value) || 0;
+    if (!kid || !butir) { $("tlTingkat").value = "—"; return; }
+    var pop = jmlPopulasiKandang(kid);
+    $("tlTingkat").value = pop > 0 ? persenSatu(butir / pop * 100) + " (populasi " + pop.toLocaleString("id-ID") + " ekor)" : "—";
+  }
+  function renderTelur() {
+    isiPilihanKandang("tlKandang", true);
+    if (!$("tlTanggal").value) $("tlTanggal").value = hariIniKey();
+    $("hgTelur").value = state.hargaTelur;
+    $("hgDaging").value = state.hargaDaging;
+    tampilTingkatTelur();
+    var selF = $("fTelur");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kandang</option>'];
+    kandangTerlihat().filter(function (k) { return k.jenis === "Petelur"; }).forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var selB = $("fTelurBulan");
+    var daftarBulan = bulanList(telurTerlihat());
+    isiPilihanBulan(selB, daftarBulan, "semua");
+    var filter = selF.value || "semua";
+    var filterBulan = selB.value || "semua";
+    var list = telurTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.kandangId) === filter; });
+    if (filterBulan !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === filterBulan; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nButir = totalButir(telurTerlihat());
+    var nRetak = totalRetak(telurTerlihat());
+    $("ringkasanTelur").textContent = list.length + " catatan · total telur " + nButir.toLocaleString("id-ID") + " butir · retak " + nRetak.toLocaleString("id-ID") + " butir · nilai " + rupiah(nilaiTelurList(telurTerlihat())) +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarTelur").innerHTML = list.length ? list.map(function (t) {
+      var pop = jmlPopulasiKandang(t.kandangId);
+      var rate = pop > 0 ? persenSatu(t.butir / pop * 100) : "—";
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "peternak" && t.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-telur="' + t.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKandang(t.kandangId)) + '</b> <span class="tag">' + esc(t.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(t.tanggal) + ' · retak ' + t.retak + ' butir' + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + t.butir.toLocaleString("id-ID") + ' butir</b><br><span class="sub">' + rate + ' produksi · ' + rupiah(t.butir * state.hargaTelur) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan telur yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-telur]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = state.telur.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-telur")); });
+        if (!t) return;
+        tanyaKonfirmasi("Hapus Catatan Telur", "Hapus catatan telur " + t.butir + " butir di " + namaKandang(t.kandangId) + " (" + tglSingkat(t.tanggal) + ")?", function () {
+          state.telur = state.telur.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Catatan telur dihapus.");
+        });
+      });
+    });
+  }
+  $("fTelur").addEventListener("change", renderTelur);
+  $("fTelurBulan").addEventListener("change", renderTelur);
+  $("tlKandang").addEventListener("change", tampilTingkatTelur);
+  $("tlButir").addEventListener("input", tampilTingkatTelur);
+  $("btnSimpanHarga").addEventListener("click", function () {
+    var hTelur = Number($("hgTelur").value), hDaging = Number($("hgDaging").value);
+    if (!(hTelur > 0)) { toast("Isi harga telur per butir (lebih dari 0)."); $("hgTelur").value = state.hargaTelur; return; }
+    if (!(hDaging > 0)) { toast("Isi harga daging per ekor (lebih dari 0)."); $("hgDaging").value = state.hargaDaging; return; }
+    state.hargaTelur = hTelur; state.hargaDaging = hDaging;
+    saveState(); renderSemua();
+    toast("Harga acuan disimpan: telur " + rupiah(hTelur) + "/butir, daging " + rupiah(hDaging) + "/ekor.");
+  });
+  $("btnTambahTelur").addEventListener("click", function () {
+    var kandangId = Number($("tlKandang").value);
+    var tanggal = $("tlTanggal").value;
+    var butir = Number($("tlButir").value);
+    var retak = Number($("tlRetak").value) || 0;
+    var keterangan = $("tlKeterangan").value.trim();
+    var k = cariKandang(kandangId);
+    if (!k) { toast("Pilih kandang petelur dulu."); return; }
+    if (k.jenis !== "Petelur") { toast("Hanya kandang petelur yang bisa dicatat telurnya."); return; }
+    if (!(butir > 0)) { toast("Isi butir telur (lebih dari 0)."); return; }
+    if (retak < 0 || retak > butir) { toast("Butir retak tidak boleh melebihi butir telur."); $("tlRetak").value = 0; return; }
+    if (!tanggal) { toast("Isi tanggal."); return; }
+    state.telur.push({ id: state.nextTelurId++, kandangId: kandangId, tanggal: tanggal, butir: butir, retak: retak, pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("tlButir").value = ""; $("tlRetak").value = 0; $("tlKeterangan").value = "";
+    renderSemua();
+    var pop = jmlPopulasiKandang(kandangId);
+    toast("Telur " + butir.toLocaleString("id-ID") + " butir di " + k.nama + " tersimpan (" + (pop > 0 ? persenSatu(butir / pop * 100) : "—") + " produksi).");
+  });
+
+  /* ---------- Biaya ---------- */
+  function renderBiaya() {
+    var sel = $("byKandang");
+    var simpan = sel.value;
+    var opts = ['<option value="">Umum (tidak terkait satu kandang)</option>'];
+    kandangTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + ' · ' + esc(k.jenis) + '</option>'); });
+    sel.innerHTML = opts.join("");
+    if (simpan !== null && simpan !== undefined) sel.value = simpan;
+    if (!$("byTanggal").value) $("byTanggal").value = hariIniKey();
+    $("cardTambahBiaya").style.display = bolehKelola() ? "" : "none";
+    var filter = $("fBiaya").value || "semua";
+    var cari = ($("cariBiaya").value || "").trim().toLowerCase();
+    var list = biayaTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return x.kategori === filter; });
+    if (cari) list = list.filter(function (x) {
+      return (x.keterangan || "").toLowerCase().indexOf(cari) !== -1 || namaKandang(x.kandangId).toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nBiaya = totalBiayaList(biayaTerlihat());
+    $("ringkasanBiaya").textContent = list.length + " catatan biaya · total " + rupiah(nBiaya) +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarBiaya").innerHTML = list.length ? list.map(function (b) {
+      var bolehHapus = bolehKelola();
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-biaya="' + b.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(b.kandangId ? namaKandang(b.kandangId) : "Umum") + '</b> <span class="lencana st-biru">' + esc(b.kategori) + '</span> <span class="tag">' + esc(b.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(b.tanggal) + (b.keterangan ? ' · ' + esc(b.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(b.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada biaya yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-biaya]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var item = state.biaya.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-biaya")); });
+        if (!item) return;
+        tanyaKonfirmasi("Hapus Biaya", "Hapus biaya \"" + item.kategori + "\" (" + rupiah(item.jumlah) + ")?", function () {
+          state.biaya = state.biaya.filter(function (x) { return x.id !== item.id; });
+          saveState(); renderSemua(); toast("Biaya dihapus.");
+        });
+      });
+    });
+  }
+  $("fBiaya").addEventListener("change", renderBiaya);
+  $("cariBiaya").addEventListener("input", renderBiaya);
+  $("btnTambahBiaya").addEventListener("click", function () {
+    var kandangId = $("byKandang").value ? Number($("byKandang").value) : "";
+    var kategori = $("byKategori").value;
+    var jumlah = Number($("byJumlah").value);
+    var tanggal = $("byTanggal").value;
+    var keterangan = $("byKeterangan").value.trim();
+    if (!(jumlah > 0)) { toast("Isi jumlah biaya (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal biaya."); return; }
+    var pemilik = kandangId ? (cariKandang(kandangId) || {}).pemilik || "manajer" : (currentUser ? currentUser.username : "manajer");
+    state.biaya.push({ id: state.nextBiayaId++, kandangId: kandangId, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan });
+    saveState();
+    $("byJumlah").value = ""; $("byKeterangan").value = "";
+    renderSemua();
+    toast("Biaya \"" + kategori + "\" (" + rupiah(jumlah) + ") tersimpan.");
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(telurTerlihat().concat(biayaTerlihat()));
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login, saat data
+       per peran masih kosong). Setelah pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var telurSemua = telurTerlihat();
+    var biayaSemua = biayaTerlihat();
+    var nButir = totalButir(telurSemua);
+    var nNilaiTelur = nilaiTelurList(telurSemua);
+    var nBiaya = totalBiayaList(biayaSemua);
+    $("ringkasanLaporan").textContent = telurSemua.length + " catatan telur (" + nButir.toLocaleString("id-ID") + " butir) · " + biayaSemua.length + " catatan biaya · nilai telur " + rupiah(nNilaiTelur) + " · biaya " + rupiah(nBiaya) + " · selisih " + rupiah(nNilaiTelur - nBiaya) +
+      (currentUser && currentUser.peran === "peternak" ? " (milik Anda)" : " (semua)") + ".";
+    var perKandang = {};
+    kandangTerlihat().forEach(function (k) {
+      perKandang[k.id] = { nama: k.nama, jenis: k.jenis, populasi: jmlPopulasiKandang(k.id), kapasitas: k.kapasitas, butir: 0, biaya: 0 };
+    });
+    telurSemua.forEach(function (t) {
+      if (perKandang[t.kandangId]) perKandang[t.kandangId].butir += Number(t.butir) || 0;
+    });
+    biayaSemua.forEach(function (b) {
+      if (b.kandangId && perKandang[b.kandangId]) perKandang[b.kandangId].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciKandang = Object.keys(perKandang).sort(function (a, b) { return perKandang[b].butir - perKandang[a].butir; });
+    $("tabelPerKandang").innerHTML = "<tr><th>Kandang</th><th class=\"angka\">Populasi</th><th class=\"angka\">Telur (butir)</th><th class=\"angka\">Nilai Telur</th><th class=\"angka\">Biaya</th><th class=\"angka\">Selisih</th></tr>" +
+      (kunciKandang.length ? kunciKandang.map(function (kid) {
+        var x = perKandang[kid];
+        var nilai = x.butir * state.hargaTelur;
+        return "<tr><td><b>" + esc(x.nama) + "</b> <span class=\"tag\">" + esc(x.jenis) + "</span></td><td class=\"angka\">" + x.populasi.toLocaleString("id-ID") + " / " + x.kapasitas.toLocaleString("id-ID") + "</td><td class=\"angka\">" + x.butir.toLocaleString("id-ID") + "</td><td class=\"angka\">" + rupiah(nilai) + "</td><td class=\"angka\">" + rupiah(x.biaya) + "</td><td class=\"angka\">" + rupiah(nilai - x.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    var perBulan = {};
+    telurSemua.forEach(function (t) {
+      var k = bulanKey(t.tanggal);
+      if (!perBulan[k]) perBulan[k] = { butir: 0, biaya: 0, catatan: 0 };
+      perBulan[k].butir += Number(t.butir) || 0;
+      perBulan[k].catatan += 1;
+    });
+    biayaSemua.forEach(function (b) {
+      var k = bulanKey(b.tanggal);
+      if (!perBulan[k]) perBulan[k] = { butir: 0, biaya: 0, catatan: 0 };
+      perBulan[k].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Catatan Telur</th><th class=\"angka\">Telur (butir)</th><th class=\"angka\">Nilai Telur</th><th class=\"angka\">Biaya</th><th class=\"angka\">Selisih</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k];
+        var nilai = r.butir * state.hargaTelur;
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + r.butir.toLocaleString("id-ID") + "</td><td class=\"angka\">" + rupiah(nilai) + "</td><td class=\"angka\">" + rupiah(r.biaya) + "</td><td class=\"angka\">" + rupiah(nilai - r.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    var perKategori = {};
+    biayaSemua.forEach(function (b) {
+      if (!perKategori[b.kategori]) perKategori[b.kategori] = { jumlah: 0, catatan: 0 };
+      perKategori[b.kategori].jumlah += Number(b.jumlah) || 0;
+      perKategori[b.kategori].catatan += 1;
+    });
+    var kunciKat = Object.keys(perKategori).sort(function (a, b) { return perKategori[b].jumlah - perKategori[a].jumlah; });
+    $("tabelPerKategori").innerHTML = "<tr><th>Kategori Biaya</th><th class=\"angka\">Catatan</th><th class=\"angka\">Total Biaya</th></tr>" +
+      (kunciKat.length ? kunciKat.map(function (k) {
+        var r = perKategori[k];
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + rupiah(r.jumlah) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = telurTerlihat();
+    if (bk !== "semua") list = list.filter(function (t) { return bulanKey(t.tanggal) === bk; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var baris = [["Tanggal", "Kandang", "Butir Telur", "Retak", "Harga per butir", "Nilai", "Dicatat untuk", "Keterangan"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (t) {
+      n++;
+      baris.push([t.tanggal, namaKandang(t.kandangId), t.butir, t.retak, state.hargaTelur, t.butir * state.hargaTelur, t.pemilik, t.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("laporan-telur-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("manajemen-peternakan-ayam-backup.json", JSON.stringify({ aplikasi: "manajemen-peternakan-ayam", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.telur) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Kandang, populasi, jadwal, telur, dan biaya akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderKandang(); renderPopulasi(); renderPakan(); renderTelur(); renderBiaya(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
