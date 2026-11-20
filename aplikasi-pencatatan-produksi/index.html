@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aplikasi Pencatatan Produksi</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · APLIKASI PENCATATAN PRODUKSI</span>
+    <h1>Aplikasi <span class="aksen">Pencatatan Produksi</span></h1>
+    <p>Catat produksi harian, biaya produksi, hasil per periode, perbandingan antar periode, dan laporan produksi — dalam satu aplikasi untuk petani, peternak, dan pengolah hasil tani.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="produksi">Produksi <span class="badge" id="badgeProduksi">0</span></button>
+    <button class="tab-btn" type="button" data-tab="biaya">Biaya <span class="badge" id="badgeBiaya">0</span></button>
+    <button class="tab-btn" type="button" data-tab="periode">Periode</button>
+    <button class="tab-btn" type="button" data-tab="perbandingan">Perbandingan</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Produksi</h2><p>Ringkasan nilai produksi, biaya, laba, dan produksi terbaru dari data yang Anda lihat.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Nilai Produksi Bulan Ini</div><div class="angka" id="dNilaiBulan" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiBulanSub"></div></div>
+      <div class="stat"><div class="label">Biaya Bulan Ini</div><div class="angka" id="dBiayaBulan" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaBulanSub"></div></div>
+      <div class="stat"><div class="label">Laba Bulan Ini</div><div class="angka" id="dLabaBulan" style="font-size:22px">Rp0</div><div class="sub" id="dLabaBulanSub"></div></div>
+      <div class="stat"><div class="label">Produksi 7 Hari Terakhir</div><div class="angka" id="dTujuhHari" style="font-size:22px">0</div><div class="sub" id="dTujuhHariSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Nilai Produksi</div><div class="angka" id="dNilaiTotal" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiTotalSub"></div></div>
+      <div class="stat"><div class="label">Total Biaya</div><div class="angka" id="dBiayaTotal" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaTotalSub"></div></div>
+      <div class="stat"><div class="label">Total Laba</div><div class="angka" id="dLabaTotal" style="font-size:22px">Rp0</div><div class="sub" id="dLabaTotalSub"></div></div>
+      <div class="stat"><div class="label">Produk Nilai Tertinggi</div><div class="angka" id="dProdukTop" style="font-size:22px">—</div><div class="sub" id="dProdukTopSub"></div></div>
+    </div>
+    <div class="card"><h3>Nilai Produksi per Produk</h3><p class="sub">Total nilai produksi tiap produk dari data yang Anda lihat.</p><div id="daftarNilaiProduk"></div></div>
+    <div class="card"><h3>Produksi Terbaru</h3><p class="sub">Lima catatan produksi terbaru dari data yang Anda lihat.</p><div id="daftarProduksiRingkas"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat produksi hari ini atau biaya produksi baru.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeProduksi" type="button">Catat Produksi</button>
+        <button class="btn kecil hijau" id="btnKeBiaya" type="button">Catat Biaya</button>
+        <button class="btn kecil biru" id="btnKePeriode" type="button">Lihat Periode</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Petani.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="petani">Petani</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-produksi">
+    <div class="page-head"><h2>Produksi Harian</h2><p>Catat hasil produksi setiap hari. Nilai = jumlah × harga per satuan. Petani hanya melihat dan mencatat produksinya sendiri.</p></div>
+    <div class="card" id="cardTambahProduksi">
+      <h3>Catat Produksi</h3>
+      <p class="sub">Harga per satuan otomatis mengikuti daftar produk (bisa diubah per catatan).</p>
+      <div class="form-grid">
+        <div class="field"><label for="prProduk">Produk</label><select id="prProduk"></select></div>
+        <div class="field"><label for="prJumlah">Jumlah</label><input id="prJumlah" type="number" min="0" step="0.1" placeholder="cth: 500"></div>
+        <div class="field"><label for="prSatuan">Satuan</label><input id="prSatuan" type="text" readonly value="kg"></div>
+        <div class="field"><label for="prHarga">Harga per satuan (Rp)</label><input id="prHarga" type="number" min="0" step="100" placeholder="cth: 5500"></div>
+        <div class="field"><label for="prTanggal">Tanggal produksi</label><input id="prTanggal" type="date"></div>
+        <div class="field"><label>Nilai produksi</label><input id="prNilai" type="text" readonly value="Rp0"></div>
+        <div class="field"><label for="prPemilik">Dicatat untuk</label><select id="prPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option>
+          <option value="petani">Petani (Budi Santoso)</option>
+        </select></div>
+        <div class="field"><label for="prKeterangan">Keterangan (opsional)</label><input id="prKeterangan" type="text" placeholder="cth: Panen pagi"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahProduksi" type="button">Simpan Produksi</button>
+    </div>
+    <div class="card hanya-kelola" id="cardHargaProduk">
+      <h3>Harga Satuan Produk</h3>
+      <p class="sub">Harga acuan per satuan untuk tiap produk. Harga baru dipakai catatan produksi yang dicatat setelah perubahan — catatan lama tetap memakai harga saat dicatat.</p>
+      <div id="daftarHargaProduk"></div>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fProduksi">Filter produk</label><select id="fProduksi">
+          <option value="semua">Semua produk</option>
+        </select></div>
+        <div class="field"><label for="cariProduksi">Cari</label><input id="cariProduksi" type="text" placeholder="cth: Padi atau Panen"></div>
+      </div>
+      <p class="sub" id="ringkasanProduksi"></p>
+      <div id="daftarProduksi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-biaya">
+    <div class="page-head"><h2>Biaya Produksi</h2><p>Biaya bahan, tenaga kerja, dan lain-lain per tanggal dan produk. Laba = nilai produksi − biaya.</p></div>
+    <div class="card" id="cardTambahBiaya">
+      <h3>Catat Biaya</h3>
+      <p class="sub">Biaya dicatat per produk dan tanggal, supaya laba per produk bisa dihitung.</p>
+      <div class="form-grid">
+        <div class="field"><label for="byProduk">Produk</label><select id="byProduk"></select></div>
+        <div class="field"><label for="byKategori">Kategori biaya</label><select id="byKategori">
+          <option value="Bahan">Bahan</option>
+          <option value="Tenaga Kerja">Tenaga Kerja</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="byJumlah">Jumlah biaya (Rp)</label><input id="byJumlah" type="number" min="0" step="1000" placeholder="cth: 500000"></div>
+        <div class="field"><label for="byTanggal">Tanggal biaya</label><input id="byTanggal" type="date"></div>
+        <div class="field"><label for="byPemilik">Dicatat untuk</label><select id="byPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option>
+          <option value="petani">Petani (Budi Santoso)</option>
+        </select></div>
+        <div class="field"><label for="byKeterangan">Keterangan (opsional)</label><input id="byKeterangan" type="text" placeholder="cth: Pupuk kandang"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBiaya" type="button">Simpan Biaya</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBiaya">Filter kategori</label><select id="fBiaya">
+          <option value="semua">Semua kategori</option>
+          <option value="Bahan">Bahan</option>
+          <option value="Tenaga Kerja">Tenaga Kerja</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="cariBiaya">Cari</label><input id="cariBiaya" type="text" placeholder="cth: Pupuk atau Padi"></div>
+      </div>
+      <p class="sub" id="ringkasanBiaya"></p>
+      <div id="daftarBiaya"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-periode">
+    <div class="page-head"><h2>Hasil per Periode</h2><p>Pilih rentang tanggal untuk melihat total produksi, biaya, dan laba pada periode itu. Perbandingan antar periode ada di tab berikutnya.</p></div>
+    <div class="card">
+      <h3>Pilih Periode</h3>
+      <p class="sub">Bawaan: bulan berjalan (1 November 2026 s.d. hari ini).</p>
+      <div class="form-grid">
+        <div class="field"><label for="pdMulai">Dari tanggal</label><input id="pdMulai" type="date"></div>
+        <div class="field"><label for="pdAkhir">Sampai tanggal</label><input id="pdAkhir" type="date"></div>
+      </div>
+      <button class="btn kecil biru" id="btnTerapkanPeriode" type="button">Terapkan Periode</button>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost kecil" data-periode-cepat="bulan" type="button">Bulan Berjalan</button>
+        <button class="btn ghost kecil" data-periode-cepat="lalu" type="button">Bulan Lalu</button>
+        <button class="btn ghost kecil" data-periode-cepat="tujuh" type="button">7 Hari Terakhir</button>
+        <button class="btn ghost kecil" data-periode-cepat="semua" type="button">Semua Data</button>
+      </div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Nilai Produksi Periode</div><div class="angka" id="pdNilai" style="font-size:22px">Rp0</div><div class="sub" id="pdNilaiSub"></div></div>
+      <div class="stat"><div class="label">Biaya Periode</div><div class="angka" id="pdBiaya" style="font-size:22px">Rp0</div><div class="sub" id="pdBiayaSub"></div></div>
+      <div class="stat"><div class="label">Laba Periode</div><div class="angka" id="pdLaba" style="font-size:22px">Rp0</div><div class="sub" id="pdLabaSub"></div></div>
+      <div class="stat"><div class="label">Catatan Periode</div><div class="angka" id="pdCatatan" style="font-size:22px">0</div><div class="sub" id="pdCatatanSub"></div></div>
+    </div>
+    <div class="card">
+      <h3>Per Produk pada Periode</h3>
+      <p class="sub" id="ringkasanPeriode"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPeriode"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-perbandingan">
+    <div class="page-head"><h2>Perbandingan Antar Periode</h2><p>Bandingkan dua periode: produksi, biaya, dan laba — beserta selisihnya dalam rupiah dan persen. Bawaan: bulan berjalan vs bulan lalu.</p></div>
+    <div class="card">
+      <h3>Periode A (periode yang dibandingkan)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="pbAMulai">Dari tanggal</label><input id="pbAMulai" type="date"></div>
+        <div class="field"><label for="pbAAkhir">Sampai tanggal</label><input id="pbAAkhir" type="date"></div>
+      </div>
+      <h3>Periode B (periode pembanding)</h3>
+      <div class="form-grid">
+        <div class="field"><label for="pbBMulai">Dari tanggal</label><input id="pbBMulai" type="date"></div>
+        <div class="field"><label for="pbBAkhir">Sampai tanggal</label><input id="pbBAkhir" type="date"></div>
+      </div>
+      <button class="btn kecil biru" id="btnTerapkanPerbandingan" type="button">Bandingkan</button>
+    </div>
+    <div class="card">
+      <h3>Hasil Perbandingan</h3>
+      <p class="sub" id="ringkasanPerbandingan"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerbandingan"></table></div>
+      <p class="sub" id="kesimpulanPerbandingan" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Produksi</h2><p>Rekap per produk, per bulan, dan per kategori biaya — serta ekspor ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Produk</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerProduk"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Kategori Biaya</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKategori"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor produksi bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Produksi</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Pencatatan Produksi.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Produksi</b> untuk mencatat hasil produksi harian. Pilih produk — satuan dan harga per satuan terisi otomatis, nilai produksi dihitung langsung (jumlah × harga per satuan).</li>
+        <li>Buka tab <b>Biaya</b> untuk mencatat biaya produksi: bahan, tenaga kerja, atau lain-lain, per produk dan tanggal.</li>
+        <li>Buka tab <b>Periode</b> untuk melihat total produksi, biaya, dan laba pada rentang tanggal yang Anda pilih.</li>
+        <li>Buka tab <b>Perbandingan</b> untuk membandingkan dua periode — selisih nilai produksi, biaya, dan laba ditampilkan dalam rupiah dan persen.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per produk, per bulan, dan per kategori biaya, serta ekspor produksi ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola produksi, biaya, periode, perbandingan, harga produk, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Petani</b> — mencatat produksi dan biaya miliknya sendiri serta melihat hasil dan laporannya sendiri. Tidak bisa mengubah harga produk atau melihat data orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Harga per satuan adalah harga acuan yang Anda isi — selalu cocokkan dengan harga pasar sebenarnya sebelum menghitung nilai produksi.</li>
+        <li>Laba di sini = nilai produksi − biaya yang dicatat. Biaya yang tidak dicatat tidak ikut terhitung, jadi catat semua biaya agar laba akurat.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Petani — <b>petani / petani123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Pencatatan Produksi — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PRODUKSI · APLIKASI PENCATATAN PRODUKSI</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Catat produksi harian, biaya produksi, hasil per periode, perbandingan antar periode, dan laporan produksi.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Petani — <b>petani / petani123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function angkaId(n) { return (Math.round(Number(n) * 10) / 10).toLocaleString("id-ID"); }
+  function persenSelisih(baru, lama) {
+    if (!lama) return baru > 0 ? "+∞" : "0,0%";
+    var p = (baru - lama) / lama * 100;
+    return (p >= 0 ? "+" : "") + p.toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%";
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "aplikasiPencatatanProduksi.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python.
+       Produk 8 (harga per satuan): Padi 5500/kg, Jagung Manis 4500/kg, Tomat 9000/kg,
+         Telur Ayam 2200/butir, Susu Sapi 15000/liter, Ikan Lele 25000/kg,
+         Cabai Merah 32000/kg, Kopi Robusta 45000/kg.
+       Produksi 15 catatan: total nilai Rp70.110.000.
+         Nov (11 catatan): Rp52.410.000. Okt (4 catatan): Rp17.700.000.
+         7 hari terakhir, hari ini + 6 hari ke belakang (4 catatan): Rp17.770.000.
+         Per produk: Susu 830 liter Rp12.450.000; Telur 5.500 butir Rp12.100.000;
+           Padi 2.100 kg Rp11.550.000; Kopi 250 kg Rp11.250.000; Lele 350 kg Rp8.750.000;
+           Jagung 1.400 kg Rp6.300.000; Tomat 430 kg Rp3.870.000; Cabai 120 kg Rp3.840.000.
+         Petani (Tomat, Telur, Cabai — 5 catatan): Rp19.810.000; 7 hari terakhir 2 catatan Rp7.120.000.
+       Biaya 14 catatan: total Rp16.750.000 (Bahan Rp11.450.000, Tenaga Kerja Rp4.800.000, Lain-lain Rp500.000).
+         Nov (12 catatan): Rp15.250.000. Okt (2 catatan): Rp1.500.000.
+         Petani (4 catatan): Rp4.650.000.
+       Laba: Nov Rp37.160.000; Okt Rp16.200.000; total Rp53.360.000; petani Rp15.160.000.
+       Perbandingan Nov vs Okt: nilai +196,1%; biaya +916,7%; laba +129,4%.
+       Per produk (nilai/biaya/laba): Padi 11.550.000/4.800.000/6.750.000;
+         Jagung 6.300.000/1.600.000/4.700.000; Tomat 3.870.000/600.000/3.270.000;
+         Telur 12.100.000/3.300.000/8.800.000; Susu 12.450.000/3.300.000/9.150.000;
+         Lele 8.750.000/1.100.000/7.650.000; Cabai 3.840.000/750.000/3.090.000;
+         Kopi 11.250.000/1.300.000/9.950.000. */
+  function seedState() {
+    var produk = [
+      { nama: "Padi", satuan: "kg", hargaPerSatuan: 5500 },
+      { nama: "Jagung Manis", satuan: "kg", hargaPerSatuan: 4500 },
+      { nama: "Tomat", satuan: "kg", hargaPerSatuan: 9000 },
+      { nama: "Telur Ayam", satuan: "butir", hargaPerSatuan: 2200 },
+      { nama: "Susu Sapi", satuan: "liter", hargaPerSatuan: 15000 },
+      { nama: "Ikan Lele", satuan: "kg", hargaPerSatuan: 25000 },
+      { nama: "Cabai Merah", satuan: "kg", hargaPerSatuan: 32000 },
+      { nama: "Kopi Robusta", satuan: "kg", hargaPerSatuan: 45000 }
+    ];
+    function pr(id, produkNama, jumlah, hargaPerSatuan, tanggal, pemilik, keterangan) {
+      return { id: id, produk: produkNama, jumlah: jumlah, hargaPerSatuan: hargaPerSatuan, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var produksi = [
+      pr(1, "Padi", 1200, 5500, kunciPlus(-18), "manajer", "Panen sawah utara"),
+      pr(2, "Jagung Manis", 800, 4500, kunciPlus(-15), "manajer", ""),
+      pr(3, "Tomat", 250, 9000, kunciPlus(-12), "petani", ""),
+      pr(4, "Telur Ayam", 3000, 2200, kunciPlus(-10), "petani", "Kandang A"),
+      pr(5, "Susu Sapi", 450, 15000, kunciPlus(-9), "manajer", "Perah pagi"),
+      pr(6, "Ikan Lele", 200, 25000, kunciPlus(-8), "manajer", "Kolam 1"),
+      pr(7, "Cabai Merah", 120, 32000, kunciPlus(-7), "petani", ""),
+      pr(8, "Kopi Robusta", 150, 45000, kunciPlus(-20), "manajer", "Petik merah"),
+      pr(9, "Padi", 900, 5500, kunciPlus(-5), "manajer", "Panen sawah selatan"),
+      pr(10, "Tomat", 180, 9000, kunciPlus(-3), "petani", ""),
+      pr(11, "Telur Ayam", 2500, 2200, kunciPlus(-2), "petani", "Kandang B"),
+      pr(12, "Susu Sapi", 380, 15000, kunciPlus(-1), "manajer", "Perah sore"),
+      pr(13, "Jagung Manis", 600, 4500, kunciPlus(-25), "manajer", ""),
+      pr(14, "Kopi Robusta", 100, 45000, kunciPlus(-28), "manajer", ""),
+      pr(15, "Ikan Lele", 150, 25000, kunciPlus(-30), "manajer", "Kolam 2")
+    ];
+    function by(id, produkNama, kategori, jumlah, tanggal, pemilik, keterangan) {
+      return { id: id, produk: produkNama, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var biaya = [
+      by(1, "Padi", "Bahan", 2000000, kunciPlus(-17), "manajer", "Pupuk kandang"),
+      by(2, "Padi", "Tenaga Kerja", 1500000, kunciPlus(-16), "manajer", "Upah panen"),
+      by(3, "Jagung Manis", "Bahan", 900000, kunciPlus(-14), "manajer", "Benih jagung"),
+      by(4, "Tomat", "Bahan", 600000, kunciPlus(-11), "petani", "Pupuk organik"),
+      by(5, "Telur Ayam", "Bahan", 1800000, kunciPlus(-10), "petani", "Pakan ayam"),
+      by(6, "Susu Sapi", "Tenaga Kerja", 1200000, kunciPlus(-9), "manajer", "Upah perah"),
+      by(7, "Ikan Lele", "Bahan", 1100000, kunciPlus(-8), "manajer", "Pakan lele"),
+      by(8, "Cabai Merah", "Bahan", 750000, kunciPlus(-6), "petani", "Pestisida nabati"),
+      by(9, "Kopi Robusta", "Lain-lain", 500000, kunciPlus(-19), "manajer", "Karung kopi"),
+      by(10, "Padi", "Tenaga Kerja", 1300000, kunciPlus(-4), "manajer", "Upah panen"),
+      by(11, "Telur Ayam", "Bahan", 1500000, kunciPlus(-2), "petani", "Pakan ayam"),
+      by(12, "Susu Sapi", "Bahan", 2100000, kunciPlus(-1), "manajer", "Pakan sapi"),
+      by(13, "Jagung Manis", "Bahan", 700000, kunciPlus(-24), "manajer", "Pupuk jagung"),
+      by(14, "Kopi Robusta", "Tenaga Kerja", 800000, kunciPlus(-27), "manajer", "Upah petik")
+    ];
+    return { produk: produk, produksi: produksi, biaya: biaya,
+      nextProduksiId: 16, nextBiayaId: 15 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "petani", nama: "Budi Santoso", peran: "petani", password: "petani123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.produk) state.produk = [];
+    if (!state.produksi) state.produksi = [];
+    if (!state.biaya) state.biaya = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Petani"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariProduk(nama) { return state.produk.find(function (x) { return x.nama === nama; }); }
+  function cariProduksi(id) { return state.produksi.find(function (x) { return x.id === id; }); }
+  function cariBiaya(id) { return state.biaya.find(function (x) { return x.id === id; }); }
+  function nilaiProduksi(p) { return (Number(p.jumlah) || 0) * (Number(p.hargaPerSatuan) || 0); }
+  function produksiTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.produksi.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.produksi.slice();
+  }
+  function biayaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.biaya.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.biaya.slice();
+  }
+  function totalNilaiProduksi(list) {
+    var t = 0;
+    list.forEach(function (p) { t += nilaiProduksi(p); });
+    return t;
+  }
+  function totalBiaya(list) {
+    var t = 0;
+    list.forEach(function (b) { t += Number(b.jumlah) || 0; });
+    return t;
+  }
+  function dalamRentang(tanggal, mulai, akhir) {
+    if (mulai && tanggal < mulai) return false;
+    if (akhir && tanggal > akhir) return false;
+    return true;
+  }
+  function ringkasPeriode(mulai, akhir) {
+    var pr = produksiTerlihat().filter(function (x) { return dalamRentang(x.tanggal, mulai, akhir); });
+    var by = biayaTerlihat().filter(function (x) { return dalamRentang(x.tanggal, mulai, akhir); });
+    var nilai = totalNilaiProduksi(pr);
+    var biaya = totalBiaya(by);
+    return { produksi: pr, biaya: by, nilai: nilai, biayaTotal: biaya, laba: nilai - biaya };
+  }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "produksi") renderProduksi();
+    if (nama === "biaya") renderBiaya();
+    if (nama === "periode") renderPeriode();
+    if (nama === "perbandingan") renderPerbandingan();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var pr = produksiTerlihat();
+    var by = biayaTerlihat();
+    var bkBerjalan = bulanKey(hariIniKey());
+    var prBulan = pr.filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var byBulan = by.filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var nilaiBulan = totalNilaiProduksi(prBulan);
+    var biayaBulan = totalBiaya(byBulan);
+    var labaBulan = nilaiBulan - biayaBulan;
+    var tujuh = pr.filter(function (x) { var d = selisihHari(x.tanggal); return d <= 0 && d >= -6; });
+    var nilaiTujuh = totalNilaiProduksi(tujuh);
+    var nilaiTotal = totalNilaiProduksi(pr);
+    var biayaTotal = totalBiaya(by);
+    var labaTotal = nilaiTotal - biayaTotal;
+    var perProduk = {};
+    pr.forEach(function (p) {
+      if (!perProduk[p.produk]) perProduk[p.produk] = { jumlah: 0, nilai: 0 };
+      perProduk[p.produk].jumlah += Number(p.jumlah) || 0;
+      perProduk[p.produk].nilai += nilaiProduksi(p);
+    });
+    var kunciProduk = Object.keys(perProduk).sort(function (a, b) { return perProduk[b].nilai - perProduk[a].nilai; });
+    var topProduk = kunciProduk.length ? kunciProduk[0] : null;
+    $("dNilaiBulan").textContent = rupiah(nilaiBulan);
+    $("dNilaiBulanSub").textContent = prBulan.length + " catatan produksi · " + namaBulan(bkBerjalan);
+    $("dBiayaBulan").textContent = rupiah(biayaBulan);
+    $("dBiayaBulanSub").textContent = byBulan.length + " catatan biaya · " + namaBulan(bkBerjalan);
+    $("dLabaBulan").textContent = rupiah(labaBulan);
+    $("dLabaBulanSub").textContent = "nilai produksi − biaya bulan ini";
+    $("dTujuhHari").textContent = tujuh.length + " catatan";
+    $("dTujuhHariSub").textContent = rupiah(nilaiTujuh) + " nilai produksi 7 hari terakhir";
+    $("dNilaiTotal").textContent = rupiah(nilaiTotal);
+    $("dNilaiTotalSub").textContent = pr.length + " catatan produksi (semua)";
+    $("dBiayaTotal").textContent = rupiah(biayaTotal);
+    $("dBiayaTotalSub").textContent = by.length + " catatan biaya (semua)";
+    $("dLabaTotal").textContent = rupiah(labaTotal);
+    $("dLabaTotalSub").textContent = "nilai produksi − biaya (semua)";
+    $("dProdukTop").textContent = topProduk ? topProduk : "—";
+    $("dProdukTopSub").textContent = topProduk ? rupiah(perProduk[topProduk].nilai) + " · " + angkaId(perProduk[topProduk].jumlah) + " " + (cariProduk(topProduk) ? cariProduk(topProduk).satuan : "") : "belum ada produksi";
+    $("badgeProduksi").textContent = pr.length;
+    $("badgeBiaya").textContent = by.length;
+    $("daftarNilaiProduk").innerHTML = kunciProduk.length ? kunciProduk.map(function (k) {
+      var r = perProduk[k];
+      var maks = perProduk[kunciProduk[0]].nilai;
+      var persen = maks > 0 ? Math.round(r.nilai / maks * 100) : 0;
+      var prod = cariProduk(k);
+      return '<div class="bar-stok"><div class="nama">' + esc(k) + '</div><div class="progres"><span style="width:' + persen + '%"></span></div><div class="nilai">' + rupiah(r.nilai) + '</div></div>' +
+        '<p class="sub" style="margin:-4px 0 8px">' + angkaId(r.jumlah) + ' ' + (prod ? prod.satuan : "") + ' · ' + rupiah(r.nilai) + '</p>';
+    }).join("") : '<p class="sub">Belum ada produksi.</p>';
+    var terbaru = pr.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarProduksiRingkas").innerHTML = terbaru.length ? terbaru.map(function (p) {
+      var prod = cariProduk(p.produk);
+      return '<div class="baris"><div><b>' + esc(p.produk) + '</b>' +
+        '<br><span class="sub">' + angkaId(p.jumlah) + ' ' + (prod ? prod.satuan : "") + ' × ' + rupiah(p.hargaPerSatuan) + ' · ' + tglSingkat(p.tanggal) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(nilaiProduksi(p)) + '</b></div></div>';
+    }).join("") : '<p class="sub">Belum ada produksi.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKeProduksi").addEventListener("click", function () { pindahTab("produksi"); });
+  $("btnKeBiaya").addEventListener("click", function () { pindahTab("biaya"); });
+  $("btnKePeriode").addEventListener("click", function () { pindahTab("periode"); });
+
+  /* ---------- Produksi ---------- */
+  function isiPilihanProduk() {
+    var sel = $("prProduk");
+    var simpan = sel.value;
+    sel.innerHTML = state.produk.map(function (p) {
+      return '<option value="' + esc(p.nama) + '">' + esc(p.nama) + ' · ' + rupiah(p.hargaPerSatuan) + '/' + esc(p.satuan) + '</option>';
+    }).join("");
+    if (simpan && state.produk.some(function (p) { return p.nama === simpan; })) sel.value = simpan;
+    var prod = cariProduk(sel.value);
+    if (prod) {
+      $("prSatuan").value = prod.satuan;
+      $("prHarga").value = prod.hargaPerSatuan;
+    }
+    hitungNilaiProduksi();
+  }
+  function hitungNilaiProduksi() {
+    var jml = Number($("prJumlah").value) || 0, harga = Number($("prHarga").value) || 0;
+    $("prNilai").value = rupiah(jml * harga);
+  }
+  function renderProduksi() {
+    isiPilihanProduk();
+    if (!$("prTanggal").value) $("prTanggal").value = hariIniKey();
+    if (currentUser && currentUser.peran === "petani") {
+      $("prPemilik").value = "petani";
+      $("prPemilik").disabled = true;
+    } else {
+      $("prPemilik").disabled = false;
+    }
+    var selF = $("fProduksi");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua produk</option>'];
+    state.produk.forEach(function (p) { opts.push('<option value="' + esc(p.nama) + '">' + esc(p.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = selF.value || "semua";
+    var cari = ($("cariProduksi").value || "").trim().toLowerCase();
+    var list = produksiTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return x.produk === filter; });
+    if (cari) list = list.filter(function (x) {
+      return (x.produk || "").toLowerCase().indexOf(cari) !== -1 || (x.keterangan || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var totNilai = totalNilaiProduksi(produksiTerlihat());
+    $("ringkasanProduksi").textContent = list.length + " catatan produksi · total nilai " + rupiah(totNilai) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarProduksi").innerHTML = list.length ? list.map(function (p) {
+      var prod = cariProduk(p.produk);
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "petani" && p.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-produksi="' + p.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(p.produk) + '</b> <span class="tag">' + esc(p.pemilik) + '</span>' +
+        '<br><span class="sub">' + angkaId(p.jumlah) + ' ' + (prod ? prod.satuan : "") + ' × ' + rupiah(p.hargaPerSatuan) + ' · ' + tglSingkat(p.tanggal) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(nilaiProduksi(p)) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada produksi yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-produksi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariProduksi(Number(b.getAttribute("data-hapus-produksi")));
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Produksi", "Hapus catatan produksi \"" + p.produk + "\" (" + angkaId(p.jumlah) + ")?", function () {
+          state.produksi = state.produksi.filter(function (x) { return x.id !== p.id; });
+          saveState(); renderSemua(); toast("Catatan produksi dihapus.");
+        });
+      });
+    });
+    renderHargaProduk();
+  }
+  function renderHargaProduk() {
+    var wadah = $("daftarHargaProduk");
+    if (!wadah) return;
+    wadah.innerHTML = state.produk.length ? state.produk.map(function (p) {
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<input class="input-kecil" style="width:130px" type="number" min="0" step="100" value="' + p.hargaPerSatuan + '" data-harga-ubah="' + esc(p.nama) + '"> ' +
+          '<button class="btn biru kecil" data-harga-simpan="' + esc(p.nama) + '" type="button">Simpan</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(p.nama) + '</b><br><span class="sub">' + rupiah(p.hargaPerSatuan) + ' per ' + esc(p.satuan) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada daftar produk.</p>';
+    document.querySelectorAll("[data-harga-simpan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-harga-simpan");
+        var input = document.querySelector('[data-harga-ubah="' + nama.replace(/"/g, '\\"') + '"]');
+        var nilai = input ? Number(input.value) : NaN;
+        if (!(nilai > 0)) { toast("Isi harga per satuan (lebih dari 0)."); return; }
+        var p = cariProduk(nama);
+        if (!p) return;
+        p.hargaPerSatuan = nilai;
+        saveState(); renderSemua();
+        toast("Harga \"" + nama + "\" diubah menjadi " + rupiah(nilai) + "/" + p.satuan + ".");
+      });
+    });
+  }
+  $("fProduksi").addEventListener("change", renderProduksi);
+  $("cariProduksi").addEventListener("input", renderProduksi);
+  $("prProduk").addEventListener("change", function () {
+    var prod = cariProduk($("prProduk").value);
+    if (prod) { $("prSatuan").value = prod.satuan; $("prHarga").value = prod.hargaPerSatuan; }
+    hitungNilaiProduksi();
+  });
+  $("prJumlah").addEventListener("input", hitungNilaiProduksi);
+  $("prHarga").addEventListener("input", hitungNilaiProduksi);
+  $("btnTambahProduksi").addEventListener("click", function () {
+    var produkNama = $("prProduk").value;
+    var jumlah = Number($("prJumlah").value), harga = Number($("prHarga").value);
+    var tanggal = $("prTanggal").value;
+    var pemilik = currentUser && currentUser.peran === "petani" ? "petani" : $("prPemilik").value;
+    var keterangan = $("prKeterangan").value.trim();
+    if (!produkNama) { toast("Pilih produk dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah produksi (lebih dari 0)."); return; }
+    if (!(harga > 0)) { toast("Isi harga per satuan."); return; }
+    if (!tanggal) { toast("Isi tanggal produksi."); return; }
+    state.produksi.push({ id: state.nextProduksiId++, produk: produkNama, jumlah: jumlah, hargaPerSatuan: harga, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan });
+    saveState();
+    $("prJumlah").value = ""; $("prKeterangan").value = ""; hitungNilaiProduksi();
+    renderSemua();
+    toast("Produksi \"" + produkNama + "\" (" + angkaId(jumlah) + ", " + rupiah(jumlah * harga) + ") tersimpan.");
+  });
+
+  /* ---------- Biaya ---------- */
+  function renderBiaya() {
+    var sel = $("byProduk");
+    var simpan = sel.value;
+    sel.innerHTML = state.produk.map(function (p) {
+      return '<option value="' + esc(p.nama) + '">' + esc(p.nama) + '</option>';
+    }).join("");
+    if (simpan && state.produk.some(function (p) { return p.nama === simpan; })) sel.value = simpan;
+    if (!$("byTanggal").value) $("byTanggal").value = hariIniKey();
+    if (currentUser && currentUser.peran === "petani") {
+      $("byPemilik").value = "petani";
+      $("byPemilik").disabled = true;
+    } else {
+      $("byPemilik").disabled = false;
+    }
+    var filter = $("fBiaya").value || "semua";
+    var cari = ($("cariBiaya").value || "").trim().toLowerCase();
+    var list = biayaTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return x.kategori === filter; });
+    if (cari) list = list.filter(function (x) {
+      return (x.produk || "").toLowerCase().indexOf(cari) !== -1 || (x.keterangan || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var totBiaya = totalBiaya(biayaTerlihat());
+    $("ringkasanBiaya").textContent = list.length + " catatan biaya · total " + rupiah(totBiaya) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarBiaya").innerHTML = list.length ? list.map(function (b) {
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "petani" && b.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-biaya="' + b.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(b.produk) + '</b> <span class="lencana st-biru">' + esc(b.kategori) + '</span> <span class="tag">' + esc(b.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(b.tanggal) + (b.keterangan ? ' · ' + esc(b.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(b.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada biaya yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-biaya]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var item = cariBiaya(Number(b.getAttribute("data-hapus-biaya")));
+        if (!item) return;
+        tanyaKonfirmasi("Hapus Biaya", "Hapus biaya \"" + item.produk + "\" (" + rupiah(item.jumlah) + ")?", function () {
+          state.biaya = state.biaya.filter(function (x) { return x.id !== item.id; });
+          saveState(); renderSemua(); toast("Biaya dihapus.");
+        });
+      });
+    });
+  }
+  $("fBiaya").addEventListener("change", renderBiaya);
+  $("cariBiaya").addEventListener("input", renderBiaya);
+  $("btnTambahBiaya").addEventListener("click", function () {
+    var produkNama = $("byProduk").value;
+    var kategori = $("byKategori").value;
+    var jumlah = Number($("byJumlah").value);
+    var tanggal = $("byTanggal").value;
+    var pemilik = currentUser && currentUser.peran === "petani" ? "petani" : $("byPemilik").value;
+    var keterangan = $("byKeterangan").value.trim();
+    if (!produkNama) { toast("Pilih produk dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah biaya (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal biaya."); return; }
+    state.biaya.push({ id: state.nextBiayaId++, produk: produkNama, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan });
+    saveState();
+    $("byJumlah").value = ""; $("byKeterangan").value = "";
+    renderSemua();
+    toast("Biaya \"" + produkNama + "\" (" + rupiah(jumlah) + ") tersimpan.");
+  });
+
+  /* ---------- Periode ---------- */
+  var periodeMulai = "", periodeAkhir = "", periodeSiap = false;
+  function aturPeriodeBawaan() {
+    var kini = hariIniKey();
+    periodeMulai = kini.slice(0, 8) + "01";
+    periodeAkhir = kini;
+    periodeSiap = true;
+  }
+  function renderPeriode() {
+    if (!periodeSiap) aturPeriodeBawaan();
+    if (!$("pdMulai").value) $("pdMulai").value = periodeMulai;
+    if (!$("pdAkhir").value) $("pdAkhir").value = periodeAkhir;
+    var mulai = $("pdMulai").value, akhir = $("pdAkhir").value;
+    var r = ringkasPeriode(mulai, akhir);
+    $("pdNilai").textContent = rupiah(r.nilai);
+    $("pdNilaiSub").textContent = r.produksi.length + " catatan produksi";
+    $("pdBiaya").textContent = rupiah(r.biayaTotal);
+    $("pdBiayaSub").textContent = r.biaya.length + " catatan biaya";
+    $("pdLaba").textContent = rupiah(r.laba);
+    $("pdLabaSub").textContent = "nilai produksi − biaya periode";
+    $("pdCatatan").textContent = (r.produksi.length + r.biaya.length) + " catatan";
+    $("pdCatatanSub").textContent = tglSingkat(mulai) + " s.d. " + tglSingkat(akhir);
+    var perProduk = {};
+    r.produksi.forEach(function (p) {
+      if (!perProduk[p.produk]) perProduk[p.produk] = { jumlah: 0, nilai: 0, biaya: 0 };
+      perProduk[p.produk].jumlah += Number(p.jumlah) || 0;
+      perProduk[p.produk].nilai += nilaiProduksi(p);
+    });
+    r.biaya.forEach(function (b) {
+      if (!perProduk[b.produk]) perProduk[b.produk] = { jumlah: 0, nilai: 0, biaya: 0 };
+      perProduk[b.produk].biaya += Number(b.jumlah) || 0;
+    });
+    var kunci = Object.keys(perProduk).sort(function (a, b) { return perProduk[b].nilai - perProduk[a].nilai; });
+    $("ringkasanPeriode").textContent = kunci.length + " produk pada periode " + tglSingkat(mulai) + " s.d. " + tglSingkat(akhir) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : "") + ".";
+    $("tabelPeriode").innerHTML = "<tr><th>Produk</th><th class=\"angka\">Jumlah</th><th class=\"angka\">Nilai Produksi</th><th class=\"angka\">Biaya</th><th class=\"angka\">Laba</th></tr>" +
+      (kunci.length ? kunci.map(function (k) {
+        var x = perProduk[k];
+        var prod = cariProduk(k);
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + angkaId(x.jumlah) + " " + (prod ? prod.satuan : "") + "</td><td class=\"angka\">" + rupiah(x.nilai) + "</td><td class=\"angka\">" + rupiah(x.biaya) + "</td><td class=\"angka\">" + rupiah(x.nilai - x.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Belum ada data pada periode ini.</td></tr>');
+  }
+  $("btnTerapkanPeriode").addEventListener("click", function () {
+    var mulai = $("pdMulai").value, akhir = $("pdAkhir").value;
+    if (!mulai || !akhir) {
+      toast("Isi kedua tanggal periode.");
+      $("pdMulai").value = periodeMulai; $("pdAkhir").value = periodeAkhir; renderPeriode();
+      return;
+    }
+    if (mulai > akhir) {
+      toast("Tanggal mulai tidak boleh setelah tanggal akhir.");
+      $("pdMulai").value = periodeMulai; $("pdAkhir").value = periodeAkhir; renderPeriode();
+      return;
+    }
+    periodeMulai = mulai; periodeAkhir = akhir;
+    renderPeriode();
+    toast("Periode diterapkan: " + tglSingkat(mulai) + " s.d. " + tglSingkat(akhir) + ".");
+  });
+  document.querySelectorAll("[data-periode-cepat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var jenis = b.getAttribute("data-periode-cepat");
+      var kini = hariIniKey();
+      if (jenis === "bulan") { periodeMulai = kini.slice(0, 8) + "01"; periodeAkhir = kini; }
+      else if (jenis === "lalu") {
+        var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+        periodeMulai = kunciTanggal(d);
+        var akhir = new Date(); akhir.setDate(1); akhir.setDate(akhir.getDate() - 1);
+        periodeAkhir = kunciTanggal(akhir);
+      }
+      else if (jenis === "tujuh") { periodeMulai = kunciPlus(-6); periodeAkhir = kini; }
+      else if (jenis === "semua") { periodeMulai = ""; periodeAkhir = ""; }
+      $("pdMulai").value = periodeMulai; $("pdAkhir").value = periodeAkhir;
+      renderPeriode();
+    });
+  });
+
+  /* ---------- Perbandingan ---------- */
+  function aturPerbandinganBawaan() {
+    var kini = hariIniKey();
+    $("pbAMulai").value = kini.slice(0, 8) + "01";
+    $("pbAAkhir").value = kini;
+    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+    $("pbBMulai").value = kunciTanggal(d);
+    var akhir = new Date(); akhir.setDate(1); akhir.setDate(akhir.getDate() - 1);
+    $("pbBAkhir").value = kunciTanggal(akhir);
+  }
+  function renderPerbandingan() {
+    if (!$("pbAMulai").value) aturPerbandinganBawaan();
+    var aMulai = $("pbAMulai").value, aAkhir = $("pbAAkhir").value;
+    var bMulai = $("pbBMulai").value, bAkhir = $("pbBAkhir").value;
+    var ra = ringkasPeriode(aMulai, aAkhir);
+    var rb = ringkasPeriode(bMulai, bAkhir);
+    var baris = [
+      { label: "Catatan produksi", a: ra.produksi.length, b: rb.produksi.length, uang: false },
+      { label: "Nilai produksi", a: ra.nilai, b: rb.nilai, uang: true },
+      { label: "Catatan biaya", a: ra.biaya.length, b: rb.biaya.length, uang: false },
+      { label: "Biaya", a: ra.biayaTotal, b: rb.biayaTotal, uang: true },
+      { label: "Laba", a: ra.laba, b: rb.laba, uang: true }
+    ];
+    $("ringkasanPerbandingan").textContent = "Periode A: " + tglSingkat(aMulai) + " s.d. " + tglSingkat(aAkhir) + " · Periode B: " + tglSingkat(bMulai) + " s.d. " + tglSingkat(bAkhir) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : "") + ".";
+    $("tabelPerbandingan").innerHTML = "<tr><th>Ukuran</th><th class=\"angka\">Periode A</th><th class=\"angka\">Periode B</th><th class=\"angka\">Selisih</th><th class=\"angka\">Perubahan</th></tr>" +
+      baris.map(function (r) {
+        var selisih = r.a - r.b;
+        var fmt = function (v) { return r.uang ? rupiah(v) : angkaId(v); };
+        var selisihTxt = (selisih >= 0 ? "+" : "−") + fmt(Math.abs(selisih));
+        return "<tr><td><b>" + r.label + "</b></td><td class=\"angka\">" + fmt(r.a) + "</td><td class=\"angka\">" + fmt(r.b) + "</td><td class=\"angka\">" + selisihTxt + "</td><td class=\"angka\">" + persenSelisih(r.a, r.b) + "</td></tr>";
+      }).join("");
+    var arah = ra.laba > rb.laba ? "lebih besar" : ra.laba < rb.laba ? "lebih kecil" : "sama";
+    $("kesimpulanPerbandingan").textContent = "Kesimpulan: laba Periode A (" + rupiah(ra.laba) + ") " + arah + " dari Periode B (" + rupiah(rb.laba) + "), selisih " + rupiah(ra.laba - rb.laba) + " (" + persenSelisih(ra.laba, rb.laba) + "). Nilai produksi " + persenSelisih(ra.nilai, rb.nilai) + ", biaya " + persenSelisih(ra.biayaTotal, rb.biayaTotal) + ".";
+  }
+  $("btnTerapkanPerbandingan").addEventListener("click", function () {
+    var aMulai = $("pbAMulai").value, aAkhir = $("pbAAkhir").value;
+    var bMulai = $("pbBMulai").value, bAkhir = $("pbBAkhir").value;
+    if (!aMulai || !aAkhir || !bMulai || !bAkhir) {
+      toast("Isi keempat tanggal perbandingan.");
+      aturPerbandinganBawaan(); renderPerbandingan();
+      return;
+    }
+    if (aMulai > aAkhir || bMulai > bAkhir) {
+      toast("Tanggal mulai tidak boleh setelah tanggal akhir.");
+      aturPerbandinganBawaan(); renderPerbandingan();
+      return;
+    }
+    renderPerbandingan();
+    toast("Perbandingan diterapkan.");
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(produksiTerlihat().concat(biayaTerlihat()));
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login, saat data
+       per peran masih kosong). Setelah pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var pr = produksiTerlihat();
+    var by = biayaTerlihat();
+    var nilaiTotal = totalNilaiProduksi(pr);
+    var biayaTotal = totalBiaya(by);
+    $("ringkasanLaporan").textContent = pr.length + " catatan produksi · " + by.length + " catatan biaya · nilai produksi " + rupiah(nilaiTotal) + " · biaya " + rupiah(biayaTotal) + " · laba " + rupiah(nilaiTotal - biayaTotal) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    var perProduk = {};
+    pr.forEach(function (p) {
+      if (!perProduk[p.produk]) perProduk[p.produk] = { jumlah: 0, nilai: 0, biaya: 0 };
+      perProduk[p.produk].jumlah += Number(p.jumlah) || 0;
+      perProduk[p.produk].nilai += nilaiProduksi(p);
+    });
+    by.forEach(function (b) {
+      if (!perProduk[b.produk]) perProduk[b.produk] = { jumlah: 0, nilai: 0, biaya: 0 };
+      perProduk[b.produk].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciProduk = Object.keys(perProduk).sort(function (a, b) { return perProduk[b].nilai - perProduk[a].nilai; });
+    $("tabelPerProduk").innerHTML = "<tr><th>Produk</th><th class=\"angka\">Jumlah</th><th class=\"angka\">Nilai Produksi</th><th class=\"angka\">Biaya</th><th class=\"angka\">Laba</th></tr>" +
+      (kunciProduk.length ? kunciProduk.map(function (k) {
+        var x = perProduk[k];
+        var prod = cariProduk(k);
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + angkaId(x.jumlah) + " " + (prod ? prod.satuan : "") + "</td><td class=\"angka\">" + rupiah(x.nilai) + "</td><td class=\"angka\">" + rupiah(x.biaya) + "</td><td class=\"angka\">" + rupiah(x.nilai - x.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Belum ada data.</td></tr>');
+    var perBulan = {};
+    pr.forEach(function (p) {
+      var k = bulanKey(p.tanggal);
+      if (!perBulan[k]) perBulan[k] = { nilai: 0, biaya: 0, catatan: 0 };
+      perBulan[k].nilai += nilaiProduksi(p);
+      perBulan[k].catatan += 1;
+    });
+    by.forEach(function (b) {
+      var k = bulanKey(b.tanggal);
+      if (!perBulan[k]) perBulan[k] = { nilai: 0, biaya: 0, catatan: 0 };
+      perBulan[k].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Catatan Produksi</th><th class=\"angka\">Nilai Produksi</th><th class=\"angka\">Biaya</th><th class=\"angka\">Laba</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k];
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.biaya) + "</td><td class=\"angka\">" + rupiah(r.nilai - r.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Belum ada data.</td></tr>');
+    var perKategori = {};
+    by.forEach(function (b) {
+      if (!perKategori[b.kategori]) perKategori[b.kategori] = { jumlah: 0, catatan: 0 };
+      perKategori[b.kategori].jumlah += Number(b.jumlah) || 0;
+      perKategori[b.kategori].catatan += 1;
+    });
+    var kunciKat = Object.keys(perKategori).sort(function (a, b) { return perKategori[b].jumlah - perKategori[a].jumlah; });
+    $("tabelPerKategori").innerHTML = "<tr><th>Kategori Biaya</th><th class=\"angka\">Catatan</th><th class=\"angka\">Total Biaya</th></tr>" +
+      (kunciKat.length ? kunciKat.map(function (k) {
+        var r = perKategori[k];
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + rupiah(r.jumlah) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = produksiTerlihat();
+    if (bk !== "semua") list = list.filter(function (p) { return bulanKey(p.tanggal) === bk; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var baris = [["Tanggal", "Produk", "Jumlah", "Satuan", "Harga per satuan", "Nilai", "Dicatat untuk", "Keterangan"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (p) {
+      n++;
+      var prod = cariProduk(p.produk);
+      baris.push([p.tanggal, p.produk, p.jumlah, prod ? prod.satuan : "", p.hargaPerSatuan, nilaiProduksi(p), p.pemilik, p.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("laporan-produksi-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("aplikasi-pencatatan-produksi-backup.json", JSON.stringify({ aplikasi: "aplikasi-pencatatan-produksi", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.produksi) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Produksi, biaya, dan harga produk akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderProduksi(); renderBiaya(); renderPeriode(); renderPerbandingan(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
