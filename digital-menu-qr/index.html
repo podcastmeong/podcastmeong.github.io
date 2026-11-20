@@ -244,10 +244,56 @@
   .modal h3 { margin-bottom: 6px; }
   .modal p { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
   .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; background: var(--bg); padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow);
+  }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 10px; font: inherit; background: var(--surface-2);
+  }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+
+  body[data-role="kasir"] .hanya-admin { display: none !important; }
+
+  .bar-pengguna {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    margin-bottom: 12px; font-size: 13.5px; color: var(--muted);
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; font-weight: 700; color: var(--ink);
+  }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+  .meja-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
 
   <header class="hero">
     <h1>Digital Menu QR</h1>
@@ -256,14 +302,86 @@
   </header>
 
   <nav class="tabbar" aria-label="Menu utama">
-    <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="ringkasan">Ringkasan</button>
     <button class="tab-btn" data-tab="menu">Menu &amp; Kategori</button>
     <button class="tab-btn" data-tab="qr">Kode QR</button>
     <button class="tab-btn" data-tab="pratinjau">Pratinjau Pelanggan</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
 
-  <section class="panel active" id="panel-ringkasan">
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dashboard</h2>
+      <p>Ringkasan resto, daftar meja, dan kelola pengguna aplikasi.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Item Menu</div><div class="angka" id="dItem">0</div></div>
+      <div class="stat"><div class="label">Kategori</div><div class="angka" id="dKategori">0</div></div>
+      <div class="stat"><div class="label">Jumlah Meja</div><div class="angka" id="dMeja">0</div></div>
+      <div class="stat accent"><div class="label">Pengguna Aplikasi</div><div class="angka" id="dPengguna">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Daftar Meja</h3>
+      <p class="sub">Nomor meja yang dipakai untuk kode QR per meja. Daftar ini dipakai sebagai saran saat mengisi nomor meja di tab Kode QR.</p>
+      <div id="daftarMeja"></div>
+      <form id="formMeja" style="margin-top:14px">
+        <div class="row">
+          <div class="grow">
+            <label for="fNamaMeja">Nomor / nama meja baru *</label>
+            <input type="text" id="fNamaMeja" placeholder="Contoh: 11" required>
+          </div>
+          <button type="submit" class="btn kecil">+ Tambah Meja</button>
+        </div>
+      </form>
+    </div>
+    <div class="card hanya-admin">
+      <h3>Pengguna Aplikasi</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
+      <div id="daftarPengguna"></div>
+      <div style="margin-top:14px">
+        <h3 style="font-size:15px">Tambah Pengguna Baru</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="nuNama">Nama *</label>
+            <input type="text" id="nuNama" placeholder="Contoh: Dewi">
+          </div>
+          <div class="field">
+            <label for="nuUser">Nama pengguna *</label>
+            <input type="text" id="nuUser" placeholder="Contoh: dewi">
+          </div>
+          <div class="field">
+            <label for="nuPass">Kata sandi *</label>
+            <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+          </div>
+          <div class="field">
+            <label for="nuPeran">Peran *</label>
+            <select id="nuPeran"><option value="kasir">Kasir</option><option value="admin">Admin</option></select>
+          </div>
+        </div>
+        <button class="btn kecil" id="btnTambahPengguna" type="button">+ Tambah Pengguna</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ganti kata sandi akun Anda sendiri (<span id="namaAkunSaya">—</span>).</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fSandiLama">Kata sandi lama *</label>
+            <input type="password" id="fSandiLama" required>
+          </div>
+          <div class="field">
+            <label for="fSandiBaru">Kata sandi baru *</label>
+            <input type="password" id="fSandiBaru" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil">Simpan Kata Sandi Baru</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-ringkasan">
     <div class="page-head">
       <h2>Ringkasan Menu</h2>
       <p>Isi menu Anda sekilas: kategori, jumlah item, dan ketersediaannya.</p>
@@ -396,7 +514,8 @@
           </div>
           <div class="field">
             <label for="fMeja">Nomor meja (opsional — QR tiap meja)</label>
-            <input type="text" id="fMeja" placeholder="Contoh: 5 (kosongkan bila QR umum)">
+            <input type="text" id="fMeja" list="daftarMejaSaran" placeholder="Contoh: 5 (kosongkan bila QR umum)">
+            <datalist id="daftarMejaSaran"></datalist>
           </div>
           <div class="row" style="margin-bottom:14px">
             <div class="grow">
@@ -468,6 +587,11 @@
       </ol>
     </div>
     <div class="card">
+      <h3>Masuk (Login), Dasbor, dan Pengguna</h3>
+      <p style="font-size:14px">Saat aplikasi dibuka, layar masuk tampil lebih dulu. Masukkan <b>nama pengguna</b> dan <b>kata sandi</b> Anda, lalu klik <b>Masuk</b>. Ada dua peran: <b>Admin</b> (semua akses, termasuk kelola pengguna) dan <b>Kasir</b> (kelola menu, meja, dan kode QR; tidak bisa kelola pengguna). Sesi masuk tersimpan selama tab peramban masih terbuka — memuat ulang halaman tidak meminta masuk lagi, tetapi menutup tab akan meminta masuk kembali. Klik <b>Keluar</b> di kanan atas untuk keluar. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna di tab <b>Dasbor</b>. Setiap pengguna juga bisa mengganti kata sandinya sendiri di Dasbor.</p>
+      <p style="font-size:14px; margin-top:8px">Pelanggan yang membuka menu lewat kode QR <b>tidak perlu masuk</b> — mereka langsung melihat menu.</p>
+    </div>
+    <div class="card">
       <h3>Harga aplikasi</h3>
       <table class="tabel-harga">
         <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
@@ -483,7 +607,7 @@
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p style="font-size:14px">Data menu, kategori, dan profil resto <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi). Data tidak tersinkron ke perangkat lain. Kode QR di demo ini menunjuk ke halaman demo ini sendiri; untuk resto Anda, tautan diganti ke alamat menu Anda setelah pembelian — kami bantu mengaturnya. Aplikasi ini menampilkan menu — pelanggan memesan dengan memanggil pelayan atau lewat WhatsApp resto; <b>bukan</b> sistem pemesanan online dengan pembayaran. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (multi-user lintas perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <p style="font-size:14px">Data menu, kategori, dan profil resto <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi). Data tidak tersinkron ke perangkat lain. Data pengguna aplikasi (nama, peran, kata sandi) juga hanya tersimpan di perangkat ini — kata sandi tersimpan apa adanya di perangkat ini, jadi jangan pakai kata sandi yang sama dengan akun penting lainnya. Kode QR di demo ini menunjuk ke halaman demo ini sendiri; untuk resto Anda, tautan diganti ke alamat menu Anda setelah pembelian — kami bantu mengaturnya. Aplikasi ini menampilkan menu — pelanggan memesan dengan memanggil pelayan atau lewat WhatsApp resto; <b>bukan</b> sistem pemesanan online dengan pembayaran. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (multi-user lintas perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
       <div style="margin-top:14px">
         <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
       </div>
@@ -491,7 +615,7 @@
   </section>
 
   <footer>
-    <p><b>Digital Menu QR v1.</b> Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Digital Menu QR v2.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Digital%20Menu%20QR." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
 </div>
@@ -506,6 +630,20 @@
       <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
       <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
     </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Digital Menu QR</h2>
+    <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+    <label for="loginUser">Nama pengguna</label>
+    <input type="text" id="loginUser" autocomplete="username">
+    <label for="loginPass">Kata sandi</label>
+    <input type="password" id="loginPass" autocomplete="current-password">
+    <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+    <button class="btn" id="loginBtn" type="button">Masuk</button>
+    <p class="login-note">Akun baru dibuat admin di tab Dasbor (Pengguna Aplikasi). Setelah masuk pertama kali, segera ganti kata sandi Anda di Dasbor agar hanya Anda yang tahu.</p>
   </div>
 </div>
 
@@ -2831,6 +2969,7 @@ var qrcode = function() {
       resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
       qrBase: DEMO_URL,
       meja: "",
+      mejaList: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
       kategori: [
         { id: 1, nama: "Makanan" },
         { id: 2, nama: "Minuman" },
@@ -2864,7 +3003,11 @@ var qrcode = function() {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
-        if (parsed && parsed.kategori && parsed.item && parsed.resto) { state = parsed; return; }
+        if (parsed && parsed.kategori && parsed.item && parsed.resto) {
+          state = parsed;
+          if (!Array.isArray(state.mejaList)) { state.mejaList = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]; }
+          return;
+        }
       }
     } catch (e) { /* pakai data contoh */ }
     state = dataContoh();
@@ -2911,6 +3054,7 @@ var qrcode = function() {
     tabBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
     document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
     $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") { renderDashboard(); }
     if (nama === "qr") { renderQR(); }
     if (nama === "pratinjau") { renderPratinjau(); }
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -3094,6 +3238,7 @@ var qrcode = function() {
     renderItem();
     renderPratinjau();
     renderQR();
+    renderDashboard();
     saveData();
   }
 
@@ -3244,6 +3389,188 @@ var qrcode = function() {
     });
   });
 
+  // ---------- Login & pengguna (admin & kasir) ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
+  ];
+  function getUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) return DEFAULT_USERS.map(function (u) { return { username: u.username, password: u.password, name: u.name, role: u.role, aktif: u.aktif }; });
+      var u = JSON.parse(raw);
+      if (!Array.isArray(u) || !u.length) return DEFAULT_USERS.map(function (x) { return { username: x.username, password: x.password, name: x.name, role: x.role, aktif: x.aktif }; });
+      return u.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
+      });
+    } catch (e) {
+      return DEFAULT_USERS.map(function (u) { return { username: u.username, password: u.password, name: u.name, role: u.role, aktif: u.aktif }; });
+    }
+  }
+  function saveUsers(users) {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  var currentUser = null;
+  function applyRole() {
+    if (!currentUser) return;
+    document.body.setAttribute("data-role", currentUser.role);
+    $("userChip").textContent = currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")";
+    $("namaAkunSaya").textContent = currentUser.name + " (" + currentUser.username + ")";
+    renderDashboard();
+  }
+  function doLogin() {
+    var u = $("loginUser").value.trim().toLowerCase();
+    var p = $("loginPass").value;
+    var found = null;
+    getUsers().forEach(function (x) { if (x.username.toLowerCase() === u && x.password === p) { found = x; } });
+    if (!found || found.aktif === false) { $("loginError").hidden = false; return; }
+    currentUser = found;
+    try { sessionStorage.setItem(SESSION_KEY, found.username); } catch (e) { /* sesi tidak tersimpan */ }
+    $("loginOverlay").classList.add("hidden");
+    $("loginError").hidden = true;
+    $("loginPass").value = "";
+    applyRole();
+    toast("Selamat datang, " + found.name);
+  }
+  $("loginBtn").addEventListener("click", doLogin);
+  $("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+  $("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+  $("btnKeluar").addEventListener("click", function () {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    location.reload();
+  });
+
+  // ---------- Dashboard ----------
+  function renderDashboard() {
+    if (!$("dItem")) return;
+    $("dItem").textContent = state.item.length;
+    $("dKategori").textContent = state.kategori.length;
+    $("dMeja").textContent = (state.mejaList || []).length;
+    $("dPengguna").textContent = getUsers().length;
+    var dl = $("daftarMejaSaran");
+    if (dl) {
+      dl.innerHTML = (state.mejaList || []).map(function (m) { return '<option value="' + esc(m) + '">'; }).join("");
+    }
+    var boxMeja = $("daftarMeja");
+    if (boxMeja) {
+      boxMeja.innerHTML = (state.mejaList || []).length
+        ? (state.mejaList || []).map(function (m) {
+            return '<div class="meja-row"><div><strong>Meja ' + esc(m) + '</strong></div><button class="btn ghost kecil" type="button" data-hapus-meja="' + esc(m) + '">Hapus</button></div>';
+          }).join("")
+        : '<p class="kosong">Belum ada meja. Tambahkan nomor meja di bawah.</p>';
+    }
+    renderUserList();
+  }
+  function renderUserList() {
+    var wrap = $("daftarPengguna");
+    if (!wrap) return;
+    if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
+    var users = getUsers();
+    wrap.innerHTML = users.map(function (u) {
+      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var labelAktif = u.aktif === false ? '<span class="lencana st-habis">Nonaktif</span>' : '<span class="lencana st-tersedia">Aktif</span>';
+      var tombol = "";
+      if (!(currentUser && u.username === currentUser.username)) {
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + '</button>';
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif === false ? "Aktifkan" : "Nonaktifkan") + '</button>';
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="hapus" data-user="' + esc(u.username) + '">Hapus</button>';
+      }
+      tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Ganti sandi</button>';
+      return '<div class="user-row"><div><strong>' + esc(u.name) + '</strong> <span style="color:var(--muted)">(' + esc(u.username) + ' &middot; ' + labelPeran + ')</span> ' + labelAktif + '</div><div class="aksi">' + tombol + '</div></div>';
+    }).join("");
+  }
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var users = getUsers();
+    var u = null;
+    users.forEach(function (x) { if (x.username === username) { u = x; } });
+    if (!u) return;
+    if (aksi === "peran") {
+      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin."); return;
+      }
+      u.role = u.role === "admin" ? "kasir" : "admin";
+      saveUsers(users); renderDashboard();
+      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
+    } else if (aksi === "aktif") {
+      if (u.aktif !== false && u.role === "admin" && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers(users); renderDashboard();
+      toast(u.aktif ? "Pengguna diaktifkan: " + u.name : "Pengguna dinonaktifkan: " + u.name);
+    } else if (aksi === "hapus") {
+      if (currentUser && u.username === currentUser.username) { toast("Tidak bisa menghapus akun sendiri."); return; }
+      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin."); return;
+      }
+      mintaKonfirmasi("Hapus pengguna?", 'Pengguna "' + u.name + '" (' + u.username + ') akan dihapus.', "Ya, hapus", function () {
+        saveUsers(getUsers().filter(function (x) { return x.username !== u.username; }));
+        renderDashboard(); toast("Pengguna dihapus: " + u.name);
+      });
+    } else if (aksi === "sandi") {
+      var np = prompt("Kata sandi baru untuk " + u.name + " (" + u.username + "):");
+      if (np === null || !np.trim()) return;
+      var us2 = getUsers();
+      us2.forEach(function (x) { if (x.username === u.username) { x.password = np.trim(); } });
+      saveUsers(us2); toast("Kata sandi diganti: " + u.name);
+    }
+  });
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim().toLowerCase();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (getUsers().some(function (x) { return x.username.toLowerCase() === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    var users = getUsers();
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
+    saveUsers(users);
+    $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+    renderDashboard(); toast("Pengguna ditambahkan: " + nama);
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("fSandiLama").value;
+    var baru = $("fSandiBaru").value;
+    if (lama !== currentUser.password) { toast("Kata sandi lama salah."); return; }
+    if (!baru || baru.length < 4) { toast("Kata sandi baru minimal 4 karakter."); return; }
+    var users = getUsers();
+    users.forEach(function (x) { if (x.username === currentUser.username) { x.password = baru; } });
+    saveUsers(users);
+    currentUser.password = baru;
+    $("fSandiLama").value = ""; $("fSandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diganti.");
+  });
+  $("formMeja").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNamaMeja").value.trim();
+    if (!nama) return;
+    if (!state.mejaList) { state.mejaList = []; }
+    if (state.mejaList.some(function (m) { return String(m).toLowerCase() === nama.toLowerCase(); })) { toast("Meja sudah ada."); return; }
+    state.mejaList.push(nama);
+    saveData(); renderDashboard();
+    $("fNamaMeja").value = "";
+    toast("Meja ditambahkan: Meja " + nama);
+  });
+  $("daftarMeja").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-hapus-meja]");
+    if (!btn) return;
+    var nama = btn.getAttribute("data-hapus-meja");
+    mintaKonfirmasi("Hapus meja?", "Meja " + nama + " akan dihapus dari daftar meja.", "Ya, hapus", function () {
+      state.mejaList = (state.mejaList || []).filter(function (m) { return String(m) !== String(nama); });
+      saveData(); renderDashboard(); toast("Meja dihapus: Meja " + nama);
+    });
+  });
+
   // ---------- MULAI ----------
   var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
   var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -3256,7 +3583,7 @@ var qrcode = function() {
   $("fQrBase").value = state.qrBase;
   $("fMeja").value = state.meja || "";
   renderSemua();
-  // Mode pelanggan: dibuka lewat kode QR (?mode=lihat)
+  // Mode pelanggan: dibuka lewat kode QR (?mode=lihat) — tanpa login
   var params = new URLSearchParams(window.location.search);
   if (params.get("mode") === "lihat") {
     if (params.get("meja")) {
@@ -3265,12 +3592,29 @@ var qrcode = function() {
       renderPratinjau();
     }
     $("bannerPelanggan").classList.add("show");
+    $("loginOverlay").classList.add("hidden");
     bukaTab("pratinjau");
+  } else {
+    // Pulihkan sesi masuk (selama tab peramban masih terbuka), bila ada
+    var sesiTersimpan = null;
+    try { sesiTersimpan = sessionStorage.getItem(SESSION_KEY); } catch (e) { /* sesi tidak tersedia */ }
+    if (sesiTersimpan) {
+      var ditemukan = null;
+      getUsers().forEach(function (x) { if (x.username === sesiTersimpan) { ditemukan = x; } });
+      if (ditemukan && ditemukan.aktif !== false) {
+        currentUser = ditemukan;
+        $("loginOverlay").classList.add("hidden");
+        applyRole();
+      }
+    }
+    if (!currentUser) { bukaTab("dashboard"); }
   }
   // Hook uji (dipakai skrip uji headless)
   window.DMQ = {
     getState: function () { return state; },
-    buildQrUrl: buildQrUrl
+    buildQrUrl: buildQrUrl,
+    getUsers: getUsers,
+    getCurrentUser: function () { return currentUser; }
   };
 })();
 </script>
