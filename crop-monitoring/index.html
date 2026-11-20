@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crop Monitoring (Pemantauan Tanaman)</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+
+  .grid-foto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .grid-foto { grid-template-columns: repeat(2, 1fr); } }
+  .foto-item { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface-2); }
+  .foto-item img { width: 100%; height: 120px; object-fit: cover; display: block; }
+  .foto-item .foto-meta { padding: 8px 10px; font-size: 13px; }
+  .foto-item .foto-meta .sub { color: var(--muted); font-size: 12px; }
+  .foto-pratinjau { max-width: 100%; max-height: 220px; border-radius: 12px; border: 1px solid var(--line); display: block; margin-top: 8px; }
+  .bar-tumbuh { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-tumbuh .nama { width: 170px; font-weight: 700; font-size: 13.5px; }
+  .bar-tumbuh .progres { flex: 1; }
+  .bar-tumbuh .nilai { width: 70px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · CROP MONITORING</span>
+    <h1>Crop <span class="aksen">Monitoring</span></h1>
+    <p>Pantau pertumbuhan tanaman per lahan, jadwal penyiraman dan pemupukan, catatan hama dan penyakit, foto perkembangan, serta laporan tanaman — dalam satu aplikasi untuk petani dan perkebunan.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="lahan">Lahan <span class="badge" id="badgeLahan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pertumbuhan">Pertumbuhan <span class="badge" id="badgePertumbuhan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" type="button" data-tab="hama">Hama <span class="badge" id="badgeHama">0</span></button>
+    <button class="tab-btn" type="button" data-tab="foto">Foto <span class="badge" id="badgeFoto">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Tanaman</h2><p>Ringkasan lahan, pertumbuhan, jadwal siram dan pupuk, hama aktif, serta foto perkembangan.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Lahan</div><div class="angka" id="dLahan" style="font-size:22px">0</div><div class="sub" id="dLahanSub"></div></div>
+      <div class="stat"><div class="label">Catatan Pertumbuhan</div><div class="angka" id="dPertumbuhan" style="font-size:22px">0</div><div class="sub" id="dPertumbuhanSub"></div></div>
+      <div class="stat"><div class="label">Tinggi Tertinggi</div><div class="angka" id="dTinggi" style="font-size:22px">0 cm</div><div class="sub" id="dTinggiSub"></div></div>
+      <div class="stat"><div class="label">Foto Perkembangan</div><div class="angka" id="dFoto" style="font-size:22px">0</div><div class="sub" id="dFotoSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat warn"><div class="label">Jadwal Hari Ini (belum)</div><div class="angka" id="dJadwalHariIni" style="font-size:22px">0</div><div class="sub" id="dJadwalHariIniSub"></div></div>
+      <div class="stat bahaya"><div class="label">Hama Aktif</div><div class="angka" id="dHamaAktif" style="font-size:22px">0</div><div class="sub" id="dHamaAktifSub"></div></div>
+      <div class="stat"><div class="label">Jadwal Belum Selesai</div><div class="angka" id="dJadwalBelum" style="font-size:22px">0</div><div class="sub" id="dJadwalBelumSub"></div></div>
+      <div class="stat"><div class="label">Jadwal Lewat Tanggal</div><div class="angka" id="dJadwalLewat" style="font-size:22px">0</div><div class="sub" id="dJadwalLewatSub"></div></div>
+    </div>
+    <div class="card"><h3>Tinggi Tanaman Terakhir per Lahan</h3><p class="sub">Tinggi terakhir yang tercatat, dibandingkan dengan tinggi tertinggi (185 cm).</p><div id="daftarTinggiTerakhir"></div></div>
+    <div class="card"><h3>Jadwal yang Perlu Perhatian</h3><p class="sub">Jadwal penyiraman dan pemupukan hari ini yang belum selesai dan yang sudah lewat tanggal.</p><div id="daftarJadwalPerhatian"></div></div>
+    <div class="card"><h3>Hama &amp; Penyakit Aktif</h3><p class="sub">Hama dan penyakit yang masih aktif dan belum tertangani.</p><div id="daftarHamaAktif"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat pertumbuhan, jadwal, hama, atau foto baru.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKePertumbuhan" type="button">Catat Pertumbuhan</button>
+        <button class="btn kecil hijau" id="btnKeJadwal" type="button">Tambah Jadwal</button>
+        <button class="btn kecil biru" id="btnKeHama" type="button">Catat Hama</button>
+        <button class="btn kecil" id="btnKeFoto" type="button">Unggah Foto</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Petani.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="petani">Petani</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-lahan">
+    <div class="page-head"><h2>Data Lahan</h2><p>Lahan: jenis tanaman, luas, tanggal tanam, penanggung jawab, dan status. Petani hanya bisa melihat lahan miliknya.</p></div>
+    <div class="card hanya-kelola">
+      <h3>Tambah Lahan</h3>
+      <p class="sub">Hanya Admin dan Manajer.</p>
+      <div class="form-grid">
+        <div class="field"><label for="lhNama">Nama lahan</label><input id="lhNama" type="text" placeholder="cth: Sawah Padi Selatan"></div>
+        <div class="field"><label for="lhTanaman">Jenis tanaman</label><select id="lhTanaman">
+          <option value="Padi Ciherang">Padi Ciherang</option><option value="Cabai Merah">Cabai Merah</option><option value="Tomat">Tomat</option><option value="Jagung Manis">Jagung Manis</option><option value="Sawi Hijau">Sawi Hijau</option><option value="Kopi Arabika">Kopi Arabika</option><option value="Lainnya">Lainnya</option>
+        </select></div>
+        <div class="field"><label for="lhLuas">Luas (ha)</label><input id="lhLuas" type="number" min="0" step="0.1" placeholder="cth: 1.5"></div>
+        <div class="field"><label for="lhTanam">Tanggal tanam</label><input id="lhTanam" type="date"></div>
+        <div class="field"><label for="lhPemilik">Penanggung jawab</label><select id="lhPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option><option value="petani">Petani (Budi Santoso)</option>
+        </select></div>
+        <div class="field"><label for="lhStatus">Status</label><select id="lhStatus">
+          <option value="Aktif">Aktif</option><option value="Perawatan">Perawatan</option><option value="Panen">Panen</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahLahan" type="button">Tambah Lahan</button>
+    </div>
+    <div class="card"><h3>Daftar Lahan</h3><p class="sub" id="ringkasanLahan"></p><div id="daftarLahan"></div></div>
+  </section>
+
+  <section class="panel" id="panel-pertumbuhan">
+    <div class="page-head"><h2>Pertumbuhan Tanaman</h2><p>Catat tinggi tanaman (cm) dan fase tumbuh berkala per lahan. Petani hanya mencatat untuk lahannya sendiri.</p></div>
+    <div class="card" id="cardTambahPertumbuhan">
+      <h3>Catat Pertumbuhan</h3>
+      <p class="sub">Admin, Manajer, dan Petani (petani hanya untuk lahannya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="ptLahan">Lahan</label><select id="ptLahan"></select></div>
+        <div class="field"><label for="ptTanggal">Tanggal</label><input id="ptTanggal" type="date"></div>
+        <div class="field"><label for="ptTinggi">Tinggi tanaman (cm)</label><input id="ptTinggi" type="number" min="0" step="0.1" placeholder="cth: 95"></div>
+        <div class="field"><label for="ptFase">Fase tumbuh</label><select id="ptFase">
+          <option value="Benih">Benih</option><option value="Kecambah">Kecambah</option><option value="Vegetatif">Vegetatif</option><option value="Berbunga">Berbunga</option><option value="Berbuah">Berbuah</option><option value="Siap Panen">Siap Panen</option>
+        </select></div>
+        <div class="field"><label for="ptCatatan">Catatan (opsional)</label><input id="ptCatatan" type="text" placeholder="cth: Daun hijau segar"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPertumbuhan" type="button">Simpan Catatan Pertumbuhan</button>
+    </div>
+    <div class="card">
+      <h3>Grafik Tinggi Terakhir per Lahan</h3>
+      <p class="sub">Batang menunjukkan tinggi terakhir tiap lahan, dibandingkan dengan tinggi tertinggi.</p>
+      <div id="grafikTinggi"></div>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanPertumbuhan">Bulan</label><select id="fBulanPertumbuhan"></select></div>
+        <div class="field"><label for="fLahanPertumbuhan">Lahan</label><select id="fLahanPertumbuhan"></select></div>
+        <div class="field"><label for="cariPertumbuhan">Cari</label><input id="cariPertumbuhan" type="text" placeholder="cth: Padi atau Berbunga"></div>
+      </div>
+      <p class="sub" id="ringkasanPertumbuhan"></p>
+      <div id="daftarPertumbuhan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal Penyiraman &amp; Pemupukan</h2><p>Jadwal penyiraman dan pemupukan per lahan. Segera = ≤7 hari lagi, Lewat = tanggal sudah lewat dan belum selesai.</p></div>
+    <div class="card" id="cardTambahJadwal">
+      <h3>Tambah Jadwal</h3>
+      <p class="sub">Admin, Manajer, dan Petani (petani hanya untuk lahannya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="jdLahan">Lahan</label><select id="jdLahan"></select></div>
+        <div class="field"><label for="jdJenis">Jenis jadwal</label><select id="jdJenis">
+          <option value="Penyiraman">Penyiraman</option><option value="Pemupukan">Pemupukan</option>
+        </select></div>
+        <div class="field"><label for="jdNama">Nama kegiatan</label><input id="jdNama" type="text" placeholder="cth: Siram pagi"></div>
+        <div class="field"><label for="jdTanggal">Tanggal</label><input id="jdTanggal" type="date"></div>
+        <div class="field"><label for="jdDetail">Detail (opsional)</label><input id="jdDetail" type="text" placeholder="cth: Pupuk NPK 5 kg"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahJadwal" type="button">Tambah Jadwal</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJadwal">Filter jadwal</label><select id="fJadwal">
+          <option value="semua">Semua</option>
+          <option value="hariini">Hari ini</option>
+          <option value="segera">Segera (≤7 hari)</option>
+          <option value="lewat">Lewat tanggal</option>
+          <option value="selesai">Sudah selesai</option>
+        </select></div>
+        <div class="field"><label for="cariJadwal">Cari</label><input id="cariJadwal" type="text" placeholder="cth: Padi atau Pupuk"></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div id="daftarJadwal"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-hama">
+    <div class="page-head"><h2>Hama &amp; Penyakit</h2><p>Catatan hama dan penyakit per lahan: tingkat serangan, tindakan, dan status tertangani.</p></div>
+    <div class="card" id="cardTambahHama">
+      <h3>Catat Hama / Penyakit</h3>
+      <p class="sub">Admin, Manajer, dan Petani (petani hanya untuk lahannya sendiri).</p>
+      <div class="form-grid">
+        <div class="field"><label for="hmLahan">Lahan</label><select id="hmLahan"></select></div>
+        <div class="field"><label for="hmNama">Nama hama / penyakit</label><input id="hmNama" type="text" placeholder="cth: Wereng Coklat"></div>
+        <div class="field"><label for="hmTingkat">Tingkat serangan</label><select id="hmTingkat">
+          <option value="Ringan">Ringan</option><option value="Sedang">Sedang</option><option value="Berat">Berat</option>
+        </select></div>
+        <div class="field"><label for="hmTanggal">Tanggal ditemukan</label><input id="hmTanggal" type="date"></div>
+        <div class="field"><label for="hmTindakan">Tindakan</label><input id="hmTindakan" type="text" placeholder="cth: Semprot insektisida"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahHama" type="button">Simpan Catatan Hama</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fHama">Filter status</label><select id="fHama">
+          <option value="semua">Semua</option>
+          <option value="Aktif">Aktif</option>
+          <option value="Tertangani">Tertangani</option>
+        </select></div>
+        <div class="field"><label for="cariHama">Cari</label><input id="cariHama" type="text" placeholder="cth: Wereng atau Cabai"></div>
+      </div>
+      <p class="sub" id="ringkasanHama"></p>
+      <div id="daftarHama"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-foto">
+    <div class="page-head"><h2>Foto Perkembangan</h2><p>Unggah foto perkembangan tanaman per lahan. Foto disimpan sebagai data URL di perangkat ini saja.</p></div>
+    <div class="card" id="cardTambahFoto">
+      <h3>Unggah Foto Perkembangan</h3>
+      <p class="sub">Admin, Manajer, dan Petani (petani hanya untuk lahannya sendiri). Pilih foto dari perangkat Anda.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ftLahan">Lahan</label><select id="ftLahan"></select></div>
+        <div class="field"><label for="ftJudul">Judul foto</label><input id="ftJudul" type="text" placeholder="cth: Padi umur 55 hari"></div>
+        <div class="field"><label for="ftTanggal">Tanggal</label><input id="ftTanggal" type="date"></div>
+        <div class="field"><label for="ftFile">Pilih foto</label><input id="ftFile" type="file" accept="image/*"></div>
+      </div>
+      <img id="ftPratinjau" class="foto-pratinjau" hidden alt="Pratinjau foto">
+      <p class="sub" id="ftStatus">Belum ada foto dipilih.</p>
+      <button class="btn kecil oren" id="btnTambahFoto" type="button">Simpan Foto</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fLahanFoto">Lahan</label><select id="fLahanFoto"></select></div>
+        <div class="field"><label for="fBulanFoto">Bulan</label><select id="fBulanFoto"></select></div>
+      </div>
+      <p class="sub" id="ringkasanFoto"></p>
+      <div class="grid-foto" id="daftarFoto"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Tanaman</h2><p>Rekap per lahan: tinggi terakhir, jadwal selesai/belum, hama aktif, dan jumlah foto — serta rekap per bulan dan per tingkat hama.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Lahan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerLahan"></table></div>
+      <h3 style="margin-top:18px">Per Bulan (Pertumbuhan &amp; Hama)</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Hama per Tingkat Serangan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelTingkatHama"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor catatan pertumbuhan dan hama bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Pertumbuhan &amp; Hama</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Crop Monitoring.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Lahan</b> untuk melihat atau menambah lahan (jenis tanaman, luas, tanggal tanam, penanggung jawab, dan status).</li>
+        <li>Buka tab <b>Pertumbuhan</b> untuk mencatat tinggi tanaman (cm) dan fase tumbuh berkala. Grafik menunjukkan tinggi terakhir tiap lahan.</li>
+        <li>Buka tab <b>Jadwal</b> untuk menjadwalkan penyiraman dan pemupukan. Tandai <b>Sudah Selesai</b> setelah kegiatan dilakukan; jadwal yang lewat tanggal akan tampil sebagai peringatan.</li>
+        <li>Buka tab <b>Hama</b> untuk mencatat hama dan penyakit beserta tingkat serangan dan tindakan. Tandai <b>Tertangani</b> bila sudah teratasi.</li>
+        <li>Buka tab <b>Foto</b> untuk mengunggah foto perkembangan tanaman per lahan. Foto disimpan sebagai data URL di perangkat ini saja.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per lahan, per bulan, dan per tingkat hama, serta ekspor ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua catatan.</li>
+        <li><b>Manajer</b> — mengelola lahan, pertumbuhan, jadwal, hama, foto, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Petani</b> — melihat jadwal dan lahan miliknya; mencatat pertumbuhan, jadwal, hama, dan foto untuk lahannya sendiri. Tidak bisa menambah lahan dan tidak bisa menghapus catatan orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Foto disimpan sebagai data URL di perangkat ini — foto berukuran besar memakai ruang penyimpanan perangkat. Periksa kondisi tanaman secara langsung — aplikasi ini hanya alat pencatatan, bukan pengganti pengamatan lapangan atau penyuluh pertanian.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Petani — <b>petani / petani123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Crop Monitoring (Pemantauan Tanaman) — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">CROP · PEMANTAUAN TANAMAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Pantau pertumbuhan tanaman per lahan, jadwal penyiraman dan pemupukan, hama dan penyakit, foto perkembangan, dan laporan tanaman.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Petani — <b>petani / petani123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "cropMonitoring.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var FASE = ["Benih", "Kecambah", "Vegetatif", "Berbunga", "Berbuah", "Siap Panen"];
+  var TINGKAT_HAMA = ["Ringan", "Sedang", "Berat"];
+
+  function fotoContoh(warna, label) {
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180"><rect width="240" height="180" fill="' + warna + '"/><circle cx="120" cy="80" r="45" fill="%23ffffff" opacity="0.25"/><text x="120" y="86" font-size="18" fill="white" text-anchor="middle" font-family="sans-serif">' + label + '</text><text x="120" y="150" font-size="12" fill="white" text-anchor="middle" font-family="sans-serif">Foto contoh</text></svg>';
+  }
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_crop.py):
+       Lahan 6 (Aktif 5, Perawatan 1); luas total 9,5 ha.
+       Pertumbuhan 21 catatan; tinggi terakhir: L1 95, L2 55, L3 48, L4 185, L5 20, L6 150 cm.
+         Nov 10, Okt 8, lain 3. Tertinggi 185 cm (Jagung Manis).
+         Petani (L3+L5): 6 catatan.
+       Jadwal 12: hari ini belum 4, segera 4, lewat 2, selesai 2.
+         Petani: 4 jadwal (hari ini 2, segera 1, lewat 1, selesai 0).
+       Hama 7: aktif 5, tertangani 2; Ringan 2, Sedang 4, Berat 1; semua Nov.
+         Petani: hama aktif 2.
+       Foto 8 (L1 2, L2 2, L3 1, L4 1, L5 1, L6 1); petani 2.
+       CSV: semua 28 baris data + header (29 baris); Nov 17 baris data + header (18 baris).
+       Per lahan: L1 tinggi 95, pert 4, jadwal belum 3/selesai 0, hama aktif 1, foto 2.
+         L2 tinggi 55, pert 4, jadwal belum 1/selesai 1, hama aktif 1, foto 2.
+         L3 tinggi 48, pert 3, jadwal belum 2/selesai 0, hama aktif 1, foto 1.
+         L4 tinggi 185, pert 4, jadwal belum 1/selesai 1, hama aktif 0, foto 1.
+         L5 tinggi 20, pert 3, jadwal belum 2/selesai 0, hama aktif 1, foto 1.
+         L6 tinggi 150, pert 3, jadwal belum 1/selesai 0, hama aktif 1, foto 1. */
+  function seedState() {
+    var lahan = [
+      { id: 1, nama: "Sawah Padi Utara", tanaman: "Padi Ciherang", luas: 2.5, tanam: kunciPlus(-60), pemilik: "manajer", status: "Aktif" },
+      { id: 2, nama: "Kebun Cabai Timur", tanaman: "Cabai Merah", luas: 1.2, tanam: kunciPlus(-45), pemilik: "manajer", status: "Aktif" },
+      { id: 3, nama: "Kebun Tomat Selatan", tanaman: "Tomat", luas: 0.8, tanam: kunciPlus(-30), pemilik: "petani", status: "Aktif" },
+      { id: 4, nama: "Lahan Jagung Barat", tanaman: "Jagung Manis", luas: 3.0, tanam: kunciPlus(-50), pemilik: "manajer", status: "Aktif" },
+      { id: 5, nama: "Kebun Sayur Organik", tanaman: "Sawi Hijau", luas: 0.5, tanam: kunciPlus(-20), pemilik: "petani", status: "Aktif" },
+      { id: 6, nama: "Kebun Kopi Bukit", tanaman: "Kopi Arabika", luas: 1.5, tanam: kunciPlus(-365), pemilik: "manajer", status: "Perawatan" }
+    ];
+    function pt(id, lahanId, tanggal, tinggi, fase, catatan, pemilik) {
+      return { id: id, lahanId: lahanId, tanggal: tanggal, tinggi: tinggi, fase: fase, catatan: catatan || "", pemilik: pemilik };
+    }
+    var pertumbuhan = [
+      pt(1, 1, kunciPlus(-55), 15, "Kecambah", "Tunas seragam", "manajer"),
+      pt(2, 1, kunciPlus(-40), 45, "Vegetatif", "Anakan mulai banyak", "manajer"),
+      pt(3, 1, kunciPlus(-20), 78, "Vegetatif", "Daun hijau segar", "manajer"),
+      pt(4, 1, kunciPlus(-5), 95, "Berbunga", "Malai mulai keluar", "manajer"),
+      pt(5, 2, kunciPlus(-40), 8, "Kecambah", "Semai pindah tanam", "manajer"),
+      pt(6, 2, kunciPlus(-25), 25, "Vegetatif", "Cabang mulai tumbuh", "manajer"),
+      pt(7, 2, kunciPlus(-10), 42, "Berbunga", "Bunga pertama mekar", "manajer"),
+      pt(8, 2, kunciPlus(-2), 55, "Berbunga", "Bunga lebat", "manajer"),
+      pt(9, 3, kunciPlus(-25), 10, "Kecambah", "Bibit sehat", "petani"),
+      pt(10, 3, kunciPlus(-15), 30, "Vegetatif", "Batang kokoh", "petani"),
+      pt(11, 3, kunciPlus(-5), 48, "Berbuah", "Buah pertama muncul", "petani"),
+      pt(12, 4, kunciPlus(-45), 20, "Kecambah", "Tumbuh seragam", "manajer"),
+      pt(13, 4, kunciPlus(-30), 80, "Vegetatif", "Daun lebar", "manajer"),
+      pt(14, 4, kunciPlus(-12), 150, "Berbunga", "Tongkol mulai terbentuk", "manajer"),
+      pt(15, 4, kunciPlus(-3), 185, "Berbunga", "Tongkol membesar", "manajer"),
+      pt(16, 5, kunciPlus(-15), 5, "Kecambah", "Semai baru", "petani"),
+      pt(17, 5, kunciPlus(-8), 12, "Vegetatif", "Daun muda segar", "petani"),
+      pt(18, 5, kunciPlus(-2), 20, "Vegetatif", "Siap panen sebagian", "petani"),
+      pt(19, 6, kunciPlus(-300), 120, "Vegetatif", "Pohon muda sehat", "manajer"),
+      pt(20, 6, kunciPlus(-180), 135, "Berbunga", "Bunga kopi mekar", "manajer"),
+      pt(21, 6, kunciPlus(-30), 150, "Berbuah", "Buah muda hijau", "manajer")
+    ];
+    function jd(id, lahanId, jenis, nama, tanggal, detail, status, pemilik) {
+      return { id: id, lahanId: lahanId, jenis: jenis, nama: nama, tanggal: tanggal, detail: detail || "", status: status, pemilik: pemilik };
+    }
+    var jadwal = [
+      jd(1, 1, "Penyiraman", "Siram pagi", kunciPlus(0), "Air secukupnya", "Belum", "manajer"),
+      jd(2, 1, "Pemupukan", "Pupuk NPK", kunciPlus(0), "NPK 5 kg", "Belum", "manajer"),
+      jd(3, 2, "Penyiraman", "Siram pagi", kunciPlus(0), "Air secukupnya", "Selesai", "manajer"),
+      jd(4, 3, "Penyiraman", "Siram sore", kunciPlus(0), "Air secukupnya", "Belum", "petani"),
+      jd(5, 4, "Penyiraman", "Siram pagi", kunciPlus(0), "Air secukupnya", "Selesai", "manajer"),
+      jd(6, 5, "Penyiraman", "Siram pagi", kunciPlus(0), "Air secukupnya", "Belum", "petani"),
+      jd(7, 2, "Pemupukan", "Pupuk kandang", kunciPlus(1), "Pupuk kandang 10 kg", "Belum", "manajer"),
+      jd(8, 3, "Penyiraman", "Siram pagi", kunciPlus(1), "Air secukupnya", "Belum", "petani"),
+      jd(9, 4, "Pemupukan", "Pupuk urea", kunciPlus(2), "Urea 4 kg", "Belum", "manajer"),
+      jd(10, 1, "Penyiraman", "Siram sore", kunciPlus(-1), "Air secukupnya", "Belum", "manajer"),
+      jd(11, 5, "Pemupukan", "Pupuk NPK", kunciPlus(-2), "NPK 2 kg", "Belum", "petani"),
+      jd(12, 6, "Penyiraman", "Siram pagi", kunciPlus(3), "Air secukupnya", "Belum", "manajer")
+    ];
+    function hm(id, lahanId, nama, tingkat, tindakan, tanggal, status, pemilik) {
+      return { id: id, lahanId: lahanId, nama: nama, tingkat: tingkat, tindakan: tindakan, tanggal: tanggal, status: status, pemilik: pemilik };
+    }
+    var hama = [
+      hm(1, 1, "Wereng Coklat", "Sedang", "Semprot insektisida", kunciPlus(-7), "Aktif", "manajer"),
+      hm(2, 2, "Antraknosa", "Berat", "Pangkas daun terserang + fungisida", kunciPlus(-5), "Aktif", "manajer"),
+      hm(3, 3, "Ulat Grayak", "Ringan", "Petik manual + pestisida nabati", kunciPlus(-3), "Aktif", "petani"),
+      hm(4, 4, "Hama Tikus", "Sedang", "Pasang perangkap", kunciPlus(-10), "Tertangani", "manajer"),
+      hm(5, 5, "Kutu Daun", "Ringan", "Semprot air sabun", kunciPlus(-4), "Aktif", "petani"),
+      hm(6, 2, "Layu Bakteri", "Sedang", "Cabut tanaman terserang", kunciPlus(-12), "Tertangani", "manajer"),
+      hm(7, 6, "Penggerek Buah Kopi", "Sedang", "Sanitasi kebun", kunciPlus(-8), "Aktif", "manajer")
+    ];
+    function ft(id, lahanId, judul, tanggal, dataUrl, pemilik) {
+      return { id: id, lahanId: lahanId, judul: judul, tanggal: tanggal, dataUrl: dataUrl, pemilik: pemilik };
+    }
+    var foto = [
+      ft(1, 1, "Padi umur 55 hari", kunciPlus(-5), fotoContoh("%234a7c59", "Padi"), "manajer"),
+      ft(2, 1, "Malai mulai keluar", kunciPlus(-5), fotoContoh("%236a9c5f", "Padi"), "manajer"),
+      ft(3, 2, "Cabai berbunga", kunciPlus(-2), fotoContoh("%23b3372f", "Cabai"), "manajer"),
+      ft(4, 2, "Bunga cabai lebat", kunciPlus(-2), fotoContoh("%23c0392b", "Cabai"), "manajer"),
+      ft(5, 3, "Tomat berbuah", kunciPlus(-5), fotoContoh("%23e07b1f", "Tomat"), "petani"),
+      ft(6, 4, "Jagung 185 cm", kunciPlus(-3), fotoContoh("%23d4a017", "Jagung"), "manajer"),
+      ft(7, 5, "Sawi siap panen", kunciPlus(-2), fotoContoh("%232e7d4f", "Sawi"), "petani"),
+      ft(8, 6, "Buah kopi muda", kunciPlus(-30), fotoContoh("%23795548", "Kopi"), "manajer")
+    ];
+    return { lahan: lahan, pertumbuhan: pertumbuhan, jadwal: jadwal, hama: hama, foto: foto,
+      nextLahanId: 7, nextPertumbuhanId: 22, nextJadwalId: 13, nextHamaId: 8, nextFotoId: 9 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "petani", nama: "Budi Santoso", peran: "petani", password: "petani123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  var fotoDataBaru = "";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.lahan) state.lahan = [];
+    if (!state.pertumbuhan) state.pertumbuhan = [];
+    if (!state.jadwal) state.jadwal = [];
+    if (!state.hama) state.hama = [];
+    if (!state.foto) state.foto = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Petani"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariLahan(id) { return state.lahan.find(function (x) { return x.id === id; }); }
+  function namaLahan(id) { var k = cariLahan(id); return k ? k.nama : "—"; }
+  function lahanTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.lahan.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.lahan.slice();
+  }
+  function idLahanTerlihat() {
+    var ids = {};
+    lahanTerlihat().forEach(function (k) { ids[k.id] = true; });
+    return ids;
+  }
+  function pertumbuhanTerlihat() {
+    var ids = idLahanTerlihat();
+    return state.pertumbuhan.filter(function (x) { return ids[x.lahanId]; });
+  }
+  function jadwalTerlihat() {
+    var ids = idLahanTerlihat();
+    return state.jadwal.filter(function (x) { return ids[x.lahanId]; });
+  }
+  function hamaTerlihat() {
+    var ids = idLahanTerlihat();
+    return state.hama.filter(function (x) { return ids[x.lahanId]; });
+  }
+  function fotoTerlihat() {
+    var ids = idLahanTerlihat();
+    return state.foto.filter(function (x) { return ids[x.lahanId]; });
+  }
+  function bolehCatatLahan(lahanId) {
+    var k = cariLahan(lahanId);
+    if (!k) return false;
+    if (bolehKelola()) return true;
+    return currentUser && currentUser.peran === "petani" && k.pemilik === currentUser.username;
+  }
+  function bolehUbahCatatan(pemilik) {
+    return currentUser && (currentUser.peran !== "petani" || pemilik === currentUser.username);
+  }
+  function tinggiTerakhir(lahanId) {
+    var list = state.pertumbuhan.filter(function (x) { return x.lahanId === lahanId; });
+    if (!list.length) return null;
+    list.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.id - b.id; });
+    return list[list.length - 1];
+  }
+  function tinggiTertinggi() {
+    var maks = 0;
+    pertumbuhanTerlihat().forEach(function (x) { if (Number(x.tinggi) > maks) maks = Number(x.tinggi); });
+    return maks;
+  }
+  function jadwalBelum() { return jadwalTerlihat().filter(function (x) { return x.status !== "Selesai"; }); }
+  function hamaAktif() { return hamaTerlihat().filter(function (x) { return x.status === "Aktif"; }); }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    sel.innerHTML = opts.join("");
+    if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+  function isiPilihanLahan(sel, defValue) {
+    sel.innerHTML = lahanTerlihat().map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + ' (' + esc(k.tanaman) + ')</option>';
+    }).join("");
+    if (defValue) sel.value = defValue;
+  }
+  function lencanaStatusLahan(s) {
+    if (s === "Aktif") return '<span class="lencana st-aman">Aktif</span>';
+    if (s === "Panen") return '<span class="lencana st-emas">Panen</span>';
+    return '<span class="lencana st-rendah">Perawatan</span>';
+  }
+  function lencanaTingkat(t) {
+    if (t === "Berat") return '<span class="lencana st-habis">Berat</span>';
+    if (t === "Sedang") return '<span class="lencana st-rendah">Sedang</span>';
+    return '<span class="lencana st-biru">Ringan</span>';
+  }
+  function labelJadwal(tanggal) {
+    var d = selisihHari(tanggal);
+    if (d < 0) return '<span class="lencana st-habis">Lewat ' + Math.abs(d) + ' hari</span>';
+    if (d === 0) return '<span class="lencana st-rendah">Hari ini</span>';
+    if (d <= 7) return '<span class="lencana st-rendah">Dalam ' + d + ' hari</span>';
+    return '<span class="lencana st-biru">Dalam ' + d + ' hari</span>';
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "lahan") renderLahan();
+    if (nama === "pertumbuhan") renderPertumbuhan();
+    if (nama === "jadwal") renderJadwal();
+    if (nama === "hama") renderHama();
+    if (nama === "foto") renderFoto();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var lh = lahanTerlihat();
+    var pt = pertumbuhanTerlihat();
+    var jdBelum = jadwalBelum();
+    var jdHariIni = jdBelum.filter(function (x) { return x.tanggal === hariIniKey(); });
+    var jdLewat = jdBelum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    var hmAktif = hamaAktif();
+    var ft = fotoTerlihat();
+    var maksTinggi = tinggiTertinggi();
+    var lahanTertinggi = null;
+    lh.forEach(function (k) {
+      var t = tinggiTerakhir(k.id);
+      if (t && (!lahanTertinggi || Number(t.tinggi) > Number(lahanTertinggi.tinggi))) lahanTertinggi = t;
+    });
+    var totalLuas = 0;
+    lh.forEach(function (k) { totalLuas += Number(k.luas) || 0; });
+    $("dLahan").textContent = lh.length;
+    $("dLahanSub").textContent = lh.filter(function (k) { return k.status === "Aktif"; }).length + " aktif · luas total " + totalLuas.toLocaleString("id-ID") + " ha" + (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)");
+    $("dPertumbuhan").textContent = pt.length;
+    $("dPertumbuhanSub").textContent = lh.length + " lahan terpantau" + (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)");
+    $("dTinggi").textContent = maksTinggi + " cm";
+    $("dTinggiSub").textContent = lahanTertinggi ? "tertinggi: " + esc(namaLahan(lahanTertinggi.lahanId)) + " (" + esc((cariLahan(lahanTertinggi.lahanId) || {}).tanaman || "") + ")" : "belum ada catatan";
+    $("dFoto").textContent = ft.length;
+    $("dFotoSub").textContent = "foto perkembangan" + (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)");
+    $("dJadwalHariIni").textContent = jdHariIni.length;
+    $("dJadwalHariIniSub").textContent = "penyiraman & pemupukan hari ini";
+    $("dHamaAktif").textContent = hmAktif.length;
+    $("dHamaAktifSub").textContent = "dari " + hamaTerlihat().length + " catatan hama";
+    $("dJadwalBelum").textContent = jdBelum.length;
+    $("dJadwalBelumSub").textContent = "dari " + jadwalTerlihat().length + " jadwal";
+    $("dJadwalLewat").textContent = jdLewat.length;
+    $("dJadwalLewatSub").textContent = "segera kerjakan";
+    $("badgeLahan").textContent = lh.length;
+    $("badgePertumbuhan").textContent = pt.length;
+    $("badgeJadwal").textContent = jdBelum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; }).length + jdLewat.length;
+    $("badgeHama").textContent = hmAktif.length;
+    $("badgeFoto").textContent = ft.length;
+    $("daftarTinggiTerakhir").innerHTML = lh.length ? lh.map(function (k) {
+      var t = tinggiTerakhir(k.id);
+      var persen = maksTinggi > 0 && t ? Math.round(Number(t.tinggi) / maksTinggi * 100) : 0;
+      return '<div class="bar-tumbuh"><div class="nama">' + esc(k.nama) + ' <span class="sub" style="color:var(--muted);font-weight:400">(' + esc(k.tanaman) + ')</span></div>' +
+        '<div class="progres"><span style="width:' + persen + '%"></span></div>' +
+        '<div class="nilai">' + (t ? t.tinggi + " cm" : "—") + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada lahan.</p>';
+    var perhatian = [];
+    jdHariIni.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaLahan(x.lahanId), tanggal: x.tanggal, ket: x.jenis + " hari ini" + (x.detail ? " · " + x.detail : "") }); });
+    jdLewat.forEach(function (x) { perhatian.push({ judul: x.nama + " — " + namaLahan(x.lahanId), tanggal: x.tanggal, ket: x.jenis + " lewat tanggal" + (x.detail ? " · " + x.detail : "") }); });
+    perhatian.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : 0; });
+    $("daftarJadwalPerhatian").innerHTML = perhatian.length ? perhatian.map(function (e) {
+      return '<div class="baris"><div><b>' + esc(e.judul) + '</b> ' + labelJadwal(e.tanggal) +
+        '<br><span class="sub">' + esc(e.ket) + ' · ' + tglSingkat(e.tanggal) + '</span></div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang perlu perhatian.</p>';
+    $("daftarHamaAktif").innerHTML = hmAktif.length ? hmAktif.map(function (x) {
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> ' + lencanaTingkat(x.tingkat) +
+        '<br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + ' · tindakan: ' + esc(x.tindakan) + '</span></div></div>';
+    }).join("") : '<p class="sub">Tidak ada hama atau penyakit aktif.</p>';
+    renderPengguna();
+  }
+  $("btnKePertumbuhan").addEventListener("click", function () { pindahTab("pertumbuhan"); });
+  $("btnKeJadwal").addEventListener("click", function () { pindahTab("jadwal"); });
+  $("btnKeHama").addEventListener("click", function () { pindahTab("hama"); });
+  $("btnKeFoto").addEventListener("click", function () { pindahTab("foto"); });
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Catatan yang dibuatnya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    var peran = $("pgPeran").value || "petani";
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: peran, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Lahan ---------- */
+  function renderLahan() {
+    var list = lahanTerlihat();
+    var totalLuas = 0;
+    list.forEach(function (k) { totalLuas += Number(k.luas) || 0; });
+    $("ringkasanLahan").textContent = list.length + " lahan · luas total " + totalLuas.toLocaleString("id-ID") + " ha" +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarLahan").innerHTML = list.length ? list.map(function (k) {
+      var t = tinggiTerakhir(k.id);
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<button class="btn ghost kecil" data-hapus-lahan="' + k.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(k.nama) + '</b> <span class="tag">' + esc(k.tanaman) + '</span> ' + lencanaStatusLahan(k.status) +
+        '<br><span class="sub">luas ' + Number(k.luas).toLocaleString("id-ID") + ' ha · tanam ' + tglSingkat(k.tanam) + ' · penanggung jawab: ' + esc(k.pemilik) +
+        ' · tinggi terakhir: ' + (t ? t.tinggi + " cm (" + esc(t.fase) + ")" : "belum ada catatan") + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada lahan.</p>';
+    document.querySelectorAll("[data-hapus-lahan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariLahan(Number(b.getAttribute("data-hapus-lahan")));
+        if (!k) return;
+        var ada = state.pertumbuhan.some(function (x) { return x.lahanId === k.id; }) ||
+          state.jadwal.some(function (x) { return x.lahanId === k.id; }) ||
+          state.hama.some(function (x) { return x.lahanId === k.id; }) ||
+          state.foto.some(function (x) { return x.lahanId === k.id; });
+        if (ada) { toast("Lahan \"" + k.nama + "\" tidak bisa dihapus — masih ada pertumbuhan, jadwal, hama, atau foto tercatat."); return; }
+        tanyaKonfirmasi("Hapus Lahan", "Hapus \"" + k.nama + "\"?", function () {
+          state.lahan = state.lahan.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Lahan dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahLahan").addEventListener("click", function () {
+    var nama = $("lhNama").value.trim(), tanaman = $("lhTanaman").value;
+    var luas = Number($("lhLuas").value), tanam = $("lhTanam").value;
+    var pemilik = $("lhPemilik").value, status = $("lhStatus").value;
+    if (!nama) { toast("Isi nama lahan dulu."); return; }
+    if (!(luas > 0)) { toast("Isi luas (ha) yang benar."); return; }
+    if (!tanam) { toast("Isi tanggal tanam."); return; }
+    state.lahan.push({ id: state.nextLahanId++, nama: nama, tanaman: tanaman, luas: luas, tanam: tanam, pemilik: pemilik, status: status });
+    saveState();
+    $("lhNama").value = ""; $("lhLuas").value = ""; $("lhTanam").value = "";
+    renderSemua();
+    toast("Lahan \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Pertumbuhan ---------- */
+  function renderPertumbuhan() {
+    isiPilihanLahan($("ptLahan"));
+    if (!$("ptTanggal").value) $("ptTanggal").value = hariIniKey();
+    var maksTinggi = tinggiTertinggi();
+    var lh = lahanTerlihat();
+    $("grafikTinggi").innerHTML = lh.length ? lh.map(function (k) {
+      var t = tinggiTerakhir(k.id);
+      var persen = maksTinggi > 0 && t ? Math.round(Number(t.tinggi) / maksTinggi * 100) : 0;
+      return '<div class="bar-tumbuh"><div class="nama">' + esc(k.nama) + ' <span class="sub" style="color:var(--muted);font-weight:400">(' + esc(k.tanaman) + ')</span></div>' +
+        '<div class="progres"><span style="width:' + persen + '%"></span></div>' +
+        '<div class="nilai">' + (t ? t.tinggi + " cm" : "—") + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada lahan.</p>';
+    var selBulan = $("fBulanPertumbuhan");
+    var simpanBulan = selBulan.value;
+    isiPilihanBulan(selBulan, bulanList(state.pertumbuhan), simpanBulan ? simpanBulan : "semua");
+    var selLahan = $("fLahanPertumbuhan");
+    var simpanLahan = selLahan.value;
+    selLahan.innerHTML = '<option value="semua">Semua lahan</option>' + lh.map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + '</option>';
+    }).join("");
+    if (simpanLahan && lh.some(function (k) { return String(k.id) === String(simpanLahan); })) selLahan.value = simpanLahan;
+    var bk = selBulan.value, lahanId = selLahan.value;
+    var cari = ($("cariPertumbuhan").value || "").trim().toLowerCase();
+    var list = pertumbuhanTerlihat();
+    if (bk !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    if (lahanId !== "semua") list = list.filter(function (x) { return String(x.lahanId) === String(lahanId); });
+    if (cari) list = list.filter(function (x) {
+      return namaLahan(x.lahanId).toLowerCase().indexOf(cari) !== -1 || x.fase.toLowerCase().indexOf(cari) !== -1 || (x.catatan || "").toLowerCase().indexOf(cari) !== -1 || ((cariLahan(x.lahanId) || {}).tanaman || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanPertumbuhan").textContent = list.length + " catatan pertumbuhan" +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPertumbuhan").innerHTML = list.length ? list.map(function (x) {
+      var k = cariLahan(x.lahanId) || {};
+      var aksi = "";
+      if (bolehUbahCatatan(x.pemilik)) aksi = '<button class="btn ghost kecil" data-hapus-pertumbuhan="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(namaLahan(x.lahanId)) + '</b> <span class="tag">' + esc(k.tanaman || "") + '</span> <span class="lencana st-biru">' + esc(x.fase) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(x.tanggal) + ' · dicatat oleh ' + esc(x.pemilik) + (x.catatan ? ' · ' + esc(x.catatan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + x.tinggi + ' cm</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan pertumbuhan yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-pertumbuhan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.pertumbuhan.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-pertumbuhan")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Catatan Pertumbuhan", "Hapus catatan " + namaLahan(x.lahanId) + " (" + x.tinggi + " cm, " + tglSingkat(x.tanggal) + ")?", function () {
+          state.pertumbuhan = state.pertumbuhan.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Catatan pertumbuhan dihapus.");
+        });
+      });
+    });
+  }
+  $("fBulanPertumbuhan").addEventListener("change", renderPertumbuhan);
+  $("fLahanPertumbuhan").addEventListener("change", renderPertumbuhan);
+  $("cariPertumbuhan").addEventListener("input", renderPertumbuhan);
+  $("btnTambahPertumbuhan").addEventListener("click", function () {
+    var lahanId = Number($("ptLahan").value), tanggal = $("ptTanggal").value;
+    var tinggi = Number($("ptTinggi").value), fase = $("ptFase").value;
+    var catatan = $("ptCatatan").value.trim();
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!bolehCatatLahan(lahanId)) { toast("Anda hanya bisa mencatat pertumbuhan untuk lahan Anda sendiri."); return; }
+    if (!tanggal) { toast("Isi tanggal catatan."); return; }
+    if (!(tinggi > 0)) { toast("Isi tinggi tanaman (cm) yang benar."); return; }
+    state.pertumbuhan.push({ id: state.nextPertumbuhanId++, lahanId: lahanId, tanggal: tanggal, tinggi: tinggi, fase: fase, catatan: catatan, pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("ptTinggi").value = ""; $("ptCatatan").value = "";
+    renderSemua();
+    toast("Pertumbuhan " + tinggi + " cm (" + fase + ") tercatat.");
+  });
+
+  /* ---------- Jadwal ---------- */
+  function renderJadwal() {
+    isiPilihanLahan($("jdLahan"));
+    if (!$("jdTanggal").value) $("jdTanggal").value = hariIniKey();
+    var filter = $("fJadwal").value || "semua";
+    var cari = ($("cariJadwal").value || "").trim().toLowerCase();
+    var semua = jadwalTerlihat();
+    var belum = semua.filter(function (x) { return x.status !== "Selesai"; });
+    var segera = belum.filter(function (x) { var d = selisihHari(x.tanggal); return d >= 0 && d <= 7; });
+    var lewat = belum.filter(function (x) { return selisihHari(x.tanggal) < 0; });
+    var hariIni = belum.filter(function (x) { return x.tanggal === hariIniKey(); });
+    var selesai = semua.filter(function (x) { return x.status === "Selesai"; });
+    var list = semua;
+    if (filter === "hariini") list = hariIni;
+    else if (filter === "segera") list = segera;
+    else if (filter === "lewat") list = lewat;
+    else if (filter === "selesai") list = selesai;
+    if (cari) list = list.filter(function (x) {
+      return x.nama.toLowerCase().indexOf(cari) !== -1 || namaLahan(x.lahanId).toLowerCase().indexOf(cari) !== -1 || x.jenis.toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.id - b.id; });
+    $("ringkasanJadwal").textContent = list.length + " jadwal · hari ini belum " + hariIni.length + " · segera " + segera.length + " · lewat " + lewat.length + " · sudah selesai " + selesai.length + ".";
+    $("daftarJadwal").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehCatatLahan(x.lahanId)) {
+        if (x.status === "Selesai") aksi += '<button class="btn ghost kecil" data-jadwal-belum="' + x.id + '" type="button">Batalkan Selesai</button> ';
+        else aksi += '<button class="btn hijau kecil" data-jadwal-selesai="' + x.id + '" type="button">Sudah Selesai</button> ';
+      } else if (x.status === "Selesai") {
+        aksi += '<span class="lencana st-aman">Selesai</span>';
+      }
+      if (bolehKelola()) aksi += '<button class="btn ghost kecil" data-hapus-jadwal="' + x.id + '" type="button">Hapus</button>';
+      var lencana = x.status === "Selesai" ? '<span class="lencana st-aman">Selesai</span>' : labelJadwal(x.tanggal);
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> <span class="tag">' + esc(x.jenis) + '</span> ' + lencana +
+        '<br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + (x.detail ? ' · ' + esc(x.detail) : '') + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang cocok.</p>';
+    document.querySelectorAll("[data-jadwal-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.jadwal.find(function (y) { return y.id === Number(b.getAttribute("data-jadwal-selesai")); });
+        if (!x) return;
+        x.status = "Selesai"; saveState(); renderSemua(); toast("Jadwal \"" + x.nama + "\" ditandai sudah selesai.");
+      });
+    });
+    document.querySelectorAll("[data-jadwal-belum]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.jadwal.find(function (y) { return y.id === Number(b.getAttribute("data-jadwal-belum")); });
+        if (!x) return;
+        x.status = "Belum"; saveState(); renderSemua(); toast("Jadwal \"" + x.nama + "\" dikembalikan ke Belum.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.jadwal.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-jadwal")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Jadwal", "Hapus jadwal \"" + x.nama + "\" untuk " + namaLahan(x.lahanId) + "?", function () {
+          state.jadwal = state.jadwal.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Jadwal dihapus.");
+        });
+      });
+    });
+  }
+  $("fJadwal").addEventListener("change", renderJadwal);
+  $("cariJadwal").addEventListener("input", renderJadwal);
+  $("btnTambahJadwal").addEventListener("click", function () {
+    var lahanId = Number($("jdLahan").value), jenis = $("jdJenis").value;
+    var nama = $("jdNama").value.trim(), tanggal = $("jdTanggal").value;
+    var detail = $("jdDetail").value.trim();
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!bolehCatatLahan(lahanId)) { toast("Anda hanya bisa menambah jadwal untuk lahan Anda sendiri."); return; }
+    if (!nama) { toast("Isi nama kegiatan dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal jadwal."); return; }
+    state.jadwal.push({ id: state.nextJadwalId++, lahanId: lahanId, jenis: jenis, nama: nama, tanggal: tanggal, detail: detail, status: "Belum", pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("jdNama").value = ""; $("jdDetail").value = "";
+    renderSemua();
+    toast("Jadwal \"" + nama + "\" ditambahkan.");
+  });
+
+  /* ---------- Hama ---------- */
+  function renderHama() {
+    isiPilihanLahan($("hmLahan"));
+    if (!$("hmTanggal").value) $("hmTanggal").value = hariIniKey();
+    var filter = $("fHama").value || "semua";
+    var cari = ($("cariHama").value || "").trim().toLowerCase();
+    var semua = hamaTerlihat();
+    var aktif = semua.filter(function (x) { return x.status === "Aktif"; });
+    var tertangani = semua.filter(function (x) { return x.status === "Tertangani"; });
+    var list = semua;
+    if (filter === "Aktif") list = aktif;
+    else if (filter === "Tertangani") list = tertangani;
+    if (cari) list = list.filter(function (x) {
+      return x.nama.toLowerCase().indexOf(cari) !== -1 || namaLahan(x.lahanId).toLowerCase().indexOf(cari) !== -1 || x.tindakan.toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanHama").textContent = list.length + " catatan hama · aktif " + aktif.length + " · tertangani " + tertangani.length + ".";
+    $("daftarHama").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehCatatLahan(x.lahanId)) {
+        if (x.status === "Aktif") aksi += '<button class="btn hijau kecil" data-hama-selesai="' + x.id + '" type="button">Tandai Tertangani</button> ';
+        else aksi += '<button class="btn ghost kecil" data-hama-aktif="' + x.id + '" type="button">Aktifkan Lagi</button> ';
+      }
+      if (bolehKelola()) aksi += '<button class="btn ghost kecil" data-hapus-hama="' + x.id + '" type="button">Hapus</button>';
+      var lencana = x.status === "Aktif" ? '<span class="lencana st-habis">Aktif</span>' : '<span class="lencana st-aman">Tertangani</span>';
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> ' + lencanaTingkat(x.tingkat) + ' ' + lencana +
+        '<br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + ' · tindakan: ' + esc(x.tindakan) + ' · dicatat oleh ' + esc(x.pemilik) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan hama yang cocok.</p>';
+    document.querySelectorAll("[data-hama-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.hama.find(function (y) { return y.id === Number(b.getAttribute("data-hama-selesai")); });
+        if (!x) return;
+        x.status = "Tertangani"; saveState(); renderSemua(); toast("Hama \"" + x.nama + "\" ditandai tertangani.");
+      });
+    });
+    document.querySelectorAll("[data-hama-aktif]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.hama.find(function (y) { return y.id === Number(b.getAttribute("data-hama-aktif")); });
+        if (!x) return;
+        x.status = "Aktif"; saveState(); renderSemua(); toast("Hama \"" + x.nama + "\" dikembalikan ke Aktif.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-hama]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.hama.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-hama")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Catatan Hama", "Hapus catatan hama \"" + x.nama + "\" di " + namaLahan(x.lahanId) + "?", function () {
+          state.hama = state.hama.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Catatan hama dihapus.");
+        });
+      });
+    });
+  }
+  $("fHama").addEventListener("change", renderHama);
+  $("cariHama").addEventListener("input", renderHama);
+  $("btnTambahHama").addEventListener("click", function () {
+    var lahanId = Number($("hmLahan").value), nama = $("hmNama").value.trim();
+    var tingkat = $("hmTingkat").value, tanggal = $("hmTanggal").value;
+    var tindakan = $("hmTindakan").value.trim();
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!bolehCatatLahan(lahanId)) { toast("Anda hanya bisa mencatat hama untuk lahan Anda sendiri."); return; }
+    if (!nama) { toast("Isi nama hama / penyakit dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal ditemukan."); return; }
+    if (!tindakan) { toast("Isi tindakan yang dilakukan."); return; }
+    state.hama.push({ id: state.nextHamaId++, lahanId: lahanId, nama: nama, tingkat: tingkat, tindakan: tindakan, tanggal: tanggal, status: "Aktif", pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("hmNama").value = ""; $("hmTindakan").value = "";
+    renderSemua();
+    toast("Hama \"" + nama + "\" tercatat.");
+  });
+
+  /* ---------- Foto ---------- */
+  $("ftFile").addEventListener("change", function () {
+    var f = $("ftFile").files[0];
+    if (!f) { fotoDataBaru = ""; $("ftPratinjau").hidden = true; $("ftStatus").textContent = "Belum ada foto dipilih."; return; }
+    if (f.size > 2 * 1024 * 1024) { toast("Foto terlalu besar — maksimal 2 MB."); $("ftFile").value = ""; fotoDataBaru = ""; $("ftPratinjau").hidden = true; $("ftStatus").textContent = "Foto terlalu besar (maksimal 2 MB)."; return; }
+    var rd = new FileReader();
+    rd.onload = function () {
+      fotoDataBaru = rd.result;
+      $("ftPratinjau").src = fotoDataBaru;
+      $("ftPratinjau").hidden = false;
+      $("ftStatus").textContent = "Foto dipilih: " + f.name + " (" + Math.round(f.size / 1024) + " KB).";
+    };
+    rd.readAsDataURL(f);
+  });
+  function renderFoto() {
+    isiPilihanLahan($("ftLahan"));
+    if (!$("ftTanggal").value) $("ftTanggal").value = hariIniKey();
+    var selLahan = $("fLahanFoto");
+    var simpanLahan = selLahan.value;
+    selLahan.innerHTML = '<option value="semua">Semua lahan</option>' + lahanTerlihat().map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + '</option>';
+    }).join("");
+    if (simpanLahan && lahanTerlihat().some(function (k) { return String(k.id) === String(simpanLahan); })) selLahan.value = simpanLahan;
+    var selBulan = $("fBulanFoto");
+    var simpanBulan = selBulan.value;
+    isiPilihanBulan(selBulan, bulanList(state.foto), simpanBulan ? simpanBulan : "semua");
+    var lahanId = selLahan.value, bk = selBulan.value;
+    var list = fotoTerlihat();
+    if (lahanId !== "semua") list = list.filter(function (x) { return String(x.lahanId) === String(lahanId); });
+    if (bk !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanFoto").textContent = list.length + " foto perkembangan" +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarFoto").innerHTML = list.length ? list.map(function (x) {
+      var aksi = "";
+      if (bolehUbahCatatan(x.pemilik)) aksi = '<button class="btn ghost kecil" data-hapus-foto="' + x.id + '" type="button">Hapus</button>';
+      return '<div class="foto-item"><img src="' + esc(x.dataUrl) + '" alt="' + esc(x.judul) + '">' +
+        '<div class="foto-meta"><b>' + esc(x.judul) + '</b><br><span class="sub">' + esc(namaLahan(x.lahanId)) + ' · ' + tglSingkat(x.tanggal) + ' · oleh ' + esc(x.pemilik) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada foto yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-foto]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.foto.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-foto")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Foto", "Hapus foto \"" + x.judul + "\"?", function () {
+          state.foto = state.foto.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Foto dihapus.");
+        });
+      });
+    });
+  }
+  $("fLahanFoto").addEventListener("change", renderFoto);
+  $("fBulanFoto").addEventListener("change", renderFoto);
+  $("btnTambahFoto").addEventListener("click", function () {
+    var lahanId = Number($("ftLahan").value), judul = $("ftJudul").value.trim();
+    var tanggal = $("ftTanggal").value;
+    if (!lahanId) { toast("Pilih lahan dulu."); return; }
+    if (!bolehCatatLahan(lahanId)) { toast("Anda hanya bisa mengunggah foto untuk lahan Anda sendiri."); return; }
+    if (!judul) { toast("Isi judul foto dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal foto."); return; }
+    if (!fotoDataBaru) { toast("Pilih foto dulu."); return; }
+    state.foto.push({ id: state.nextFotoId++, lahanId: lahanId, judul: judul, tanggal: tanggal, dataUrl: fotoDataBaru, pemilik: currentUser ? currentUser.username : "—" });
+    saveState();
+    $("ftJudul").value = ""; $("ftFile").value = ""; fotoDataBaru = "";
+    $("ftPratinjau").hidden = true; $("ftStatus").textContent = "Belum ada foto dipilih.";
+    renderSemua();
+    toast("Foto \"" + judul + "\" tersimpan.");
+  });
+
+  /* ---------- Laporan ---------- */
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(state.pertumbuhan.concat(state.hama));
+    isiPilihanBulan(selBulan, bulanGabung, simpan ? simpan : bulanKey(hariIniKey()));
+    var lh = lahanTerlihat();
+    var pt = pertumbuhanTerlihat();
+    var hm = hamaTerlihat();
+    var ft = fotoTerlihat();
+    $("ringkasanLaporan").textContent = lh.length + " lahan · " + pt.length + " catatan pertumbuhan · " + hm.length + " catatan hama (" + hamaAktif().length + " aktif) · " + ft.length + " foto" +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("tabelPerLahan").innerHTML = "<tr><th>Lahan</th><th class=\"angka\">Tinggi Terakhir</th><th class=\"angka\">Catatan</th><th class=\"angka\">Jadwal Selesai</th><th class=\"angka\">Jadwal Belum</th><th class=\"angka\">Hama Aktif</th><th class=\"angka\">Foto</th></tr>" +
+      (lh.length ? lh.map(function (k) {
+        var t = tinggiTerakhir(k.id);
+        var jd = state.jadwal.filter(function (x) { return x.lahanId === k.id; });
+        var jSelesai = jd.filter(function (x) { return x.status === "Selesai"; }).length;
+        var jBelum = jd.length - jSelesai;
+        var hAktif = state.hama.filter(function (x) { return x.lahanId === k.id && x.status === "Aktif"; }).length;
+        var nFoto = state.foto.filter(function (x) { return x.lahanId === k.id; }).length;
+        var nPt = state.pertumbuhan.filter(function (x) { return x.lahanId === k.id; }).length;
+        return "<tr><td><b>" + esc(k.nama) + "</b><br><span class=\"sub\">" + esc(k.tanaman) + "</span></td><td class=\"angka\">" + (t ? t.tinggi + " cm (" + esc(t.fase) + ")" : "—") + "</td><td class=\"angka\">" + nPt + "</td><td class=\"angka\">" + jSelesai + "</td><td class=\"angka\">" + jBelum + "</td><td class=\"angka\">" + hAktif + "</td><td class=\"angka\">" + nFoto + "</td></tr>";
+      }).join("") : '<tr><td colspan="7">Belum ada data.</td></tr>');
+    var perBulan = {};
+    pt.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { pt: 0, hama: 0, foto: 0 };
+      perBulan[k].pt += 1;
+    });
+    hm.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { pt: 0, hama: 0, foto: 0 };
+      perBulan[k].hama += 1;
+    });
+    ft.forEach(function (x) {
+      var k = bulanKey(x.tanggal);
+      if (!perBulan[k]) perBulan[k] = { pt: 0, hama: 0, foto: 0 };
+      perBulan[k].foto += 1;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Catatan Pertumbuhan</th><th class=\"angka\">Catatan Hama</th><th class=\"angka\">Foto</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k];
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + r.pt + "</td><td class=\"angka\">" + r.hama + "</td><td class=\"angka\">" + r.foto + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perTingkat = {};
+    TINGKAT_HAMA.forEach(function (t) { perTingkat[t] = { aktif: 0, tertangani: 0 }; });
+    hm.forEach(function (x) {
+      if (!perTingkat[x.tingkat]) perTingkat[x.tingkat] = { aktif: 0, tertangani: 0 };
+      if (x.status === "Aktif") perTingkat[x.tingkat].aktif += 1;
+      else perTingkat[x.tingkat].tertangani += 1;
+    });
+    $("tabelTingkatHama").innerHTML = "<tr><th>Tingkat Serangan</th><th class=\"angka\">Aktif</th><th class=\"angka\">Tertangani</th><th class=\"angka\">Total</th></tr>" +
+      TINGKAT_HAMA.map(function (t) {
+        var r = perTingkat[t];
+        return "<tr><td><b>" + t + "</b></td><td class=\"angka\">" + r.aktif + "</td><td class=\"angka\">" + r.tertangani + "</td><td class=\"angka\">" + (r.aktif + r.tertangani) + "</td></tr>";
+      }).join("");
+  }
+  $("fBulanLaporan").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var pt = pertumbuhanTerlihat();
+    var hm = hamaTerlihat();
+    if (bk !== "semua") {
+      pt = pt.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+      hm = hm.filter(function (x) { return bulanKey(x.tanggal) === bk; });
+    }
+    var baris = [["Jenis", "Tanggal", "Lahan", "Keterangan", "Detail", "Dicatat oleh"].map(csvCell).join(",")];
+    var n = 0;
+    pt.forEach(function (x) {
+      n++;
+      var k = cariLahan(x.lahanId) || {};
+      baris.push(["Pertumbuhan", x.tanggal, namaLahan(x.lahanId), (k.tanaman || "") + " · " + x.tinggi + " cm · " + x.fase + (x.catatan ? " · " + x.catatan : ""), x.tinggi + " cm", x.pemilik].map(csvCell).join(","));
+    });
+    hm.forEach(function (x) {
+      n++;
+      baris.push(["Hama", x.tanggal, namaLahan(x.lahanId), x.nama + " · " + x.tingkat + " · " + x.status + " · " + x.tindakan, x.tingkat, x.pemilik].map(csvCell).join(","));
+    });
+    unduh("laporan-crop-monitoring-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("crop-monitoring-backup.json", JSON.stringify({ aplikasi: "crop-monitoring", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.lahan) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Lahan, pertumbuhan, jadwal, hama, dan foto tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderLahan(); renderPertumbuhan(); renderJadwal(); renderHama(); renderFoto(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
