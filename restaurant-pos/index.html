@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Restaurant POS</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  .cek { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+  .cek input { width: 18px; height: 18px; }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-tersedia { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-buka { background: var(--amber-soft); color: var(--amber); }
+  .st-selesai { background: var(--green-soft); color: var(--green); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar.habis { opacity: .62; }
+
+  .item-menu {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .item-menu .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .item-menu .nama { font-weight: 800; font-size: 15.5px; }
+  .item-menu .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .item-menu .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .item-menu .harga {
+    font-weight: 800; color: var(--blue); background: var(--blue-soft);
+    border-radius: 8px; padding: 3px 10px; font-size: 13.5px; white-space: nowrap;
+  }
+  .item-menu.habis { opacity: .62; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* --- POS --- */
+  .pos-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .pos-grid { grid-template-columns: 1fr; } }
+  .grid-menu-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .grid-menu-pos { grid-template-columns: 1fr; } }
+  .pos-item {
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    background: var(--surface); display: flex; flex-direction: column; gap: 6px;
+  }
+  .pos-item .nm { font-weight: 800; font-size: 14.5px; }
+  .pos-item .ds { color: var(--muted); font-size: 12.5px; }
+  .pos-item .bawah { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; }
+  .pos-item .hg { font-weight: 800; color: var(--blue); }
+  .pos-item.habis { opacity: .6; }
+  .keranjang { position: sticky; top: 76px; }
+  @media (max-width: 860px) { .keranjang { position: static; } }
+  .krj-baris {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 14px;
+  }
+  .krj-baris:last-child { border-bottom: 0; }
+  .krj-baris .nm { font-weight: 700; }
+  .krj-baris .hg { color: var(--muted); font-size: 13px; }
+  .qty { display: inline-flex; align-items: center; gap: 2px; }
+  .qty button {
+    width: 28px; height: 28px; min-height: 28px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface-2); font-weight: 800; font-size: 15px;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .qty .jml { min-width: 26px; text-align: center; font-weight: 800; }
+  .total-baris {
+    display: flex; justify-content: space-between; padding: 6px 2px; font-size: 14px;
+  }
+  .total-baris.grand { font-size: 18px; font-weight: 800; border-top: 2px solid var(--line); margin-top: 6px; padding-top: 10px; }
+  .total-baris.grand .nilai { color: var(--blue); }
+  .kembalian-ok { color: var(--green); font-weight: 800; }
+  .kembalian-kurang { color: var(--red); font-weight: 800; }
+
+  .meja-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 820px) { .meja-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .meja-grid { grid-template-columns: repeat(2, 1fr); } }
+  .meja-kartu {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: center;
+    background: var(--surface); cursor: pointer;
+  }
+  .meja-kartu .no { font-size: 18px; font-weight: 800; }
+  .meja-kartu .st { margin-top: 6px; }
+  .meja-kartu.terisi { background: var(--amber-soft); border-color: #e4c87a; }
+  .meja-kartu.terpilih { outline: 3px solid var(--blue-soft); border-color: var(--blue); }
+
+  .struk {
+    font-family: "Courier New", ui-monospace, monospace; font-size: 13.5px;
+    background: #fff; border: 1px dashed var(--line); border-radius: 8px; padding: 16px;
+  }
+  .struk h4 { text-align: center; margin: 0 0 2px; font-size: 15px; }
+  .struk .tengah { text-align: center; color: var(--muted); font-size: 12px; }
+  .struk hr { border: 0; border-top: 1px dashed var(--line); margin: 10px 0; }
+  .struk .baris { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+  .struk .baris.total { font-weight: 800; font-size: 15px; }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 460px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; background: var(--bg); padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow);
+  }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 10px; font: inherit; background: var(--surface-2);
+  }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+
+  body[data-role="kasir"] .hanya-admin { display: none !important; }
+
+  .bar-pengguna {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    margin-bottom: 12px; font-size: 13.5px; color: var(--muted);
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; font-weight: 700; color: var(--ink);
+  }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  @media print {
+    body { background: #fff; }
+    body > .wrap, .toast, .bar-pengguna, .tabbar { display: none !important; }
+    .modal-back { position: static; background: none; display: block !important; padding: 0; }
+    .modal { box-shadow: none; max-width: none; padding: 0; }
+    .modal .aksi { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <header class="hero">
+    <h1>Restaurant POS</h1>
+    <p>Kasir khusus restoran, kafe, dan warung: terima pesanan per meja, hitung servis + pajak, bayar tunai atau QRIS, lalu lihat laporan penjualan hari ini.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="kasir">Kasir</button>
+    <button class="tab-btn" data-tab="menu">Menu</button>
+    <button class="tab-btn" data-tab="meja">Meja</button>
+    <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dashboard</h2>
+      <p>Penjualan hari ini, meja yang sedang terisi, dan kelola pengguna aplikasi.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Penjualan Hari Ini</div><div class="angka" id="dJual">Rp0</div></div>
+      <div class="stat"><div class="label">Pesanan Hari Ini</div><div class="angka" id="dPesanan">0</div></div>
+      <div class="stat"><div class="label">Item Menu</div><div class="angka" id="dItem">0</div></div>
+      <div class="stat"><div class="label">Meja Terisi</div><div class="angka" id="dMeja">0 / 10</div></div>
+    </div>
+    <div class="card">
+      <h3>Item Terlaris Hari Ini</h3>
+      <p class="sub">Dari pesanan yang sudah dibayar hari ini.</p>
+      <div id="daftarTerlaris"></div>
+    </div>
+    <div class="card hanya-admin">
+      <h3>Pengguna Aplikasi</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
+      <div id="daftarPengguna"></div>
+      <div style="margin-top:14px">
+        <h3 style="font-size:15px">Tambah Pengguna Baru</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="nuNama">Nama *</label>
+            <input type="text" id="nuNama" placeholder="Contoh: Dewi">
+          </div>
+          <div class="field">
+            <label for="nuUser">Nama pengguna *</label>
+            <input type="text" id="nuUser" placeholder="Contoh: dewi">
+          </div>
+          <div class="field">
+            <label for="nuPass">Kata sandi *</label>
+            <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+          </div>
+          <div class="field">
+            <label for="nuPeran">Peran *</label>
+            <select id="nuPeran"><option value="kasir">Kasir</option><option value="admin">Admin</option></select>
+          </div>
+        </div>
+        <button class="btn kecil" id="btnTambahPengguna" type="button">+ Tambah Pengguna</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ganti kata sandi akun Anda sendiri (<span id="namaAkunSaya">—</span>).</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fSandiLama">Kata sandi lama *</label>
+            <input type="password" id="fSandiLama" required>
+          </div>
+          <div class="field">
+            <label for="fSandiBaru">Kata sandi baru *</label>
+            <input type="password" id="fSandiBaru" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil">Simpan Kata Sandi Baru</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kasir">
+    <div class="page-head">
+      <h2>Kasir</h2>
+      <p>Pilih meja dan menu, lalu simpan pesanan atau langsung bayar. Servis 5% dan pajak restoran (PB1) 10% dihitung otomatis.</p>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field" style="margin-bottom:0">
+          <label for="kasirMeja">Meja *</label>
+          <select id="kasirMeja"></select>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="kasirCari">Cari menu</label>
+          <input type="text" id="kasirCari" placeholder="Contoh: nasi goreng">
+        </div>
+      </div>
+    </div>
+    <div class="pos-grid">
+      <div>
+        <div class="chips" id="kasirChips"></div>
+        <div class="grid-menu-pos" id="kasirMenu"></div>
+      </div>
+      <div class="card keranjang">
+        <h3>Keranjang</h3>
+        <p class="sub" id="krjMejaLabel">Meja —</p>
+        <div id="krjIsi"></div>
+        <div id="krjTotal"></div>
+        <div class="field" style="margin-top:14px">
+          <label>Metode bayar *</label>
+          <label class="cek"><input type="radio" name="metodeBayar" value="tunai" checked> Tunai</label>
+          <label class="cek"><input type="radio" name="metodeBayar" value="qris"> QRIS</label>
+        </div>
+        <div class="field" id="fieldTunai">
+          <label for="kasirTunai">Uang tunai diterima (Rp)</label>
+          <input type="number" id="kasirTunai" min="0" step="500" placeholder="Contoh: 50000">
+          <div id="kasirKembalian" style="margin-top:6px;font-size:14px"></div>
+        </div>
+        <div class="catatan" id="catatanQris" style="display:none">Pembayaran QRIS: minta pelanggan memindai kode QRIS toko, lalu tekan <b>Bayar Sekarang</b> setelah pembayaran diterima.</div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost" id="btnSimpanPesanan" type="button">Simpan Pesanan</button>
+          <button class="btn hijau" id="btnBayar" type="button">Bayar Sekarang</button>
+        </div>
+        <button class="btn ghost kecil" id="btnBersihkanKeranjang" type="button" style="margin-top:10px">Bersihkan Keranjang</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-menu">
+    <div class="page-head">
+      <h2>Menu</h2>
+      <p>Atur profil resto, kategori, dan semua item menu beserta harganya.</p>
+    </div>
+    <div class="card">
+      <h3>Profil Resto</h3>
+      <p class="sub">Nama dan alamat ini tampil di atas struk dan menu.</p>
+      <form id="formResto">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNamaResto">Nama resto / warung *</label>
+            <input type="text" id="fNamaResto" placeholder="Contoh: Warung Kopi Oyen" required>
+          </div>
+          <div class="field">
+            <label for="fWaResto">No. WhatsApp resto (opsional)</label>
+            <input type="tel" id="fWaResto" placeholder="Contoh: 081247986994">
+          </div>
+        </div>
+        <div class="field">
+          <label for="fAlamatResto">Alamat (opsional)</label>
+          <input type="text" id="fAlamatResto" placeholder="Contoh: Jl. Mawar No. 12, Jakarta Selatan">
+        </div>
+        <button type="submit" class="btn kecil">Simpan Profil Resto</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Kategori</h3>
+      <p class="sub">Contoh: Makanan, Minuman, Camilan. Kategori yang masih berisi item tidak bisa dihapus.</p>
+      <div id="daftarKategori"></div>
+      <form id="formKategori" style="margin-top:14px">
+        <div class="row">
+          <div class="grow">
+            <label for="fNamaKategori">Nama kategori baru *</label>
+            <input type="text" id="fNamaKategori" placeholder="Contoh: Dessert" required>
+          </div>
+          <button type="submit" class="btn kecil" id="btnTambahKategori">+ Tambah Kategori</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3 id="judulFormItem">Tambah Item Menu</h3>
+      <p class="sub">Satu item: nama, deskripsi singkat, harga, dan status tersedia atau habis.</p>
+      <form id="formItem">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fKatItem">Kategori *</label>
+            <select id="fKatItem" required></select>
+          </div>
+          <div class="field">
+            <label for="fNamaItem">Nama item *</label>
+            <input type="text" id="fNamaItem" placeholder="Contoh: Nasi Goreng Oyen" required>
+          </div>
+          <div class="field">
+            <label for="fHargaItem">Harga (Rp) *</label>
+            <input type="number" id="fHargaItem" min="0" step="500" placeholder="Contoh: 18000" required>
+          </div>
+          <div class="field">
+            <label for="fDeskripsiItem">Deskripsi (opsional)</label>
+            <input type="text" id="fDeskripsiItem" placeholder="Contoh: Nasi goreng telur, ayam suwir, kerupuk, acar.">
+          </div>
+        </div>
+        <label class="cek"><input type="checkbox" id="fTersediaItem" checked> Item tersedia (bisa dipesan)</label>
+        <div class="row" style="margin-top:14px">
+          <button type="submit" class="btn" id="btnSimpanItem">Simpan Item</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahItem" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Item Menu</h3>
+      <p class="sub">Ubah harga, tandai habis/tersedia, atau hapus item yang sudah tidak dijual.</p>
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <select id="filterKategoriItem"></select>
+        </div>
+      </div>
+      <div id="daftarItem"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-meja">
+    <div class="page-head">
+      <h2>Meja</h2>
+      <p>10 meja. Meja terisi bila ada pesanan yang belum dibayar. Klik meja yang terisi untuk membayar atau membatalkan pesanannya.</p>
+    </div>
+    <div class="card">
+      <div class="meja-grid" id="mejaGrid"></div>
+    </div>
+    <div class="card" id="kartuDetailMeja" style="display:none">
+      <h3 id="detailMejaJudul">Pesanan Meja</h3>
+      <p class="sub">Pesanan yang masih terbuka di meja ini.</p>
+      <div id="detailMejaIsi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan</h2>
+      <p>Penjualan hari ini dan riwayat pesanan yang sudah dibayar.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Penjualan Hari Ini</div><div class="angka" id="lJual">Rp0</div></div>
+      <div class="stat"><div class="label">Pesanan Dibayar</div><div class="angka" id="lPesanan">0</div></div>
+      <div class="stat"><div class="label">Rata-rata per Pesanan</div><div class="angka" id="lRata">Rp0</div></div>
+      <div class="stat"><div class="label">Pesanan Terbuka</div><div class="angka" id="lBuka">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Item Terlaris</h3>
+      <p class="sub">Item paling banyak terjual hari ini (pesanan sudah dibayar).</p>
+      <div id="laporanTerlaris"></div>
+    </div>
+    <div class="card">
+      <h3>Riwayat Pesanan</h3>
+      <p class="sub">Semua pesanan, terbaru di atas. Klik struk untuk melihat rincian.</p>
+      <div id="riwayatPesanan"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai aplikasi Restaurant POS, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur menu dan pengguna, atau sebagai <b>Kasir</b> untuk melayani pesanan.</li>
+        <li>Di tab <b>Menu</b>, lengkapi kategori dan item beserta harganya. Item yang habis ditandai agar tidak bisa dipesan di Kasir.</li>
+        <li>Di tab <b>Kasir</b>, pilih meja, ketuk menu untuk masuk keranjang, lalu pilih bayar <b>Tunai</b> (kembalian dihitung otomatis) atau <b>QRIS</b>. Pesanan bisa juga <b>Simpan Pesanan</b> dulu — meja jadi terisi dan bisa dibayar belakangan di tab Meja.</li>
+        <li>Servis 5% dan pajak restoran (PB1) 10% dihitung otomatis dari subtotal dan tampil jelas di keranjang dan struk.</li>
+        <li>Di tab <b>Meja</b>, lihat 10 meja: yang terisi berarti ada pesanan belum dibayar. Klik untuk membayar atau membatalkan.</li>
+        <li>Di tab <b>Laporan</b>, lihat penjualan hari ini, item terlaris, dan riwayat pesanan beserta struknya.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (4 kategori, 12 item, 1 item habis). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Restaurant POS v1.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Warung Kopi Oyen, bukan data penjualan sungguhan.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalBayarBack">
+  <div class="modal">
+    <h3 id="bayarJudul">Bayar Pesanan</h3>
+    <p id="bayarRingkasan"></p>
+    <div class="field">
+      <label>Metode bayar *</label>
+      <label class="cek"><input type="radio" name="metodeBayarModal" value="tunai" checked> Tunai</label>
+      <label class="cek"><input type="radio" name="metodeBayarModal" value="qris"> QRIS</label>
+    </div>
+    <div class="field" id="fieldTunaiModal">
+      <label for="bayarTunai">Uang tunai diterima (Rp)</label>
+      <input type="number" id="bayarTunai" min="0" step="500" placeholder="Contoh: 50000">
+      <div id="bayarKembalian" style="margin-top:6px;font-size:14px"></div>
+    </div>
+    <div class="catatan" id="catatanQrisModal" style="display:none">Pembayaran QRIS: minta pelanggan memindai kode QRIS toko, lalu tekan <b>Konfirmasi Bayar</b>.</div>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="bayarBatal" type="button">Batal</button>
+      <button class="btn hijau kecil" id="bayarKonfirmasi" type="button">Konfirmasi Bayar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalStrukBack">
+  <div class="modal">
+    <div class="struk" id="strukIsi"></div>
+    <div class="aksi" style="margin-top:14px">
+      <button class="btn ghost kecil" id="strukTutup" type="button">Tutup</button>
+      <button class="btn kecil" id="strukCetak" type="button">Cetak Struk</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Restaurant POS</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk mengelola resto. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note">Akun baru dibuat admin di tab Dasbor (Pengguna Aplikasi). Setelah masuk pertama kali, segera ganti kata sandi Anda di Dasbor agar hanya Anda yang tahu.</p>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Pembantu ----------
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    var d = new Date();
+    return d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function hariIniKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function jamDari(waktu) {
+    var d = new Date(waktu);
+    return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  }
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  // ---------- Modal konfirmasi ----------
+  var modalCallback = null;
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    modalCallback = callback;
+    $("modalBack").classList.add("open");
+  }
+  $("modalBatal").addEventListener("click", function () {
+    $("modalBack").classList.remove("open");
+    modalCallback = null;
+  });
+  $("modalYa").addEventListener("click", function () {
+    $("modalBack").classList.remove("open");
+    if (modalCallback) { var cb = modalCallback; modalCallback = null; cb(); }
+  });
+
+  // ---------- Data ----------
+  var STORAGE_KEY = "restaurantPos.v1";
+  var SERVIS_PERSEN = 5;
+  var PAJAK_PERSEN = 10;
+
+  function seedState() {
+    return {
+      resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
+      kategori: [
+        { id: 1, nama: "Makanan" },
+        { id: 2, nama: "Minuman" },
+        { id: 3, nama: "Camilan" },
+        { id: 4, nama: "Paket" }
+      ],
+      items: [
+        { id: 1, kat: 1, nama: "Nasi Goreng Oyen", deskripsi: "Nasi goreng telur, ayam suwir, kerupuk, acar.", harga: 18000, tersedia: true },
+        { id: 2, kat: 1, nama: "Mie Goreng Spesial", deskripsi: "Mie goreng telur, sayur, ayam, dan bawang goreng.", harga: 17000, tersedia: true },
+        { id: 3, kat: 1, nama: "Ayam Geprek Sambal Matah", deskripsi: "Ayam goreng geprek, sambal matah, nasi putih.", harga: 20000, tersedia: true },
+        { id: 4, kat: 1, nama: "Soto Ayam Kampung", deskripsi: "Soto ayam, soun, telur, seledri, sambal.", harga: 15000, tersedia: true },
+        { id: 5, kat: 2, nama: "Es Teh Manis", deskripsi: "Teh melati manis dingin.", harga: 5000, tersedia: true },
+        { id: 6, kat: 2, nama: "Kopi Tubruk Oyen", deskripsi: "Kopi tubruk robusta, gula aren.", harga: 8000, tersedia: true },
+        { id: 7, kat: 2, nama: "Es Kopi Susu Gula Aren", deskripsi: "Es kopi susu, gula aren, es batu.", harga: 12000, tersedia: true },
+        { id: 8, kat: 2, nama: "Jus Alpukat", deskripsi: "Jus alpukat, susu kental manis, es batu.", harga: 15000, tersedia: false },
+        { id: 9, kat: 3, nama: "Kentang Goreng", deskripsi: "Kentang goreng renyah, saus sambal.", harga: 12000, tersedia: true },
+        { id: 10, kat: 3, nama: "Pisang Goreng Cokelat Keju", deskripsi: "Pisang goreng, meses cokelat, keju parut.", harga: 10000, tersedia: true },
+        { id: 11, kat: 3, nama: "Roti Bakar Cokelat", deskripsi: "Roti bakar cokelat, margarin.", harga: 9000, tersedia: true },
+        { id: 12, kat: 4, nama: "Paket Nasi + Ayam + Es Teh", deskripsi: "Nasi putih, ayam geprek, es teh manis.", harga: 25000, tersedia: true }
+      ],
+      pesanan: [],
+      seqPesanan: 1,
+      seqItem: 13,
+      seqKategori: 5
+    };
+  }
+
+  var state = seedState();
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.items) && Array.isArray(d.kategori)) {
+        state = d;
+        if (!Array.isArray(state.pesanan)) state.pesanan = [];
+        if (!state.seqPesanan) state.seqPesanan = state.pesanan.length + 1;
+        if (!state.seqItem) state.seqItem = 13;
+        if (!state.seqKategori) state.seqKategori = 5;
+      }
+    } catch (e) { /* data rusak: pakai contoh */ }
+  }
+
+  function namaKategori(id) {
+    var k = state.kategori.find(function (x) { return x.id === id; });
+    return k ? k.nama : "—";
+  }
+  function cariItem(id) {
+    return state.items.find(function (x) { return x.id === id; });
+  }
+  function hitungTotal(items) {
+    var subtotal = items.reduce(function (s, it) { return s + it.harga * it.qty; }, 0);
+    var servis = Math.round(subtotal * SERVIS_PERSEN / 100);
+    var pajak = Math.round(subtotal * PAJAK_PERSEN / 100);
+    return { subtotal: subtotal, servis: servis, pajak: pajak, total: subtotal + servis + pajak };
+  }
+  function pesananHariIni() {
+    var kunci = hariIniKey();
+    return state.pesanan.filter(function (p) { return p.status === "selesai" && p.waktu.slice(0, 10) === kunci; });
+  }
+  function pesananBuka() {
+    return state.pesanan.filter(function (p) { return p.status === "buka"; });
+  }
+  function mejaTerisi() {
+    var set = {};
+    pesananBuka().forEach(function (p) { set[p.meja] = true; });
+    return set;
+  }
+  function pesananBukaMeja(noMeja) {
+    return pesananBuka().find(function (p) { return p.meja === noMeja; });
+  }
+  function terlarisHariIni() {
+    var map = {};
+    pesananHariIni().forEach(function (p) {
+      p.items.forEach(function (it) {
+        if (!map[it.nama]) map[it.nama] = { nama: it.nama, qty: 0, total: 0 };
+        map[it.nama].qty += it.qty;
+        map[it.nama].total += it.harga * it.qty;
+      });
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return b.qty - a.qty; });
+  }
+
+  // ---------- Login & pengguna ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
+  ];
+  var users = [];
+  var currentUser = null;
+
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
+      var d = JSON.parse(raw);
+      if (!Array.isArray(d) || d.length === 0) throw new Error("kosong");
+      users = d.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
+      });
+    } catch (e) {
+      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+      saveUsers();
+    }
+  }
+  function saveUsers() {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  }
+  function terapkanSesi() {
+    document.body.setAttribute("data-role", currentUser ? currentUser.role : "");
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")" : "—";
+    $("namaAkunSaya").textContent = currentUser ? currentUser.name : "—";
+    $("loginOverlay").classList.toggle("hidden", !!currentUser);
+  }
+  function masuk(username, password) {
+    var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
+    if (!u) return false;
+    currentUser = u;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+    return true;
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+  }
+  function pulihkanSesi() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
+      if (u) { currentUser = u; terapkanSesi(); }
+    } catch (e) { /* abaikan */ }
+  }
+
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim();
+    var p = $("loginPass").value;
+    if (masuk(u, p)) {
+      $("loginError").hidden = true;
+      $("loginPass").value = "";
+      renderSemua();
+      toast("Selamat datang, " + currentUser.name + ".");
+    } else {
+      $("loginError").hidden = false;
+    }
+  });
+  $("btnKeluar").addEventListener("click", function () {
+    keluar();
+    toast("Anda sudah keluar.");
+  });
+
+  // ---------- Tab ----------
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      if (tab === "dashboard") renderDashboard();
+      if (tab === "kasir") renderKasir();
+      if (tab === "menu") renderMenu();
+      if (tab === "meja") renderMeja();
+      if (tab === "laporan") renderLaporan();
+    });
+  });
+
+  // ---------- Dashboard ----------
+  function renderDashboard() {
+    var hari = pesananHariIni();
+    var totalJual = hari.reduce(function (s, p) { return s + p.total; }, 0);
+    $("dJual").textContent = rupiah(totalJual);
+    $("dPesanan").textContent = hari.length;
+    $("dItem").textContent = state.items.length;
+    $("dMeja").textContent = Object.keys(mejaTerisi()).length + " / 10";
+    var top = terlarisHariIni().slice(0, 5);
+    $("daftarTerlaris").innerHTML = top.length ? top.map(function (t, i) {
+      return '<div class="item-bar"><div><div class="nm">' + (i + 1) + ". " + esc(t.nama) + '</div><div class="dt">' + t.qty + ' terjual</div></div><div class="harga">' + rupiah(t.total) + "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada penjualan hari ini. Buat pesanan di tab Kasir.</p>';
+    renderPengguna();
+  }
+
+  function renderPengguna() {
+    var wrap = $("daftarPengguna");
+    if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
+    wrap.innerHTML = users.map(function (u) {
+      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var tombol = "";
+      if (u.username !== currentUser.username) {
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif !== false ? "Nonaktifkan" : "Aktifkan") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
+      }
+      return '<div class="user-row"><div><b>' + esc(u.name) + '</b> <span style="color:var(--muted)">(@' + esc(u.username) + ")</span><br>" +
+        '<span class="lencana ' + (u.role === "admin" ? "st-selesai" : "st-buka") + '">' + labelPeran + "</span> " +
+        (u.aktif === false ? '<span class="lencana st-habis">Nonaktif</span>' : "") + "</div>" +
+        '<div class="aksi">' + tombol + "</div></div>";
+    }).join("");
+  }
+
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    if (aksi === "peran") {
+      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin."); return;
+      }
+      u.role = u.role === "admin" ? "kasir" : "admin";
+      saveUsers();
+      renderPengguna();
+      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
+    } else if (aksi === "aktif") {
+      if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers();
+      renderPengguna();
+      toast(u.aktif !== false ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
+    } else if (aksi === "sandi") {
+      tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ") menjadi \"pos123\"?", function () {
+        u.password = "pos123";
+        saveUsers();
+        toast("Kata sandi " + u.name + " direset menjadi pos123.");
+      });
+    }
+  });
+
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim().toLowerCase();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
+    saveUsers();
+    $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + nama + " ditambahkan.");
+  });
+
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("fSandiLama").value;
+    var baru = $("fSandiBaru").value;
+    if (currentUser.password !== lama) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 4) { toast("Kata sandi baru minimal 4 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("fSandiLama").value = ""; $("fSandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diganti.");
+  });
+
+  // ---------- Kasir ----------
+  var keranjang = {}; // itemId -> qty
+  var kasirKat = 0; // 0 = semua
+  var mejaTerpilihDetail = null;
+
+  function isiPilihMeja() {
+    var sel = $("kasirMeja");
+    var nilai = sel.value;
+    sel.innerHTML = "";
+    for (var i = 1; i <= 10; i++) {
+      var opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = "Meja " + i + (pesananBukaMeja(i) ? " (terisi)" : "");
+      sel.appendChild(opt);
+    }
+    if (nilai && sel.querySelector('option[value="' + nilai + '"]')) sel.value = nilai;
+    $("krjMejaLabel").textContent = "Meja " + sel.value;
+  }
+
+  function renderKasir() {
+    isiPilihMeja();
+    var chips = [{ id: 0, nama: "Semua" }].concat(state.kategori);
+    $("kasirChips").innerHTML = chips.map(function (k) {
+      return '<button class="chip' + (kasirKat === k.id ? " active" : "") + '" type="button" data-kat="' + k.id + '">' + esc(k.nama) + "</button>";
+    }).join("");
+    var cari = ($("kasirCari").value || "").toLowerCase();
+    var daftar = state.items.filter(function (it) {
+      if (kasirKat !== 0 && it.kat !== kasirKat) return false;
+      if (cari && (it.nama + " " + it.deskripsi).toLowerCase().indexOf(cari) === -1) return false;
+      return true;
+    });
+    $("kasirMenu").innerHTML = daftar.length ? daftar.map(function (it) {
+      var qty = keranjang[it.id] || 0;
+      var tombol = it.tersedia
+        ? '<button class="btn kecil ' + (qty > 0 ? "hijau" : "") + '" type="button" data-tambah="' + it.id + '">' + (qty > 0 ? "✓ " + qty + " di keranjang" : "+ Tambah") + "</button>"
+        : '<button class="btn kecil ghost" type="button" disabled>Habis</button>';
+      return '<div class="pos-item' + (it.tersedia ? "" : " habis") + '">' +
+        '<div class="nm">' + esc(it.nama) + "</div>" +
+        '<div class="ds">' + esc(it.deskripsi || "") + "</div>" +
+        '<div class="bawah"><span class="hg">' + rupiah(it.harga) + "</span>" + tombol + "</div></div>";
+    }).join("") : '<p class="kosong">Tidak ada menu yang cocok.</p>';
+    renderKeranjang();
+  }
+
+  $("kasirChips").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-kat]");
+    if (!b) return;
+    kasirKat = Number(b.getAttribute("data-kat"));
+    renderKasir();
+  });
+  $("kasirCari").addEventListener("input", renderKasir);
+  $("kasirMeja").addEventListener("change", function () {
+    $("krjMejaLabel").textContent = "Meja " + $("kasirMeja").value;
+  });
+  $("kasirMenu").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tambah]");
+    if (!b) return;
+    var id = Number(b.getAttribute("data-tambah"));
+    var it = cariItem(id);
+    if (!it || !it.tersedia) { toast("Item ini sedang habis."); return; }
+    keranjang[id] = (keranjang[id] || 0) + 1;
+    renderKasir();
+  });
+
+  function isiKeranjang() {
+    return Object.keys(keranjang).map(function (id) {
+      var it = cariItem(Number(id));
+      return it ? { id: it.id, nama: it.nama, harga: it.harga, qty: keranjang[id] } : null;
+    }).filter(Boolean);
+  }
+
+  function renderKeranjang() {
+    var isi = isiKeranjang();
+    if (!isi.length) {
+      $("krjIsi").innerHTML = '<p class="kosong">Keranjang masih kosong. Ketuk menu untuk menambah.</p>';
+      $("krjTotal").innerHTML = "";
+    } else {
+      $("krjIsi").innerHTML = isi.map(function (it) {
+        return '<div class="krj-baris"><div><div class="nm">' + esc(it.nama) + '</div><div class="hg">' + rupiah(it.harga) + " × " + it.qty + '</div></div>' +
+          '<div class="qty"><button type="button" data-kurang="' + it.id + '" aria-label="Kurangi">−</button>' +
+          '<span class="jml">' + it.qty + "</span>" +
+          '<button type="button" data-tambah-krj="' + it.id + '" aria-label="Tambah">+</button></div></div>';
+      }).join("");
+      var t = hitungTotal(isi);
+      $("krjTotal").innerHTML =
+        '<div class="total-baris"><span>Subtotal</span><span>' + rupiah(t.subtotal) + "</span></div>" +
+        '<div class="total-baris"><span>Servis 5%</span><span>' + rupiah(t.servis) + "</span></div>" +
+        '<div class="total-baris"><span>Pajak (PB1) 10%</span><span>' + rupiah(t.pajak) + "</span></div>" +
+        '<div class="total-baris grand"><span>Total</span><span class="nilai">' + rupiah(t.total) + "</span></div>";
+    }
+    hitungKembalianKasir();
+  }
+
+  $("krjIsi").addEventListener("click", function (e) {
+    var kurang = e.target.closest("[data-kurang]");
+    var tambah = e.target.closest("[data-tambah-krj]");
+    if (kurang) {
+      var id = Number(kurang.getAttribute("data-kurang"));
+      keranjang[id] = (keranjang[id] || 0) - 1;
+      if (keranjang[id] <= 0) delete keranjang[id];
+      renderKasir();
+    } else if (tambah) {
+      var id2 = Number(tambah.getAttribute("data-tambah-krj"));
+      var it = cariItem(id2);
+      if (!it || !it.tersedia) { toast("Item ini sedang habis."); return; }
+      keranjang[id2] = (keranjang[id2] || 0) + 1;
+      renderKasir();
+    }
+  });
+
+  function metodeKasir() {
+    var r = document.querySelector('input[name="metodeBayar"]:checked');
+    return r ? r.value : "tunai";
+  }
+  function hitungKembalianKasir() {
+    var isi = isiKeranjang();
+    var el = $("kasirKembalian");
+    if (metodeKasir() !== "tunai" || !isi.length) { el.innerHTML = ""; return; }
+    var t = hitungTotal(isi);
+    var bayar = Number($("kasirTunai").value) || 0;
+    if (!bayar) { el.innerHTML = ""; return; }
+    var kembali = bayar - t.total;
+    el.innerHTML = kembali < 0
+      ? '<span class="kembalian-kurang">Kurang ' + rupiah(-kembali) + "</span>"
+      : '<span class="kembalian-ok">Kembalian: ' + rupiah(kembali) + "</span>";
+  }
+  document.querySelectorAll('input[name="metodeBayar"]').forEach(function (r) {
+    r.addEventListener("change", function () {
+      var tunai = metodeKasir() === "tunai";
+      $("fieldTunai").style.display = tunai ? "" : "none";
+      $("catatanQris").style.display = tunai ? "none" : "";
+      hitungKembalianKasir();
+    });
+  });
+  $("kasirTunai").addEventListener("input", hitungKembalianKasir);
+
+  $("btnBersihkanKeranjang").addEventListener("click", function () {
+    keranjang = {};
+    renderKasir();
+  });
+
+  function buatPesanan(items, meja, metode, bayar, status) {
+    var t = hitungTotal(items);
+    var no = "POS-" + String(state.seqPesanan).padStart(4, "0");
+    state.seqPesanan++;
+    var p = {
+      id: Date.now(),
+      no: no,
+      meja: meja,
+      items: items.map(function (it) { return { id: it.id, nama: it.nama, harga: it.harga, qty: it.qty }; }),
+      subtotal: t.subtotal, servis: t.servis, pajak: t.pajak, total: t.total,
+      metode: metode, bayar: bayar || 0,
+      kembalian: metode === "tunai" ? Math.max(0, (bayar || 0) - t.total) : 0,
+      waktu: new Date().toISOString(),
+      kasir: currentUser ? currentUser.name : "—",
+      status: status
+    };
+    state.pesanan.push(p);
+    saveState();
+    return p;
+  }
+
+  $("btnSimpanPesanan").addEventListener("click", function () {
+    var isi = isiKeranjang();
+    if (!isi.length) { toast("Keranjang masih kosong."); return; }
+    var meja = Number($("kasirMeja").value);
+    if (pesananBukaMeja(meja)) { toast("Meja " + meja + " sudah ada pesanan terbuka. Bayar dulu di tab Meja."); return; }
+    var p = buatPesanan(isi, meja, null, 0, "buka");
+    keranjang = {};
+    renderKasir(); renderDashboard();
+    toast("Pesanan " + p.no + " disimpan untuk Meja " + meja + ".");
+  });
+
+  $("btnBayar").addEventListener("click", function () {
+    var isi = isiKeranjang();
+    if (!isi.length) { toast("Keranjang masih kosong."); return; }
+    var meja = Number($("kasirMeja").value);
+    var metode = metodeKasir();
+    var t = hitungTotal(isi);
+    var bayar = 0;
+    if (metode === "tunai") {
+      bayar = Number($("kasirTunai").value) || 0;
+      if (bayar < t.total) { toast("Uang tunai kurang " + rupiah(t.total - bayar) + "."); return; }
+    }
+    var p = buatPesanan(isi, meja, metode, bayar, "selesai");
+    keranjang = {};
+    $("kasirTunai").value = "";
+    renderKasir(); renderDashboard();
+    tampilStruk(p);
+    toast("Pembayaran " + p.no + " berhasil: " + rupiah(p.total) + ".");
+  });
+
+  // ---------- Struk ----------
+  function isiStruk(p) {
+    var baris = p.items.map(function (it) {
+      return '<div class="baris"><span>' + it.qty + "× " + esc(it.nama) + "</span><span>" + rupiah(it.harga * it.qty) + "</span></div>";
+    }).join("");
+    var bayarHtml = p.metode === "tunai"
+      ? '<div class="baris"><span>Tunai</span><span>' + rupiah(p.bayar) + "</span></div>" +
+        '<div class="baris"><span>Kembalian</span><span>' + rupiah(p.kembalian) + "</span></div>"
+      : '<div class="baris"><span>QRIS</span><span>' + rupiah(p.total) + "</span></div>";
+    return "<h4>" + esc(state.resto.nama) + "</h4>" +
+      '<div class="tengah">' + esc(state.resto.alamat || "") + "<br>" + p.no + " · Meja " + p.meja + " · " + jamDari(p.waktu) + " · Kasir: " + esc(p.kasir) + "</div><hr>" +
+      baris + "<hr>" +
+      '<div class="baris"><span>Subtotal</span><span>' + rupiah(p.subtotal) + "</span></div>" +
+      '<div class="baris"><span>Servis 5%</span><span>' + rupiah(p.servis) + "</span></div>" +
+      '<div class="baris"><span>Pajak (PB1) 10%</span><span>' + rupiah(p.pajak) + "</span></div>" +
+      '<div class="baris total"><span>TOTAL</span><span>' + rupiah(p.total) + "</span></div><hr>" +
+      bayarHtml + "<hr>" +
+      '<div class="tengah">Terima kasih sudah makan di ' + esc(state.resto.nama) + "</div>";
+  }
+  function tampilStruk(p) {
+    $("strukIsi").innerHTML = isiStruk(p);
+    $("modalStrukBack").classList.add("open");
+  }
+  $("strukTutup").addEventListener("click", function () { $("modalStrukBack").classList.remove("open"); });
+  $("strukCetak").addEventListener("click", function () { window.print(); });
+
+  // ---------- Bayar pesanan terbuka ----------
+  var bayarPesananId = null;
+  function bukaModalBayar(p) {
+    bayarPesananId = p.id;
+    $("bayarJudul").textContent = "Bayar " + p.no + " — Meja " + p.meja;
+    $("bayarRingkasan").textContent = "Total yang harus dibayar: " + rupiah(p.total) + " (" + p.items.length + " jenis item).";
+    $("bayarTunai").value = "";
+    $("bayarKembalian").innerHTML = "";
+    $("modalBayarBack").classList.add("open");
+  }
+  function metodeModal() {
+    var r = document.querySelector('input[name="metodeBayarModal"]:checked');
+    return r ? r.value : "tunai";
+  }
+  function hitungKembalianModal() {
+    var p = state.pesanan.find(function (x) { return x.id === bayarPesananId; });
+    var el = $("bayarKembalian");
+    if (!p || metodeModal() !== "tunai") { el.innerHTML = ""; return; }
+    var bayar = Number($("bayarTunai").value) || 0;
+    if (!bayar) { el.innerHTML = ""; return; }
+    var kembali = bayar - p.total;
+    el.innerHTML = kembali < 0
+      ? '<span class="kembalian-kurang">Kurang ' + rupiah(-kembali) + "</span>"
+      : '<span class="kembalian-ok">Kembalian: ' + rupiah(kembali) + "</span>";
+  }
+  document.querySelectorAll('input[name="metodeBayarModal"]').forEach(function (r) {
+    r.addEventListener("change", function () {
+      var tunai = metodeModal() === "tunai";
+      $("fieldTunaiModal").style.display = tunai ? "" : "none";
+      $("catatanQrisModal").style.display = tunai ? "none" : "";
+      hitungKembalianModal();
+    });
+  });
+  $("bayarTunai").addEventListener("input", hitungKembalianModal);
+  $("bayarBatal").addEventListener("click", function () {
+    $("modalBayarBack").classList.remove("open");
+    bayarPesananId = null;
+  });
+  $("bayarKonfirmasi").addEventListener("click", function () {
+    var p = state.pesanan.find(function (x) { return x.id === bayarPesananId; });
+    if (!p) return;
+    var metode = metodeModal();
+    var bayar = 0;
+    if (metode === "tunai") {
+      bayar = Number($("bayarTunai").value) || 0;
+      if (bayar < p.total) { toast("Uang tunai kurang " + rupiah(p.total - bayar) + "."); return; }
+    }
+    p.metode = metode;
+    p.bayar = bayar;
+    p.kembalian = metode === "tunai" ? bayar - p.total : 0;
+    p.status = "selesai";
+    saveState();
+    $("modalBayarBack").classList.remove("open");
+    bayarPesananId = null;
+    renderMeja(); renderDashboard();
+    tampilStruk(p);
+    toast("Pembayaran " + p.no + " berhasil.");
+  });
+
+  // ---------- Menu ----------
+  var editItemId = null;
+  function renderMenu() {
+    $("fNamaResto").value = state.resto.nama;
+    $("fWaResto").value = state.resto.wa || "";
+    $("fAlamatResto").value = state.resto.alamat || "";
+    $("daftarKategori").innerHTML = state.kategori.map(function (k) {
+      var jumlah = state.items.filter(function (x) { return x.kat === k.id; }).length;
+      return '<div class="item-bar"><div><div class="nm">' + esc(k.nama) + '</div><div class="dt">' + jumlah + " item</div></div>" +
+        '<button class="btn ghost kecil" type="button" data-hapus-kat="' + k.id + '">Hapus</button></div>';
+    }).join("");
+    var selKat = $("fKatItem");
+    var nilaiKat = selKat.value;
+    selKat.innerHTML = state.kategori.map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + "</option>";
+    }).join("");
+    if (nilaiKat && selKat.querySelector('option[value="' + nilaiKat + '"]')) selKat.value = nilaiKat;
+    var selFilter = $("filterKategoriItem");
+    var nilaiFilter = selFilter.value;
+    selFilter.innerHTML = '<option value="0">Semua kategori</option>' + state.kategori.map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + "</option>";
+    }).join("");
+    if (nilaiFilter) selFilter.value = nilaiFilter;
+    var filter = Number(selFilter.value) || 0;
+    var daftar = state.items.filter(function (it) { return filter === 0 || it.kat === filter; });
+    $("daftarItem").innerHTML = daftar.length ? daftar.map(function (it) {
+      return '<div class="item-menu' + (it.tersedia ? "" : " habis") + '"><div class="atas">' +
+        '<div><div class="nama">' + esc(it.nama) + ' <span class="lencana ' + (it.tersedia ? "st-tersedia" : "st-habis") + '">' + (it.tersedia ? "Tersedia" : "Habis") + "</span></div>" +
+        '<div class="detail">' + esc(namaKategori(it.kat)) + " · " + esc(it.deskripsi || "") + "</div></div>" +
+        '<span class="harga">' + rupiah(it.harga) + "</span></div>" +
+        '<div class="aksi">' +
+        '<button class="btn ghost kecil" type="button" data-ubah-item="' + it.id + '">Ubah</button>' +
+        '<button class="btn ghost kecil" type="button" data-toggle-item="' + it.id + '">' + (it.tersedia ? "Tandai Habis" : "Tandai Tersedia") + "</button>" +
+        '<button class="btn merah kecil" type="button" data-hapus-item="' + it.id + '">Hapus</button>' +
+        "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada item di kategori ini.</p>';
+  }
+
+  $("formResto").addEventListener("submit", function (e) {
+    e.preventDefault();
+    state.resto.nama = $("fNamaResto").value.trim() || state.resto.nama;
+    state.resto.wa = $("fWaResto").value.trim();
+    state.resto.alamat = $("fAlamatResto").value.trim();
+    saveState();
+    toast("Profil resto disimpan.");
+  });
+
+  $("formKategori").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNamaKategori").value.trim();
+    if (!nama) return;
+    state.kategori.push({ id: state.seqKategori++, nama: nama });
+    saveState();
+    $("fNamaKategori").value = "";
+    renderMenu();
+    toast("Kategori " + nama + " ditambahkan.");
+  });
+  $("daftarKategori").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-hapus-kat]");
+    if (!b) return;
+    var id = Number(b.getAttribute("data-hapus-kat"));
+    if (state.items.some(function (x) { return x.kat === id; })) {
+      toast("Kategori masih berisi item — hapus atau pindahkan itemnya dulu."); return;
+    }
+    tanyaKonfirmasi("Hapus kategori", "Hapus kategori " + namaKategori(id) + "?", function () {
+      state.kategori = state.kategori.filter(function (k) { return k.id !== id; });
+      saveState();
+      renderMenu();
+      toast("Kategori dihapus.");
+    });
+  });
+
+  $("formItem").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var data = {
+      kat: Number($("fKatItem").value),
+      nama: $("fNamaItem").value.trim(),
+      harga: Number($("fHargaItem").value) || 0,
+      deskripsi: $("fDeskripsiItem").value.trim(),
+      tersedia: $("fTersediaItem").checked
+    };
+    if (!data.nama) { toast("Nama item wajib diisi."); return; }
+    if (editItemId) {
+      var it = cariItem(editItemId);
+      if (it) Object.assign(it, data);
+      editItemId = null;
+      $("judulFormItem").textContent = "Tambah Item Menu";
+      $("btnBatalUbahItem").style.display = "none";
+      toast("Item diperbarui.");
+    } else {
+      data.id = state.seqItem++;
+      state.items.push(data);
+      toast("Item " + data.nama + " ditambahkan.");
+    }
+    saveState();
+    $("formItem").reset();
+    $("fTersediaItem").checked = true;
+    renderMenu();
+  });
+  $("btnBatalUbahItem").addEventListener("click", function () {
+    editItemId = null;
+    $("formItem").reset();
+    $("fTersediaItem").checked = true;
+    $("judulFormItem").textContent = "Tambah Item Menu";
+    $("btnBatalUbahItem").style.display = "none";
+  });
+  $("filterKategoriItem").addEventListener("change", renderMenu);
+
+  $("daftarItem").addEventListener("click", function (e) {
+    var ubah = e.target.closest("[data-ubah-item]");
+    var toggle = e.target.closest("[data-toggle-item]");
+    var hapus = e.target.closest("[data-hapus-item]");
+    if (ubah) {
+      var it = cariItem(Number(ubah.getAttribute("data-ubah-item")));
+      if (!it) return;
+      editItemId = it.id;
+      $("fKatItem").value = it.kat;
+      $("fNamaItem").value = it.nama;
+      $("fHargaItem").value = it.harga;
+      $("fDeskripsiItem").value = it.deskripsi || "";
+      $("fTersediaItem").checked = it.tersedia;
+      $("judulFormItem").textContent = "Ubah Item: " + it.nama;
+      $("btnBatalUbahItem").style.display = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      $("fNamaItem").focus();
+    } else if (toggle) {
+      var it2 = cariItem(Number(toggle.getAttribute("data-toggle-item")));
+      if (!it2) return;
+      it2.tersedia = !it2.tersedia;
+      saveState();
+      renderMenu();
+      toast(it2.nama + (it2.tersedia ? " ditandai tersedia." : " ditandai habis."));
+    } else if (hapus) {
+      var it3 = cariItem(Number(hapus.getAttribute("data-hapus-item")));
+      if (!it3) return;
+      tanyaKonfirmasi("Hapus item", "Hapus " + it3.nama + " dari menu?", function () {
+        state.items = state.items.filter(function (x) { return x.id !== it3.id; });
+        saveState();
+        renderMenu();
+        toast("Item dihapus.");
+      });
+    }
+  });
+
+  // ---------- Meja ----------
+  function renderMeja() {
+    var terisi = mejaTerisi();
+    var html = "";
+    for (var i = 1; i <= 10; i++) {
+      var p = pesananBukaMeja(i);
+      html += '<div class="meja-kartu' + (p ? " terisi" : "") + (mejaTerpilihDetail === i ? " terpilih" : "") + '" data-meja="' + i + '">' +
+        '<div class="no">Meja ' + i + "</div>" +
+        '<div class="st"><span class="lencana ' + (p ? "st-buka" : "st-tersedia") + '">' + (p ? "Terisi · " + rupiah(p.total) : "Kosong") + "</span></div>" +
+        (p ? '<div style="font-size:12.5px;color:var(--muted);margin-top:6px">' + esc(p.no) + "</div>" : "") +
+        "</div>";
+    }
+    $("mejaGrid").innerHTML = html;
+    if (mejaTerpilihDetail) {
+      var p2 = pesananBukaMeja(mejaTerpilihDetail);
+      var kartu = $("kartuDetailMeja");
+      if (!p2) {
+        kartu.style.display = "none";
+        mejaTerpilihDetail = null;
+      } else {
+        kartu.style.display = "";
+        $("detailMejaJudul").textContent = "Pesanan " + p2.no + " — Meja " + p2.meja;
+        $("detailMejaIsi").innerHTML =
+          p2.items.map(function (it) {
+            return '<div class="item-bar"><div><div class="nm">' + it.qty + "× " + esc(it.nama) + '</div><div class="dt">' + rupiah(it.harga) + " per item</div></div>" +
+              '<div class="harga">' + rupiah(it.harga * it.qty) + "</div></div>";
+          }).join("") +
+          '<div class="total-baris"><span>Subtotal</span><span>' + rupiah(p2.subtotal) + "</span></div>" +
+          '<div class="total-baris"><span>Servis 5% + Pajak 10%</span><span>' + rupiah(p2.servis + p2.pajak) + "</span></div>" +
+          '<div class="total-baris grand"><span>Total</span><span class="nilai">' + rupiah(p2.total) + "</span></div>" +
+          '<div class="row" style="margin-top:14px">' +
+          '<button class="btn hijau" type="button" id="btnBayarMeja">Bayar Pesanan Ini</button>' +
+          '<button class="btn merah ghost" type="button" id="btnBatalMeja">Batalkan Pesanan</button></div>';
+        $("btnBayarMeja").addEventListener("click", function () { bukaModalBayar(p2); });
+        $("btnBatalMeja").addEventListener("click", function () {
+          tanyaKonfirmasi("Batalkan pesanan", "Batalkan " + p2.no + " (Meja " + p2.meja + ")? Pesanan yang dibatalkan tidak masuk laporan penjualan.", function () {
+            state.pesanan = state.pesanan.filter(function (x) { return x.id !== p2.id; });
+            saveState();
+            mejaTerpilihDetail = null;
+            renderMeja(); renderDashboard();
+            toast("Pesanan dibatalkan.");
+          });
+        });
+      }
+    } else {
+      $("kartuDetailMeja").style.display = "none";
+    }
+  }
+
+  $("mejaGrid").addEventListener("click", function (e) {
+    var k = e.target.closest("[data-meja]");
+    if (!k) return;
+    var no = Number(k.getAttribute("data-meja"));
+    var p = pesananBukaMeja(no);
+    if (!p) { toast("Meja " + no + " kosong. Buat pesanan di tab Kasir."); return; }
+    mejaTerpilihDetail = no;
+    renderMeja();
+  });
+
+  // ---------- Laporan ----------
+  function renderLaporan() {
+    var hari = pesananHariIni();
+    var total = hari.reduce(function (s, p) { return s + p.total; }, 0);
+    $("lJual").textContent = rupiah(total);
+    $("lPesanan").textContent = hari.length;
+    $("lRata").textContent = hari.length ? rupiah(Math.round(total / hari.length)) : "Rp0";
+    $("lBuka").textContent = pesananBuka().length;
+    var top = terlarisHariIni().slice(0, 5);
+    $("laporanTerlaris").innerHTML = top.length ? top.map(function (t, i) {
+      return '<div class="item-bar"><div><div class="nm">' + (i + 1) + ". " + esc(t.nama) + '</div><div class="dt">' + t.qty + ' terjual</div></div><div class="harga">' + rupiah(t.total) + "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada penjualan hari ini.</p>';
+    var semua = state.pesanan.slice().sort(function (a, b) { return b.id - a.id; });
+    $("riwayatPesanan").innerHTML = semua.length ? semua.map(function (p) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.no) + " · Meja " + p.meja + ' <span class="lencana ' + (p.status === "selesai" ? "st-selesai" : "st-buka") + '">' + (p.status === "selesai" ? "Dibayar" : "Terbuka") + "</span></div>" +
+        '<div class="dt">' + jamDari(p.waktu) + " · " + p.items.length + " jenis item · " + (p.metode === "tunai" ? "Tunai" : p.metode === "qris" ? "QRIS" : "—") + " · Kasir: " + esc(p.kasir) + '</div></div>' +
+        '<div><span class="harga">' + rupiah(p.total) + "</span> " +
+        (p.status === "selesai" ? '<button class="btn ghost kecil" type="button" data-lihat-struk="' + p.id + '">Struk</button>' : "") +
+        "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada pesanan.</p>';
+  }
+
+  $("riwayatPesanan").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-lihat-struk]");
+    if (!b) return;
+    var p = state.pesanan.find(function (x) { return x.id === Number(b.getAttribute("data-lihat-struk")); });
+    if (p) tampilStruk(p);
+  });
+
+  // ---------- Reset data ----------
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Kembalikan data contoh", "Hapus semua perubahan dan kembalikan data contoh Warung Kopi Oyen?", function () {
+      state = seedState();
+      keranjang = {};
+      saveState();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Render semua & init ----------
+  function renderSemua() {
+    renderDashboard();
+    renderKasir();
+    renderMenu();
+    renderMeja();
+    renderLaporan();
+  }
+
+  $("tanggalHariIni").textContent = tanggalHariIni();
+  loadState();
+  loadUsers();
+  terapkanSesi();
+  pulihkanSesi();
+  if (currentUser) renderSemua();
+})();
+</script>
+</body>
+</html>
