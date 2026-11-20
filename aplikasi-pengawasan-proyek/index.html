@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Pengawasan Proyek — PM Oyen</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .daftar-proyek .pry { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--surface); }
+  .daftar-proyek .pry .nm { font-weight: 800; font-size: 16px; }
+  .daftar-proyek .pry .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-proyek .pry .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .daftar-revisi .rv { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--surface); }
+  .daftar-revisi .rv .nm { font-weight: 800; font-size: 16px; }
+  .daftar-revisi .rv .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-revisi .rv .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .catatan { border-left: 3px solid var(--soft); padding: 6px 10px; margin-bottom: 8px; background: var(--surface-2); border-radius: 0 8px 8px 0; }
+  .catatan .nm { font-weight: 700; font-size: 13px; }
+  .catatan .dt { color: var(--muted); font-size: 12px; }
+</style>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO</span>
+    <h1>Aplikasi <span class="aksen">Pengawasan Proyek</span></h1>
+    <p>Laporan harian, foto progres, temuan &amp; tindak lanjut, serta jadwal vs realisasi — untuk kontraktor dan pengawas proyek konstruksi.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="harian" id="tabHarian">Laporan Harian <span class="badge" id="badgeHarian">0</span></button>
+    <button class="tab-btn" type="button" data-tab="foto" id="tabFoto">Foto Progres <span class="badge" id="badgeFoto">0</span></button>
+    <button class="tab-btn" type="button" data-tab="temuan" id="tabTemuan">Temuan <span class="badge" id="badgeTemuan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jadwal" id="tabJadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan" id="tabLaporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Pengawasan</h2><p>Ringkasan kondisi proyek, temuan, dan jadwal hari ini.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Proyek</div><div class="angka" id="dProyek">0</div><div class="sub" id="dProyekSub"></div></div>
+      <div class="stat"><div class="label">Laporan Harian (30 hari)</div><div class="angka" id="dHarian">0</div><div class="sub" id="dHarianSub"></div></div>
+      <div class="stat warn"><div class="label">Temuan Belum Selesai</div><div class="angka" id="dTemuan">0</div><div class="sub" id="dTemuanSub"></div></div>
+      <div class="stat"><div class="label">Jadwal Terlambat</div><div class="angka" id="dJadwal">0</div><div class="sub" id="dJadwalSub"></div></div>
+    </div>
+    <div class="card"><h3>Perlu Perhatian</h3><p class="sub">Deviasi progres, temuan kritis, dan jadwal yang terlambat.</p><div id="daftarPerhatian"></div></div>
+    <div class="card"><h3>Temuan Menunggu Tindak Lanjut</h3><p class="sub">Temuan yang statusnya masih Terbuka atau Dalam Tindak Lanjut.</p><div id="daftarMenunggu"></div></div>
+    <div class="card"><h3>Proyek Terbaru</h3><div id="daftarProyekTerbaru"></div></div>
+    <div class="card" id="cardTambahProyek">
+      <h3>Tambah Proyek</h3><p class="sub">Hanya admin yang bisa menambah proyek.</p>
+      <div class="form-grid">
+        <div class="field"><label for="prNama">Nama proyek</label><input id="prNama" type="text" placeholder="cth: Rumah Tinggal 2 Lantai — Pejaten"></div>
+        <div class="field"><label for="prKlien">Klien / pemilik</label><input id="prKlien" type="text" placeholder="cth: Bpk. Hartono"></div>
+        <div class="field"><label for="prLokasi">Lokasi</label><input id="prLokasi" type="text" placeholder="cth: Jl. Pejaten Raya No. 10, Jakarta Selatan"></div>
+        <div class="field"><label for="prStatus">Status proyek</label><select id="prStatus"><option>Perencanaan</option><option>Aktif</option><option>Selesai</option><option>Dibatalkan</option></select></div>
+        <div class="field"><label for="prMulai">Tanggal mulai (rencana)</label><input id="prMulai" type="date"></div>
+        <div class="field"><label for="prSelesai">Tanggal selesai (rencana)</label><input id="prSelesai" type="date"></div>
+        <div class="field"><label for="prRencana">Progres rencana (%)</label><input id="prRencana" type="number" min="0" max="100" placeholder="cth: 65"></div>
+        <div class="field"><label for="prRealisasi">Progres realisasi (%)</label><input id="prRealisasi" type="number" min="0" max="100" placeholder="cth: 58"></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanProyek" type="button">Simpan Proyek</button>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3><p class="sub">Hanya admin. Pengguna baru mendapat peran Pengawas atau Mandor.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: rina"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Rina Marlina"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran"><option value="pengawas">Pengawas</option><option value="mandor">Mandor</option></select></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: rina123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3><p class="sub">Kartu ini selalu terlihat untuk semua peran — admin, pengawas, maupun mandor.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-harian">
+    <div class="page-head"><h2>Laporan Harian</h2><p>Catatan harian per proyek: cuaca, pekerja hadir, pekerjaan, progres, dan kendala.</p></div>
+    <div class="card" id="cardTambahHarian">
+      <h3>Tambah Laporan Harian</h3>
+      <div class="form-grid">
+        <div class="field"><label for="hrProyek">Proyek</label><select id="hrProyek"></select></div>
+        <div class="field"><label for="hrTanggal">Tanggal</label><input id="hrTanggal" type="date"></div>
+        <div class="field"><label for="hrCuaca">Cuaca</label><select id="hrCuaca"><option>Cerah</option><option>Berawan</option><option>Hujan ringan</option><option>Hujan lebat</option></select></div>
+        <div class="field"><label for="hrPekerja">Pekerja hadir (orang)</label><input id="hrPekerja" type="number" min="0" placeholder="cth: 18"></div>
+        <div class="field"><label for="hrProgres">Progres hari ini (%)</label><input id="hrProgres" type="number" min="0" max="100" placeholder="cth: 3"></div>
+        <div class="field"><label for="hrPekerjaan">Pekerjaan yang dilakukan</label><input id="hrPekerjaan" type="text" placeholder="cth: Pengecoran kolom lantai 2"></div>
+      </div>
+      <div class="field"><label for="hrKendala">Kendala (opsional)</label><input id="hrKendala" type="text" placeholder="cth: Hujan menghambat pengecoran"></div>
+      <button class="btn kecil" id="btnSimpanHarian" type="button">Simpan Laporan Harian</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Laporan Harian</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fHrProyek">Proyek</label><select id="fHrProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="cariHr">Cari laporan</label><input id="cariHr" type="text" placeholder="cth: cor, bata, hujan"></div>
+      </div>
+      <p class="sub" id="ringkasanHarian"></p>
+      <div id="daftarHarian" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-foto">
+    <div class="page-head"><h2>Foto Progres</h2><p>Dokumentasi foto per proyek. Foto hanya tersimpan di perangkat ini.</p></div>
+    <div class="card" id="cardTambahFoto">
+      <h3>Tambah Foto Progres</h3>
+      <div class="form-grid">
+        <div class="field"><label for="ftProyek">Proyek</label><select id="ftProyek"></select></div>
+        <div class="field"><label for="ftTanggal">Tanggal foto</label><input id="ftTanggal" type="date"></div>
+        <div class="field"><label for="ftJudul">Judul foto</label><input id="ftJudul" type="text" placeholder="cth: Kolom lantai 2 setelah cor"></div>
+        <div class="field"><label for="ftKategori">Kategori</label><select id="ftKategori"><option>Struktur</option><option>Arsitektur</option><option>MEP</option><option>Finishing</option></select></div>
+      </div>
+      <div class="field"><label for="ftKeterangan">Keterangan (opsional)</label><input id="ftKeterangan" type="text" placeholder="cth: Kolom K1–K4 selesai dicor"></div>
+      <div class="field"><label for="ftFile">Pilih foto (JPG/PNG)</label><input id="ftFile" type="file" accept="image/*"></div>
+      <div id="ftPratinjau" style="display:none;margin-bottom:12px">
+        <img id="ftPreview" alt="Pratinjau foto" style="max-width:100%;max-height:240px;border-radius:10px;border:1px solid var(--line)">
+        <div class="sub" id="ftNamaFile" style="margin-top:6px"></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanFoto" type="button">Simpan Foto</button>
+    </div>
+    <div class="card">
+      <h3>Galeri Foto Progres</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fFtProyek">Proyek</label><select id="fFtProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="fFtKategori">Kategori</label><select id="fFtKategori"><option value="semua">Semua kategori</option><option>Struktur</option><option>Arsitektur</option><option>MEP</option><option>Finishing</option></select></div>
+      </div>
+      <p class="sub" id="ringkasanFoto"></p>
+      <div id="daftarFoto" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-temuan">
+    <div class="page-head"><h2>Temuan &amp; Tindak Lanjut</h2><p>Temuan di lapangan — keselamatan, mutu, jadwal, material — beserta penanggung jawab dan tindak lanjutnya.</p></div>
+    <div class="card" id="cardTambahTemuan">
+      <h3>Tambah Temuan</h3>
+      <div class="form-grid">
+        <div class="field"><label for="tmProyek">Proyek</label><select id="tmProyek"></select></div>
+        <div class="field"><label for="tmTanggal">Tanggal temuan</label><input id="tmTanggal" type="date"></div>
+        <div class="field"><label for="tmKategori">Kategori</label><select id="tmKategori"><option>Keselamatan</option><option>Mutu</option><option>Jadwal</option><option>Material</option></select></div>
+        <div class="field"><label for="tmTingkat">Tingkat</label><select id="tmTingkat"><option>Kritis</option><option>Mayor</option><option>Minor</option></select></div>
+        <div class="field"><label for="tmPj">Penanggung jawab</label><select id="tmPj"></select></div>
+      </div>
+      <div class="field"><label for="tmDeskripsi">Deskripsi temuan</label><textarea id="tmDeskripsi" rows="2" placeholder="cth: Pekerja di lantai 2 tidak memakai sabuk pengaman"></textarea></div>
+      <button class="btn kecil" id="btnSimpanTemuan" type="button">Simpan Temuan</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Temuan</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fTmProyek">Proyek</label><select id="fTmProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="fTmStatus">Status</label><select id="fTmStatus"><option value="semua">Semua status</option><option>Terbuka</option><option>Dalam Tindak Lanjut</option><option>Selesai</option></select></div>
+        <div class="field"><label for="fTmTingkat">Tingkat</label><select id="fTmTingkat"><option value="semua">Semua tingkat</option><option>Kritis</option><option>Mayor</option><option>Minor</option></select></div>
+        <div class="field"><label for="cariTm">Cari temuan</label><input id="cariTm" type="text" placeholder="cth: sabuk, beton, bata"></div>
+      </div>
+      <p class="sub" id="ringkasanTemuan"></p>
+      <div id="daftarTemuan" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal vs Realisasi</h2><p>Rencana pekerjaan per proyek dibandingkan dengan pelaksanaan nyatanya.</p></div>
+    <div class="card" id="cardTambahJadwal">
+      <h3>Tambah Jadwal Pekerjaan</h3>
+      <div class="form-grid">
+        <div class="field"><label for="jdProyek">Proyek</label><select id="jdProyek"></select></div>
+        <div class="field"><label for="jdPekerjaan">Pekerjaan</label><input id="jdPekerjaan" type="text" placeholder="cth: Struktur lantai 2"></div>
+        <div class="field"><label for="jdBobot">Bobot (%)</label><input id="jdBobot" type="number" min="0" max="100" placeholder="cth: 25"></div>
+        <div class="field"><label for="jdRencanaMulai">Rencana mulai</label><input id="jdRencanaMulai" type="date"></div>
+        <div class="field"><label for="jdRencanaSelesai">Rencana selesai</label><input id="jdRencanaSelesai" type="date"></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanJadwal" type="button">Simpan Jadwal</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Jadwal</h3>
+      <div class="form-grid">
+        <div class="field"><label for="fJdProyek">Proyek</label><select id="fJdProyek"><option value="semua">Semua proyek</option></select></div>
+        <div class="field"><label for="fJdStatus">Status</label><select id="fJdStatus"><option value="semua">Semua status</option><option>Selesai</option><option>Sedang Berjalan</option><option>Terlambat</option><option>Belum Dimulai</option></select></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelJadwal"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Pengawasan</h2><p>Rekap laporan harian, foto, temuan, dan jadwal vs realisasi per periode.</p></div>
+    <div class="card">
+      <h3>Periode Laporan</h3>
+      <div class="field"><label for="lapPeriode">Periode</label><select id="lapPeriode"><option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option><option value="30hari" selected>30 hari terakhir</option><option value="semua">Semua</option></select></div>
+      <div class="grid-stat" style="margin-top:14px">
+        <div class="stat"><div class="label">Laporan Harian</div><div class="angka" id="lHarian">0</div><div class="sub" id="lHarianSub"></div></div>
+        <div class="stat"><div class="label">Foto Progres</div><div class="angka" id="lFoto">0</div><div class="sub" id="lFotoSub"></div></div>
+        <div class="stat"><div class="label">Temuan</div><div class="angka" id="lTemuan">0</div><div class="sub" id="lTemuanSub"></div></div>
+        <div class="stat"><div class="label">Jadwal (semua)</div><div class="angka" id="lJadwal">0</div><div class="sub" id="lJadwalSub"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Deviasi Progres per Proyek</h3><p class="sub">Rencana vs realisasi. Deviasi negatif berarti tertinggal dari rencana.</p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelDeviasi"></table></div>
+    </div>
+    <div class="card">
+      <h3>Jadwal vs Realisasi</h3><p class="sub">Selisih dihitung dari tanggal selesai rencana vs tanggal selesai nyata.</p>
+      <div class="tabel-wrap" style="margin-top:10px"><table class="tabel" id="tabelJadwalRealisasi"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan</h3><p class="sub">Unduh laporan sebagai CSV, atau cadangkan seluruh data sebagai JSON.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnCsvHarian" type="button">Ekspor CSV Laporan Harian</button>
+        <button class="btn kecil biru" id="btnCsvTemuan" type="button">Ekspor CSV Temuan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:16px">
+        <h3 style="margin-bottom:6px">Teks WhatsApp</h3>
+        <p class="sub">Ringkasan laporan untuk dibagikan ke grup proyek via WhatsApp. Aplikasi ini tidak mengirim pesan sendiri — teks disalin lalu ditempel manual.</p>
+        <div class="pesan-teks" id="teksWA"></div>
+        <button class="btn kecil wa" id="btnSalinWA" type="button">Salin Teks WhatsApp</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Atur Ulang Data</h3><p class="sub">Mengembalikan semua data ke contoh awal (data demo). Data yang sudah ditambahkan akan hilang.</p>
+      <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Pengawasan Proyek.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li><b>Pengawas</b> mengisi <b>Laporan Harian</b> setiap hari: cuaca, jumlah pekerja, pekerjaan, progres, dan kendala.</li>
+        <li>Unggah <b>Foto Progres</b> tiap pekerjaan penting sebagai bukti visual.</li>
+        <li>Catat <b>Temuan</b> (keselamatan, mutu, jadwal, material) dan tugaskan penanggung jawabnya.</li>
+        <li><b>Mandor</b> menindaklanjuti temuan yang ditugaskan kepadanya dan memperbarui statusnya.</li>
+        <li>Cek <b>Jadwal vs Realisasi</b> untuk melihat pekerjaan yang terlambat, lalu rekap di <b>Laporan</b>.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk tambah proyek, kelola pengguna, dan hapus data.</li>
+        <li><b>Pengawas</b> — laporan harian, foto progres, temuan, jadwal, dan laporan. Tidak bisa tambah proyek atau kelola pengguna.</li>
+        <li><b>Mandor</b> — hanya melihat jadwal dan menindaklanjuti temuan yang ditugaskan kepadanya.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Foto progres disimpan sebagai data di perangkat ini juga. Foto berukuran besar bisa memenuhi penyimpanan peramban — pakai foto yang sudah diperkecil bila memungkinkan.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat.</li>
+        <li>Progres dan angka di sini adalah contoh demo, bukan harga resmi atau data proyek sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengawas — <b>pengawas / pengawas123</b></li>
+        <li>Mandor — <b>mandor / mandor123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Pengawasan Proyek — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PM OYEN</span>
+    <h2 style="margin-top:10px">Aplikasi Pengawasan Proyek</h2>
+    <p class="login-sub">Masuk untuk mengawasi proyek konstruksi Anda.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <div class="login-error" id="loginError" style="display:none">Nama pengguna atau kata sandi salah, atau akun nonaktif.</div>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengawas — <b>pengawas / pengawas123</b><br>
+      Mandor — <b>mandor / mandor123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function kunciPlus(hari) {
+    var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d);
+  }
+  function selisihHari(a, b) {
+    if (!a || !b) return null;
+    return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
+  }
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", tutupModal);
+  }
+  function bukaModalForm(judul, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = "";
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalBack").classList.add("open");
+    var tidak = $("modalTidak");
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baruTidak.addEventListener("click", tutupModal);
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "aplikasiPengawasanProyek.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  function fotoPlaceholder(teks, warna) {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="' + warna + '"/><text x="160" y="100" font-family="Arial" font-size="17" fill="#ffffff" text-anchor="middle">' + teks + '</text><text x="160" y="126" font-family="Arial" font-size="12" fill="#dbe7f5" text-anchor="middle">Foto contoh demo</text></svg>';
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+  var WARNA_KATEGORI = { "Struktur": "#2f639e", "Arsitektur": "#96690f", "MEP": "#2e7d4f", "Finishing": "#e07b1f" };
+
+  function seedState() {
+    return {
+      proyek: [
+        { id: 1, kode: "PRY-001", nama: "Rumah Tinggal 2 Lantai — Pejaten", klien: "Bpk. Hartono", lokasi: "Jl. Pejaten Raya No. 10, Jakarta Selatan", status: "Aktif", mulai: kunciPlus(-60), selesai: kunciPlus(30), rencana: 65, realisasi: 58 },
+        { id: 2, kode: "PRY-002", nama: "Ruko 3 Lantai — Kalibata", klien: "PT Maju Bersama", lokasi: "Jl. Kalibata Raya No. 5, Jakarta Selatan", status: "Aktif", mulai: kunciPlus(-45), selesai: kunciPlus(45), rencana: 50, realisasi: 47 },
+        { id: 3, kode: "PRY-003", nama: "Renovasi Kantor — Tebet", klien: "CV Sinar Abadi", lokasi: "Jl. Tebet Raya No. 21, Jakarta Selatan", status: "Selesai", mulai: kunciPlus(-90), selesai: kunciPlus(-5), rencana: 100, realisasi: 100 }
+      ],
+      harian: [
+        { id: 1, kode: "LH-001", proyekId: 1, tanggal: kunciPlus(0), cuaca: "Cerah", pekerja: 18, pekerjaan: "Pengecoran kolom lantai 2", progres: 3, kendala: "", pengawas: "Andi Pratama" },
+        { id: 2, kode: "LH-002", proyekId: 1, tanggal: kunciPlus(-1), cuaca: "Berawan", pekerja: 16, pekerjaan: "Pemasangan bekisting balok", progres: 2, kendala: "", pengawas: "Andi Pratama" },
+        { id: 3, kode: "LH-003", proyekId: 2, tanggal: kunciPlus(-2), cuaca: "Cerah", pekerja: 14, pekerjaan: "Pemasangan bata dinding lantai 1", progres: 4, kendala: "Pasokan bata terlambat 1 hari", pengawas: "Andi Pratama" },
+        { id: 4, kode: "LH-004", proyekId: 1, tanggal: kunciPlus(-3), cuaca: "Hujan ringan", pekerja: 12, pekerjaan: "Pembesian kolom", progres: 2, kendala: "Hujan menghambat pengecoran", pengawas: "Andi Pratama" },
+        { id: 5, kode: "LH-005", proyekId: 2, tanggal: kunciPlus(-5), cuaca: "Cerah", pekerja: 15, pekerjaan: "Plester dinding", progres: 3, kendala: "", pengawas: "Andi Pratama" },
+        { id: 6, kode: "LH-006", proyekId: 3, tanggal: kunciPlus(-7), cuaca: "Cerah", pekerja: 10, pekerjaan: "Finishing cat & pembersihan akhir", progres: 5, kendala: "", pengawas: "Andi Pratama" },
+        { id: 7, kode: "LH-007", proyekId: 1, tanggal: kunciPlus(-10), cuaca: "Cerah", pekerja: 17, pekerjaan: "Pengecoran pelat lantai 1", progres: 3, kendala: "", pengawas: "Andi Pratama" },
+        { id: 8, kode: "LH-008", proyekId: 2, tanggal: kunciPlus(-35), cuaca: "Berawan", pekerja: 13, pekerjaan: "Galian pondasi", progres: 2, kendala: "", pengawas: "Andi Pratama" }
+      ],
+      foto: [
+        { id: 1, kode: "FT-001", proyekId: 1, tanggal: kunciPlus(-1), judul: "Kolom lantai 2 setelah cor", kategori: "Struktur", keterangan: "Kolom K1–K4 selesai dicor", dataUrl: fotoPlaceholder("Kolom lantai 2", "#2f639e") },
+        { id: 2, kode: "FT-002", proyekId: 1, tanggal: kunciPlus(-3), judul: "Pembesian kolom", kategori: "Struktur", keterangan: "Pembesian kolom sebelum pengecoran", dataUrl: fotoPlaceholder("Pembesian kolom", "#2f639e") },
+        { id: 3, kode: "FT-003", proyekId: 2, tanggal: kunciPlus(-2), judul: "Dinding bata lantai 1", kategori: "Arsitektur", keterangan: "Pasangan bata dinding lantai 1", dataUrl: fotoPlaceholder("Dinding bata", "#96690f") },
+        { id: 4, kode: "FT-004", proyekId: 2, tanggal: kunciPlus(-5), judul: "Plester dinding", kategori: "Arsitektur", keterangan: "Plester dinding area depan", dataUrl: fotoPlaceholder("Plester dinding", "#96690f") },
+        { id: 5, kode: "FT-005", proyekId: 3, tanggal: kunciPlus(-7), judul: "Hasil finishing cat", kategori: "Finishing", keterangan: "Cat ruang rapat selesai", dataUrl: fotoPlaceholder("Finishing cat", "#e07b1f") },
+        { id: 6, kode: "FT-006", proyekId: 1, tanggal: kunciPlus(-10), judul: "Pelat lantai 1", kategori: "Struktur", keterangan: "Pelat lantai 1 setelah cor", dataUrl: fotoPlaceholder("Pelat lantai 1", "#2f639e") }
+      ],
+      temuan: [
+        { id: 1, kode: "TM-001", proyekId: 1, tanggal: kunciPlus(-2), kategori: "Keselamatan", tingkat: "Kritis", deskripsi: "Pekerja di lantai 2 tidak memakai sabuk pengaman", status: "Terbuka", pj: "Budi Santoso", tindakLanjut: "", tanggalSelesai: "" },
+        { id: 2, kode: "TM-002", proyekId: 1, tanggal: kunciPlus(-1), kategori: "Mutu", tingkat: "Mayor", deskripsi: "Beton kolom ada keropos (honeycomb) di 2 titik", status: "Dalam Tindak Lanjut", pj: "Budi Santoso", tindakLanjut: "Perbaikan grouting dijadwalkan", tanggalSelesai: "" },
+        { id: 3, kode: "TM-003", proyekId: 2, tanggal: kunciPlus(-3), kategori: "Jadwal", tingkat: "Minor", deskripsi: "Pasokan bata terlambat 1 hari", status: "Dalam Tindak Lanjut", pj: "Agus Wijaya", tindakLanjut: "Koordinasi ulang dengan supplier", tanggalSelesai: "" },
+        { id: 4, kode: "TM-004", proyekId: 2, tanggal: kunciPlus(-5), kategori: "Mutu", tingkat: "Minor", deskripsi: "Plester dinding retak rambut di area tangga", status: "Terbuka", pj: "Sinta Dewi", tindakLanjut: "", tanggalSelesai: "" },
+        { id: 5, kode: "TM-005", proyekId: 3, tanggal: kunciPlus(-7), kategori: "Mutu", tingkat: "Minor", deskripsi: "Cat dinding belang di ruang rapat", status: "Selesai", pj: "Agus Wijaya", tindakLanjut: "Cat ulang selesai", tanggalSelesai: kunciPlus(-6) },
+        { id: 6, kode: "TM-006", proyekId: 1, tanggal: kunciPlus(-10), kategori: "Keselamatan", tingkat: "Mayor", deskripsi: "Pagar pengaman tepi pelat belum terpasang penuh", status: "Selesai", pj: "Budi Santoso", tindakLanjut: "Pagar dipasang dan diperiksa", tanggalSelesai: kunciPlus(-8) }
+      ],
+      jadwal: [
+        { id: 1, kode: "JD-001", proyekId: 1, pekerjaan: "Galian & pondasi", bobot: 10, rencanaMulai: kunciPlus(-60), rencanaSelesai: kunciPlus(-45), realisasiMulai: kunciPlus(-60), realisasiSelesai: kunciPlus(-44), status: "Selesai" },
+        { id: 2, kode: "JD-002", proyekId: 1, pekerjaan: "Struktur lantai 1", bobot: 25, rencanaMulai: kunciPlus(-44), rencanaSelesai: kunciPlus(-20), realisasiMulai: kunciPlus(-44), realisasiSelesai: kunciPlus(-18), status: "Selesai" },
+        { id: 3, kode: "JD-003", proyekId: 1, pekerjaan: "Struktur lantai 2", bobot: 25, rencanaMulai: kunciPlus(-19), rencanaSelesai: kunciPlus(5), realisasiMulai: kunciPlus(-19), realisasiSelesai: "", status: "Sedang Berjalan" },
+        { id: 4, kode: "JD-004", proyekId: 1, pekerjaan: "Atap & dak", bobot: 15, rencanaMulai: kunciPlus(-10), rencanaSelesai: kunciPlus(10), realisasiMulai: "", realisasiSelesai: "", status: "Terlambat" },
+        { id: 5, kode: "JD-005", proyekId: 2, pekerjaan: "Struktur ruko", bobot: 30, rencanaMulai: kunciPlus(-45), rencanaSelesai: kunciPlus(-5), realisasiMulai: kunciPlus(-45), realisasiSelesai: "", status: "Sedang Berjalan" },
+        { id: 6, kode: "JD-006", proyekId: 2, pekerjaan: "Dinding & plester", bobot: 20, rencanaMulai: kunciPlus(-20), rencanaSelesai: kunciPlus(15), realisasiMulai: kunciPlus(-18), realisasiSelesai: "", status: "Sedang Berjalan" },
+        { id: 7, kode: "JD-007", proyekId: 3, pekerjaan: "Renovasi interior", bobot: 40, rencanaMulai: kunciPlus(-90), rencanaSelesai: kunciPlus(-20), realisasiMulai: kunciPlus(-90), realisasiSelesai: kunciPlus(-22), status: "Selesai" },
+        { id: 8, kode: "JD-008", proyekId: 2, pekerjaan: "MEP & finishing", bobot: 20, rencanaMulai: kunciPlus(16), rencanaSelesai: kunciPlus(45), realisasiMulai: "", realisasiSelesai: "", status: "Belum Dimulai" }
+      ]
+    };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", password: "admin123", nama: "Administrator", peran: "admin", aktif: true },
+      { username: "pengawas", password: "pengawas123", nama: "Andi Pratama", peran: "pengawas", aktif: true },
+      { username: "mandor", password: "mandor123", nama: "Budi Santoso", peran: "mandor", aktif: true }
+    ];
+  }
+  var state = null, users = [], currentUser = null, fotoDataUrl = "";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.proyek) state = seedState();
+    saveState();
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+    saveUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+  function cariProyek(id) { return state.proyek.find(function (x) { return x.id === id; }); }
+  function kodeProyek(id) { var p = cariProyek(id); return p ? p.kode : "—"; }
+  function namaProyek(id) { var p = cariProyek(id); return p ? p.nama : "—"; }
+  function cariTemuan(id) { return state.temuan.find(function (x) { return x.id === id; }); }
+  function cariJadwal(id) { return state.jadwal.find(function (x) { return x.id === id; }); }
+  function kodeBaru(prefix, daftar) {
+    var n = daftar.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0) + 1;
+    return { id: n, kode: prefix + "-" + String(n).padStart(3, "0") };
+  }
+  function labelStatusProyek(s) {
+    return s === "Aktif" ? "st-biru" : s === "Selesai" ? "st-aman" : s === "Dibatalkan" ? "st-habis" : "st-emas";
+  }
+  function labelStatusTemuan(s) {
+    return s === "Selesai" ? "st-aman" : s === "Dalam Tindak Lanjut" ? "st-emas" : "st-habis";
+  }
+  function labelTingkat(t) {
+    return t === "Kritis" ? "st-habis" : t === "Mayor" ? "st-oren" : "st-biru";
+  }
+  function labelStatusJadwal(s) {
+    return s === "Selesai" ? "st-aman" : s === "Sedang Berjalan" ? "st-biru" : s === "Terlambat" ? "st-habis" : "st-navy";
+  }
+  function peranTxt(r) {
+    return r === "admin" ? "Admin" : r === "pengawas" ? "Pengawas" : "Mandor";
+  }
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    $("cardTambahProyek").style.display = peran === "admin" ? "" : "none";
+    $("cardTambahHarian").style.display = peran === "mandor" ? "none" : "";
+    $("cardTambahFoto").style.display = peran === "mandor" ? "none" : "";
+    $("cardTambahTemuan").style.display = peran === "mandor" ? "none" : "";
+    $("cardTambahJadwal").style.display = peran === "mandor" ? "none" : "";
+    var sembunyiMandor = ["harian", "foto", "laporan"];
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) {
+      var tab = b.getAttribute("data-tab");
+      b.style.display = (peran === "mandor" && sembunyiMandor.indexOf(tab) >= 0) ? "none" : "";
+    });
+    if (peran === "mandor") {
+      var aktif = document.querySelector("#tabbar .tab-btn.active");
+      if (aktif && sembunyiMandor.indexOf(aktif.getAttribute("data-tab")) >= 0) pindahTab("dashboard");
+    }
+  }
+  function masuk(user) {
+    currentUser = user;
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ username: user.username }));
+    $("loginOverlay").classList.add("hidden");
+    $("loginError").style.display = "none";
+    $("userChip").textContent = peranTxt(user.peran) + " (" + user.nama + ")";
+    terapkanPeran();
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    localStorage.removeItem(SESSION_KEY);
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (!found) { $("loginError").style.display = "block"; return; }
+    $("loginUser").value = ""; $("loginPass").value = "";
+    masuk(found);
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    if (currentUser && currentUser.peran === "mandor" && ["harian", "foto", "laporan"].indexOf(nama) >= 0) nama = "dashboard";
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "laporan") renderLaporan();
+  }
+  function isiSelect() {
+    var optProyek = state.proyek.map(function (p) { return '<option value="' + p.id + '">' + esc(p.kode + " — " + p.nama) + "</option>"; }).join("");
+    ["hrProyek", "ftProyek", "tmProyek", "jdProyek"].forEach(function (id) { $(id).innerHTML = optProyek; });
+    var optFilter = '<option value="semua">Semua proyek</option>' + optProyek;
+    ["fHrProyek", "fFtProyek", "fTmProyek", "fJdProyek"].forEach(function (id) { $(id).innerHTML = optFilter; });
+    var namaPj = [];
+    users.forEach(function (u) { if (namaPj.indexOf(u.nama) < 0) namaPj.push(u.nama); });
+    ["Agus Wijaya", "Sinta Dewi"].forEach(function (n) { if (namaPj.indexOf(n) < 0) namaPj.push(n); });
+    $("tmPj").innerHTML = namaPj.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
+    $("hrTanggal").value = hariIniKey();
+    $("ftTanggal").value = hariIniKey();
+    $("tmTanggal").value = hariIniKey();
+  }
+
+  function jendelaLaporan() {
+    var p = $("lapPeriode").value, hari = hariIniKey();
+    if (p === "hari") return { dari: hari, sampai: hari };
+    if (p === "7hari") return { dari: kunciPlus(-6), sampai: hari };
+    if (p === "30hari") return { dari: kunciPlus(-29), sampai: hari };
+    return { dari: null, sampai: null };
+  }
+  function dalamJendela(tanggal, j) {
+    if (!j.dari) return true;
+    return tanggal >= j.dari && tanggal <= j.sampai;
+  }
+  function deviasiProyek(p) { return Number(p.realisasi || 0) - Number(p.rencana || 0); }
+  function renderDashboard() {
+    var aktif = state.proyek.filter(function (p) { return p.status === "Aktif"; }).length;
+    var selesai = state.proyek.filter(function (p) { return p.status === "Selesai"; }).length;
+    $("dProyek").textContent = state.proyek.length;
+    $("dProyekSub").textContent = "Aktif " + aktif + " · Selesai " + selesai;
+    var j30 = { dari: kunciPlus(-29), sampai: hariIniKey() };
+    var harian30 = state.harian.filter(function (h) { return dalamJendela(h.tanggal, j30); });
+    $("dHarian").textContent = harian30.length;
+    $("dHarianSub").textContent = "Hari ini " + state.harian.filter(function (h) { return h.tanggal === hariIniKey(); }).length + " laporan";
+    var terbuka = state.temuan.filter(function (t) { return t.status !== "Selesai"; });
+    var kritis = state.temuan.filter(function (t) { return t.tingkat === "Kritis" && t.status !== "Selesai"; }).length;
+    $("dTemuan").textContent = terbuka.length;
+    $("dTemuanSub").textContent = "Kritis " + kritis + " · Selesai " + state.temuan.filter(function (t) { return t.status === "Selesai"; }).length;
+    var terlambat = state.jadwal.filter(function (j) { return j.status === "Terlambat"; });
+    $("dJadwal").textContent = terlambat.length;
+    $("dJadwalSub").textContent = "dari " + state.jadwal.length + " pekerjaan terjadwal";
+    $("badgeHarian").textContent = state.harian.length;
+    $("badgeFoto").textContent = state.foto.length;
+    $("badgeTemuan").textContent = state.temuan.length;
+    $("badgeJadwal").textContent = state.jadwal.length;
+    var perhatian = [];
+    state.proyek.forEach(function (p) {
+      var d = deviasiProyek(p);
+      if (d < 0) perhatian.push({ teks: p.kode + " deviasi progres " + d + "% (rencana " + p.rencana + "%, realisasi " + p.realisasi + "%)", kelas: "st-oren" });
+    });
+    state.temuan.filter(function (t) { return t.tingkat === "Kritis" && t.status !== "Selesai"; }).forEach(function (t) {
+      perhatian.push({ teks: "Temuan Kritis terbuka: " + t.kode + " — " + t.deskripsi, kelas: "st-habis" });
+    });
+    terlambat.forEach(function (j) {
+      perhatian.push({ teks: "Jadwal terlambat: " + j.kode + " " + j.pekerjaan + " (" + kodeProyek(j.proyekId) + ") — rencana mulai " + tglSingkat(j.rencanaMulai) + " sudah lewat", kelas: "st-habis" });
+    });
+    $("daftarPerhatian").innerHTML = perhatian.length ? perhatian.map(function (x) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(x.teks) + '</div></div><span class="lencana ' + x.kelas + '">Perhatian</span></div>';
+    }).join("") : '<div class="kosong">Tidak ada yang perlu perhatian saat ini.</div>';
+    var menunggu = state.temuan.filter(function (t) { return t.status !== "Selesai"; }).slice().sort(function (a, b) { return b.id - a.id; });
+    $("daftarMenunggu").innerHTML = menunggu.length ? menunggu.map(function (t) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(t.kode + " — " + t.deskripsi) + '</div><div class="dt">' + esc(kodeProyek(t.proyekId)) + " · " + esc(t.kategori) + " · " + esc(t.tingkat) + " · PJ: " + esc(t.pj) + (t.tindakLanjut ? " · Tindak lanjut: " + esc(t.tindakLanjut) : "") + '</div></div><span class="lencana ' + labelStatusTemuan(t.status) + '">' + esc(t.status) + "</span></div>";
+    }).join("") : '<div class="kosong">Semua temuan sudah selesai.</div>';
+    var terbaru = state.proyek.slice().sort(function (a, b) { return b.id - a.id; }).slice(0, 3);
+    $("daftarProyekTerbaru").innerHTML = terbaru.map(function (p) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + esc(p.klien) + " · " + esc(p.lokasi) + " · Rencana " + p.rencana + "% / Realisasi " + p.realisasi + "% (deviasi " + deviasiProyek(p) + "%)</div></div><span class=\"lencana " + labelStatusProyek(p.status) + '">' + esc(p.status) + "</span></div>";
+    }).join("");
+    renderPengguna();
+  }
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") return;
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      return '<div class="user-row"><div><div class="nm" style="font-weight:700">' + esc(u.username + " — " + u.nama) + '</div><div class="dt" style="color:var(--muted);font-size:13px">' + peranTxt(u.peran) + " · " + (u.aktif ? "Aktif" : "Nonaktif") + '</div></div><div class="aksi">' +
+        (u.username === "admin" ? "" : '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>' +
+        '<button class="btn ghost kecil" type="button" data-aksi-pengguna="' + (u.aktif ? "nonaktif" : "aktifkan") + '" data-user="' + esc(u.username) + '">' + (u.aktif ? "Nonaktifkan" : "Aktifkan") + "</button>") +
+        "</div></div>";
+    }).join("");
+  }
+  function renderHarian() {
+    var fp = $("fHrProyek").value, cari = ($("cariHr").value || "").toLowerCase();
+    var daftar = state.harian.filter(function (h) {
+      if (fp !== "semua" && h.proyekId !== Number(fp)) return false;
+      if (cari && (h.pekerjaan + " " + h.kendala + " " + h.cuaca + " " + h.pengawas).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    }).slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+    $("ringkasanHarian").textContent = daftar.length + " laporan harian";
+    $("daftarHarian").innerHTML = daftar.length ? daftar.map(function (h) {
+      var hapus = currentUser && currentUser.peran === "admin" ? '<button class="btn merah kecil" type="button" data-aksi-harian="hapus" data-id="' + h.id + '">Hapus</button>' : "";
+      return '<div class="item-bar"><div><div class="nm">' + esc(h.kode + " — " + h.pekerjaan) + '</div><div class="dt">' + esc(kodeProyek(h.proyekId) + " · " + tglSingkat(h.tanggal) + " · " + h.cuaca + " · " + h.pekerja + " pekerja · Progres +" + h.progres + "% · Pengawas: " + h.pengawas) + (h.kendala ? " · Kendala: " + esc(h.kendala) : "") + '</div></div><div class="aksi">' + hapus + "</div></div>";
+    }).join("") : '<div class="kosong">Belum ada laporan harian yang cocok.</div>';
+  }
+  function renderFoto() {
+    var fp = $("fFtProyek").value, fk = $("fFtKategori").value;
+    var daftar = state.foto.filter(function (f) {
+      if (fp !== "semua" && f.proyekId !== Number(fp)) return false;
+      if (fk !== "semua" && f.kategori !== fk) return false;
+      return true;
+    }).slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+    $("ringkasanFoto").textContent = daftar.length + " foto progres";
+    $("daftarFoto").innerHTML = daftar.length ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">' + daftar.map(function (f) {
+      var hapus = currentUser && currentUser.peran === "admin" ? '<button class="btn merah kecil" type="button" data-aksi-foto="hapus" data-id="' + f.id + '">Hapus</button>' : "";
+      return '<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)">' +
+        '<img src="' + f.dataUrl + '" alt="' + esc(f.judul) + '" style="width:100%;height:140px;object-fit:cover;display:block">' +
+        '<div style="padding:12px"><div style="font-weight:800">' + esc(f.kode + " — " + f.judul) + '</div>' +
+        '<div style="color:var(--muted);font-size:13px;margin-top:2px">' + esc(kodeProyek(f.proyekId) + " · " + tglSingkat(f.tanggal) + " · " + f.kategori) + "</div>" +
+        (f.keterangan ? '<div style="font-size:13px;margin-top:4px">' + esc(f.keterangan) + "</div>" : "") +
+        '<div style="margin-top:10px">' + hapus + "</div></div></div>";
+    }).join("") + "</div>" : '<div class="kosong">Belum ada foto progres yang cocok.</div>';
+  }
+  function renderTemuan() {
+    var fp = $("fTmProyek").value, fs = $("fTmStatus").value, ft = $("fTmTingkat").value, cari = ($("cariTm").value || "").toLowerCase();
+    var daftar = state.temuan.filter(function (t) {
+      if (currentUser && currentUser.peran === "mandor" && t.pj !== currentUser.nama) return false;
+      if (fp !== "semua" && t.proyekId !== Number(fp)) return false;
+      if (fs !== "semua" && t.status !== fs) return false;
+      if (ft !== "semua" && t.tingkat !== ft) return false;
+      if (cari && (t.deskripsi + " " + t.pj + " " + t.kategori).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    }).slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.id - a.id; });
+    var terbuka = state.temuan.filter(function (t) { return t.status !== "Selesai"; }).length;
+    $("ringkasanTemuan").textContent = daftar.length + " temuan ditampilkan · " + terbuka + " belum selesai";
+    $("daftarTemuan").innerHTML = daftar.length ? daftar.map(function (t) {
+      var bisaTindak = currentUser && (currentUser.peran !== "mandor" || t.pj === currentUser.nama);
+      var tindak = bisaTindak ? '<button class="btn biru kecil" type="button" data-aksi-temuan="tindak" data-id="' + t.id + '">Tindak Lanjut</button>' : "";
+      var hapus = currentUser && currentUser.peran === "admin" ? '<button class="btn merah kecil" type="button" data-aksi-temuan="hapus" data-id="' + t.id + '">Hapus</button>' : "";
+      return '<div class="item-bar"><div><div class="nm">' + esc(t.kode + " — " + t.deskripsi) + '</div><div class="dt">' + esc(kodeProyek(t.proyekId) + " · " + tglSingkat(t.tanggal) + " · " + t.kategori + " · PJ: " + t.pj) + (t.tindakLanjut ? " · Tindak lanjut: " + esc(t.tindakLanjut) : "") + (t.tanggalSelesai ? " · Selesai: " + esc(tglSingkat(t.tanggalSelesai)) : "") + '</div></div><div class="aksi"><span class="lencana ' + labelTingkat(t.tingkat) + '">' + esc(t.tingkat) + '</span><span class="lencana ' + labelStatusTemuan(t.status) + '">' + esc(t.status) + "</span>" + tindak + hapus + "</div></div>";
+    }).join("") : '<div class="kosong">Belum ada temuan yang cocok.</div>';
+  }
+  function selisihJadwal(j) {
+    if (!j.realisasiSelesai) return null;
+    return selisihHari(j.rencanaSelesai, j.realisasiSelesai);
+  }
+  function teksSelisihJadwal(j) {
+    var s = selisihJadwal(j);
+    if (s === null) return j.status === "Belum Dimulai" ? "Belum dimulai" : "Berjalan (belum selesai)";
+    if (s > 0) return s + " hari lebih lambat";
+    if (s < 0) return (-s) + " hari lebih cepat";
+    return "Tepat waktu";
+  }
+  function renderJadwal() {
+    var fp = $("fJdProyek").value, fs = $("fJdStatus").value;
+    var daftar = state.jadwal.filter(function (j) {
+      if (fp !== "semua" && j.proyekId !== Number(fp)) return false;
+      if (fs !== "semua" && j.status !== fs) return false;
+      return true;
+    }).slice().sort(function (a, b) { return a.rencanaMulai.localeCompare(b.rencanaMulai) || a.id - b.id; });
+    var terlambat = state.jadwal.filter(function (j) { return j.status === "Terlambat"; }).length;
+    $("ringkasanJadwal").textContent = daftar.length + " pekerjaan terjadwal · " + terlambat + " terlambat";
+    var baris = daftar.map(function (j) {
+      var hapus = currentUser && currentUser.peran === "admin" ? '<button class="btn merah kecil" type="button" data-aksi-jadwal="hapus" data-id="' + j.id + '">Hapus</button>' : "";
+      return "<tr><td>" + esc(j.kode) + "</td><td>" + esc(j.pekerjaan) + "<br><span style=\"color:var(--muted);font-size:12.5px\">" + esc(kodeProyek(j.proyekId)) + " · Bobot " + j.bobot + "%</span></td>" +
+        "<td>" + esc(tglSingkat(j.rencanaMulai) + " s.d. " + tglSingkat(j.rencanaSelesai)) + "</td>" +
+        "<td>" + esc((j.realisasiMulai ? tglSingkat(j.realisasiMulai) : "—") + " s.d. " + (j.realisasiSelesai ? tglSingkat(j.realisasiSelesai) : "—")) + "</td>" +
+        "<td>" + esc(teksSelisihJadwal(j)) + "</td>" +
+        "<td><span class=\"lencana " + labelStatusJadwal(j.status) + '">' + esc(j.status) + "</span></td>" +
+        '<td><button class="btn biru kecil" type="button" data-aksi-jadwal="realisasi" data-id="' + j.id + '">Realisasi</button> ' + hapus + "</td></tr>";
+    }).join("");
+    $("tabelJadwal").innerHTML = "<tr><th>Kode</th><th>Pekerjaan</th><th>Rencana</th><th>Realisasi</th><th>Selisih</th><th>Status</th><th>Aksi</th></tr>" + (baris || '<tr><td colspan="7" class="kosong">Belum ada jadwal yang cocok.</td></tr>');
+  }
+  function renderLaporan() {
+    var j = jendelaLaporan();
+    var harian = state.harian.filter(function (h) { return dalamJendela(h.tanggal, j); });
+    var foto = state.foto.filter(function (f) { return dalamJendela(f.tanggal, j); });
+    var temuan = state.temuan.filter(function (t) { return dalamJendela(t.tanggal, j); });
+    var temuanSelesai = temuan.filter(function (t) { return t.status === "Selesai"; }).length;
+    var terlambat = state.jadwal.filter(function (x) { return x.status === "Terlambat"; }).length;
+    $("lHarian").textContent = harian.length;
+    $("lHarianSub").textContent = "Hari ini " + state.harian.filter(function (h) { return h.tanggal === hariIniKey(); }).length + " laporan";
+    $("lFoto").textContent = foto.length;
+    $("lFotoSub").textContent = "dari " + state.foto.length + " foto keseluruhan";
+    $("lTemuan").textContent = temuan.length;
+    $("lTemuanSub").textContent = "Selesai " + temuanSelesai + " · Belum selesai " + (temuan.length - temuanSelesai);
+    $("lJadwal").textContent = state.jadwal.length;
+    $("lJadwalSub").textContent = "Terlambat " + terlambat + " · Selesai " + state.jadwal.filter(function (x) { return x.status === "Selesai"; }).length;
+    var barisDev = state.proyek.map(function (p) {
+      var d = deviasiProyek(p);
+      var ket = d < 0 ? "Tertinggal" : d > 0 ? "Mendahului" : "Sesuai";
+      return "<tr><td>" + esc(p.kode) + "</td><td>" + esc(p.nama) + "</td><td class=\"angka\">" + p.rencana + "%</td><td class=\"angka\">" + p.realisasi + "%</td><td class=\"angka\">" + d + "%</td><td>" + ket + "</td></tr>";
+    }).join("");
+    $("tabelDeviasi").innerHTML = "<tr><th>Kode</th><th>Proyek</th><th>Rencana</th><th>Realisasi</th><th>Deviasi</th><th>Keterangan</th></tr>" + barisDev;
+    var barisJd = state.jadwal.slice().sort(function (a, b) { return a.rencanaMulai.localeCompare(b.rencanaMulai); }).map(function (x) {
+      return "<tr><td>" + esc(x.kode) + "</td><td>" + esc(x.pekerjaan) + "<br><span style=\"color:var(--muted);font-size:12.5px\">" + esc(kodeProyek(x.proyekId)) + "</span></td><td>" + esc(tglSingkat(x.rencanaSelesai)) + "</td><td>" + esc(x.realisasiSelesai ? tglSingkat(x.realisasiSelesai) : "—") + "</td><td>" + esc(teksSelisihJadwal(x)) + "</td><td><span class=\"lencana " + labelStatusJadwal(x.status) + '">' + esc(x.status) + "</span></td></tr>";
+    }).join("");
+    $("tabelJadwalRealisasi").innerHTML = "<tr><th>Kode</th><th>Pekerjaan</th><th>Rencana Selesai</th><th>Realisasi Selesai</th><th>Selisih</th><th>Status</th></tr>" + barisJd;
+    var aktif = state.proyek.filter(function (p) { return p.status === "Aktif"; }).length;
+    var terbuka = state.temuan.filter(function (t) { return t.status !== "Selesai"; }).length;
+    var kritis = state.temuan.filter(function (t) { return t.tingkat === "Kritis" && t.status !== "Selesai"; }).length;
+    var devTerbesar = state.proyek.slice().sort(function (a, b) { return deviasiProyek(a) - deviasiProyek(b); })[0];
+    $("teksWA").textContent = "Laporan Pengawasan — " + tanggalHariIni() + "\n" +
+      "Proyek aktif: " + aktif + " dari " + state.proyek.length + "\n" +
+      "Laporan harian (30 hari): " + state.harian.filter(function (h) { return dalamJendela(h.tanggal, { dari: kunciPlus(-29), sampai: hariIniKey() }); }).length + "\n" +
+      "Foto progres: " + state.foto.length + "\n" +
+      "Temuan terbuka: " + terbuka + " (Kritis " + kritis + ")\n" +
+      "Jadwal terlambat: " + terlambat + "\n" +
+      "Deviasi terbesar: " + devTerbesar.kode + " " + deviasiProyek(devTerbesar) + "%";
+  }
+  function renderSemua() {
+    isiSelect();
+    renderDashboard();
+    renderHarian();
+    renderFoto();
+    renderTemuan();
+    renderJadwal();
+    renderLaporan();
+  }
+
+  $("btnSimpanProyek").addEventListener("click", function () {
+    if (!currentUser || currentUser.peran !== "admin") { toast("Hanya admin yang bisa menambah proyek."); return; }
+    var nama = $("prNama").value.trim(), klien = $("prKlien").value.trim();
+    if (!nama || !klien) { toast("Isi nama proyek dan klien."); return; }
+    var nb = kodeBaru("PRY", state.proyek);
+    state.proyek.push({ id: nb.id, kode: nb.kode, nama: nama, klien: klien, lokasi: $("prLokasi").value.trim(), status: $("prStatus").value, mulai: $("prMulai").value || hariIniKey(), selesai: $("prSelesai").value || hariIniKey(), rencana: Number($("prRencana").value || 0), realisasi: Number($("prRealisasi").value || 0) });
+    saveState();
+    ["prNama", "prKlien", "prLokasi", "prRencana", "prRealisasi"].forEach(function (id) { $(id).value = ""; });
+    renderSemua(); toast("Proyek " + nb.kode + " disimpan.");
+  });
+  $("btnSimpanHarian").addEventListener("click", function () {
+    var pekerjaan = $("hrPekerjaan").value.trim();
+    if (!pekerjaan) { toast("Isi pekerjaan yang dilakukan."); return; }
+    var nb = kodeBaru("LH", state.harian);
+    state.harian.push({ id: nb.id, kode: nb.kode, proyekId: Number($("hrProyek").value), tanggal: $("hrTanggal").value || hariIniKey(), cuaca: $("hrCuaca").value, pekerja: Number($("hrPekerja").value || 0), pekerjaan: pekerjaan, progres: Number($("hrProgres").value || 0), kendala: $("hrKendala").value.trim(), pengawas: currentUser ? currentUser.nama : "" });
+    saveState();
+    $("hrPekerjaan").value = ""; $("hrKendala").value = ""; $("hrPekerja").value = ""; $("hrProgres").value = "";
+    renderSemua(); toast("Laporan harian " + nb.kode + " disimpan.");
+  });
+  $("ftFile").addEventListener("change", function () {
+    var f = $("ftFile").files && $("ftFile").files[0];
+    if (!f) { fotoDataUrl = ""; $("ftPratinjau").style.display = "none"; return; }
+    var r = new FileReader();
+    r.onload = function () {
+      fotoDataUrl = r.result;
+      $("ftPreview").src = fotoDataUrl;
+      $("ftNamaFile").textContent = f.name + " (" + Math.round(f.size / 1024) + " KB)";
+      $("ftPratinjau").style.display = "block";
+    };
+    r.readAsDataURL(f);
+  });
+  $("btnSimpanFoto").addEventListener("click", function () {
+    var judul = $("ftJudul").value.trim();
+    if (!judul) { toast("Isi judul foto."); return; }
+    if (!fotoDataUrl) { toast("Pilih foto dulu."); return; }
+    var nb = kodeBaru("FT", state.foto);
+    state.foto.push({ id: nb.id, kode: nb.kode, proyekId: Number($("ftProyek").value), tanggal: $("ftTanggal").value || hariIniKey(), judul: judul, kategori: $("ftKategori").value, keterangan: $("ftKeterangan").value.trim(), dataUrl: fotoDataUrl });
+    saveState();
+    $("ftJudul").value = ""; $("ftKeterangan").value = ""; $("ftFile").value = "";
+    fotoDataUrl = ""; $("ftPratinjau").style.display = "none";
+    renderSemua(); toast("Foto " + nb.kode + " disimpan.");
+  });
+  $("btnSimpanTemuan").addEventListener("click", function () {
+    var desk = $("tmDeskripsi").value.trim();
+    if (!desk) { toast("Isi deskripsi temuan."); return; }
+    var nb = kodeBaru("TM", state.temuan);
+    state.temuan.push({ id: nb.id, kode: nb.kode, proyekId: Number($("tmProyek").value), tanggal: $("tmTanggal").value || hariIniKey(), kategori: $("tmKategori").value, tingkat: $("tmTingkat").value, deskripsi: desk, status: "Terbuka", pj: $("tmPj").value, tindakLanjut: "", tanggalSelesai: "" });
+    saveState();
+    $("tmDeskripsi").value = "";
+    renderSemua(); toast("Temuan " + nb.kode + " disimpan.");
+  });
+  $("btnSimpanJadwal").addEventListener("click", function () {
+    var pekerjaan = $("jdPekerjaan").value.trim();
+    if (!pekerjaan) { toast("Isi nama pekerjaan."); return; }
+    var nb = kodeBaru("JD", state.jadwal);
+    state.jadwal.push({ id: nb.id, kode: nb.kode, proyekId: Number($("jdProyek").value), pekerjaan: pekerjaan, bobot: Number($("jdBobot").value || 0), rencanaMulai: $("jdRencanaMulai").value || hariIniKey(), rencanaSelesai: $("jdRencanaSelesai").value || hariIniKey(), realisasiMulai: "", realisasiSelesai: "", status: "Belum Dimulai" });
+    saveState();
+    $("jdPekerjaan").value = ""; $("jdBobot").value = ""; $("jdRencanaMulai").value = ""; $("jdRencanaSelesai").value = "";
+    renderSemua(); toast("Jadwal " + nb.kode + " disimpan.");
+  });
+
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-aksi-harian],[data-aksi-foto],[data-aksi-temuan],[data-aksi-jadwal],[data-aksi-pengguna]");
+    if (!t) return;
+    var aksi = t.getAttribute("data-aksi-harian") || t.getAttribute("data-aksi-foto") || t.getAttribute("data-aksi-temuan") || t.getAttribute("data-aksi-jadwal") || t.getAttribute("data-aksi-pengguna");
+    if (t.hasAttribute("data-aksi-harian")) {
+      var hid = Number(t.getAttribute("data-id"));
+      var h = state.harian.find(function (x) { return x.id === hid; });
+      tanyaKonfirmasi("Hapus Laporan Harian", "Hapus " + (h ? h.kode + " — " + h.pekerjaan : "") + "?", function () {
+        state.harian = state.harian.filter(function (x) { return x.id !== hid; });
+        saveState(); renderSemua(); toast("Laporan harian dihapus.");
+      });
+    } else if (t.hasAttribute("data-aksi-foto")) {
+      var fid = Number(t.getAttribute("data-id"));
+      var f = state.foto.find(function (x) { return x.id === fid; });
+      tanyaKonfirmasi("Hapus Foto", "Hapus " + (f ? f.kode + " — " + f.judul : "") + "?", function () {
+        state.foto = state.foto.filter(function (x) { return x.id !== fid; });
+        saveState(); renderSemua(); toast("Foto dihapus.");
+      });
+    } else if (t.hasAttribute("data-aksi-temuan")) {
+      var tid = Number(t.getAttribute("data-id"));
+      var tm = cariTemuan(tid);
+      if (aksi === "hapus") {
+        tanyaKonfirmasi("Hapus Temuan", "Hapus " + (tm ? tm.kode + " — " + tm.deskripsi : "") + "?", function () {
+          state.temuan = state.temuan.filter(function (x) { return x.id !== tid; });
+          saveState(); renderSemua(); toast("Temuan dihapus.");
+        });
+      } else if (aksi === "tindak") {
+        bukaModalForm("Tindak Lanjut " + tm.kode, '<div class="field"><label for="tmTlStatus">Status baru</label><select id="tmTlStatus"><option' + (tm.status === "Terbuka" ? " selected" : "") + '>Terbuka</option><option' + (tm.status === "Dalam Tindak Lanjut" ? " selected" : "") + '>Dalam Tindak Lanjut</option><option' + (tm.status === "Selesai" ? " selected" : "") + '>Selesai</option></select></div><div class="field"><label for="tmTlTindak">Tindak lanjut</label><textarea id="tmTlTindak" rows="3" placeholder="cth: Sabuk pengaman dibagikan dan diawasi tiap pagi">' + esc(tm.tindakLanjut || "") + '</textarea></div><button class="btn kecil" id="btnSimpanTindak" type="button">Simpan Tindak Lanjut</button>');
+        $("btnSimpanTindak").addEventListener("click", function () {
+          tm.status = $("tmTlStatus").value;
+          tm.tindakLanjut = $("tmTlTindak").value.trim();
+          tm.tanggalSelesai = tm.status === "Selesai" ? (tm.tanggalSelesai || hariIniKey()) : "";
+          saveState(); tutupModal(); renderSemua(); toast("Tindak lanjut " + tm.kode + " disimpan.");
+        });
+      }
+    } else if (t.hasAttribute("data-aksi-jadwal")) {
+      var jid = Number(t.getAttribute("data-id"));
+      var jd = cariJadwal(jid);
+      if (aksi === "hapus") {
+        tanyaKonfirmasi("Hapus Jadwal", "Hapus " + (jd ? jd.kode + " — " + jd.pekerjaan : "") + "?", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== jid; });
+          saveState(); renderSemua(); toast("Jadwal dihapus.");
+        });
+      } else if (aksi === "realisasi") {
+        bukaModalForm("Realisasi " + jd.kode + " — " + jd.pekerjaan, '<div class="form-grid"><div class="field"><label for="jdRlMulai">Realisasi mulai</label><input id="jdRlMulai" type="date" value="' + esc(jd.realisasiMulai || "") + '"></div><div class="field"><label for="jdRlSelesai">Realisasi selesai</label><input id="jdRlSelesai" type="date" value="' + esc(jd.realisasiSelesai || "") + '"></div></div><div class="field"><label for="jdRlStatus">Status</label><select id="jdRlStatus"><option' + (jd.status === "Belum Dimulai" ? " selected" : "") + '>Belum Dimulai</option><option' + (jd.status === "Sedang Berjalan" ? " selected" : "") + '>Sedang Berjalan</option><option' + (jd.status === "Selesai" ? " selected" : "") + '>Selesai</option><option' + (jd.status === "Terlambat" ? " selected" : "") + '>Terlambat</option></select></div><button class="btn kecil" id="btnSimpanRealisasi" type="button">Simpan Realisasi</button>');
+        $("btnSimpanRealisasi").addEventListener("click", function () {
+          jd.realisasiMulai = $("jdRlMulai").value;
+          jd.realisasiSelesai = $("jdRlSelesai").value;
+          jd.status = $("jdRlStatus").value;
+          saveState(); tutupModal(); renderSemua(); toast("Realisasi " + jd.kode + " disimpan.");
+        });
+      }
+    } else if (t.hasAttribute("data-aksi-pengguna")) {
+      var uname = t.getAttribute("data-user");
+      var u = users.find(function (x) { return x.username === uname; });
+      if (!u) return;
+      if (aksi === "sandi") {
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.username + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.username + " direset menjadi bk123.");
+        });
+      } else if (aksi === "nonaktif" || aksi === "aktifkan") {
+        u.aktif = aksi === "aktifkan"; saveUsers(); renderPengguna();
+        toast(u.username + (u.aktif ? " diaktifkan." : " dinonaktifkan."));
+      }
+    }
+  });
+
+  ["fHrProyek", "cariHr"].forEach(function (id) { $(id).addEventListener("input", renderHarian); });
+  ["fFtProyek", "fFtKategori"].forEach(function (id) { $(id).addEventListener("input", renderFoto); });
+  ["fTmProyek", "fTmStatus", "fTmTingkat", "cariTm"].forEach(function (id) { $(id).addEventListener("input", renderTemuan); });
+  ["fJdProyek", "fJdStatus"].forEach(function (id) { $(id).addEventListener("input", renderJadwal); });
+  $("lapPeriode").addEventListener("change", renderLaporan);
+
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), pw = $("pgPass").value;
+    if (!u || !nama || !pw) { toast("Isi nama pengguna, nama lengkap, dan kata sandi awal."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: u, password: pw, nama: nama, peran: $("pgPeran").value, aktif: true });
+    saveUsers();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    renderPengguna(); isiSelect(); toast("Pengguna " + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (lama !== currentUser.password) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke contoh awal? Data yang sudah ditambahkan akan hilang.", function () {
+      state = seedState(); saveState(); renderSemua(); toast("Data dikembalikan ke contoh awal.");
+    });
+  });
+  $("btnCsvHarian").addEventListener("click", function () {
+    var j = jendelaLaporan();
+    var daftar = state.harian.filter(function (h) { return dalamJendela(h.tanggal, j); }).slice().sort(function (a, b) { return a.tanggal.localeCompare(b.tanggal); });
+    var baris = [["ID", "Kode Proyek", "Nama Proyek", "Tanggal", "Cuaca", "Pekerja Hadir", "Pekerjaan", "Progres (%)", "Kendala", "Pengawas"].map(csvCell).join(",")];
+    daftar.forEach(function (h) {
+      baris.push([h.kode, kodeProyek(h.proyekId), namaProyek(h.proyekId), h.tanggal, h.cuaca, h.pekerja, h.pekerjaan, h.progres, h.kendala, h.pengawas].map(csvCell).join(","));
+    });
+    unduh("laporan-harian-pengawasan.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV laporan harian diunduh (" + daftar.length + " baris).");
+  });
+  $("btnCsvTemuan").addEventListener("click", function () {
+    var j = jendelaLaporan();
+    var daftar = state.temuan.filter(function (t) { return dalamJendela(t.tanggal, j); }).slice().sort(function (a, b) { return a.tanggal.localeCompare(b.tanggal); });
+    var baris = [["ID", "Kode Proyek", "Nama Proyek", "Tanggal", "Kategori", "Tingkat", "Status", "Deskripsi", "Penanggung Jawab", "Tindak Lanjut"].map(csvCell).join(",")];
+    daftar.forEach(function (t) {
+      baris.push([t.kode, kodeProyek(t.proyekId), namaProyek(t.proyekId), t.tanggal, t.kategori, t.tingkat, t.status, t.deskripsi, t.pj, t.tindakLanjut].map(csvCell).join(","));
+    });
+    unduh("temuan-pengawasan.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV temuan diunduh (" + daftar.length + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("backup-pengawasan-proyek.json", JSON.stringify({ aplikasi: "aplikasi-pengawasan-proyek", versi: 1, diekspor: new Date().toISOString(), state: state }, null, 2), "application/json;charset=utf-8");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files && $("inputRestore").files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var data = JSON.parse(r.result);
+        if (!data.state || !data.state.proyek) throw new Error("format");
+        state = data.state; saveState(); renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    r.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnSalinWA").addEventListener("click", function () {
+    var teks = $("teksWA").textContent;
+    function ok() { toast("Teks WhatsApp disalin."); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(ok, function () { salinManual(); });
+    } else { salinManual(); }
+    function salinManual() {
+      var ta = document.createElement("textarea");
+      ta.value = teks; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); ok(); } catch (e) { toast("Salin manual dari kotak teks."); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadUsers();
+  loadState();
+  var sesi = null;
+  try { sesi = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) { /* abaikan */ }
+  if (sesi && sesi.username) {
+    var sUser = users.find(function (x) { return x.username === sesi.username && x.aktif; });
+    if (sUser) masuk(sUser); else keluar();
+  } else { keluar(); }
+})();
+</script>
+</body>
+</html>
