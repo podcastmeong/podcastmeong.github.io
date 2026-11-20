@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manajemen Budidaya Ikan</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.accent .sub { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · MANAJEMEN BUDIDAYA IKAN</span>
+    <h1>Manajemen <span class="aksen">Budidaya Ikan</span></h1>
+    <p>Data kolam dan benih, jadwal pakan, pantauan pertumbuhan ikan, pencatatan panen, biaya pakan dan benih, serta laporan budidaya — dalam satu aplikasi untuk pembudidaya ikan kolam, tambak, dan keramba.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="kolam">Kolam <span class="badge" id="badgeKolam">0</span></button>
+    <button class="tab-btn" type="button" data-tab="benih">Benih <span class="badge" id="badgeBenih">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pakan">Pakan <span class="badge" id="badgePakan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pertumbuhan">Pertumbuhan</button>
+    <button class="tab-btn" type="button" data-tab="panen">Panen <span class="badge" id="badgePanen">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Budidaya</h2><p>Ringkasan kolam, populasi, stok ikan, panen, pakan, dan biaya dari data yang Anda lihat.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Populasi Ikan (sisa)</div><div class="angka" id="dPopulasi" style="font-size:22px">0</div><div class="sub" id="dPopulasiSub"></div></div>
+      <div class="stat"><div class="label">Stok Ikan (perkiraan)</div><div class="angka" id="dStokIkan" style="font-size:22px">0</div><div class="sub" id="dStokIkanSub"></div></div>
+      <div class="stat"><div class="label">Panen Bulan Ini</div><div class="angka" id="dPanenBulan" style="font-size:22px">0</div><div class="sub" id="dPanenBulanSub"></div></div>
+      <div class="stat"><div class="label">Stok Pakan</div><div class="angka" id="dStokPakan" style="font-size:22px">0</div><div class="sub" id="dStokPakanSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat warn"><div class="label">Jadwal Pakan Hari Ini</div><div class="angka" id="dJadwalHariIni" style="font-size:22px">0</div><div class="sub" id="dJadwalHariIniSub"></div></div>
+      <div class="stat"><div class="label">Biaya Bulan Ini</div><div class="angka" id="dBiayaBulan" style="font-size:22px">Rp0</div><div class="sub" id="dBiayaBulanSub"></div></div>
+      <div class="stat"><div class="label">Nilai Panen Bulan Ini</div><div class="angka" id="dNilaiPanen" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiPanenSub"></div></div>
+      <div class="stat"><div class="label">Kolam</div><div class="angka" id="dKolam" style="font-size:22px">0</div><div class="sub" id="dKolamSub"></div></div>
+    </div>
+    <div class="card"><h3>Bobot Terakhir per Kolam</h3><p class="sub">Bobot rata-rata terakhir (gram/ekor) dari catatan pertumbuhan tiap kolam yang Anda lihat.</p><div id="daftarBobot"></div></div>
+    <div class="card"><h3>Panen Terbaru</h3><p class="sub">Lima catatan panen terbaru dari data yang Anda lihat.</p><div id="daftarPanenRingkas"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Catat panen hari ini, tambah catatan pertumbuhan, atau lihat jadwal pakan.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKePanen" type="button">Catat Panen</button>
+        <button class="btn kecil hijau" id="btnKePertumbuhan" type="button">Catat Pertumbuhan</button>
+        <button class="btn kecil biru" id="btnKePakan" type="button">Lihat Jadwal Pakan</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Pembudidaya.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="pembudidaya">Pembudidaya</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kolam">
+    <div class="page-head"><h2>Kolam</h2><p>Data kolam, tambak, dan keramba beserta luas dan populasi ikan saat ini. Pembudidaya hanya melihat kolamnya sendiri.</p></div>
+    <div class="card" id="cardTambahKolam">
+      <h3>Tambah Kolam</h3>
+      <p class="sub">Kolam baru dimulai dengan populasi 0 ekor — isi lewat tab Benih.</p>
+      <div class="form-grid">
+        <div class="field"><label for="klNama">Nama kolam</label><input id="klNama" type="text" placeholder="cth: Kolam Lele D"></div>
+        <div class="field"><label for="klJenis">Jenis wadah</label><select id="klJenis">
+          <option value="Kolam">Kolam</option>
+          <option value="Tambak">Tambak</option>
+          <option value="Keramba">Keramba</option>
+        </select></div>
+        <div class="field"><label for="klLuas">Luas (m²)</label><input id="klLuas" type="number" min="1" step="1" placeholder="cth: 800"></div>
+        <div class="field"><label for="klPemilik">Pemilik kolam</label><select id="klPemilik">
+          <option value="manajer">Manajer (Dedi Kurniawan)</option>
+          <option value="pembudidaya">Pembudidaya (Budi Santoso)</option>
+        </select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahKolam" type="button">Simpan Kolam</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanKolam"></p>
+      <div id="daftarKolam"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-benih">
+    <div class="page-head"><h2>Benih</h2><p>Tebar benih per kolam. Biaya benih (jumlah × harga per ekor) tercatat otomatis sebagai biaya kategori Benih.</p></div>
+    <div class="card" id="cardTambahBenih">
+      <h3>Tebar Benih</h3>
+      <p class="sub">Pilih kolam — populasi kolam bertambah otomatis. Pembudidaya hanya bisa menebar di kolamnya sendiri.</p>
+      <div class="form-grid">
+        <div class="field"><label for="bnKolam">Kolam</label><select id="bnKolam"></select></div>
+        <div class="field"><label for="bnJenisIkan">Jenis ikan</label><select id="bnJenisIkan">
+          <option value="Lele">Lele</option>
+          <option value="Nila">Nila</option>
+          <option value="Gurame">Gurame</option>
+          <option value="Udang">Udang</option>
+          <option value="Bandeng">Bandeng</option>
+        </select></div>
+        <div class="field"><label for="bnJumlah">Jumlah benih (ekor)</label><input id="bnJumlah" type="number" min="1" step="1" placeholder="cth: 5000"></div>
+        <div class="field"><label for="bnHarga">Harga per ekor (Rp)</label><input id="bnHarga" type="number" min="0" step="50" placeholder="cth: 300"></div>
+        <div class="field"><label for="bnTanggal">Tanggal tebar</label><input id="bnTanggal" type="date"></div>
+        <div class="field"><label>Biaya benih (otomatis)</label><input id="bnBiaya" type="text" readonly value="—"></div>
+        <div class="field"><label for="bnKeterangan">Keterangan (opsional)</label><input id="bnKeterangan" type="text" placeholder="cth: Benih ukuran 5 cm"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBenih" type="button">Simpan Tebar Benih</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBenih">Filter kolam</label><select id="fBenih">
+          <option value="semua">Semua kolam</option>
+        </select></div>
+        <div class="field"><label for="fBenihJenis">Filter jenis ikan</label><select id="fBenihJenis">
+          <option value="semua">Semua jenis</option>
+          <option value="Lele">Lele</option>
+          <option value="Nila">Nila</option>
+          <option value="Gurame">Gurame</option>
+          <option value="Udang">Udang</option>
+          <option value="Bandeng">Bandeng</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanBenih"></p>
+      <div id="daftarBenih"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pakan">
+    <div class="page-head"><h2>Jadwal &amp; Stok Pakan</h2><p>Jadwal pemberian pakan per kolam dan stok pakan. Pemberian pakan mengurangi stok — bila stok kurang, pemberian ditolak.</p></div>
+    <div class="card" id="cardStokPakan">
+      <h3>Stok Pakan</h3>
+      <p class="sub">Stok pakan per jenis. Pembelian pakan tercatat otomatis sebagai biaya kategori Pakan.</p>
+      <div id="daftarStokPakan"></div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field"><label for="spJenis">Jenis pakan</label><select id="spJenis">
+          <option value="Pelet Lele">Pelet Lele</option>
+          <option value="Pelet Nila">Pelet Nila</option>
+          <option value="Pelet Gurame">Pelet Gurame</option>
+          <option value="Pelet Udang">Pelet Udang</option>
+          <option value="Pelet Bandeng">Pelet Bandeng</option>
+        </select></div>
+        <div class="field"><label for="spKg">Jumlah beli (kg)</label><input id="spKg" type="number" min="1" step="1" placeholder="cth: 500"></div>
+        <div class="field"><label for="spHarga">Harga per kg (Rp)</label><input id="spHarga" type="number" min="0" step="500" placeholder="cth: 12000"></div>
+        <div class="field"><label for="spTanggal">Tanggal beli</label><input id="spTanggal" type="date"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahStokPakan" type="button">Simpan Pembelian Pakan</button>
+    </div>
+    <div class="card" id="cardTambahPakan">
+      <h3>Tambah Jadwal Pakan</h3>
+      <p class="sub">Jadwal baru berstatus Belum. Pembudidaya hanya bisa menambah jadwal untuk kolamnya sendiri.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pkKolam">Kolam</label><select id="pkKolam"></select></div>
+        <div class="field"><label for="pkJenisPakan">Jenis pakan</label><select id="pkJenisPakan">
+          <option value="Pelet Lele">Pelet Lele</option>
+          <option value="Pelet Nila">Pelet Nila</option>
+          <option value="Pelet Gurame">Pelet Gurame</option>
+          <option value="Pelet Udang">Pelet Udang</option>
+          <option value="Pelet Bandeng">Pelet Bandeng</option>
+        </select></div>
+        <div class="field"><label for="pkNama">Nama kegiatan</label><input id="pkNama" type="text" placeholder="cth: Pakan pagi / Pakan sore"></div>
+        <div class="field"><label for="pkJumlah">Jumlah pakan (kg)</label><input id="pkJumlah" type="number" min="1" step="1" placeholder="cth: 40"></div>
+        <div class="field"><label for="pkTanggal">Tanggal</label><input id="pkTanggal" type="date"></div>
+        <div class="field"><label for="pkKeterangan">Keterangan (opsional)</label><input id="pkKeterangan" type="text" placeholder="cth: 2 kali sehari"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPakan" type="button">Simpan Jadwal</button>
+    </div>
+    <div class="card" id="cardTambahBiaya">
+      <h3>Catat Biaya Lain</h3>
+      <p class="sub">Biaya obat dan lain-lain per kolam. Biaya benih dan pembelian pakan sudah tercatat otomatis saat ditebar/dibeli.</p>
+      <div class="form-grid">
+        <div class="field"><label for="byKolam">Kolam</label><select id="byKolam"></select></div>
+        <div class="field"><label for="byKategori">Kategori biaya</label><select id="byKategori">
+          <option value="Obat">Obat</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </select></div>
+        <div class="field"><label for="byJumlah">Jumlah biaya (Rp)</label><input id="byJumlah" type="number" min="0" step="1000" placeholder="cth: 450000"></div>
+        <div class="field"><label for="byTanggal">Tanggal biaya</label><input id="byTanggal" type="date"></div>
+        <div class="field"><label for="byKeterangan">Keterangan (opsional)</label><input id="byKeterangan" type="text" placeholder="cth: Vitamin ikan"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahBiaya" type="button">Simpan Biaya</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPakan">Filter status</label><select id="fPakan">
+          <option value="semua">Semua jadwal</option>
+          <option value="hari ini">Hari ini</option>
+          <option value="segera">Segera (1–7 hari)</option>
+          <option value="lewat">Lewat</option>
+          <option value="selesai">Selesai</option>
+        </select></div>
+        <div class="field"><label for="fPakanKolam">Filter kolam</label><select id="fPakanKolam">
+          <option value="semua">Semua kolam</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPakan"></p>
+      <div id="daftarPakan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pertumbuhan">
+    <div class="page-head"><h2>Pertumbuhan Ikan</h2><p>Catat bobot rata-rata dan panjang ikan per kolam secara berkala. Bobot terakhir dipakai untuk memperkirakan stok ikan (kg).</p></div>
+    <div class="card" id="cardTambahPertumbuhan">
+      <h3>Catat Pertumbuhan</h3>
+      <p class="sub">Ukur sampel ikan dari kolam, lalu catat bobot rata-rata dan panjangnya. Pembudidaya hanya bisa mencatat di kolamnya sendiri.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ptKolam">Kolam</label><select id="ptKolam"></select></div>
+        <div class="field"><label for="ptTanggal">Tanggal ukur</label><input id="ptTanggal" type="date"></div>
+        <div class="field"><label for="ptBobot">Bobot rata-rata (gram/ekor)</label><input id="ptBobot" type="number" min="1" step="1" placeholder="cth: 240"></div>
+        <div class="field"><label for="ptPanjang">Panjang rata-rata (cm)</label><input id="ptPanjang" type="number" min="1" step="0.1" placeholder="cth: 26"></div>
+        <div class="field"><label for="ptKeterangan">Keterangan (opsional)</label><input id="ptKeterangan" type="text" placeholder="cth: Sampel 10 ekor"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPertumbuhan" type="button">Simpan Catatan Pertumbuhan</button>
+    </div>
+    <div class="card">
+      <h3>Grafik Bobot Terakhir</h3>
+      <p class="sub">Bobot rata-rata terakhir (gram/ekor) per kolam yang Anda lihat.</p>
+      <div id="grafikBobot"></div>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fTumbuh">Filter kolam</label><select id="fTumbuh">
+          <option value="semua">Semua kolam</option>
+        </select></div>
+        <div class="field"><label for="fTumbuhBulan">Filter bulan</label><select id="fTumbuhBulan">
+          <option value="semua">Semua bulan</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPertumbuhan"></p>
+      <div id="daftarPertumbuhan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panen">
+    <div class="page-head"><h2>Panen</h2><p>Catat hasil panen per kolam. Nilai = kg × harga/kg. Panen mengurangi populasi kolam — kg panen tidak boleh melebihi stok ikan yang diperkirakan.</p></div>
+    <div class="card" id="cardTambahPanen">
+      <h3>Catat Panen</h3>
+      <p class="sub">Pilih kolam — stok ikan yang diperkirakan ditampilkan otomatis sebelum Anda menyimpan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pnKolam">Kolam</label><select id="pnKolam"></select></div>
+        <div class="field"><label for="pnTanggal">Tanggal panen</label><input id="pnTanggal" type="date"></div>
+        <div class="field"><label for="pnKg">Jumlah panen (kg)</label><input id="pnKg" type="number" min="0.1" step="0.1" placeholder="cth: 120"></div>
+        <div class="field"><label for="pnHarga">Harga per kg (Rp)</label><input id="pnHarga" type="number" min="0" step="500" placeholder="cth: 25000"></div>
+        <div class="field"><label>Stok ikan diperkirakan (kg)</label><input id="pnStok" type="text" readonly value="—"></div>
+        <div class="field"><label>Nilai panen (otomatis)</label><input id="pnNilai" type="text" readonly value="—"></div>
+        <div class="field"><label for="pnKeterangan">Keterangan (opsional)</label><input id="pnKeterangan" type="text" placeholder="cth: Panen sebagian"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPanen" type="button">Simpan Panen</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPanen">Filter kolam</label><select id="fPanen">
+          <option value="semua">Semua kolam</option>
+        </select></div>
+        <div class="field"><label for="fPanenBulan">Filter bulan</label><select id="fPanenBulan">
+          <option value="semua">Semua bulan</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPanen"></p>
+      <div id="daftarPanen"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Budidaya</h2><p>Rekap per kolam, per bulan, dan per kategori biaya — serta ekspor catatan panen ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Kolam</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKolam"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Kategori Biaya</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKategori"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor catatan panen bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Panen</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Manajemen Budidaya Ikan.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Kolam</b> untuk melihat atau menambah kolam, tambak, dan keramba beserta luasnya.</li>
+        <li>Buka tab <b>Benih</b> untuk menebar benih per kolam. Biaya benih (jumlah × harga per ekor) tercatat otomatis sebagai biaya.</li>
+        <li>Buka tab <b>Pakan</b> untuk membeli stok pakan dan membuat jadwal pemberian pakan. Tandai Sudah Diberi setelah pakan diberikan — stok pakan berkurang otomatis, dan pemberian ditolak bila stok kurang.</li>
+        <li>Buka tab <b>Pertumbuhan</b> untuk mencatat bobot dan panjang ikan secara berkala. Bobot terakhir dipakai untuk memperkirakan stok ikan (kg).</li>
+        <li>Buka tab <b>Panen</b> untuk mencatat hasil panen per kolam. Nilai = kg × harga/kg. Panen mengurangi populasi kolam dan tidak boleh melebihi stok ikan yang diperkirakan.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per kolam, per bulan, dan per kategori biaya, serta ekspor catatan panen ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola kolam, benih, pakan, pertumbuhan, panen, biaya, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Pembudidaya</b> — menebar benih, mencatat pertumbuhan dan panen, serta menandai jadwal pakan di kolamnya sendiri. Tidak bisa menambah kolam, membeli stok pakan, atau melihat data kolam orang lain.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Stok ikan (kg) adalah <b>perkiraan</b>: sisa ekor × bobot rata-rata terakhir yang dicatat. Bila belum ada catatan pertumbuhan, dipakai bobot acuan per jenis ikan (Lele 250 g, Nila 300 g, Gurame 600 g, Udang 25 g, Bandeng 400 g). Kematian ikan yang tidak dicatat membuat perkiraan lebih besar dari kenyataan — catat pertumbuhan secara berkala.</li>
+        <li>Selisih = nilai panen − biaya yang dicatat. Budidaya yang masih dalam masa pemeliharaan bisa menunjukkan selisih negatif karena benih dan pakan sudah dibeli sebelum panen besar — itu wajar, bukan kesalahan hitung.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Pembudidaya — <b>pembudidaya / pembudidaya123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Manajemen Budidaya Ikan — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">PERIKANAN · MANAJEMEN BUDIDAYA IKAN</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data kolam dan benih, jadwal pakan, pantauan pertumbuhan ikan, pencatatan panen, biaya pakan dan benih, serta laporan budidaya.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Pembudidaya — <b>pembudidaya / pembudidaya123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function angkaId(n) { return (Math.round(Number(n) * 10) / 10).toLocaleString("id-ID"); }
+  function kgId(n) { return (Math.round(Number(n) * 100) / 100).toLocaleString("id-ID"); }
+  function persenSatu(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%"; }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "manajemenBudidayaIkan.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  var BOBOT_ACUAN = { "Lele": 250, "Nila": 300, "Gurame": 600, "Udang": 25, "Bandeng": 400 };
+  function bobotAcuan(jenisIkan) { return BOBOT_ACUAN[jenisIkan] || 250; }
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_ikan.py).
+       Kolam 6: K1 Kolam Lele A 800 m2 (pembudidaya), K2 Kolam Nila B 1200 (manajer),
+         K3 Tambak Udang 2000 (manajer), K4 Keramba Gurame 500 (pembudidaya),
+         K5 Kolam Bandeng 1500 (manajer), K6 Kolam Lele C 600 (pembudidaya).
+       Benih 6 tebaran, 35.800 ekor; biaya benih Rp9.700.000 (semua Okt).
+       Pertumbuhan 16 catatan; bobot terakhir K1 240, K2 290, K3 22, K4 550, K5 320, K6 190 g.
+       Panen 7 catatan, 470 kg, nilai Rp14.930.000. Nov (6): 420 kg Rp13.680.000.
+         Okt (1): 50 kg Rp1.250.000.
+         Ekor panen (kg x 1000 / bobot terakhir, dibulatkan): K1 500+333, K2 310, K3 2045,
+         K4 45, K5 188, K6 263.
+       Sisa ekor: K1 4167, K2 3690, K3 17955, K4 755, K5 2812, K6 2737; total 32.116 ekor.
+       Stok ikan perkiraan (kg): K1 1000,08, K2 1070,10, K3 395,01, K4 415,25, K5 899,84,
+         K6 520,03; total 4.300,31 kg.
+       Pembudidaya (K1+K4+K6): populasi 7.659 ekor, stok 1.935,36 kg, panen Nov 225 kg
+         Rp6.375.000, biaya Nov Rp7.500.000, stok pakan 760 kg.
+       Stok pakan: Pelet Lele 560 kg @12.000, Pelet Nila 465 @13.000, Pelet Udang 300 @18.000,
+         Pelet Gurame 200 @15.000, Pelet Bandeng 400 @12.500; total 1.925 kg, nilai Rp26.165.000.
+       Jadwal pakan 12: hari ini belum 4, segera (1-7 hari) 4, lewat 2, selesai 2; belum 10.
+         Sudah diberi J11 (Pelet Lele 40 kg) dan J12 (Pelet Nila 35 kg) — stok sudah dikurangi.
+       Biaya 13 catatan, total Rp37.550.000 (Benih 9.700.000, Pakan 27.100.000, Obat 750.000).
+         Nov Rp24.850.000; Okt Rp12.700.000.
+       Selisih (nilai panen - biaya): total -Rp22.620.000; Nov -Rp11.170.000; Okt -Rp11.450.000.
+       CSV panen: Nov 6 baris + header = 7; Okt 1 baris + header = 2. */
+  function seedState() {
+    var kolam = [
+      { id: 1, nama: "Kolam Lele A", jenis: "Kolam", luas: 800, pemilik: "pembudidaya" },
+      { id: 2, nama: "Kolam Nila B", jenis: "Kolam", luas: 1200, pemilik: "manajer" },
+      { id: 3, nama: "Tambak Udang", jenis: "Tambak", luas: 2000, pemilik: "manajer" },
+      { id: 4, nama: "Keramba Gurame", jenis: "Keramba", luas: 500, pemilik: "pembudidaya" },
+      { id: 5, nama: "Kolam Bandeng", jenis: "Kolam", luas: 1500, pemilik: "manajer" },
+      { id: 6, nama: "Kolam Lele C", jenis: "Kolam", luas: 600, pemilik: "pembudidaya" }
+    ];
+    function bn(id, kolamId, jenisIkan, jumlah, hargaEkor, tanggal, pemilik, keterangan) {
+      return { id: id, kolamId: kolamId, jenisIkan: jenisIkan, jumlah: jumlah, hargaEkor: hargaEkor, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var benih = [
+      bn(1, 1, "Lele", 5000, 300, kunciPlus(-40), "pembudidaya", "Benih ukuran 5 cm"),
+      bn(2, 2, "Nila", 4000, 400, kunciPlus(-35), "manajer", "Benih ukuran 6 cm"),
+      bn(3, 3, "Udang", 20000, 150, kunciPlus(-30), "manajer", "Benur PL 12"),
+      bn(4, 4, "Gurame", 800, 1500, kunciPlus(-45), "pembudidaya", "Benih ukuran 8 cm"),
+      bn(5, 5, "Bandeng", 3000, 500, kunciPlus(-25), "manajer", "Nener bandeng"),
+      bn(6, 6, "Lele", 3000, 300, kunciPlus(-20), "pembudidaya", "Benih ukuran 5 cm")
+    ];
+    function pt(id, kolamId, tanggal, bobotGram, panjangCm, pemilik, keterangan) {
+      return { id: id, kolamId: kolamId, tanggal: tanggal, bobotGram: bobotGram, panjangCm: panjangCm, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var pertumbuhan = [
+      pt(1, 1, kunciPlus(-30), 120, 18, "pembudidaya", "Sampel 10 ekor"),
+      pt(2, 1, kunciPlus(-15), 180, 22, "pembudidaya", "Sampel 10 ekor"),
+      pt(3, 1, kunciPlus(-2), 240, 26, "pembudidaya", "Sampel 10 ekor"),
+      pt(4, 2, kunciPlus(-25), 150, 15, "manajer", "Sampel 10 ekor"),
+      pt(5, 2, kunciPlus(-10), 220, 20, "manajer", "Sampel 10 ekor"),
+      pt(6, 2, kunciPlus(-1), 290, 24, "manajer", "Sampel 10 ekor"),
+      pt(7, 3, kunciPlus(-20), 8, 4, "manajer", "Sampel 20 ekor"),
+      pt(8, 3, kunciPlus(-8), 15, 6, "manajer", "Sampel 20 ekor"),
+      pt(9, 3, kunciPlus(-3), 22, 8, "manajer", "Sampel 20 ekor"),
+      pt(10, 4, kunciPlus(-30), 250, 20, "pembudidaya", "Sampel 5 ekor"),
+      pt(11, 4, kunciPlus(-12), 400, 26, "pembudidaya", "Sampel 5 ekor"),
+      pt(12, 4, kunciPlus(-4), 550, 30, "pembudidaya", "Sampel 5 ekor"),
+      pt(13, 5, kunciPlus(-18), 180, 22, "manajer", "Sampel 10 ekor"),
+      pt(14, 5, kunciPlus(-6), 320, 28, "manajer", "Sampel 10 ekor"),
+      pt(15, 6, kunciPlus(-14), 100, 16, "pembudidaya", "Sampel 10 ekor"),
+      pt(16, 6, kunciPlus(-5), 190, 23, "pembudidaya", "Sampel 10 ekor")
+    ];
+    function jd(id, kolamId, jenisPakan, nama, tanggal, jumlahKg, status, pemilik, keterangan) {
+      return { id: id, kolamId: kolamId, jenisPakan: jenisPakan, nama: nama, tanggal: tanggal, jumlahKg: jumlahKg, status: status, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var jadwal = [
+      jd(1, 1, "Pelet Lele", "Pakan pagi", kunciPlus(0), 40, "Belum", "pembudidaya", "2 kali sehari"),
+      jd(2, 2, "Pelet Nila", "Pakan pagi", kunciPlus(0), 35, "Belum", "manajer", "2 kali sehari"),
+      jd(3, 3, "Pelet Udang", "Pakan pagi", kunciPlus(0), 25, "Belum", "manajer", "3 kali sehari"),
+      jd(4, 4, "Pelet Gurame", "Pakan pagi", kunciPlus(0), 15, "Belum", "pembudidaya", "2 kali sehari"),
+      jd(5, 1, "Pelet Lele", "Pakan sore", kunciPlus(2), 40, "Belum", "pembudidaya", "2 kali sehari"),
+      jd(6, 2, "Pelet Nila", "Pakan sore", kunciPlus(3), 35, "Belum", "manajer", "2 kali sehari"),
+      jd(7, 5, "Pelet Bandeng", "Pakan pagi", kunciPlus(5), 30, "Belum", "manajer", "2 kali sehari"),
+      jd(8, 6, "Pelet Lele", "Pakan pagi", kunciPlus(6), 30, "Belum", "pembudidaya", "2 kali sehari"),
+      jd(9, 4, "Pelet Gurame", "Pakan sore", kunciPlus(-2), 15, "Belum", "pembudidaya", "2 kali sehari"),
+      jd(10, 5, "Pelet Bandeng", "Pakan sore", kunciPlus(-1), 30, "Belum", "manajer", "2 kali sehari"),
+      jd(11, 1, "Pelet Lele", "Pakan pagi", kunciPlus(-1), 40, "Selesai", "pembudidaya", "2 kali sehari"),
+      jd(12, 2, "Pelet Nila", "Pakan pagi", kunciPlus(-2), 35, "Selesai", "manajer", "2 kali sehari")
+    ];
+    var stokPakan = [
+      { jenis: "Pelet Lele", stokKg: 560, hargaKg: 12000, pemilik: "pembudidaya" },
+      { jenis: "Pelet Nila", stokKg: 465, hargaKg: 13000, pemilik: "manajer" },
+      { jenis: "Pelet Udang", stokKg: 300, hargaKg: 18000, pemilik: "manajer" },
+      { jenis: "Pelet Gurame", stokKg: 200, hargaKg: 15000, pemilik: "pembudidaya" },
+      { jenis: "Pelet Bandeng", stokKg: 400, hargaKg: 12500, pemilik: "manajer" }
+    ];
+    function pn(id, kolamId, tanggal, kg, hargaKg, ekorPanen, pemilik, keterangan) {
+      return { id: id, kolamId: kolamId, tanggal: tanggal, kg: kg, hargaKg: hargaKg, ekorPanen: ekorPanen, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var panen = [
+      pn(1, 1, kunciPlus(-5), 120, 25000, 500, "pembudidaya", "Panen sebagian"),
+      pn(2, 2, kunciPlus(-3), 90, 30000, 310, "manajer", "Panen sebagian"),
+      pn(3, 3, kunciPlus(-2), 45, 65000, 2045, "manajer", "Panen sebagian"),
+      pn(4, 4, kunciPlus(-4), 25, 55000, 45, "pembudidaya", "Panen sebagian"),
+      pn(5, 5, kunciPlus(-6), 60, 28000, 188, "manajer", "Panen sebagian"),
+      pn(6, 1, kunciPlus(-1), 80, 25000, 333, "pembudidaya", "Panen sebagian"),
+      pn(7, 6, kunciPlus(-28), 50, 25000, 263, "pembudidaya", "Panen sebagian")
+    ];
+    function by(id, kolamId, kategori, jumlah, tanggal, pemilik, keterangan) {
+      return { id: id, kolamId: kolamId, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan || "" };
+    }
+    var biaya = [
+      by(1, 1, "Benih", 1500000, kunciPlus(-40), "pembudidaya", "Benih Lele 5.000 ekor"),
+      by(2, 2, "Benih", 1600000, kunciPlus(-35), "manajer", "Benih Nila 4.000 ekor"),
+      by(3, 3, "Benih", 3000000, kunciPlus(-30), "manajer", "Benur Udang 20.000 ekor"),
+      by(4, 4, "Benih", 1200000, kunciPlus(-45), "pembudidaya", "Benih Gurame 800 ekor"),
+      by(5, 5, "Benih", 1500000, kunciPlus(-25), "manajer", "Nener Bandeng 3.000 ekor"),
+      by(6, 6, "Benih", 900000, kunciPlus(-20), "pembudidaya", "Benih Lele 3.000 ekor"),
+      by(7, 1, "Pakan", 7200000, kunciPlus(-12), "pembudidaya", "Pelet Lele 600 kg"),
+      by(8, 2, "Pakan", 6500000, kunciPlus(-10), "manajer", "Pelet Nila 500 kg"),
+      by(9, 3, "Pakan", 5400000, kunciPlus(-8), "manajer", "Pelet Udang 300 kg"),
+      by(10, 4, "Pakan", 3000000, kunciPlus(-35), "pembudidaya", "Pelet Gurame 200 kg"),
+      by(11, 5, "Pakan", 5000000, kunciPlus(-9), "manajer", "Pelet Bandeng 400 kg"),
+      by(12, 3, "Obat", 450000, kunciPlus(-7), "manajer", "Vitamin udang"),
+      by(13, 1, "Obat", 300000, kunciPlus(-5), "pembudidaya", "Vitamin lele")
+    ];
+    return { kolam: kolam, benih: benih, pertumbuhan: pertumbuhan, jadwal: jadwal, stokPakan: stokPakan,
+      panen: panen, biaya: biaya,
+      nextKolamId: 7, nextBenihId: 7, nextPertumbuhanId: 17, nextJadwalId: 13, nextPanenId: 8, nextBiayaId: 14 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "pembudidaya", nama: "Budi Santoso", peran: "pembudidaya", password: "pembudidaya123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.kolam) state.kolam = [];
+    if (!state.benih) state.benih = [];
+    if (!state.pertumbuhan) state.pertumbuhan = [];
+    if (!state.jadwal) state.jadwal = [];
+    if (!state.stokPakan) state.stokPakan = [];
+    if (!state.panen) state.panen = [];
+    if (!state.biaya) state.biaya = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Pembudidaya"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariKolam(id) { return state.kolam.find(function (x) { return x.id === id; }); }
+  function namaKolam(id) { var k = cariKolam(id); return k ? k.nama : "—"; }
+  function kolamTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "pembudidaya") return state.kolam.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.kolam.slice();
+  }
+  function idKolamTerlihat() {
+    var out = {};
+    kolamTerlihat().forEach(function (k) { out[k.id] = true; });
+    return out;
+  }
+  function benihTerlihat() {
+    var ids = idKolamTerlihat();
+    return state.benih.filter(function (x) { return ids[x.kolamId]; });
+  }
+  function pertumbuhanTerlihat() {
+    var ids = idKolamTerlihat();
+    return state.pertumbuhan.filter(function (x) { return ids[x.kolamId]; });
+  }
+  function jadwalTerlihat() {
+    var ids = idKolamTerlihat();
+    return state.jadwal.filter(function (x) { return ids[x.kolamId]; });
+  }
+  function panenTerlihat() {
+    var ids = idKolamTerlihat();
+    return state.panen.filter(function (x) { return ids[x.kolamId]; });
+  }
+  function biayaTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "pembudidaya") return state.biaya.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.biaya.slice();
+  }
+  function stokPakanTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "pembudidaya") return state.stokPakan.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.stokPakan.slice();
+  }
+  function cariStokPakan(jenis) { return state.stokPakan.find(function (x) { return x.jenis === jenis; }); }
+  function totalBenihEkor(kolamId) {
+    var t = 0;
+    state.benih.forEach(function (b) { if (b.kolamId === kolamId) t += Number(b.jumlah) || 0; });
+    return t;
+  }
+  function totalEkorPanen(kolamId) {
+    var t = 0;
+    state.panen.forEach(function (p) { if (p.kolamId === kolamId) t += Number(p.ekorPanen) || 0; });
+    return t;
+  }
+  function sisaEkor(kolamId) { return totalBenihEkor(kolamId) - totalEkorPanen(kolamId); }
+  function bobotTerakhir(kolamId) {
+    var list = state.pertumbuhan.filter(function (x) { return x.kolamId === kolamId; })
+      .sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.id - b.id; });
+    if (list.length) return Number(list[list.length - 1].bobotGram) || 0;
+    var bn = state.benih.filter(function (x) { return x.kolamId === kolamId; });
+    if (bn.length) return bobotAcuan(bn[bn.length - 1].jenisIkan);
+    return 250;
+  }
+  function stokKg(kolamId) {
+    return sisaEkor(kolamId) * bobotTerakhir(kolamId) / 1000;
+  }
+  function ekorDariKg(kg, bobotGram) {
+    if (!bobotGram || bobotGram <= 0) return 0;
+    return Math.round(Number(kg) * 1000 / bobotGram);
+  }
+  function totalPanenKg(list) {
+    var t = 0;
+    list.forEach(function (x) { t += Number(x.kg) || 0; });
+    return t;
+  }
+  function nilaiPanenList(list) {
+    var t = 0;
+    list.forEach(function (x) { t += (Number(x.kg) || 0) * (Number(x.hargaKg) || 0); });
+    return t;
+  }
+  function totalBiayaList(list) {
+    var t = 0;
+    list.forEach(function (b) { t += Number(b.jumlah) || 0; });
+    return t;
+  }
+  function totalStokPakanKg(list) {
+    var t = 0;
+    list.forEach(function (x) { t += Number(x.stokKg) || 0; });
+    return t;
+  }
+  function nilaiStokPakan(list) {
+    var t = 0;
+    list.forEach(function (x) { t += (Number(x.stokKg) || 0) * (Number(x.hargaKg) || 0); });
+    return t;
+  }
+  function katJadwal(j) {
+    if (j.status === "Selesai") return "selesai";
+    var d = selisihHari(j.tanggal);
+    if (d === 0) return "hari ini";
+    if (d >= 1 && d <= 7) return "segera";
+    if (d < 0) return "lewat";
+    return "nanti";
+  }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "kolam") renderKolam();
+    if (nama === "benih") renderBenih();
+    if (nama === "pakan") renderPakan();
+    if (nama === "pertumbuhan") renderPertumbuhan();
+    if (nama === "panen") renderPanen();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var bkBerjalan = bulanKey(hariIniKey());
+    var panenBulan = panenTerlihat().filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var biayaBulan = biayaTerlihat().filter(function (x) { return bulanKey(x.tanggal) === bkBerjalan; });
+    var jadwalSemua = jadwalTerlihat();
+    var hariIni = jadwalSemua.filter(function (j) { return katJadwal(j) === "hari ini"; });
+    var segera = jadwalSemua.filter(function (j) { return katJadwal(j) === "segera"; });
+    var lewat = jadwalSemua.filter(function (j) { return katJadwal(j) === "lewat"; });
+    var listKolam = kolamTerlihat();
+    var nPop = 0, nStokKg = 0, nTebar = 0;
+    listKolam.forEach(function (k) {
+      nPop += sisaEkor(k.id);
+      nStokKg += stokKg(k.id);
+      nTebar += totalBenihEkor(k.id);
+    });
+    var nPanenKg = totalPanenKg(panenBulan);
+    var nNilaiPanen = nilaiPanenList(panenBulan);
+    var nBiayaBulan = totalBiayaList(biayaBulan);
+    var stokPakanList = stokPakanTerlihat();
+    var nStokPakanKg = totalStokPakanKg(stokPakanList);
+    var nNilaiStokPakan = nilaiStokPakan(stokPakanList);
+    var luasTotal = 0;
+    listKolam.forEach(function (k) { luasTotal += Number(k.luas) || 0; });
+    $("dPopulasi").textContent = nPop.toLocaleString("id-ID") + " ekor";
+    $("dPopulasiSub").textContent = "tebar " + nTebar.toLocaleString("id-ID") + " ekor · " + listKolam.length + " kolam";
+    $("dStokIkan").textContent = kgId(nStokKg) + " kg";
+    $("dStokIkanSub").textContent = "perkiraan: sisa ekor × bobot terakhir";
+    $("dPanenBulan").textContent = kgId(nPanenKg) + " kg";
+    $("dPanenBulanSub").textContent = panenBulan.length + " catatan · " + namaBulan(bkBerjalan);
+    $("dStokPakan").textContent = nStokPakanKg.toLocaleString("id-ID") + " kg";
+    $("dStokPakanSub").textContent = "nilai " + rupiah(nNilaiStokPakan);
+    $("dJadwalHariIni").textContent = hariIni.length + " belum";
+    $("dJadwalHariIniSub").textContent = "segera " + segera.length + " · lewat " + lewat.length;
+    $("dBiayaBulan").textContent = rupiah(nBiayaBulan);
+    $("dBiayaBulanSub").textContent = biayaBulan.length + " catatan biaya · " + namaBulan(bkBerjalan);
+    $("dNilaiPanen").textContent = rupiah(nNilaiPanen);
+    $("dNilaiPanenSub").textContent = "selisih bulan ini " + rupiah(nNilaiPanen - nBiayaBulan);
+    $("dKolam").textContent = listKolam.length + " kolam";
+    $("dKolamSub").textContent = "luas total " + luasTotal.toLocaleString("id-ID") + " m²";
+    $("badgeKolam").textContent = listKolam.length;
+    $("badgeBenih").textContent = benihTerlihat().length;
+    $("badgePakan").textContent = jadwalSemua.filter(function (j) { return j.status !== "Selesai"; }).length;
+    $("badgePanen").textContent = panenTerlihat().length;
+    var bobotMaks = 0;
+    listKolam.forEach(function (k) { bobotMaks = Math.max(bobotMaks, bobotTerakhir(k.id)); });
+    var urutKolam = listKolam.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    $("daftarBobot").innerHTML = urutKolam.length ? urutKolam.map(function (k) {
+      var bobot = bobotTerakhir(k.id);
+      var persen = bobotMaks > 0 ? Math.round(bobot / bobotMaks * 100) : 0;
+      return '<div class="bar-stok"><div class="nama">' + esc(k.nama) + '</div><div class="progres"><span style="width:' + Math.max(persen, 2) + '%"></span></div><div class="nilai">' + bobot.toLocaleString("id-ID") + ' g</div></div>';
+    }).join("") : '<p class="sub">Belum ada kolam.</p>';
+    var terbaru = panenTerlihat().slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarPanenRingkas").innerHTML = terbaru.length ? terbaru.map(function (p) {
+      return '<div class="baris"><div><b>' + esc(namaKolam(p.kolamId)) + '</b>' +
+        '<br><span class="sub">' + kgId(p.kg) + ' kg · ' + rupiah(p.hargaKg) + '/kg · ' + tglSingkat(p.tanggal) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(p.kg * p.hargaKg) + '</b><br><span class="sub">nilai panen</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada catatan panen.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKePanen").addEventListener("click", function () { pindahTab("panen"); });
+  $("btnKePertumbuhan").addEventListener("click", function () { pindahTab("pertumbuhan"); });
+  $("btnKePakan").addEventListener("click", function () { pindahTab("pakan"); });
+
+  /* ---------- Kolam ---------- */
+  function isiPilihanKolam(selId) {
+    var sel = $(selId);
+    var simpan = sel.value;
+    var list = kolamTerlihat();
+    sel.innerHTML = list.map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + ' · ' + esc(k.jenis) + ' · ' + sisaEkor(k.id).toLocaleString("id-ID") + ' ekor</option>';
+    }).join("");
+    if (simpan && list.some(function (k) { return String(k.id) === simpan; })) sel.value = simpan;
+    return list;
+  }
+  function renderKolam() {
+    $("cardTambahKolam").style.display = bolehKelola() ? "" : "none";
+    var list = kolamTerlihat().slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    var nPop = 0;
+    list.forEach(function (k) { nPop += sisaEkor(k.id); });
+    $("ringkasanKolam").textContent = list.length + " kolam · total populasi " + nPop.toLocaleString("id-ID") + " ekor" +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarKolam").innerHTML = list.length ? list.map(function (k) {
+      var pop = sisaEkor(k.id);
+      var stok = stokKg(k.id);
+      var bolehHapus = bolehKelola();
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-kolam="' + k.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(k.nama) + '</b> <span class="tag">' + esc(k.jenis) + '</span>' +
+        '<br><span class="sub">Luas ' + k.luas.toLocaleString("id-ID") + ' m² · populasi ' + pop.toLocaleString("id-ID") + ' ekor · stok diperkirakan ' + kgId(stok) + ' kg · pemilik ' + esc(k.pemilik) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada kolam.</p>';
+    document.querySelectorAll("[data-hapus-kolam]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKolam(Number(b.getAttribute("data-hapus-kolam")));
+        if (!k) return;
+        var dipakai = state.benih.some(function (x) { return x.kolamId === k.id; }) ||
+          state.pertumbuhan.some(function (x) { return x.kolamId === k.id; }) ||
+          state.jadwal.some(function (x) { return x.kolamId === k.id; }) ||
+          state.panen.some(function (x) { return x.kolamId === k.id; }) ||
+          state.biaya.some(function (x) { return x.kolamId === k.id; });
+        if (dipakai) { toast("Kolam \"" + k.nama + "\" tidak bisa dihapus — masih ada benih, pertumbuhan, jadwal, panen, atau biaya yang terkait."); return; }
+        tanyaKonfirmasi("Hapus Kolam", "Hapus kolam \"" + k.nama + "\"?", function () {
+          state.kolam = state.kolam.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Kolam \"" + k.nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahKolam").addEventListener("click", function () {
+    var nama = $("klNama").value.trim();
+    var jenis = $("klJenis").value;
+    var luas = Number($("klLuas").value);
+    var pemilik = $("klPemilik").value;
+    if (!nama) { toast("Isi nama kolam."); return; }
+    if (!(luas > 0)) { toast("Isi luas kolam (lebih dari 0)."); return; }
+    if (state.kolam.some(function (x) { return x.nama.toLowerCase() === nama.toLowerCase(); })) { toast("Nama kolam sudah dipakai."); return; }
+    state.kolam.push({ id: state.nextKolamId++, nama: nama, jenis: jenis, luas: luas, pemilik: pemilik });
+    saveState();
+    $("klNama").value = ""; $("klLuas").value = "";
+    renderSemua();
+    toast("Kolam \"" + nama + "\" (" + jenis + ", " + luas.toLocaleString("id-ID") + " m²) tersimpan.");
+  });
+
+  /* ---------- Benih ---------- */
+  function tampilBiayaBenih() {
+    var jumlah = Number($("bnJumlah").value) || 0;
+    var harga = Number($("bnHarga").value) || 0;
+    $("bnBiaya").value = (jumlah > 0 && harga > 0) ? rupiah(jumlah * harga) : "—";
+  }
+  function renderBenih() {
+    isiPilihanKolam("bnKolam");
+    if (!$("bnTanggal").value) $("bnTanggal").value = hariIniKey();
+    tampilBiayaBenih();
+    var selF = $("fBenih");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kolam</option>'];
+    kolamTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = selF.value || "semua";
+    var filterJenis = $("fBenihJenis").value || "semua";
+    var list = benihTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.kolamId) === filter; });
+    if (filterJenis !== "semua") list = list.filter(function (x) { return x.jenisIkan === filterJenis; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nEkor = 0, nBiaya = 0;
+    benihTerlihat().forEach(function (x) {
+      nEkor += Number(x.jumlah) || 0;
+      nBiaya += (Number(x.jumlah) || 0) * (Number(x.hargaEkor) || 0);
+    });
+    $("ringkasanBenih").textContent = list.length + " tebaran · total benih " + nEkor.toLocaleString("id-ID") + " ekor · biaya benih " + rupiah(nBiaya) +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarBenih").innerHTML = list.length ? list.map(function (b) {
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "pembudidaya" && b.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-benih="' + b.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKolam(b.kolamId)) + '</b> <span class="tag">' + esc(b.jenisIkan) + '</span> <span class="tag">' + esc(b.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(b.tanggal) + ' · ' + rupiah(b.hargaEkor) + '/ekor' + (b.keterangan ? ' · ' + esc(b.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + (Number(b.jumlah) || 0).toLocaleString("id-ID") + ' ekor</b><br><span class="sub">' + rupiah(b.jumlah * b.hargaEkor) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada tebaran benih yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-benih]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var item = state.benih.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-benih")); });
+        if (!item) return;
+        var sisaSetelah = totalBenihEkor(item.kolamId) - (Number(item.jumlah) || 0) - totalEkorPanen(item.kolamId);
+        if (sisaSetelah < 0) { toast("Tebaran benih ini tidak bisa dihapus — populasi kolam akan menjadi negatif karena sudah ada panen."); return; }
+        tanyaKonfirmasi("Hapus Tebaran Benih", "Hapus tebaran " + item.jumlah + " ekor " + item.jenisIkan + " di " + namaKolam(item.kolamId) + "? Biaya benih terkait ikut dihapus.", function () {
+          state.benih = state.benih.filter(function (x) { return x.id !== item.id; });
+          state.biaya = state.biaya.filter(function (x) {
+            return !(x.kategori === "Benih" && x.kolamId === item.kolamId && x.tanggal === item.tanggal && x.jumlah === item.jumlah * item.hargaEkor);
+          });
+          saveState(); renderSemua(); toast("Tebaran benih dihapus.");
+        });
+      });
+    });
+  }
+  $("fBenih").addEventListener("change", renderBenih);
+  $("fBenihJenis").addEventListener("change", renderBenih);
+  $("bnJumlah").addEventListener("input", tampilBiayaBenih);
+  $("bnHarga").addEventListener("input", tampilBiayaBenih);
+  $("btnTambahBenih").addEventListener("click", function () {
+    var kolamId = Number($("bnKolam").value);
+    var jenisIkan = $("bnJenisIkan").value;
+    var jumlah = Number($("bnJumlah").value);
+    var hargaEkor = Number($("bnHarga").value);
+    var tanggal = $("bnTanggal").value;
+    var keterangan = $("bnKeterangan").value.trim();
+    var k = cariKolam(kolamId);
+    if (!k) { toast("Pilih kolam dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah benih (lebih dari 0)."); return; }
+    if (!(hargaEkor > 0)) { toast("Isi harga per ekor (lebih dari 0)."); $("bnHarga").value = ""; return; }
+    if (!tanggal) { toast("Isi tanggal tebar."); return; }
+    state.benih.push({ id: state.nextBenihId++, kolamId: kolamId, jenisIkan: jenisIkan, jumlah: jumlah, hargaEkor: hargaEkor, tanggal: tanggal, pemilik: k.pemilik, keterangan: keterangan });
+    state.biaya.push({ id: state.nextBiayaId++, kolamId: kolamId, kategori: "Benih", jumlah: jumlah * hargaEkor, tanggal: tanggal, pemilik: k.pemilik, keterangan: "Benih " + jenisIkan + " " + jumlah.toLocaleString("id-ID") + " ekor" });
+    saveState();
+    $("bnJumlah").value = ""; $("bnHarga").value = ""; $("bnKeterangan").value = "";
+    renderSemua();
+    toast("Benih " + jenisIkan + " " + jumlah.toLocaleString("id-ID") + " ekor di " + k.nama + " tersimpan (biaya " + rupiah(jumlah * hargaEkor) + ").");
+  });
+
+  /* ---------- Pakan: stok, jadwal, biaya ---------- */
+  function renderPakan() {
+    isiPilihanKolam("pkKolam");
+    isiPilihanKolam("byKolam");
+    if (!$("pkTanggal").value) $("pkTanggal").value = hariIniKey();
+    if (!$("byTanggal").value) $("byTanggal").value = hariIniKey();
+    if (!$("spTanggal").value) $("spTanggal").value = hariIniKey();
+    $("cardStokPakan").style.display = bolehKelola() ? "" : "none";
+    $("cardTambahBiaya").style.display = bolehKelola() ? "" : "none";
+    var stokList = stokPakanTerlihat();
+    $("daftarStokPakan").innerHTML = stokList.length ? stokList.map(function (s) {
+      return '<div class="baris"><div><b>' + esc(s.jenis) + '</b> <span class="tag">' + esc(s.pemilik) + '</span>' +
+        '<br><span class="sub">' + rupiah(s.hargaKg) + '/kg</span></div>' +
+        '<div style="text-align:right"><b>' + (Number(s.stokKg) || 0).toLocaleString("id-ID") + ' kg</b><br><span class="sub">' + rupiah(s.stokKg * s.hargaKg) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada stok pakan.</p>';
+    var selF = $("fPakanKolam");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kolam</option>'];
+    kolamTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = $("fPakan").value || "semua";
+    var filterKolam = selF.value || "semua";
+    var list = jadwalTerlihat();
+    if (filterKolam !== "semua") list = list.filter(function (x) { return String(x.kolamId) === filterKolam; });
+    if (filter !== "semua") list = list.filter(function (x) { return katJadwal(x) === filter; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : a.id - b.id; });
+    var semua = jadwalTerlihat();
+    var nHariIni = semua.filter(function (j) { return katJadwal(j) === "hari ini"; }).length;
+    var nSegera = semua.filter(function (j) { return katJadwal(j) === "segera"; }).length;
+    var nLewat = semua.filter(function (j) { return katJadwal(j) === "lewat"; }).length;
+    var nSelesai = semua.filter(function (j) { return katJadwal(j) === "selesai"; }).length;
+    $("ringkasanPakan").textContent = list.length + " jadwal · hari ini " + nHariIni + " · segera " + nSegera + " · lewat " + nLewat + " · selesai " + nSelesai +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPakan").innerHTML = list.length ? list.map(function (j) {
+      var kat = katJadwal(j);
+      var lencana = kat === "selesai" ? '<span class="lencana st-aman">Selesai</span>' :
+        kat === "hari ini" ? '<span class="lencana st-oren">Hari ini</span>' :
+        kat === "segera" ? '<span class="lencana st-biru">Segera</span>' :
+        kat === "lewat" ? '<span class="lencana st-habis">Lewat</span>' : '<span class="lencana st-navy">Nanti</span>';
+      var stok = cariStokPakan(j.jenisPakan);
+      var stokTxt = stok ? (Number(stok.stokKg) || 0).toLocaleString("id-ID") + " kg tersedia" : "stok tidak ada";
+      var bolehUbah = bolehKelola() || (currentUser && currentUser.peran === "pembudidaya" && j.pemilik === currentUser.username);
+      var aksi = "";
+      if (bolehUbah) {
+        if (j.status === "Selesai") aksi += '<button class="btn ghost kecil" data-batal-jadwal="' + j.id + '" type="button">Batalkan</button> ';
+        else aksi += '<button class="btn hijau kecil" data-beri-jadwal="' + j.id + '" type="button">Tandai Sudah Diberi</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-jadwal="' + j.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(j.nama) + '</b> <span class="tag">' + esc(j.jenisPakan) + '</span> ' + lencana +
+        '<br><span class="sub">' + esc(namaKolam(j.kolamId)) + ' · ' + tglSingkat(j.tanggal) + ' · ' + (Number(j.jumlahKg) || 0).toLocaleString("id-ID") + ' kg · ' + stokTxt + (j.keterangan ? ' · ' + esc(j.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang cocok.</p>';
+    document.querySelectorAll("[data-beri-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-beri-jadwal")); });
+        if (!j) return;
+        var stok = cariStokPakan(j.jenisPakan);
+        var tersedia = stok ? (Number(stok.stokKg) || 0) : 0;
+        if (tersedia < (Number(j.jumlahKg) || 0)) {
+          toast("Stok " + j.jenisPakan + " kurang (" + tersedia.toLocaleString("id-ID") + " kg, butuh " + (Number(j.jumlahKg) || 0).toLocaleString("id-ID") + " kg). Beli stok pakan dulu.");
+          return;
+        }
+        stok.stokKg = tersedia - (Number(j.jumlahKg) || 0);
+        j.status = "Selesai"; saveState(); renderSemua();
+        toast("Pakan \"" + j.nama + "\" sudah diberi (" + (Number(j.jumlahKg) || 0).toLocaleString("id-ID") + " kg). Sisa stok " + j.jenisPakan + " " + stok.stokKg.toLocaleString("id-ID") + " kg.");
+      });
+    });
+    document.querySelectorAll("[data-batal-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-batal-jadwal")); });
+        if (!j) return;
+        var stok = cariStokPakan(j.jenisPakan);
+        if (stok) stok.stokKg = (Number(stok.stokKg) || 0) + (Number(j.jumlahKg) || 0);
+        j.status = "Belum"; saveState(); renderSemua();
+        toast("Jadwal \"" + j.nama + "\" dikembalikan ke Belum, stok pakan dikembalikan.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = state.jadwal.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-jadwal")); });
+        if (!j) return;
+        tanyaKonfirmasi("Hapus Jadwal", "Hapus jadwal \"" + j.nama + "\" (" + tglSingkat(j.tanggal) + ")?", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== j.id; });
+          saveState(); renderSemua(); toast("Jadwal dihapus.");
+        });
+      });
+    });
+  }
+  $("fPakan").addEventListener("change", renderPakan);
+  $("fPakanKolam").addEventListener("change", renderPakan);
+  $("btnTambahStokPakan").addEventListener("click", function () {
+    var jenis = $("spJenis").value;
+    var kg = Number($("spKg").value);
+    var hargaKg = Number($("spHarga").value);
+    var tanggal = $("spTanggal").value;
+    if (!(kg > 0)) { toast("Isi jumlah beli (lebih dari 0)."); return; }
+    if (!(hargaKg > 0)) { toast("Isi harga per kg (lebih dari 0)."); $("spHarga").value = ""; return; }
+    if (!tanggal) { toast("Isi tanggal beli."); return; }
+    var stok = cariStokPakan(jenis);
+    var pemilik = stok ? stok.pemilik : (currentUser ? currentUser.username : "manajer");
+    if (stok) { stok.stokKg = (Number(stok.stokKg) || 0) + kg; stok.hargaKg = hargaKg; }
+    else state.stokPakan.push({ jenis: jenis, stokKg: kg, hargaKg: hargaKg, pemilik: pemilik });
+    state.biaya.push({ id: state.nextBiayaId++, kolamId: "", kategori: "Pakan", jumlah: kg * hargaKg, tanggal: tanggal, pemilik: pemilik, keterangan: jenis + " " + kg.toLocaleString("id-ID") + " kg" });
+    saveState();
+    $("spKg").value = ""; $("spHarga").value = "";
+    renderSemua();
+    toast("Pembelian " + jenis + " " + kg.toLocaleString("id-ID") + " kg tersimpan (biaya " + rupiah(kg * hargaKg) + ").");
+  });
+  $("btnTambahPakan").addEventListener("click", function () {
+    var kolamId = Number($("pkKolam").value);
+    var jenisPakan = $("pkJenisPakan").value;
+    var nama = $("pkNama").value.trim();
+    var jumlahKg = Number($("pkJumlah").value);
+    var tanggal = $("pkTanggal").value;
+    var keterangan = $("pkKeterangan").value.trim();
+    var k = cariKolam(kolamId);
+    if (!k) { toast("Pilih kolam dulu."); return; }
+    if (!nama) { toast("Isi nama kegiatan."); return; }
+    if (!(jumlahKg > 0)) { toast("Isi jumlah pakan (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal jadwal."); return; }
+    state.jadwal.push({ id: state.nextJadwalId++, kolamId: kolamId, jenisPakan: jenisPakan, nama: nama, tanggal: tanggal, jumlahKg: jumlahKg, status: "Belum", pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("pkNama").value = ""; $("pkJumlah").value = ""; $("pkKeterangan").value = "";
+    renderSemua();
+    toast("Jadwal \"" + nama + "\" (" + tglSingkat(tanggal) + ") tersimpan.");
+  });
+  $("btnTambahBiaya").addEventListener("click", function () {
+    var kolamId = $("byKolam").value ? Number($("byKolam").value) : "";
+    var kategori = $("byKategori").value;
+    var jumlah = Number($("byJumlah").value);
+    var tanggal = $("byTanggal").value;
+    var keterangan = $("byKeterangan").value.trim();
+    if (!(jumlah > 0)) { toast("Isi jumlah biaya (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal biaya."); return; }
+    var pemilik = kolamId ? (cariKolam(kolamId) || {}).pemilik || "manajer" : (currentUser ? currentUser.username : "manajer");
+    state.biaya.push({ id: state.nextBiayaId++, kolamId: kolamId, kategori: kategori, jumlah: jumlah, tanggal: tanggal, pemilik: pemilik, keterangan: keterangan });
+    saveState();
+    $("byJumlah").value = ""; $("byKeterangan").value = "";
+    renderSemua();
+    toast("Biaya \"" + kategori + "\" (" + rupiah(jumlah) + ") tersimpan.");
+  });
+
+  /* ---------- Pertumbuhan ---------- */
+  function renderPertumbuhan() {
+    isiPilihanKolam("ptKolam");
+    if (!$("ptTanggal").value) $("ptTanggal").value = hariIniKey();
+    var listKolam = kolamTerlihat().slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    var bobotMaks = 0;
+    listKolam.forEach(function (k) { bobotMaks = Math.max(bobotMaks, bobotTerakhir(k.id)); });
+    $("grafikBobot").innerHTML = listKolam.length ? listKolam.map(function (k) {
+      var bobot = bobotTerakhir(k.id);
+      var persen = bobotMaks > 0 ? Math.round(bobot / bobotMaks * 100) : 0;
+      return '<div class="bar-stok"><div class="nama">' + esc(k.nama) + '</div><div class="progres"><span style="width:' + Math.max(persen, 2) + '%"></span></div><div class="nilai">' + bobot.toLocaleString("id-ID") + ' g</div></div>';
+    }).join("") : '<p class="sub">Belum ada kolam.</p>';
+    var selF = $("fTumbuh");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kolam</option>'];
+    kolamTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var selB = $("fTumbuhBulan");
+    var daftarBulan = bulanList(pertumbuhanTerlihat());
+    isiPilihanBulan(selB, daftarBulan, "semua");
+    var filter = selF.value || "semua";
+    var filterBulan = selB.value || "semua";
+    var list = pertumbuhanTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.kolamId) === filter; });
+    if (filterBulan !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === filterBulan; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanPertumbuhan").textContent = list.length + " catatan pertumbuhan" +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPertumbuhan").innerHTML = list.length ? list.map(function (t) {
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "pembudidaya" && t.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-tumbuh="' + t.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKolam(t.kolamId)) + '</b> <span class="tag">' + esc(t.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(t.tanggal) + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + (Number(t.bobotGram) || 0).toLocaleString("id-ID") + ' g/ekor</b><br><span class="sub">' + angkaId(t.panjangCm) + ' cm</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan pertumbuhan yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-tumbuh]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = state.pertumbuhan.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-tumbuh")); });
+        if (!t) return;
+        tanyaKonfirmasi("Hapus Catatan Pertumbuhan", "Hapus catatan pertumbuhan " + t.bobotGram + " g di " + namaKolam(t.kolamId) + " (" + tglSingkat(t.tanggal) + ")?", function () {
+          state.pertumbuhan = state.pertumbuhan.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Catatan pertumbuhan dihapus.");
+        });
+      });
+    });
+  }
+  $("fTumbuh").addEventListener("change", renderPertumbuhan);
+  $("fTumbuhBulan").addEventListener("change", renderPertumbuhan);
+  $("btnTambahPertumbuhan").addEventListener("click", function () {
+    var kolamId = Number($("ptKolam").value);
+    var tanggal = $("ptTanggal").value;
+    var bobot = Number($("ptBobot").value);
+    var panjang = Number($("ptPanjang").value);
+    var keterangan = $("ptKeterangan").value.trim();
+    var k = cariKolam(kolamId);
+    if (!k) { toast("Pilih kolam dulu."); return; }
+    if (!(bobot > 0)) { toast("Isi bobot rata-rata (lebih dari 0)."); return; }
+    if (!(panjang > 0)) { toast("Isi panjang rata-rata (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal ukur."); return; }
+    state.pertumbuhan.push({ id: state.nextPertumbuhanId++, kolamId: kolamId, tanggal: tanggal, bobotGram: bobot, panjangCm: panjang, pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("ptBobot").value = ""; $("ptPanjang").value = ""; $("ptKeterangan").value = "";
+    renderSemua();
+    toast("Pertumbuhan " + k.nama + " (" + bobot.toLocaleString("id-ID") + " g, " + angkaId(panjang) + " cm) tersimpan.");
+  });
+
+  /* ---------- Panen ---------- */
+  function tampilPratinjauPanen() {
+    var kid = Number($("pnKolam").value);
+    var kg = Number($("pnKg").value) || 0;
+    var harga = Number($("pnHarga").value) || 0;
+    if (!kid) { $("pnStok").value = "—"; $("pnNilai").value = "—"; return; }
+    var stok = stokKg(kid);
+    $("pnStok").value = kgId(stok) + " kg (sisa " + sisaEkor(kid).toLocaleString("id-ID") + " ekor × " + bobotTerakhir(kid).toLocaleString("id-ID") + " g)";
+    $("pnNilai").value = (kg > 0 && harga > 0) ? rupiah(kg * harga) + " · ±" + ekorDariKg(kg, bobotTerakhir(kid)).toLocaleString("id-ID") + " ekor" : "—";
+  }
+  function renderPanen() {
+    isiPilihanKolam("pnKolam");
+    if (!$("pnTanggal").value) $("pnTanggal").value = hariIniKey();
+    tampilPratinjauPanen();
+    var selF = $("fPanen");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kolam</option>'];
+    kolamTerlihat().forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var selB = $("fPanenBulan");
+    var daftarBulan = bulanList(panenTerlihat());
+    isiPilihanBulan(selB, daftarBulan, "semua");
+    var filter = selF.value || "semua";
+    var filterBulan = selB.value || "semua";
+    var list = panenTerlihat();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.kolamId) === filter; });
+    if (filterBulan !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === filterBulan; });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nKg = totalPanenKg(panenTerlihat());
+    var nNilai = nilaiPanenList(panenTerlihat());
+    $("ringkasanPanen").textContent = list.length + " catatan panen · total " + kgId(nKg) + " kg · nilai " + rupiah(nNilai) +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarPanen").innerHTML = list.length ? list.map(function (p) {
+      var bolehHapus = bolehKelola() || (currentUser && currentUser.peran === "pembudidaya" && p.pemilik === currentUser.username);
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-panen="' + p.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKolam(p.kolamId)) + '</b> <span class="tag">' + esc(p.pemilik) + '</span>' +
+        '<br><span class="sub">' + tglSingkat(p.tanggal) + ' · ' + rupiah(p.hargaKg) + '/kg · ±' + (Number(p.ekorPanen) || 0).toLocaleString("id-ID") + ' ekor' + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + kgId(p.kg) + ' kg</b><br><span class="sub">' + rupiah(p.kg * p.hargaKg) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada catatan panen yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-panen]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = state.panen.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-panen")); });
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Panen", "Hapus panen " + kgId(p.kg) + " kg di " + namaKolam(p.kolamId) + " (" + tglSingkat(p.tanggal) + ")? Populasi kolam kembali bertambah.", function () {
+          state.panen = state.panen.filter(function (x) { return x.id !== p.id; });
+          saveState(); renderSemua(); toast("Panen dihapus, populasi kolam dipulihkan.");
+        });
+      });
+    });
+  }
+  $("fPanen").addEventListener("change", renderPanen);
+  $("fPanenBulan").addEventListener("change", renderPanen);
+  $("pnKolam").addEventListener("change", tampilPratinjauPanen);
+  $("pnKg").addEventListener("input", tampilPratinjauPanen);
+  $("pnHarga").addEventListener("input", tampilPratinjauPanen);
+  $("btnTambahPanen").addEventListener("click", function () {
+    var kolamId = Number($("pnKolam").value);
+    var tanggal = $("pnTanggal").value;
+    var kg = Number($("pnKg").value);
+    var hargaKg = Number($("pnHarga").value);
+    var keterangan = $("pnKeterangan").value.trim();
+    var k = cariKolam(kolamId);
+    if (!k) { toast("Pilih kolam dulu."); return; }
+    if (!(kg > 0)) { toast("Isi jumlah panen (lebih dari 0)."); return; }
+    if (!(hargaKg > 0)) { toast("Isi harga per kg (lebih dari 0)."); $("pnHarga").value = ""; return; }
+    if (!tanggal) { toast("Isi tanggal panen."); return; }
+    var stok = stokKg(kolamId);
+    if (kg > stok + 0.001) {
+      toast("Panen " + kgId(kg) + " kg melebihi stok ikan yang diperkirakan (" + kgId(stok) + " kg di " + k.nama + ").");
+      $("pnKg").value = "";
+      return;
+    }
+    var ekor = ekorDariKg(kg, bobotTerakhir(kolamId));
+    state.panen.push({ id: state.nextPanenId++, kolamId: kolamId, tanggal: tanggal, kg: kg, hargaKg: hargaKg, ekorPanen: ekor, pemilik: k.pemilik, keterangan: keterangan });
+    saveState();
+    $("pnKg").value = ""; $("pnHarga").value = ""; $("pnKeterangan").value = "";
+    renderSemua();
+    toast("Panen " + kgId(kg) + " kg di " + k.nama + " tersimpan (nilai " + rupiah(kg * hargaKg) + ", ±" + ekor.toLocaleString("id-ID") + " ekor).");
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(panenTerlihat().concat(biayaTerlihat()));
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login, saat data
+       per peran masih kosong). Setelah pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var panenSemua = panenTerlihat();
+    var biayaSemua = biayaTerlihat();
+    var nKg = totalPanenKg(panenSemua);
+    var nNilaiPanen = nilaiPanenList(panenSemua);
+    var nBiaya = totalBiayaList(biayaSemua);
+    $("ringkasanLaporan").textContent = panenSemua.length + " catatan panen (" + kgId(nKg) + " kg) · " + biayaSemua.length + " catatan biaya · nilai panen " + rupiah(nNilaiPanen) + " · biaya " + rupiah(nBiaya) + " · selisih " + rupiah(nNilaiPanen - nBiaya) +
+      (currentUser && currentUser.peran === "pembudidaya" ? " (milik Anda)" : " (semua)") + ".";
+    var perKolam = {};
+    kolamTerlihat().forEach(function (k) {
+      perKolam[k.id] = { nama: k.nama, jenis: k.jenis, tebar: totalBenihEkor(k.id), sisa: sisaEkor(k.id), stok: stokKg(k.id), panenKg: 0, nilai: 0, biaya: 0 };
+    });
+    panenSemua.forEach(function (p) {
+      if (perKolam[p.kolamId]) {
+        perKolam[p.kolamId].panenKg += Number(p.kg) || 0;
+        perKolam[p.kolamId].nilai += (Number(p.kg) || 0) * (Number(p.hargaKg) || 0);
+      }
+    });
+    biayaSemua.forEach(function (b) {
+      if (b.kolamId && perKolam[b.kolamId]) perKolam[b.kolamId].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciKolam = Object.keys(perKolam).sort(function (a, b) { return perKolam[b].nilai - perKolam[a].nilai; });
+    $("tabelPerKolam").innerHTML = "<tr><th>Kolam</th><th class=\"angka\">Tebar (ekor)</th><th class=\"angka\">Sisa (ekor)</th><th class=\"angka\">Stok (kg)</th><th class=\"angka\">Panen (kg)</th><th class=\"angka\">Nilai Panen</th><th class=\"angka\">Biaya</th><th class=\"angka\">Selisih</th></tr>" +
+      (kunciKolam.length ? kunciKolam.map(function (kid) {
+        var x = perKolam[kid];
+        return "<tr><td><b>" + esc(x.nama) + "</b> <span class=\"tag\">" + esc(x.jenis) + "</span></td><td class=\"angka\">" + x.tebar.toLocaleString("id-ID") + "</td><td class=\"angka\">" + x.sisa.toLocaleString("id-ID") + "</td><td class=\"angka\">" + kgId(x.stok) + "</td><td class=\"angka\">" + kgId(x.panenKg) + "</td><td class=\"angka\">" + rupiah(x.nilai) + "</td><td class=\"angka\">" + rupiah(x.biaya) + "</td><td class=\"angka\">" + rupiah(x.nilai - x.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="8">Belum ada data.</td></tr>');
+    var perBulan = {};
+    panenSemua.forEach(function (p) {
+      var bk = bulanKey(p.tanggal);
+      if (!perBulan[bk]) perBulan[bk] = { kg: 0, nilai: 0, biaya: 0, catatan: 0 };
+      perBulan[bk].kg += Number(p.kg) || 0;
+      perBulan[bk].nilai += (Number(p.kg) || 0) * (Number(p.hargaKg) || 0);
+      perBulan[bk].catatan += 1;
+    });
+    biayaSemua.forEach(function (b) {
+      var bk = bulanKey(b.tanggal);
+      if (!perBulan[bk]) perBulan[bk] = { kg: 0, nilai: 0, biaya: 0, catatan: 0 };
+      perBulan[bk].biaya += Number(b.jumlah) || 0;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Catatan Panen</th><th class=\"angka\">Panen (kg)</th><th class=\"angka\">Nilai Panen</th><th class=\"angka\">Biaya</th><th class=\"angka\">Selisih</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (bk) {
+        var r = perBulan[bk];
+        return "<tr><td><b>" + namaBulan(bk) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + kgId(r.kg) + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.biaya) + "</td><td class=\"angka\">" + rupiah(r.nilai - r.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    var perKategori = {};
+    biayaSemua.forEach(function (b) {
+      if (!perKategori[b.kategori]) perKategori[b.kategori] = { jumlah: 0, catatan: 0 };
+      perKategori[b.kategori].jumlah += Number(b.jumlah) || 0;
+      perKategori[b.kategori].catatan += 1;
+    });
+    var kunciKat = Object.keys(perKategori).sort(function (a, b) { return perKategori[b].jumlah - perKategori[a].jumlah; });
+    $("tabelPerKategori").innerHTML = "<tr><th>Kategori Biaya</th><th class=\"angka\">Catatan</th><th class=\"angka\">Total Biaya</th></tr>" +
+      (kunciKat.length ? kunciKat.map(function (bk) {
+        var r = perKategori[bk];
+        return "<tr><td><b>" + esc(bk) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + rupiah(r.jumlah) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = panenTerlihat();
+    if (bk !== "semua") list = list.filter(function (p) { return bulanKey(p.tanggal) === bk; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var baris = [["Tanggal", "Kolam", "Panen (kg)", "Harga per kg", "Nilai", "Perkiraan ekor", "Dicatat untuk", "Keterangan"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (p) {
+      n++;
+      baris.push([p.tanggal, namaKolam(p.kolamId), p.kg, p.hargaKg, p.kg * p.hargaKg, p.ekorPanen, p.pemilik, p.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("laporan-panen-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("manajemen-budidaya-ikan-backup.json", JSON.stringify({ aplikasi: "manajemen-budidaya-ikan", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.panen) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Kolam, benih, pertumbuhan, jadwal, panen, dan biaya akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderKolam(); renderBenih(); renderPakan(); renderPertumbuhan(); renderPanen(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
