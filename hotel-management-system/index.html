@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotel Management System</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.accent .sub { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · HOTEL MANAGEMENT SYSTEM</span>
+    <h1>Hotel <span class="aksen">Management System</span></h1>
+    <p>Data kamar dan tarif, pemesanan kamar, check-in dan check-out, status kamar, layanan tamu, serta laporan hunian dan pemasukan — dalam satu aplikasi untuk hotel dan penginapan.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="kamar">Kamar <span class="badge" id="badgeKamar">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pemesanan">Pemesanan <span class="badge" id="badgePemesanan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="checkin">Check-in / out</button>
+    <button class="tab-btn" type="button" data-tab="tamu">Tamu <span class="badge" id="badgeTamu">0</span></button>
+    <button class="tab-btn" type="button" data-tab="layanan">Layanan</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Hotel</h2><p>Ringkasan kamar, hunian, pemesanan, check-in/out, dan pemasukan hari ini dan bulan ini.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Kamar Tersedia</div><div class="angka" id="dTersedia" style="font-size:22px">0</div><div class="sub" id="dTersediaSub"></div></div>
+      <div class="stat"><div class="label">Kamar Terisi</div><div class="angka" id="dTerisi" style="font-size:22px">0</div><div class="sub" id="dTerisiSub"></div></div>
+      <div class="stat warn"><div class="label">Check-out Hari Ini</div><div class="angka" id="dCoHariIni" style="font-size:22px">0</div><div class="sub" id="dCoHariIniSub"></div></div>
+      <div class="stat"><div class="label">Check-in Hari Ini</div><div class="angka" id="dCiHariIni" style="font-size:22px">0</div><div class="sub" id="dCiHariIniSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Sedang Menginap</div><div class="angka" id="dMenginap" style="font-size:22px">0</div><div class="sub" id="dMenginapSub"></div></div>
+      <div class="stat"><div class="label">Pemesanan Dipesan</div><div class="angka" id="dDipesan" style="font-size:22px">0</div><div class="sub" id="dDipesanSub"></div></div>
+      <div class="stat"><div class="label">Pemasukan Bulan Ini</div><div class="angka" id="dPemasukanBulan" style="font-size:22px">Rp0</div><div class="sub" id="dPemasukanBulanSub"></div></div>
+      <div class="stat"><div class="label">Tingkat Hunian Bulan Ini</div><div class="angka" id="dHunian" style="font-size:22px">0%</div><div class="sub" id="dHunianSub"></div></div>
+    </div>
+    <div class="card"><h3>Status Kamar</h3><p class="sub">Status semua kamar beserta tamu yang sedang menginap.</p><div id="daftarStatusKamar"></div></div>
+    <div class="card"><h3>Pemesanan Terbaru</h3><p class="sub">Lima pemesanan terbaru berdasarkan tanggal check-in.</p><div id="daftarPemesananRingkas"></div></div>
+    <div class="card">
+      <h3>Aksi Cepat</h3>
+      <p class="sub">Buat pemesanan baru, buka daftar check-in/out, atau catat layanan tamu.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKePemesanan" type="button">Buat Pemesanan</button>
+        <button class="btn kecil hijau" id="btnKeCheckin" type="button">Check-in / Check-out</button>
+        <button class="btn kecil biru" id="btnKeLayanan" type="button">Catat Layanan</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Resepsionis.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: rina"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Rina Kusuma"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: rina123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="resepsionis">Resepsionis</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kamar">
+    <div class="page-head"><h2>Kamar</h2><p>Data kamar, tipe, tarif per malam, dan status. Hanya Admin dan Manajer yang bisa menambah kamar dan mengubah tarif.</p></div>
+    <div class="card hanya-kelola" id="cardTambahKamar">
+      <h3>Tambah Kamar</h3>
+      <p class="sub">Kamar baru dimulai dengan status Tersedia.</p>
+      <div class="form-grid">
+        <div class="field"><label for="kmNomor">Nomor kamar</label><input id="kmNomor" type="text" placeholder="cth: 104"></div>
+        <div class="field"><label for="kmTipe">Tipe kamar</label><select id="kmTipe">
+          <option value="Standard">Standard</option>
+          <option value="Deluxe">Deluxe</option>
+          <option value="Suite">Suite</option>
+          <option value="Family">Family</option>
+        </select></div>
+        <div class="field"><label for="kmTarif">Tarif per malam (Rp)</label><input id="kmTarif" type="number" min="0" step="5000" placeholder="cth: 350000"></div>
+        <div class="field"><label for="kmStatus">Status awal</label><select id="kmStatus">
+          <option value="Tersedia">Tersedia</option>
+          <option value="Perawatan">Perawatan</option>
+        </select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahKamar" type="button">Simpan Kamar</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanKamar"></p>
+      <div id="daftarKamar"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pemesanan">
+    <div class="page-head"><h2>Pemesanan</h2><p>Buat pemesanan kamar. Total = tarif per malam × jumlah malam. Pemesanan ditolak bila kamar sudah dipesan pada tanggal yang sama atau sedang dalam perawatan.</p></div>
+    <div class="card" id="cardTambahPemesanan">
+      <h3>Buat Pemesanan</h3>
+      <p class="sub">Pilih tamu dan kamar — jumlah malam dan total dihitung otomatis.</p>
+      <div class="form-grid">
+        <div class="field"><label for="psTamu">Tamu</label><select id="psTamu"></select></div>
+        <div class="field"><label for="psKamar">Kamar</label><select id="psKamar"></select></div>
+        <div class="field"><label for="psCheckin">Tanggal check-in</label><input id="psCheckin" type="date"></div>
+        <div class="field"><label for="psCheckout">Tanggal check-out</label><input id="psCheckout" type="date"></div>
+        <div class="field"><label>Jumlah malam</label><input id="psMalam" type="text" readonly value="—"></div>
+        <div class="field"><label>Total kamar (otomatis)</label><input id="psTotal" type="text" readonly value="—"></div>
+        <div class="field"><label for="psKeterangan">Keterangan (opsional)</label><input id="psKeterangan" type="text" placeholder="cth: Minta kamar lantai atas"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPemesanan" type="button">Simpan Pemesanan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPemesanan">Filter status</label><select id="fPemesanan">
+          <option value="semua">Semua pemesanan</option>
+          <option value="Dipesan">Dipesan</option>
+          <option value="Menginap">Menginap</option>
+          <option value="Selesai">Selesai</option>
+          <option value="Dibatalkan">Dibatalkan</option>
+        </select></div>
+        <div class="field"><label for="fPemesananKamar">Filter kamar</label><select id="fPemesananKamar">
+          <option value="semua">Semua kamar</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanPemesanan"></p>
+      <div id="daftarPemesanan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-checkin">
+    <div class="page-head"><h2>Check-in / Check-out</h2><p>Check-in mengubah pemesanan menjadi Menginap dan kamar menjadi Terisi. Check-out menghitung tagihan akhir (kamar + layanan tamu) dan kamar kembali menjadi Dibersihkan.</p></div>
+    <div class="card">
+      <h3>Siap Check-in</h3>
+      <p class="sub">Pemesanan berstatus Dipesan yang tanggal check-in-nya hari ini atau sudah lewat.</p>
+      <div id="daftarSiapCheckin"></div>
+    </div>
+    <div class="card">
+      <h3>Sedang Menginap — Siap Check-out</h3>
+      <p class="sub">Pemesanan berstatus Menginap beserta tagihan sementara (kamar + layanan).</p>
+      <div id="daftarSiapCheckout"></div>
+    </div>
+    <div class="card">
+      <h3>Kamar Perlu Dibersihkan</h3>
+      <p class="sub">Kamar berstatus Dibersihkan setelah tamu check-out — tandai selesai bila sudah bersih.</p>
+      <div id="daftarDibersihkan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-tamu">
+    <div class="page-head"><h2>Tamu</h2><p>Data tamu hotel beserta riwayat pemesanannya.</p></div>
+    <div class="card" id="cardTambahTamu">
+      <h3>Tambah Tamu</h3>
+      <p class="sub">Tamu baru langsung bisa dipilih saat membuat pemesanan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="tmNama">Nama tamu</label><input id="tmNama" type="text" placeholder="cth: Joko Santoso"></div>
+        <div class="field"><label for="tmTelepon">Nomor telepon</label><input id="tmTelepon" type="text" placeholder="cth: 0812-7777-0007"></div>
+        <div class="field"><label for="tmEmail">Email (opsional)</label><input id="tmEmail" type="text" placeholder="cth: joko@mail.com"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahTamu" type="button">Simpan Tamu</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanTamu"></p>
+      <div id="daftarTamu"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-layanan">
+    <div class="page-head"><h2>Layanan Tamu</h2><p>Layanan untuk tamu yang sedang menginap — sarapan, laundry, antar-jemput, dan layanan kamar. Biaya layanan masuk ke tagihan akhir saat check-out.</p></div>
+    <div class="card" id="cardTambahLayanan">
+      <h3>Catat Layanan</h3>
+      <p class="sub">Hanya untuk pemesanan berstatus Menginap. Harga mengikuti jenis layanan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="lyPemesanan">Pemesanan (tamu menginap)</label><select id="lyPemesanan"></select></div>
+        <div class="field"><label for="lyJenis">Jenis layanan</label><select id="lyJenis">
+          <option value="Sarapan">Sarapan — Rp50.000</option>
+          <option value="Laundry">Laundry — Rp75.000</option>
+          <option value="Antar-Jemput">Antar-Jemput — Rp120.000</option>
+          <option value="Layanan Kamar">Layanan Kamar — Rp85.000</option>
+        </select></div>
+        <div class="field"><label for="lyJumlah">Jumlah</label><input id="lyJumlah" type="number" min="1" step="1" placeholder="cth: 2"></div>
+        <div class="field"><label for="lyTanggal">Tanggal layanan</label><input id="lyTanggal" type="date"></div>
+        <div class="field"><label>Subtotal (otomatis)</label><input id="lySubtotal" type="text" readonly value="—"></div>
+        <div class="field"><label for="lyKeterangan">Keterangan (opsional)</label><input id="lyKeterangan" type="text" placeholder="cth: Sarapan 2 orang"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahLayanan" type="button">Simpan Layanan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fLayanan">Filter pemesanan</label><select id="fLayanan">
+          <option value="semua">Semua pemesanan</option>
+        </select></div>
+        <div class="field"><label for="fLayananBulan">Filter bulan</label><select id="fLayananBulan">
+          <option value="semua">Semua bulan</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanLayanan"></p>
+      <div id="daftarLayanan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Hotel</h2><p>Rekap hunian dan pemasukan per tipe kamar dan per bulan — serta ekspor pemesanan ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Tipe Kamar</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerTipe"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Jenis Layanan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerLayanan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor pemesanan bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Pemesanan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Hotel Management System.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Kamar</b> untuk melihat atau menambah kamar beserta tarif per malam dan statusnya.</li>
+        <li>Buka tab <b>Tamu</b> untuk mencatat data tamu, lalu tab <b>Pemesanan</b> untuk membuat pemesanan. Total = tarif × jumlah malam, dihitung otomatis. Pemesanan ditolak bila kamar sudah dipesan pada tanggal yang sama atau sedang dalam perawatan.</li>
+        <li>Buka tab <b>Check-in / out</b> untuk check-in tamu (kamar menjadi Terisi) dan check-out (tagihan akhir = kamar + layanan; kamar menjadi Dibersihkan, lalu tandai selesai dibersihkan agar kembali Tersedia).</li>
+        <li>Buka tab <b>Layanan</b> untuk mencatat sarapan, laundry, antar-jemput, atau layanan kamar bagi tamu yang sedang menginap. Biayanya masuk ke tagihan akhir.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap hunian dan pemasukan per tipe kamar dan per bulan, serta ekspor pemesanan ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola kamar dan tarif, pemesanan, check-in/out, tamu, layanan, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Resepsionis</b> — membuat pemesanan, check-in/out, mencatat tamu dan layanan, serta melihat laporan. Tidak bisa menambah kamar, mengubah tarif, atau kelola pengguna.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis — tagihan hanya dicatat, pembayarannya tetap di luar aplikasi.</li>
+        <li>Tingkat hunian = malam kamar terisi dalam sebulan dibagi kapasitas (jumlah kamar × jumlah hari dalam bulan). Pemasukan dihitung dari pemesanan (kamar) per bulan check-in ditambah layanan per bulan tanggal — termasuk pemesanan yang masih Dipesan/Menginap, jadi belum tentu sudah cair.</li>
+        <li>Check-out yang sudah Selesai tidak bisa dibatalkan dari aplikasi — koreksi dilakukan dengan pemesanan baru atau catatan di keterangan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Resepsionis — <b>resepsionis / resepsionis123</b> (Rina Kusuma)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Hotel Management System — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">JASA · HOTEL MANAGEMENT SYSTEM</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data kamar dan tarif, pemesanan kamar, check-in dan check-out, status kamar, layanan tamu, serta laporan hunian dan pemasukan.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Resepsionis — <b>resepsionis / resepsionis123</b> (Rina Kusuma)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function persenSatu(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%"; }
+  function hariDalamBulan(bk) {
+    var bg = bk.split("-");
+    return new Date(Number(bg[0]), Number(bg[1]), 0).getDate();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "hotelManagementSystem.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  var HARGA_LAYANAN = { "Sarapan": 50000, "Laundry": 75000, "Antar-Jemput": 120000, "Layanan Kamar": 85000 };
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_hotel.py).
+       Kamar 8: 101 Standard 350rb Tersedia, 102 Standard 350rb Tersedia,
+         103 Standard 350rb Terisi, 201 Deluxe 550rb Tersedia, 202 Deluxe 550rb Terisi,
+         203 Deluxe 550rb Dibersihkan, 301 Suite 950rb Tersedia, 302 Family 750rb Perawatan.
+         Status: Tersedia 4, Terisi 2, Dibersihkan 1, Perawatan 1.
+       Tamu 6: Andi Pratama, Sari Wijaya, Budi Santoso, Dewi Lestari, Rudi Hartono, Maya Putri.
+       Pemesanan 8 (total kamar): B1 Andi/103 18-20 Nov 2 mlm 700rb Menginap;
+         B2 Sari/202 19-22 Nov 3 mlm 1.650rb Menginap; B3 Budi/101 21-23 Nov 2 mlm 700rb Dipesan;
+         B4 Dewi/201 22-25 Nov 3 mlm 1.650rb Dipesan; B5 Rudi/301 10-13 Nov 3 mlm 2.850rb Selesai;
+         B6 Maya/102 14-16 Nov 2 mlm 700rb Selesai; B7 Andi/203 5-8 Nov 3 mlm 1.650rb Selesai;
+         B8 Sari/101 25-27 Nov 2 mlm 700rb Dipesan.
+         Menginap 2.350.000; Dipesan 3.050.000; Selesai 5.200.000; kamar Nov 10.600.000.
+       Layanan 7, total Rp705.000: B1 Sarapan 2x50rb + Laundry 1x75rb = 175rb;
+         B2 Sarapan 3x50rb + Antar-Jemput 1x120rb = 270rb; B5 Sarapan 2x50rb = 100rb;
+         B6 Laundry 1x75rb = 75rb; B7 Layanan Kamar 1x85rb = 85rb.
+         Tagihan check-out B1 = 700rb + 175rb = 875rb; B2 = 1.650rb + 270rb = 1.920rb.
+       Hunian Nov: malam terisi 20 (B1 2, B2 3, B3 2, B4 3, B5 3, B6 2, B7 3, B8 2)
+         / kapasitas 8 kamar x 30 hari = 240 -> 8,3%.
+       Pemasukan Nov = kamar 10.600.000 + layanan 705.000 = Rp11.305.000.
+       Check-out hari ini 1 (B1); check-in hari ini 0; check-in besok 1 (B3).
+       CSV pemesanan Nov: 8 baris + header = 9. */
+  function seedState() {
+    var kamar = [
+      { id: 1, nomor: "101", tipe: "Standard", tarif: 350000, status: "Tersedia" },
+      { id: 2, nomor: "102", tipe: "Standard", tarif: 350000, status: "Tersedia" },
+      { id: 3, nomor: "103", tipe: "Standard", tarif: 350000, status: "Terisi" },
+      { id: 4, nomor: "201", tipe: "Deluxe", tarif: 550000, status: "Tersedia" },
+      { id: 5, nomor: "202", tipe: "Deluxe", tarif: 550000, status: "Terisi" },
+      { id: 6, nomor: "203", tipe: "Deluxe", tarif: 550000, status: "Dibersihkan" },
+      { id: 7, nomor: "301", tipe: "Suite", tarif: 950000, status: "Tersedia" },
+      { id: 8, nomor: "302", tipe: "Family", tarif: 750000, status: "Perawatan" }
+    ];
+    var tamu = [
+      { id: 1, nama: "Andi Pratama", telepon: "0812-1111-0001", email: "andi@mail.com" },
+      { id: 2, nama: "Sari Wijaya", telepon: "0812-2222-0002", email: "sari@mail.com" },
+      { id: 3, nama: "Budi Santoso", telepon: "0812-3333-0003", email: "budi@mail.com" },
+      { id: 4, nama: "Dewi Lestari", telepon: "0812-4444-0004", email: "dewi@mail.com" },
+      { id: 5, nama: "Rudi Hartono", telepon: "0812-5555-0005", email: "rudi@mail.com" },
+      { id: 6, nama: "Maya Putri", telepon: "0812-6666-0006", email: "maya@mail.com" }
+    ];
+    function ps(id, tamuId, kamarId, checkin, checkout, status, keterangan) {
+      return { id: id, tamuId: tamuId, kamarId: kamarId, checkin: checkin, checkout: checkout, status: status, keterangan: keterangan || "" };
+    }
+    var pemesanan = [
+      ps(1, 1, 3, kunciPlus(-2), kunciPlus(0), "Menginap", ""),
+      ps(2, 2, 5, kunciPlus(-1), kunciPlus(2), "Menginap", ""),
+      ps(3, 3, 1, kunciPlus(1), kunciPlus(3), "Dipesan", ""),
+      ps(4, 4, 4, kunciPlus(2), kunciPlus(5), "Dipesan", ""),
+      ps(5, 5, 7, kunciPlus(-10), kunciPlus(-7), "Selesai", ""),
+      ps(6, 6, 2, kunciPlus(-6), kunciPlus(-4), "Selesai", ""),
+      ps(7, 1, 6, kunciPlus(-15), kunciPlus(-12), "Selesai", ""),
+      ps(8, 2, 1, kunciPlus(5), kunciPlus(7), "Dipesan", "")
+    ];
+    function ly(id, pemesananId, jenis, jumlah, tanggal, keterangan) {
+      return { id: id, pemesananId: pemesananId, jenis: jenis, jumlah: jumlah, harga: HARGA_LAYANAN[jenis], tanggal: tanggal, keterangan: keterangan || "" };
+    }
+    var layanan = [
+      ly(1, 1, "Sarapan", 2, kunciPlus(-1), "Sarapan 2 orang"),
+      ly(2, 1, "Laundry", 1, kunciPlus(0), "Laundry 3 kg"),
+      ly(3, 2, "Sarapan", 3, kunciPlus(-1), "Sarapan 3 orang"),
+      ly(4, 2, "Antar-Jemput", 1, kunciPlus(0), "Jemput bandara"),
+      ly(5, 5, "Sarapan", 2, kunciPlus(-9), "Sarapan 2 orang"),
+      ly(6, 6, "Laundry", 1, kunciPlus(-5), "Laundry 2 kg"),
+      ly(7, 7, "Layanan Kamar", 1, kunciPlus(-14), "Makan malam di kamar")
+    ];
+    return { kamar: kamar, tamu: tamu, pemesanan: pemesanan, layanan: layanan,
+      nextKamarId: 9, nextTamuId: 7, nextPemesananId: 9, nextLayananId: 8 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "resepsionis", nama: "Rina Kusuma", peran: "resepsionis", password: "resepsionis123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.kamar) state.kamar = [];
+    if (!state.tamu) state.tamu = [];
+    if (!state.pemesanan) state.pemesanan = [];
+    if (!state.layanan) state.layanan = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Resepsionis"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariKamar(id) { return state.kamar.find(function (x) { return x.id === id; }); }
+  function nomorKamar(id) { var k = cariKamar(id); return k ? k.nomor : "—"; }
+  function tipeKamar(id) { var k = cariKamar(id); return k ? k.tipe : "—"; }
+  function tarifKamar(id) { var k = cariKamar(id); return k ? Number(k.tarif) || 0 : 0; }
+  function cariTamu(id) { return state.tamu.find(function (x) { return x.id === id; }); }
+  function namaTamu(id) { var t = cariTamu(id); return t ? t.nama : "—"; }
+  function cariPemesanan(id) { return state.pemesanan.find(function (x) { return x.id === id; }); }
+  function jumlahMalam(p) {
+    if (!p || !p.checkin || !p.checkout) return 0;
+    return Math.max(0, selisihHari(p.checkout) - selisihHari(p.checkin));
+  }
+  function totalKamarPemesanan(p) { return jumlahMalam(p) * tarifKamar(p.kamarId); }
+  function layananPemesanan(pemesananId) {
+    return state.layanan.filter(function (x) { return x.pemesananId === pemesananId; });
+  }
+  function totalLayananPemesanan(pemesananId) {
+    var t = 0;
+    layananPemesanan(pemesananId).forEach(function (x) { t += (Number(x.jumlah) || 0) * (Number(x.harga) || 0); });
+    return t;
+  }
+  function tagihanPemesanan(p) { return totalKamarPemesanan(p) + totalLayananPemesanan(p.id); }
+  function malamTerisiBulan(bk) {
+    var bg = bk.split("-");
+    var awal = new Date(Number(bg[0]), Number(bg[1]) - 1, 1);
+    var akhir = new Date(Number(bg[0]), Number(bg[1]), 1);
+    var total = 0;
+    state.pemesanan.forEach(function (p) {
+      if (p.status === "Dibatalkan") return;
+      var ci = p.checkin.split("-"), co = p.checkout.split("-");
+      var a = new Date(Number(ci[0]), Number(ci[1]) - 1, Number(ci[2]));
+      var b = new Date(Number(co[0]), Number(co[1]) - 1, Number(co[2]));
+      var mulai = a > awal ? a : awal;
+      var selesai = b < akhir ? b : akhir;
+      if (selesai > mulai) total += Math.round((selesai - mulai) / 86400000);
+    });
+    return total;
+  }
+  function pemasukanBulan(bk) {
+    var kamarTotal = 0, layananTotal = 0;
+    state.pemesanan.forEach(function (p) {
+      if (p.status === "Dibatalkan") return;
+      if (bulanKey(p.checkin) === bk) kamarTotal += totalKamarPemesanan(p);
+    });
+    state.layanan.forEach(function (x) {
+      if (bulanKey(x.tanggal) === bk) layananTotal += (Number(x.jumlah) || 0) * (Number(x.harga) || 0);
+    });
+    return { kamar: kamarTotal, layanan: layananTotal, total: kamarTotal + layananTotal };
+  }
+  function bentrokKamar(kamarId, checkin, checkout, kecualiId) {
+    return state.pemesanan.some(function (p) {
+      if (p.kamarId !== kamarId) return false;
+      if (kecualiId && p.id === kecualiId) return false;
+      if (p.status !== "Dipesan" && p.status !== "Menginap") return false;
+      return p.checkin < checkout && p.checkout > checkin;
+    });
+  }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "kamar") renderKamar();
+    if (nama === "pemesanan") renderPemesanan();
+    if (nama === "checkin") renderCheckin();
+    if (nama === "tamu") renderTamu();
+    if (nama === "layanan") renderLayanan();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var bkBerjalan = bulanKey(hariIniKey());
+    var hariIni = hariIniKey();
+    var nTersedia = state.kamar.filter(function (k) { return k.status === "Tersedia"; }).length;
+    var nTerisi = state.kamar.filter(function (k) { return k.status === "Terisi"; }).length;
+    var nDibersihkan = state.kamar.filter(function (k) { return k.status === "Dibersihkan"; }).length;
+    var nPerawatan = state.kamar.filter(function (k) { return k.status === "Perawatan"; }).length;
+    var ciHariIni = state.pemesanan.filter(function (p) { return p.status === "Dipesan" && p.checkin === hariIni; });
+    var coHariIni = state.pemesanan.filter(function (p) { return p.status === "Menginap" && p.checkout === hariIni; });
+    var ciBesok = state.pemesanan.filter(function (p) { return p.status === "Dipesan" && p.checkin === kunciPlus(1); });
+    var menginap = state.pemesanan.filter(function (p) { return p.status === "Menginap"; });
+    var dipesan = state.pemesanan.filter(function (p) { return p.status === "Dipesan"; });
+    var selesai = state.pemesanan.filter(function (p) { return p.status === "Selesai"; });
+    var pemasukan = pemasukanBulan(bkBerjalan);
+    var malamTerisi = malamTerisiBulan(bkBerjalan);
+    var kapasitas = state.kamar.length * hariDalamBulan(bkBerjalan);
+    var hunian = kapasitas > 0 ? malamTerisi / kapasitas * 100 : 0;
+    $("dTersedia").textContent = nTersedia + " kamar";
+    $("dTersediaSub").textContent = "dari " + state.kamar.length + " kamar · dibersihkan " + nDibersihkan + " · perawatan " + nPerawatan;
+    $("dTerisi").textContent = nTerisi + " kamar";
+    $("dTerisiSub").textContent = menginap.length + " tamu sedang menginap";
+    $("dCoHariIni").textContent = coHariIni.length + " tamu";
+    $("dCoHariIniSub").textContent = "check-in besok " + ciBesok.length + " tamu";
+    $("dCiHariIni").textContent = ciHariIni.length + " tamu";
+    $("dCiHariIniSub").textContent = "dipesan " + dipesan.length + " · selesai " + selesai.length;
+    $("dMenginap").textContent = menginap.length + " tamu";
+    var nilaiMenginap = 0;
+    menginap.forEach(function (p) { nilaiMenginap += tagihanPemesanan(p); });
+    $("dMenginapSub").textContent = "nilai tagihan " + rupiah(nilaiMenginap);
+    $("dDipesan").textContent = dipesan.length + " pemesanan";
+    var nilaiDipesan = 0;
+    dipesan.forEach(function (p) { nilaiDipesan += totalKamarPemesanan(p); });
+    $("dDipesanSub").textContent = "nilai kamar " + rupiah(nilaiDipesan);
+    $("dPemasukanBulan").textContent = rupiah(pemasukan.total);
+    $("dPemasukanBulanSub").textContent = "kamar " + rupiah(pemasukan.kamar) + " · layanan " + rupiah(pemasukan.layanan) + " · " + namaBulan(bkBerjalan);
+    $("dHunian").textContent = persenSatu(hunian);
+    $("dHunianSub").textContent = malamTerisi + " malam terisi dari " + kapasitas + " malam kapasitas";
+    $("badgeKamar").textContent = state.kamar.length;
+    $("badgePemesanan").textContent = dipesan.length + menginap.length;
+    $("badgeTamu").textContent = state.tamu.length;
+    var urutKamar = state.kamar.slice().sort(function (a, b) { return a.nomor < b.nomor ? -1 : 1; });
+    $("daftarStatusKamar").innerHTML = urutKamar.length ? urutKamar.map(function (k) {
+      var lencana = k.status === "Tersedia" ? '<span class="lencana st-aman">Tersedia</span>' :
+        k.status === "Terisi" ? '<span class="lencana st-biru">Terisi</span>' :
+        k.status === "Dibersihkan" ? '<span class="lencana st-rendah">Dibersihkan</span>' : '<span class="lencana st-habis">Perawatan</span>';
+      var tamuMenginap = "";
+      if (k.status === "Terisi") {
+        var p = state.pemesanan.find(function (x) { return x.kamarId === k.id && x.status === "Menginap"; });
+        if (p) tamuMenginap = " · " + esc(namaTamu(p.tamuId)) + " sampai " + tglSingkat(p.checkout);
+      }
+      return '<div class="baris"><div><b>Kamar ' + esc(k.nomor) + '</b> <span class="tag">' + esc(k.tipe) + '</span> ' + lencana +
+        '<br><span class="sub">' + rupiah(k.tarif) + '/malam' + tamuMenginap + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada kamar.</p>';
+    var terbaru = state.pemesanan.slice().sort(function (a, b) { return b.checkin < a.checkin ? -1 : b.checkin > a.checkin ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarPemesananRingkas").innerHTML = terbaru.length ? terbaru.map(function (p) {
+      var lencana = p.status === "Dipesan" ? '<span class="lencana st-biru">Dipesan</span>' :
+        p.status === "Menginap" ? '<span class="lencana st-aman">Menginap</span>' :
+        p.status === "Selesai" ? '<span class="lencana st-navy">Selesai</span>' : '<span class="lencana st-habis">Dibatalkan</span>';
+      return '<div class="baris"><div><b>' + esc(namaTamu(p.tamuId)) + '</b> ' + lencana +
+        '<br><span class="sub">Kamar ' + esc(nomorKamar(p.kamarId)) + ' (' + esc(tipeKamar(p.kamarId)) + ') · ' + tglSingkat(p.checkin) + ' – ' + tglSingkat(p.checkout) + ' · ' + jumlahMalam(p) + ' malam' + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(totalKamarPemesanan(p)) + '</b><br><span class="sub">total kamar</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada pemesanan.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKePemesanan").addEventListener("click", function () { pindahTab("pemesanan"); });
+  $("btnKeCheckin").addEventListener("click", function () { pindahTab("checkin"); });
+  $("btnKeLayanan").addEventListener("click", function () { pindahTab("layanan"); });
+
+  /* ---------- Kamar ---------- */
+  function renderKamar() {
+    var list = state.kamar.slice().sort(function (a, b) { return a.nomor < b.nomor ? -1 : 1; });
+    var nTersedia = list.filter(function (k) { return k.status === "Tersedia"; }).length;
+    var nTerisi = list.filter(function (k) { return k.status === "Terisi"; }).length;
+    $("ringkasanKamar").textContent = list.length + " kamar · tersedia " + nTersedia + " · terisi " + nTerisi + ".";
+    $("daftarKamar").innerHTML = list.length ? list.map(function (k) {
+      var lencana = k.status === "Tersedia" ? '<span class="lencana st-aman">Tersedia</span>' :
+        k.status === "Terisi" ? '<span class="lencana st-biru">Terisi</span>' :
+        k.status === "Dibersihkan" ? '<span class="lencana st-rendah">Dibersihkan</span>' : '<span class="lencana st-habis">Perawatan</span>';
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi += '<label style="display:inline-block;font-weight:400;font-size:13px">Tarif <input class="input-kecil" style="width:130px" type="number" min="0" step="5000" value="' + k.tarif + '" data-tarif-kamar="' + k.id + '"></label> ' +
+          '<button class="btn ghost kecil" data-simpan-tarif="' + k.id + '" type="button">Simpan Tarif</button> ';
+        if (k.status === "Dibersihkan") aksi += '<button class="btn hijau kecil" data-bersih-kamar="' + k.id + '" type="button">Selesai Dibersihkan</button> ';
+        if (k.status === "Tersedia") aksi += '<button class="btn ghost kecil" data-rawat-kamar="' + k.id + '" type="button">Masukkan Perawatan</button> ';
+        if (k.status === "Perawatan") aksi += '<button class="btn hijau kecil" data-selesai-rawat="' + k.id + '" type="button">Selesai Perawatan</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-kamar="' + k.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>Kamar ' + esc(k.nomor) + '</b> <span class="tag">' + esc(k.tipe) + '</span> ' + lencana +
+        '<br><span class="sub">' + rupiah(k.tarif) + '/malam</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada kamar.</p>';
+    document.querySelectorAll("[data-simpan-tarif]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-simpan-tarif")));
+        if (!k) return;
+        var inp = document.querySelector('[data-tarif-kamar="' + k.id + '"]');
+        var tarifBaru = Number(inp ? inp.value : 0);
+        if (!(tarifBaru > 0)) { toast("Isi tarif per malam (lebih dari 0)."); if (inp) inp.value = k.tarif; return; }
+        k.tarif = tarifBaru; saveState(); renderSemua();
+        toast("Tarif Kamar " + k.nomor + " diubah menjadi " + rupiah(tarifBaru) + "/malam.");
+      });
+    });
+    document.querySelectorAll("[data-bersih-kamar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-bersih-kamar")));
+        if (!k) return;
+        k.status = "Tersedia"; saveState(); renderSemua();
+        toast("Kamar " + k.nomor + " sudah bersih dan Tersedia.");
+      });
+    });
+    document.querySelectorAll("[data-rawat-kamar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-rawat-kamar")));
+        if (!k) return;
+        k.status = "Perawatan"; saveState(); renderSemua();
+        toast("Kamar " + k.nomor + " masuk Perawatan.");
+      });
+    });
+    document.querySelectorAll("[data-selesai-rawat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-selesai-rawat")));
+        if (!k) return;
+        k.status = "Tersedia"; saveState(); renderSemua();
+        toast("Kamar " + k.nomor + " selesai perawatan dan Tersedia.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-kamar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-hapus-kamar")));
+        if (!k) return;
+        var dipakai = state.pemesanan.some(function (x) { return x.kamarId === k.id; });
+        if (dipakai) { toast("Kamar " + k.nomor + " tidak bisa dihapus — masih ada pemesanan yang terkait."); return; }
+        tanyaKonfirmasi("Hapus Kamar", "Hapus Kamar " + k.nomor + " (" + k.tipe + ")?", function () {
+          state.kamar = state.kamar.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Kamar " + k.nomor + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahKamar").addEventListener("click", function () {
+    var nomor = $("kmNomor").value.trim();
+    var tipe = $("kmTipe").value;
+    var tarif = Number($("kmTarif").value);
+    var status = $("kmStatus").value;
+    if (!nomor) { toast("Isi nomor kamar."); return; }
+    if (!(tarif > 0)) { toast("Isi tarif per malam (lebih dari 0)."); return; }
+    if (state.kamar.some(function (x) { return x.nomor === nomor; })) { toast("Nomor kamar sudah dipakai."); return; }
+    state.kamar.push({ id: state.nextKamarId++, nomor: nomor, tipe: tipe, tarif: tarif, status: status });
+    saveState();
+    $("kmNomor").value = ""; $("kmTarif").value = "";
+    renderSemua();
+    toast("Kamar " + nomor + " (" + tipe + ", " + rupiah(tarif) + "/malam) tersimpan.");
+  });
+
+  /* ---------- Tamu ---------- */
+  function renderTamu() {
+    var list = state.tamu.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    $("ringkasanTamu").textContent = list.length + " tamu terdaftar.";
+    $("daftarTamu").innerHTML = list.length ? list.map(function (t) {
+      var psnTamu = state.pemesanan.filter(function (x) { return x.tamuId === t.id; });
+      var aktif = psnTamu.filter(function (x) { return x.status === "Dipesan" || x.status === "Menginap"; }).length;
+      var bolehHapus = bolehKelola() && psnTamu.length === 0;
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-tamu="' + t.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(t.nama) + '</b>' +
+        '<br><span class="sub">' + esc(t.telepon) + (t.email ? ' · ' + esc(t.email) : '') + ' · ' + psnTamu.length + ' pemesanan (' + aktif + ' aktif)</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada tamu.</p>';
+    document.querySelectorAll("[data-hapus-tamu]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = cariTamu(Number(b.getAttribute("data-hapus-tamu")));
+        if (!t) return;
+        tanyaKonfirmasi("Hapus Tamu", "Hapus tamu \"" + t.nama + "\"?", function () {
+          state.tamu = state.tamu.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Tamu \"" + t.nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahTamu").addEventListener("click", function () {
+    var nama = $("tmNama").value.trim();
+    var telepon = $("tmTelepon").value.trim();
+    var email = $("tmEmail").value.trim();
+    if (!nama) { toast("Isi nama tamu."); return; }
+    if (!telepon) { toast("Isi nomor telepon tamu."); return; }
+    state.tamu.push({ id: state.nextTamuId++, nama: nama, telepon: telepon, email: email });
+    saveState();
+    $("tmNama").value = ""; $("tmTelepon").value = ""; $("tmEmail").value = "";
+    renderSemua();
+    toast("Tamu \"" + nama + "\" tersimpan.");
+  });
+
+  /* ---------- Pemesanan ---------- */
+  function isiPilihanTamu() {
+    var sel = $("psTamu");
+    var simpan = sel.value;
+    sel.innerHTML = state.tamu.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.nama) + ' · ' + esc(t.telepon) + '</option>';
+    }).join("");
+    if (simpan) sel.value = simpan;
+  }
+  function isiPilihanKamarPemesanan() {
+    var sel = $("psKamar");
+    var simpan = sel.value;
+    sel.innerHTML = state.kamar.slice().sort(function (a, b) { return a.nomor < b.nomor ? -1 : 1; }).map(function (k) {
+      return '<option value="' + k.id + '">Kamar ' + esc(k.nomor) + ' · ' + esc(k.tipe) + ' · ' + rupiah(k.tarif) + '/malam · ' + esc(k.status) + '</option>';
+    }).join("");
+    if (simpan) sel.value = simpan;
+  }
+  function tampilPratinjauPemesanan() {
+    var kid = Number($("psKamar").value);
+    var ci = $("psCheckin").value, co = $("psCheckout").value;
+    if (!kid || !ci || !co) { $("psMalam").value = "—"; $("psTotal").value = "—"; return; }
+    var malam = Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
+    $("psMalam").value = malam > 0 ? malam + " malam" : "Tanggal check-out harus setelah check-in";
+    $("psTotal").value = malam > 0 ? rupiah(malam * tarifKamar(kid)) : "—";
+  }
+  function renderPemesanan() {
+    isiPilihanTamu();
+    isiPilihanKamarPemesanan();
+    if (!$("psCheckin").value) $("psCheckin").value = hariIniKey();
+    if (!$("psCheckout").value) $("psCheckout").value = kunciPlus(1);
+    tampilPratinjauPemesanan();
+    var selF = $("fPemesananKamar");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kamar</option>'];
+    state.kamar.slice().sort(function (a, b) { return a.nomor < b.nomor ? -1 : 1; }).forEach(function (k) { opts.push('<option value="' + k.id + '">Kamar ' + esc(k.nomor) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = $("fPemesanan").value || "semua";
+    var filterKamar = selF.value || "semua";
+    var list = state.pemesanan.slice();
+    if (filter !== "semua") list = list.filter(function (x) { return x.status === filter; });
+    if (filterKamar !== "semua") list = list.filter(function (x) { return String(x.kamarId) === filterKamar; });
+    list = list.sort(function (a, b) { return b.checkin < a.checkin ? -1 : b.checkin > a.checkin ? 1 : b.id - a.id; });
+    var nAktif = state.pemesanan.filter(function (x) { return x.status === "Dipesan" || x.status === "Menginap"; }).length;
+    var nilaiAktif = 0;
+    state.pemesanan.forEach(function (x) { if (x.status === "Dipesan" || x.status === "Menginap") nilaiAktif += totalKamarPemesanan(x); });
+    $("ringkasanPemesanan").textContent = list.length + " pemesanan · aktif " + nAktif + " (nilai kamar " + rupiah(nilaiAktif) + ").";
+    $("daftarPemesanan").innerHTML = list.length ? list.map(function (p) {
+      var lencana = p.status === "Dipesan" ? '<span class="lencana st-biru">Dipesan</span>' :
+        p.status === "Menginap" ? '<span class="lencana st-aman">Menginap</span>' :
+        p.status === "Selesai" ? '<span class="lencana st-navy">Selesai</span>' : '<span class="lencana st-habis">Dibatalkan</span>';
+      var aksi = "";
+      if (p.status === "Dipesan") {
+        aksi += '<button class="btn hijau kecil" data-checkin="' + p.id + '" type="button">Check-in</button> ';
+        aksi += '<button class="btn ghost kecil" data-batal-pemesanan="' + p.id + '" type="button">Batalkan</button> ';
+      }
+      if (p.status === "Menginap") {
+        aksi += '<button class="btn oren kecil" data-checkout="' + p.id + '" type="button">Check-out</button> ';
+      }
+      if ((p.status === "Dipesan" || p.status === "Dibatalkan") && bolehKelola()) {
+        aksi += '<button class="btn ghost kecil" data-hapus-pemesanan="' + p.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(namaTamu(p.tamuId)) + '</b> ' + lencana +
+        '<br><span class="sub">Kamar ' + esc(nomorKamar(p.kamarId)) + ' (' + esc(tipeKamar(p.kamarId)) + ') · ' + tglSingkat(p.checkin) + ' – ' + tglSingkat(p.checkout) + ' · ' + jumlahMalam(p) + ' malam · layanan ' + rupiah(totalLayananPemesanan(p.id)) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(totalKamarPemesanan(p)) + '</b><br><span class="sub">total kamar</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada pemesanan yang cocok.</p>';
+    document.querySelectorAll("[data-checkin]").forEach(function (b) {
+      b.addEventListener("click", function () { lakukanCheckin(Number(b.getAttribute("data-checkin"))); });
+    });
+    document.querySelectorAll("[data-checkout]").forEach(function (b) {
+      b.addEventListener("click", function () { lakukanCheckout(Number(b.getAttribute("data-checkout"))); });
+    });
+    document.querySelectorAll("[data-batal-pemesanan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariPemesanan(Number(b.getAttribute("data-batal-pemesanan")));
+        if (!p) return;
+        tanyaKonfirmasi("Batalkan Pemesanan", "Batalkan pemesanan " + namaTamu(p.tamuId) + " (Kamar " + nomorKamar(p.kamarId) + ", " + tglSingkat(p.checkin) + ")?", function () {
+          p.status = "Dibatalkan"; saveState(); renderSemua();
+          toast("Pemesanan " + namaTamu(p.tamuId) + " dibatalkan.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-pemesanan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariPemesanan(Number(b.getAttribute("data-hapus-pemesanan")));
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Pemesanan", "Hapus pemesanan " + namaTamu(p.tamuId) + " (Kamar " + nomorKamar(p.kamarId) + ")?", function () {
+          state.pemesanan = state.pemesanan.filter(function (x) { return x.id !== p.id; });
+          state.layanan = state.layanan.filter(function (x) { return x.pemesananId !== p.id; });
+          saveState(); renderSemua(); toast("Pemesanan dihapus.");
+        });
+      });
+    });
+  }
+  $("fPemesanan").addEventListener("change", renderPemesanan);
+  $("fPemesananKamar").addEventListener("change", renderPemesanan);
+  $("psKamar").addEventListener("change", tampilPratinjauPemesanan);
+  $("psCheckin").addEventListener("change", tampilPratinjauPemesanan);
+  $("psCheckout").addEventListener("change", tampilPratinjauPemesanan);
+  $("psCheckin").addEventListener("input", tampilPratinjauPemesanan);
+  $("psCheckout").addEventListener("input", tampilPratinjauPemesanan);
+  $("btnTambahPemesanan").addEventListener("click", function () {
+    var tamuId = Number($("psTamu").value);
+    var kamarId = Number($("psKamar").value);
+    var checkin = $("psCheckin").value;
+    var checkout = $("psCheckout").value;
+    var keterangan = $("psKeterangan").value.trim();
+    var t = cariTamu(tamuId), k = cariKamar(kamarId);
+    if (!t) { toast("Pilih tamu dulu."); return; }
+    if (!k) { toast("Pilih kamar dulu."); return; }
+    if (!checkin || !checkout) { toast("Isi tanggal check-in dan check-out."); return; }
+    if (checkout <= checkin) {
+      toast("Tanggal check-out harus setelah tanggal check-in.");
+      $("psCheckout").value = kunciPlus(1);
+      tampilPratinjauPemesanan();
+      return;
+    }
+    if (k.status === "Perawatan") { toast("Kamar " + k.nomor + " sedang dalam Perawatan dan tidak bisa dipesan."); return; }
+    if (bentrokKamar(kamarId, checkin, checkout, null)) {
+      toast("Kamar " + k.nomor + " sudah dipesan pada tanggal tersebut. Pilih kamar atau tanggal lain.");
+      return;
+    }
+    state.pemesanan.push({ id: state.nextPemesananId++, tamuId: tamuId, kamarId: kamarId, checkin: checkin, checkout: checkout, status: "Dipesan", keterangan: keterangan });
+    saveState();
+    $("psKeterangan").value = "";
+    renderSemua();
+    var malam = Math.round((new Date(checkout) - new Date(checkin)) / 86400000);
+    toast("Pemesanan " + t.nama + " (Kamar " + k.nomor + ", " + malam + " malam, " + rupiah(malam * k.tarif) + ") tersimpan.");
+  });
+
+  /* ---------- Check-in / Check-out ---------- */
+  function lakukanCheckin(pemesananId) {
+    var p = cariPemesanan(pemesananId);
+    if (!p || p.status !== "Dipesan") return;
+    var k = cariKamar(p.kamarId);
+    if (!k) return;
+    p.status = "Menginap";
+    k.status = "Terisi";
+    saveState(); renderSemua();
+    toast(namaTamu(p.tamuId) + " check-in ke Kamar " + k.nomor + ".");
+  }
+  function lakukanCheckout(pemesananId) {
+    var p = cariPemesanan(pemesananId);
+    if (!p || p.status !== "Menginap") return;
+    var k = cariKamar(p.kamarId);
+    var totalKamar = totalKamarPemesanan(p);
+    var totalLayanan = totalLayananPemesanan(p.id);
+    var total = totalKamar + totalLayanan;
+    tanyaKonfirmasi("Check-out " + namaTamu(p.tamuId),
+      "Tagihan akhir Kamar " + nomorKamar(p.kamarId) + ": kamar " + rupiah(totalKamar) + " + layanan " + rupiah(totalLayanan) + " = " + rupiah(total) + ". Kamar akan menjadi Dibersihkan.",
+      function () {
+        p.status = "Selesai";
+        if (k) k.status = "Dibersihkan";
+        saveState(); renderSemua();
+        toast(namaTamu(p.tamuId) + " check-out. Tagihan akhir " + rupiah(total) + ".");
+      });
+  }
+  function renderCheckin() {
+    var hariIni = hariIniKey();
+    var siapCi = state.pemesanan.filter(function (p) { return p.status === "Dipesan" && p.checkin <= hariIni; })
+      .sort(function (a, b) { return a.checkin < b.checkin ? -1 : 1; });
+    $("daftarSiapCheckin").innerHTML = siapCi.length ? siapCi.map(function (p) {
+      return '<div class="baris"><div><b>' + esc(namaTamu(p.tamuId)) + '</b> <span class="lencana st-biru">Dipesan</span>' +
+        '<br><span class="sub">Kamar ' + esc(nomorKamar(p.kamarId)) + ' · ' + tglSingkat(p.checkin) + ' – ' + tglSingkat(p.checkout) + ' · ' + jumlahMalam(p) + ' malam · ' + rupiah(totalKamarPemesanan(p)) + '</span></div>' +
+        '<div style="text-align:right"><button class="btn hijau kecil" data-checkin="' + p.id + '" type="button">Check-in</button></div></div>';
+    }).join("") : '<p class="sub">Tidak ada pemesanan yang siap check-in hari ini.</p>';
+    var menginap = state.pemesanan.filter(function (p) { return p.status === "Menginap"; })
+      .sort(function (a, b) { return a.checkout < b.checkout ? -1 : 1; });
+    $("daftarSiapCheckout").innerHTML = menginap.length ? menginap.map(function (p) {
+      var totalKamar = totalKamarPemesanan(p);
+      var totalLayanan = totalLayananPemesanan(p.id);
+      var lewat = p.checkout < hariIni;
+      return '<div class="baris"><div><b>' + esc(namaTamu(p.tamuId)) + '</b> <span class="lencana st-aman">Menginap</span>' + (lewat ? ' <span class="lencana st-habis">Lewat check-out</span>' : '') +
+        '<br><span class="sub">Kamar ' + esc(nomorKamar(p.kamarId)) + ' · check-out ' + tglSingkat(p.checkout) + ' · kamar ' + rupiah(totalKamar) + ' + layanan ' + rupiah(totalLayanan) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(totalKamar + totalLayanan) + '</b><br><span class="sub">tagihan sementara</span><br><button class="btn oren kecil" data-checkout="' + p.id + '" type="button">Check-out</button></div></div>';
+    }).join("") : '<p class="sub">Tidak ada tamu yang sedang menginap.</p>';
+    var dibersihkan = state.kamar.filter(function (k) { return k.status === "Dibersihkan"; });
+    $("daftarDibersihkan").innerHTML = dibersihkan.length ? dibersihkan.map(function (k) {
+      return '<div class="baris"><div><b>Kamar ' + esc(k.nomor) + '</b> <span class="tag">' + esc(k.tipe) + '</span> <span class="lencana st-rendah">Dibersihkan</span></div>' +
+        '<div style="text-align:right">' + (bolehKelola() ? '<button class="btn hijau kecil" data-bersih-kamar="' + k.id + '" type="button">Selesai Dibersihkan</button>' : '<span class="sub">Menunggu Manajer/Admin</span>') + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada kamar yang perlu dibersihkan.</p>';
+    document.querySelectorAll("#panel-checkin [data-checkin]").forEach(function (b) {
+      b.addEventListener("click", function () { lakukanCheckin(Number(b.getAttribute("data-checkin"))); });
+    });
+    document.querySelectorAll("#panel-checkin [data-checkout]").forEach(function (b) {
+      b.addEventListener("click", function () { lakukanCheckout(Number(b.getAttribute("data-checkout"))); });
+    });
+    document.querySelectorAll("#panel-checkin [data-bersih-kamar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKamar(Number(b.getAttribute("data-bersih-kamar")));
+        if (!k) return;
+        k.status = "Tersedia"; saveState(); renderSemua();
+        toast("Kamar " + k.nomor + " sudah bersih dan Tersedia.");
+      });
+    });
+  }
+
+  /* ---------- Layanan ---------- */
+  function isiPilihanPemesananLayanan() {
+    var sel = $("lyPemesanan");
+    var simpan = sel.value;
+    var list = state.pemesanan.filter(function (p) { return p.status === "Menginap"; });
+    sel.innerHTML = list.map(function (p) {
+      return '<option value="' + p.id + '">' + esc(namaTamu(p.tamuId)) + ' · Kamar ' + esc(nomorKamar(p.kamarId)) + ' · sampai ' + tglSingkat(p.checkout) + '</option>';
+    }).join("");
+    if (simpan && list.some(function (p) { return String(p.id) === simpan; })) sel.value = simpan;
+  }
+  function tampilSubtotalLayanan() {
+    var jenis = $("lyJenis").value;
+    var jumlah = Number($("lyJumlah").value) || 0;
+    var harga = HARGA_LAYANAN[jenis] || 0;
+    $("lySubtotal").value = jumlah > 0 ? rupiah(jumlah * harga) : "—";
+  }
+  function renderLayanan() {
+    isiPilihanPemesananLayanan();
+    if (!$("lyTanggal").value) $("lyTanggal").value = hariIniKey();
+    tampilSubtotalLayanan();
+    var selF = $("fLayanan");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua pemesanan</option>'];
+    state.pemesanan.slice().sort(function (a, b) { return b.checkin < a.checkin ? -1 : 1; }).forEach(function (p) {
+      opts.push('<option value="' + p.id + '">' + esc(namaTamu(p.tamuId)) + ' · Kamar ' + esc(nomorKamar(p.kamarId)) + ' (' + p.status + ')</option>');
+    });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var selB = $("fLayananBulan");
+    var daftarBulan = bulanList(state.layanan);
+    isiPilihanBulan(selB, daftarBulan, "semua");
+    var filter = selF.value || "semua";
+    var filterBulan = selB.value || "semua";
+    var list = state.layanan.slice();
+    if (filter !== "semua") list = list.filter(function (x) { return String(x.pemesananId) === filter; });
+    if (filterBulan !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === filterBulan; });
+    list = list.sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nTotal = 0;
+    state.layanan.forEach(function (x) { nTotal += (Number(x.jumlah) || 0) * (Number(x.harga) || 0); });
+    $("ringkasanLayanan").textContent = list.length + " layanan · total semua " + rupiah(nTotal) + ".";
+    $("daftarLayanan").innerHTML = list.length ? list.map(function (x) {
+      var p = cariPemesanan(x.pemesananId);
+      var bolehHapus = p && p.status === "Menginap";
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-layanan="' + x.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(x.jenis) + '</b> <span class="tag">' + (p ? esc(p.status) : "—") + '</span>' +
+        '<br><span class="sub">' + (p ? esc(namaTamu(p.tamuId)) + ' · Kamar ' + esc(nomorKamar(p.kamarId)) + ' · ' : '') + tglSingkat(x.tanggal) + ' · ' + rupiah(x.harga) + '/satuan' + (x.keterangan ? ' · ' + esc(x.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + (Number(x.jumlah) || 0) + ' × ' + rupiah(x.harga) + '</b><br><span class="sub">' + rupiah(x.jumlah * x.harga) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada layanan yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-layanan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = state.layanan.find(function (y) { return y.id === Number(b.getAttribute("data-hapus-layanan")); });
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Layanan", "Hapus layanan " + x.jenis + " (" + rupiah(x.jumlah * x.harga) + ")?", function () {
+          state.layanan = state.layanan.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Layanan dihapus.");
+        });
+      });
+    });
+  }
+  $("fLayanan").addEventListener("change", renderLayanan);
+  $("fLayananBulan").addEventListener("change", renderLayanan);
+  $("lyJenis").addEventListener("change", tampilSubtotalLayanan);
+  $("lyJumlah").addEventListener("input", tampilSubtotalLayanan);
+  $("btnTambahLayanan").addEventListener("click", function () {
+    var pemesananId = Number($("lyPemesanan").value);
+    var jenis = $("lyJenis").value;
+    var jumlah = Number($("lyJumlah").value);
+    var tanggal = $("lyTanggal").value;
+    var keterangan = $("lyKeterangan").value.trim();
+    var p = cariPemesanan(pemesananId);
+    if (!p) { toast("Tidak ada tamu yang sedang menginap."); return; }
+    if (p.status !== "Menginap") { toast("Layanan hanya bisa dicatat untuk tamu yang sedang menginap."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah layanan (lebih dari 0)."); return; }
+    if (!tanggal) { toast("Isi tanggal layanan."); return; }
+    state.layanan.push({ id: state.nextLayananId++, pemesananId: pemesananId, jenis: jenis, jumlah: jumlah, harga: HARGA_LAYANAN[jenis], tanggal: tanggal, keterangan: keterangan });
+    saveState();
+    $("lyJumlah").value = ""; $("lyKeterangan").value = "";
+    renderSemua();
+    toast("Layanan " + jenis + " (" + jumlah + " × " + rupiah(HARGA_LAYANAN[jenis]) + " = " + rupiah(jumlah * HARGA_LAYANAN[jenis]) + ") untuk " + namaTamu(p.tamuId) + " tersimpan.");
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(state.pemesanan.map(function (p) { return { tanggal: p.checkin }; }).concat(state.layanan));
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login). Setelah
+       pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var pemasukan = pemasukanBulan(bulanKey(hariIniKey()));
+    var malamTerisi = malamTerisiBulan(bulanKey(hariIniKey()));
+    var kapasitas = state.kamar.length * hariDalamBulan(bulanKey(hariIniKey()));
+    var hunian = kapasitas > 0 ? malamTerisi / kapasitas * 100 : 0;
+    $("ringkasanLaporan").textContent = state.pemesanan.length + " pemesanan · " + state.layanan.length + " layanan · pemasukan bulan berjalan " + rupiah(pemasukan.total) + " (kamar " + rupiah(pemasukan.kamar) + " + layanan " + rupiah(pemasukan.layanan) + ") · hunian " + persenSatu(hunian) + " (" + malamTerisi + " dari " + kapasitas + " malam).";
+    var perTipe = {};
+    state.kamar.forEach(function (k) {
+      if (!perTipe[k.tipe]) perTipe[k.tipe] = { jumlah: 0, malam: 0, nilai: 0 };
+      perTipe[k.tipe].jumlah += 1;
+    });
+    state.pemesanan.forEach(function (p) {
+      if (p.status === "Dibatalkan") return;
+      var tipe = tipeKamar(p.kamarId);
+      if (!perTipe[tipe]) perTipe[tipe] = { jumlah: 0, malam: 0, nilai: 0 };
+      perTipe[tipe].malam += jumlahMalam(p);
+      perTipe[tipe].nilai += totalKamarPemesanan(p);
+    });
+    var kunciTipe = Object.keys(perTipe).sort(function (a, b) { return perTipe[b].nilai - perTipe[a].nilai; });
+    $("tabelPerTipe").innerHTML = "<tr><th>Tipe Kamar</th><th class=\"angka\">Kamar</th><th class=\"angka\">Malam Terisi</th><th class=\"angka\">Nilai Kamar</th></tr>" +
+      (kunciTipe.length ? kunciTipe.map(function (t) {
+        var x = perTipe[t];
+        return "<tr><td><b>" + esc(t) + "</b></td><td class=\"angka\">" + x.jumlah + "</td><td class=\"angka\">" + x.malam + "</td><td class=\"angka\">" + rupiah(x.nilai) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perBulan = {};
+    state.pemesanan.forEach(function (p) {
+      if (p.status === "Dibatalkan") return;
+      var bk = bulanKey(p.checkin);
+      if (!perBulan[bk]) perBulan[bk] = { malam: 0, kamar: 0, layanan: 0, pemesanan: 0 };
+      perBulan[bk].malam += jumlahMalam(p);
+      perBulan[bk].kamar += totalKamarPemesanan(p);
+      perBulan[bk].pemesanan += 1;
+    });
+    state.layanan.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (!perBulan[bk]) perBulan[bk] = { malam: 0, kamar: 0, layanan: 0, pemesanan: 0 };
+      perBulan[bk].layanan += (Number(x.jumlah) || 0) * (Number(x.harga) || 0);
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Pemesanan</th><th class=\"angka\">Malam Terisi</th><th class=\"angka\">Hunian</th><th class=\"angka\">Pemasukan Kamar</th><th class=\"angka\">Pemasukan Layanan</th><th class=\"angka\">Total Pemasukan</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (bk) {
+        var r = perBulan[bk];
+        var kap = state.kamar.length * hariDalamBulan(bk);
+        var hun = kap > 0 ? r.malam / kap * 100 : 0;
+        return "<tr><td><b>" + namaBulan(bk) + "</b></td><td class=\"angka\">" + r.pemesanan + "</td><td class=\"angka\">" + r.malam + "</td><td class=\"angka\">" + persenSatu(hun) + "</td><td class=\"angka\">" + rupiah(r.kamar) + "</td><td class=\"angka\">" + rupiah(r.layanan) + "</td><td class=\"angka\">" + rupiah(r.kamar + r.layanan) + "</td></tr>";
+      }).join("") : '<tr><td colspan="7">Belum ada data.</td></tr>');
+    var perLayanan = {};
+    state.layanan.forEach(function (x) {
+      if (!perLayanan[x.jenis]) perLayanan[x.jenis] = { jumlah: 0, catatan: 0 };
+      perLayanan[x.jenis].jumlah += (Number(x.jumlah) || 0) * (Number(x.harga) || 0);
+      perLayanan[x.jenis].catatan += 1;
+    });
+    var kunciLayanan = Object.keys(perLayanan).sort(function (a, b) { return perLayanan[b].jumlah - perLayanan[a].jumlah; });
+    $("tabelPerLayanan").innerHTML = "<tr><th>Jenis Layanan</th><th class=\"angka\">Catatan</th><th class=\"angka\">Total</th></tr>" +
+      (kunciLayanan.length ? kunciLayanan.map(function (j) {
+        var r = perLayanan[j];
+        return "<tr><td><b>" + esc(j) + "</b></td><td class=\"angka\">" + r.catatan + "</td><td class=\"angka\">" + rupiah(r.jumlah) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = state.pemesanan.slice();
+    if (bk !== "semua") list = list.filter(function (p) { return bulanKey(p.checkin) === bk; });
+    list = list.sort(function (a, b) { return a.checkin < b.checkin ? -1 : b.checkin > a.checkin ? 1 : b.id - a.id; });
+    var baris = [["Tanggal Check-in", "Tanggal Check-out", "Tamu", "Kamar", "Tipe", "Malam", "Total Kamar", "Layanan", "Tagihan", "Status", "Keterangan"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (p) {
+      n++;
+      baris.push([p.checkin, p.checkout, namaTamu(p.tamuId), nomorKamar(p.kamarId), tipeKamar(p.kamarId), jumlahMalam(p), totalKamarPemesanan(p), totalLayananPemesanan(p.id), tagihanPemesanan(p), p.status, p.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("laporan-pemesanan-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("hotel-management-system-backup.json", JSON.stringify({ aplikasi: "hotel-management-system", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.pemesanan) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Kamar, tamu, pemesanan, dan layanan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderKamar(); renderPemesanan(); renderCheckin(); renderTamu(); renderLayanan(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
