@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manajemen Salon &amp; Barbershop</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.accent .sub { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · MANAJEMEN SALON &amp; BARBERSHOP</span>
+    <h1>Manajemen <span class="aksen">Salon &amp; Barbershop</span></h1>
+    <p>Data pelanggan, jadwal potong dan perawatan, data kapster, komisi kapster, kasir salon, serta laporan pemasukan — dalam satu aplikasi untuk salon dan barbershop.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="pelanggan">Pelanggan <span class="badge" id="badgePelanggan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" type="button" data-tab="kapster">Kapster <span class="badge" id="badgeKapster">0</span></button>
+    <button class="tab-btn" type="button" data-tab="komisi">Komisi <span class="badge" id="badgeKomisi">0</span></button>
+    <button class="tab-btn" type="button" data-tab="kasir">Kasir</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Salon</h2><p>Ringkasan jadwal hari ini, pemasukan, komisi kapster, pelanggan, dan kapster.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Jadwal Hari Ini</div><div class="angka" id="dJadwalHariIni" style="font-size:22px">0</div><div class="sub" id="dJadwalHariIniSub"></div></div>
+      <div class="stat warn"><div class="label">Segera (1–7 hari)</div><div class="angka" id="dSegera" style="font-size:22px">0</div><div class="sub" id="dSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Jadwal Lewat</div><div class="angka" id="dLewat" style="font-size:22px">0</div><div class="sub" id="dLewatSub"></div></div>
+      <div class="stat"><div class="label">Pemasukan Hari Ini</div><div class="angka" id="dMasukHariIni" style="font-size:22px">Rp0</div><div class="sub" id="dMasukHariIniSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Pemasukan Bulan Ini</div><div class="angka" id="dMasukBulan" style="font-size:22px">Rp0</div><div class="sub" id="dMasukBulanSub"></div></div>
+      <div class="stat warn"><div class="label">Komisi Belum Dibayar</div><div class="angka" id="dKomisiBelum" style="font-size:22px">Rp0</div><div class="sub" id="dKomisiBelumSub"></div></div>
+      <div class="stat"><div class="label">Pelanggan</div><div class="angka" id="dPelanggan" style="font-size:22px">0</div><div class="sub" id="dPelangganSub"></div></div>
+      <div class="stat"><div class="label">Kapster Aktif</div><div class="angka" id="dKapster" style="font-size:22px">0</div><div class="sub" id="dKapsterSub"></div></div>
+    </div>
+    <div class="card"><h3>Jadwal Hari Ini</h3><p class="sub">Semua jadwal potong dan perawatan hari ini.</p><div id="daftarJadwalHariIni"></div></div>
+    <div class="card"><h3>Transaksi Terbaru</h3><p class="sub">Lima transaksi kasir terbaru.</p><div id="daftarTransaksiRingkas"></div></div>
+    <div class="card">
+      <h3>Aksi Cepat</h3>
+      <p class="sub">Buat jadwal baru, catat transaksi kasir, atau lihat komisi kapster.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeJadwal" type="button">Buat Jadwal</button>
+        <button class="btn kecil hijau" id="btnKeKasir" type="button">Catat Transaksi</button>
+        <button class="btn kecil biru" id="btnKeKomisi" type="button">Lihat Komisi</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Manajer atau Kasir.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: rina"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Rina Kusuma"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: rina123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="manajer">Manajer</option>
+          <option value="kasir">Kasir</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pelanggan">
+    <div class="page-head"><h2>Pelanggan</h2><p>Data pelanggan salon beserta kunjungan terakhir dan total belanjanya.</p></div>
+    <div class="card" id="cardTambahPelanggan">
+      <h3>Tambah Pelanggan</h3>
+      <p class="sub">Pelanggan baru langsung bisa dipilih saat membuat jadwal atau transaksi.</p>
+      <div class="form-grid">
+        <div class="field"><label for="plNama">Nama pelanggan</label><input id="plNama" type="text" placeholder="cth: Andi Pratama"></div>
+        <div class="field"><label for="plTelepon">Nomor telepon</label><input id="plTelepon" type="text" placeholder="cth: 0812-1111-0001"></div>
+        <div class="field"><label for="plEmail">Email (opsional)</label><input id="plEmail" type="text" placeholder="cth: andi@mail.com"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPelanggan" type="button">Simpan Pelanggan</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanPelanggan"></p>
+      <div id="daftarPelanggan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal Potong &amp; Perawatan</h2><p>Buat jadwal untuk kapster. Jadwal ditolak bila kapster sudah punya jadwal pada tanggal dan jam yang sama.</p></div>
+    <div class="card hanya-kelola" id="cardTambahJadwal">
+      <h3>Buat Jadwal</h3>
+      <p class="sub">Pilih pelanggan, kapster, dan layanan — harga mengikuti daftar layanan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="jdPelanggan">Pelanggan</label><select id="jdPelanggan"></select></div>
+        <div class="field"><label for="jdKapster">Kapster</label><select id="jdKapster"></select></div>
+        <div class="field"><label for="jdLayanan">Layanan</label><select id="jdLayanan"></select></div>
+        <div class="field"><label for="jdTanggal">Tanggal</label><input id="jdTanggal" type="date"></div>
+        <div class="field"><label for="jdJam">Jam</label><select id="jdJam">
+          <option value="09:00">09:00</option>
+          <option value="10:00">10:00</option>
+          <option value="11:00">11:00</option>
+          <option value="12:00">12:00</option>
+          <option value="13:00">13:00</option>
+          <option value="14:00">14:00</option>
+          <option value="15:00">15:00</option>
+          <option value="16:00">16:00</option>
+          <option value="17:00">17:00</option>
+          <option value="18:00">18:00</option>
+          <option value="19:00">19:00</option>
+          <option value="20:00">20:00</option>
+        </select></div>
+        <div class="field"><label>Harga layanan (otomatis)</label><input id="jdHarga" type="text" readonly value="—"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahJadwal" type="button">Simpan Jadwal</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fJadwal">Filter status</label><select id="fJadwal">
+          <option value="semua">Semua jadwal</option>
+          <option value="Terjadwal">Terjadwal</option>
+          <option value="Selesai">Selesai</option>
+          <option value="Dibatalkan">Dibatalkan</option>
+        </select></div>
+        <div class="field"><label for="fJadwalKapster">Filter kapster</label><select id="fJadwalKapster">
+          <option value="semua">Semua kapster</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal"></p>
+      <div id="daftarJadwal"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kapster">
+    <div class="page-head"><h2>Kapster</h2><p>Data kapster, spesialisasi, dan tarif komisi. Hanya Admin dan Manajer yang bisa menambah kapster dan mengubah komisi.</p></div>
+    <div class="card hanya-kelola" id="cardTambahKapster">
+      <h3>Tambah Kapster</h3>
+      <p class="sub">Kapster baru dimulai dengan status aktif.</p>
+      <div class="form-grid">
+        <div class="field"><label for="kpNama">Nama kapster</label><input id="kpNama" type="text" placeholder="cth: Agus Santoso"></div>
+        <div class="field"><label for="kpSpesialisasi">Spesialisasi</label><input id="kpSpesialisasi" type="text" placeholder="cth: Potong Rambut"></div>
+        <div class="field"><label for="kpKomisi">Komisi (%)</label><input id="kpKomisi" type="number" min="0" max="100" step="1" placeholder="cth: 20"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahKapster" type="button">Simpan Kapster</button>
+    </div>
+    <div class="card">
+      <p class="sub" id="ringkasanKapster"></p>
+      <div id="daftarKapster"></div>
+    </div>
+    <div class="card" id="cardLayanan">
+      <h3>Daftar Layanan &amp; Harga</h3>
+      <p class="sub">Harga layanan dipakai saat membuat jadwal dan transaksi. Hanya Admin dan Manajer yang bisa mengubah harga.</p>
+      <div id="daftarLayanan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-komisi">
+    <div class="page-head"><h2>Komisi Kapster</h2><p>Komisi dihitung otomatis dari harga layanan pada setiap transaksi (persen komisi kapster saat transaksi dibuat). Tandai sudah dibayar setelah komisi diserahkan ke kapster.</p></div>
+    <div class="card">
+      <h3>Rekap per Kapster</h3>
+      <p class="sub" id="ringkasanKomisi"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelKomisiKapster"></table></div>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fKomisiKapster">Filter kapster</label><select id="fKomisiKapster">
+          <option value="semua">Semua kapster</option>
+        </select></div>
+        <div class="field"><label for="fKomisiStatus">Filter status</label><select id="fKomisiStatus">
+          <option value="semua">Semua status</option>
+          <option value="Belum">Belum dibayar</option>
+          <option value="Sudah">Sudah dibayar</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanKomisiDaftar"></p>
+      <div id="daftarKomisi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kasir">
+    <div class="page-head"><h2>Kasir Salon</h2><p>Catat transaksi pembayaran pelanggan. Tunai menghitung kembalian otomatis; QRIS dibayar pas sesuai harga. Ini hanya pencatatan — bukan payment gateway.</p></div>
+    <div class="card" id="cardTambahTransaksi">
+      <h3>Catat Transaksi</h3>
+      <p class="sub">Harga mengikuti daftar layanan; komisi kapster dihitung otomatis.</p>
+      <div class="form-grid">
+        <div class="field"><label for="ksPelanggan">Pelanggan</label><select id="ksPelanggan"></select></div>
+        <div class="field"><label for="ksKapster">Kapster</label><select id="ksKapster"></select></div>
+        <div class="field"><label for="ksLayanan">Layanan</label><select id="ksLayanan"></select></div>
+        <div class="field"><label for="ksTanggal">Tanggal</label><input id="ksTanggal" type="date"></div>
+        <div class="field"><label>Harga (otomatis)</label><input id="ksHarga" type="text" readonly value="—"></div>
+        <div class="field"><label for="ksMetode">Metode bayar</label><select id="ksMetode">
+          <option value="Tunai">Tunai</option>
+          <option value="QRIS">QRIS</option>
+        </select></div>
+        <div class="field"><label for="ksBayar">Jumlah dibayar (Rp)</label><input id="ksBayar" type="number" min="0" step="1000" placeholder="cth: 50000"></div>
+        <div class="field"><label>Kembalian (otomatis)</label><input id="ksKembalian" type="text" readonly value="—"></div>
+        <div class="field"><label for="ksKeterangan">Keterangan (opsional)</label><input id="ksKeterangan" type="text" placeholder="cth: Pelanggan member"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahTransaksi" type="button">Simpan Transaksi</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fKasirBulan">Filter bulan</label><select id="fKasirBulan">
+          <option value="semua">Semua bulan</option>
+        </select></div>
+        <div class="field"><label for="fKasirKapster">Filter kapster</label><select id="fKasirKapster">
+          <option value="semua">Semua kapster</option>
+        </select></div>
+      </div>
+      <p class="sub" id="ringkasanKasir"></p>
+      <div id="daftarTransaksi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Salon</h2><p>Rekap pemasukan per layanan, per kapster, per bulan, dan per metode bayar — serta ekspor transaksi ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Layanan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerLayanan"></table></div>
+      <h3 style="margin-top:18px">Per Kapster</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKapster"></table></div>
+      <h3 style="margin-top:18px">Per Bulan</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Per Metode Bayar</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerMetode"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor transaksi bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Transaksi</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Manajemen Salon &amp; Barbershop.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Pelanggan</b> untuk mencatat pelanggan baru beserta nomor teleponnya.</li>
+        <li>Buka tab <b>Jadwal</b> untuk membuat jadwal potong atau perawatan. Jadwal ditolak bila kapster sudah punya jadwal pada tanggal dan jam yang sama. Tandai <b>Selesai</b> bila layanan sudah dikerjakan — transaksi kasir dibuat otomatis (Tunai, dibayar pas) dan komisi kapster tercatat.</li>
+        <li>Buka tab <b>Kapster</b> untuk data kapster dan tarif komisinya, serta daftar layanan dan harganya. Mengubah persen komisi atau harga layanan tidak mengubah transaksi yang sudah tercatat.</li>
+        <li>Buka tab <b>Komisi</b> untuk melihat komisi tiap kapster per transaksi dan menandai yang sudah dibayar.</li>
+        <li>Buka tab <b>Kasir</b> untuk mencatat transaksi pelanggan yang datang langsung (walk-in). Tunai menghitung kembalian otomatis; QRIS dibayar pas sesuai harga.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap pemasukan per layanan, per kapster, per bulan, dan per metode bayar, serta ekspor transaksi ke CSV.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Manajer</b> — mengelola pelanggan, jadwal, kapster, layanan, komisi, kasir, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Kasir</b> — melihat jadwal, menyelesaikan jadwal (transaksi dibuat otomatis), mencatat pelanggan dan transaksi kasir, serta melihat laporan. Tidak bisa menambah jadwal baru, mengubah data kapster atau harga layanan, menandai komisi dibayar, menghapus transaksi, atau kelola pengguna.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis — QRIS dan Tunai hanya dicatat sebagai metode bayar, pembayarannya tetap di luar aplikasi.</li>
+        <li>Komisi dihitung dari harga layanan saat transaksi dibuat dan tidak berubah bila persen komisi kapster diubah belakangan.</li>
+        <li>Kunjungan terakhir pelanggan dihitung dari transaksi dan jadwal yang sudah selesai.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)</li>
+        <li>Kasir — <b>kasir / kasir123</b> (Rina Kusuma)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Manajemen Salon &amp; Barbershop — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">JASA · MANAJEMEN SALON &amp; BARBERSHOP</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data pelanggan, jadwal potong dan perawatan, data kapster, komisi kapster, kasir salon, serta laporan pemasukan.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Manajer — <b>manajer / manajer123</b> (Dedi Kurniawan)<br>
+      Kasir — <b>kasir / kasir123</b> (Rina Kusuma)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function persenSatu(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%"; }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "manajemenSalonBarbershop.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python (/tmp/cek_salon.py).
+       Pelanggan 8: Andi Pratama, Sari Wijaya, Budi Santoso, Dewi Lestari,
+         Rudi Hartono, Maya Putri, Joko Santoso, Lina Marlina.
+       Kapster 5: Agus Santoso (Potong Rambut, 20%), Sinta Wijaya (Pewarnaan &
+         Creambath, 25%), Budi Hartono (Cukur & Pijat, 15%), Rina Lestari
+         (Facial & Smoothing, 25%), Dedi Prasetyo (Potong Rambut, 20%).
+       Layanan 8: Potong Rambut 35rb, Creambath 60rb, Pewarnaan 150rb,
+         Cukur Jenggot 25rb, Facial 80rb, Smoothing 200rb, Pijat Kepala 50rb,
+         Manicure & Pedicure 70rb.
+       Jadwal 13: hari ini 3 (Terjadwal 2, Selesai 1), segera 4, lewat 1,
+         selesai 5, dibatalkan 1.
+       Transaksi 11: Nov 9 (Rp680.000), Okt 2 (Rp95.000), total Rp775.000.
+         Hari ini Rp35.000 (1 trx). Tunai Rp400.000 (7), QRIS Rp375.000 (4).
+         Kembalian: T0 15rb, T4 50rb, T6 65rb.
+       Komisi total Rp180.000: sudah Rp28.500, belum Rp151.500.
+         Agus 28rb (sudah 14rb, belum 14rb), Sinta 67.500rb (belum semua),
+         Budi 7.500rb (sudah semua), Rina 70rb (belum semua), Dedi 7rb (sudah semua).
+       Per layanan: Potong Rambut 5x Rp175.000, Smoothing 1x Rp200.000,
+         Creambath 2x Rp120.000, Pewarnaan 1x Rp150.000, Pijat Kepala 1x Rp50.000,
+         Facial 1x Rp80.000.
+       CSV transaksi Nov: 9 baris + header = 10; semua: 11 + header = 12. */
+  function seedState() {
+    var pelanggan = [
+      { id: 1, nama: "Andi Pratama", telepon: "0812-1111-0001", email: "andi@mail.com" },
+      { id: 2, nama: "Sari Wijaya", telepon: "0812-2222-0002", email: "sari@mail.com" },
+      { id: 3, nama: "Budi Santoso", telepon: "0812-3333-0003", email: "budi@mail.com" },
+      { id: 4, nama: "Dewi Lestari", telepon: "0812-4444-0004", email: "dewi@mail.com" },
+      { id: 5, nama: "Rudi Hartono", telepon: "0812-5555-0005", email: "rudi@mail.com" },
+      { id: 6, nama: "Maya Putri", telepon: "0812-6666-0006", email: "maya@mail.com" },
+      { id: 7, nama: "Joko Santoso", telepon: "0812-7777-0007", email: "joko@mail.com" },
+      { id: 8, nama: "Lina Marlina", telepon: "0812-8888-0008", email: "lina@mail.com" }
+    ];
+    var kapster = [
+      { id: 1, nama: "Agus Santoso", spesialisasi: "Potong Rambut", komisi: 20, aktif: true },
+      { id: 2, nama: "Sinta Wijaya", spesialisasi: "Pewarnaan & Creambath", komisi: 25, aktif: true },
+      { id: 3, nama: "Budi Hartono", spesialisasi: "Cukur & Pijat", komisi: 15, aktif: true },
+      { id: 4, nama: "Rina Lestari", spesialisasi: "Facial & Smoothing", komisi: 25, aktif: true },
+      { id: 5, nama: "Dedi Prasetyo", spesialisasi: "Potong Rambut", komisi: 20, aktif: true }
+    ];
+    var layanan = [
+      { id: 1, nama: "Potong Rambut", harga: 35000 },
+      { id: 2, nama: "Creambath", harga: 60000 },
+      { id: 3, nama: "Pewarnaan", harga: 150000 },
+      { id: 4, nama: "Cukur Jenggot", harga: 25000 },
+      { id: 5, nama: "Facial", harga: 80000 },
+      { id: 6, nama: "Smoothing", harga: 200000 },
+      { id: 7, nama: "Pijat Kepala", harga: 50000 },
+      { id: 8, nama: "Manicure & Pedicure", harga: 70000 }
+    ];
+    function jd(id, pelangganId, kapsterId, layananNama, tanggal, jam, status) {
+      return { id: id, pelangganId: pelangganId, kapsterId: kapsterId, layanan: layananNama, tanggal: tanggal, jam: jam, status: status };
+    }
+    var jadwal = [
+      jd(1, 1, 1, "Potong Rambut", kunciPlus(0), "09:00", "Terjadwal"),
+      jd(2, 2, 2, "Pewarnaan", kunciPlus(0), "10:00", "Terjadwal"),
+      jd(3, 5, 3, "Cukur Jenggot", kunciPlus(0), "11:00", "Selesai"),
+      jd(4, 4, 1, "Potong Rambut", kunciPlus(1), "09:00", "Terjadwal"),
+      jd(5, 6, 4, "Facial", kunciPlus(1), "13:00", "Terjadwal"),
+      jd(6, 8, 2, "Creambath", kunciPlus(2), "10:00", "Terjadwal"),
+      jd(7, 7, 5, "Potong Rambut", kunciPlus(3), "14:00", "Terjadwal"),
+      jd(8, 3, 1, "Potong Rambut", kunciPlus(-1), "09:00", "Selesai"),
+      jd(9, 2, 4, "Smoothing", kunciPlus(-1), "15:00", "Selesai"),
+      jd(10, 1, 3, "Pijat Kepala", kunciPlus(-2), "10:00", "Selesai"),
+      jd(11, 4, 2, "Pewarnaan", kunciPlus(-3), "11:00", "Selesai"),
+      jd(12, 5, 5, "Cukur Jenggot", kunciPlus(-1), "16:00", "Terjadwal"),
+      jd(13, 8, 1, "Potong Rambut", kunciPlus(4), "10:00", "Dibatalkan")
+    ];
+    function tr(id, pelangganId, kapsterId, layananNama, tanggal, metode, bayar, komisiDibayar, jadwalId) {
+      var hargaLayanan = layanan.find(function (x) { return x.nama === layananNama; }).harga;
+      var kp = kapster.find(function (x) { return x.id === kapsterId; });
+      return { id: id, pelangganId: pelangganId, kapsterId: kapsterId, layanan: layananNama,
+        harga: hargaLayanan, komisi: Math.round(hargaLayanan * kp.komisi / 100),
+        komisiDibayar: komisiDibayar, metode: metode, bayar: bayar, tanggal: tanggal,
+        jadwalId: jadwalId || null, keterangan: "" };
+    }
+    var transaksi = [
+      tr(1, 1, 1, "Potong Rambut", kunciPlus(0), "Tunai", 50000, false, 3),
+      tr(2, 3, 1, "Potong Rambut", kunciPlus(-1), "Tunai", 50000, true, 8),
+      tr(3, 2, 4, "Smoothing", kunciPlus(-1), "QRIS", 200000, false, 9),
+      tr(4, 1, 3, "Pijat Kepala", kunciPlus(-2), "Tunai", 50000, true, 10),
+      tr(5, 4, 2, "Pewarnaan", kunciPlus(-3), "Tunai", 200000, false, 11),
+      tr(6, 6, 1, "Potong Rambut", kunciPlus(-4), "QRIS", 35000, false, null),
+      tr(7, 7, 5, "Potong Rambut", kunciPlus(-6), "Tunai", 100000, true, null),
+      tr(8, 8, 2, "Creambath", kunciPlus(-7), "Tunai", 60000, false, null),
+      tr(9, 1, 4, "Facial", kunciPlus(-10), "QRIS", 80000, false, null),
+      tr(10, 2, 1, "Potong Rambut", kunciPlus(-21), "Tunai", 35000, true, null),
+      tr(11, 6, 2, "Creambath", kunciPlus(-25), "QRIS", 60000, false, null)
+    ];
+    return { pelanggan: pelanggan, kapster: kapster, layanan: layanan, jadwal: jadwal, transaksi: transaksi,
+      nextPelangganId: 9, nextKapsterId: 6, nextLayananId: 9, nextJadwalId: 14, nextTransaksiId: 12 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "manajer", nama: "Dedi Kurniawan", peran: "manajer", password: "manajer123", aktif: true },
+      { username: "kasir", nama: "Rina Kusuma", peran: "kasir", password: "kasir123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.pelanggan) state.pelanggan = [];
+    if (!state.kapster) state.kapster = [];
+    if (!state.layanan) state.layanan = [];
+    if (!state.jadwal) state.jadwal = [];
+    if (!state.transaksi) state.transaksi = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "manajer" ? "Manajer" : "Kasir"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "manajer"); }
+  function cariPelanggan(id) { return state.pelanggan.find(function (x) { return x.id === id; }); }
+  function namaPelanggan(id) { var p = cariPelanggan(id); return p ? p.nama : "—"; }
+  function cariKapster(id) { return state.kapster.find(function (x) { return x.id === id; }); }
+  function namaKapster(id) { var k = cariKapster(id); return k ? k.nama : "—"; }
+  function cariLayanan(nama) { return state.layanan.find(function (x) { return x.nama === nama; }); }
+  function hargaLayanan(nama) { var l = cariLayanan(nama); return l ? Number(l.harga) || 0 : 0; }
+  function cariJadwal(id) { return state.jadwal.find(function (x) { return x.id === id; }); }
+  function cariTransaksi(id) { return state.transaksi.find(function (x) { return x.id === id; }); }
+  function kembalianTransaksi(t) {
+    if (!t || t.metode !== "Tunai") return 0;
+    return Math.max(0, (Number(t.bayar) || 0) - (Number(t.harga) || 0));
+  }
+  function kunjunganTerakhir(pelangganId) {
+    var tgl = null;
+    state.transaksi.forEach(function (t) {
+      if (t.pelangganId === pelangganId && (!tgl || t.tanggal > tgl)) tgl = t.tanggal;
+    });
+    state.jadwal.forEach(function (j) {
+      if (j.pelangganId === pelangganId && j.status === "Selesai" && (!tgl || j.tanggal > tgl)) tgl = j.tanggal;
+    });
+    return tgl;
+  }
+  function bentrokKapster(kapsterId, tanggal, jam, kecualiId) {
+    return state.jadwal.some(function (j) {
+      if (j.kapsterId !== kapsterId) return false;
+      if (kecualiId && j.id === kecualiId) return false;
+      if (j.status !== "Terjadwal") return false;
+      return j.tanggal === tanggal && j.jam === jam;
+    });
+  }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "pelanggan") renderPelanggan();
+    if (nama === "jadwal") renderJadwal();
+    if (nama === "kapster") renderKapster();
+    if (nama === "komisi") renderKomisi();
+    if (nama === "kasir") renderKasir();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var bkBerjalan = bulanKey(hariIniKey());
+    var hariIni = hariIniKey();
+    var jadwalHariIni = state.jadwal.filter(function (j) { return j.tanggal === hariIni; });
+    var jadwalHariIniTerjadwal = jadwalHariIni.filter(function (j) { return j.status === "Terjadwal"; }).length;
+    var jadwalHariIniSelesai = jadwalHariIni.filter(function (j) { return j.status === "Selesai"; }).length;
+    var segera = state.jadwal.filter(function (j) {
+      var s = selisihHari(j.tanggal);
+      return j.status === "Terjadwal" && s >= 1 && s <= 7;
+    });
+    var lewat = state.jadwal.filter(function (j) {
+      return j.status === "Terjadwal" && selisihHari(j.tanggal) < 0;
+    });
+    var trxHariIni = state.transaksi.filter(function (t) { return t.tanggal === hariIni; });
+    var masukHariIni = 0;
+    trxHariIni.forEach(function (t) { masukHariIni += Number(t.harga) || 0; });
+    var trxBulan = state.transaksi.filter(function (t) { return bulanKey(t.tanggal) === bkBerjalan; });
+    var masukBulan = 0;
+    trxBulan.forEach(function (t) { masukBulan += Number(t.harga) || 0; });
+    var komisiBelum = 0, komisiSudah = 0, komisiTotal = 0;
+    state.transaksi.forEach(function (t) {
+      komisiTotal += Number(t.komisi) || 0;
+      if (t.komisiDibayar) komisiSudah += Number(t.komisi) || 0;
+      else komisiBelum += Number(t.komisi) || 0;
+    });
+    var kapsterAktif = state.kapster.filter(function (k) { return k.aktif; }).length;
+    $("dJadwalHariIni").textContent = jadwalHariIni.length + " jadwal";
+    $("dJadwalHariIniSub").textContent = "terjadwal " + jadwalHariIniTerjadwal + " · selesai " + jadwalHariIniSelesai;
+    $("dSegera").textContent = segera.length + " jadwal";
+    $("dSegeraSub").textContent = "1–7 hari ke depan";
+    $("dLewat").textContent = lewat.length + " jadwal";
+    $("dLewatSub").textContent = "terjadwal tapi tanggal sudah lewat";
+    $("dMasukHariIni").textContent = rupiah(masukHariIni);
+    $("dMasukHariIniSub").textContent = trxHariIni.length + " transaksi hari ini";
+    $("dMasukBulan").textContent = rupiah(masukBulan);
+    $("dMasukBulanSub").textContent = trxBulan.length + " transaksi · " + namaBulan(bkBerjalan);
+    $("dKomisiBelum").textContent = rupiah(komisiBelum);
+    $("dKomisiBelumSub").textContent = "dari total komisi " + rupiah(komisiTotal) + " · sudah dibayar " + rupiah(komisiSudah);
+    $("dPelanggan").textContent = state.pelanggan.length + " orang";
+    $("dPelangganSub").textContent = state.transaksi.length + " transaksi tercatat";
+    $("dKapster").textContent = kapsterAktif + " kapster";
+    $("dKapsterSub").textContent = "dari " + state.kapster.length + " kapster terdaftar";
+    $("badgePelanggan").textContent = state.pelanggan.length;
+    $("badgeJadwal").textContent = state.jadwal.filter(function (j) { return j.status === "Terjadwal"; }).length;
+    $("badgeKapster").textContent = state.kapster.length;
+    $("badgeKomisi").textContent = state.transaksi.filter(function (t) { return !t.komisiDibayar; }).length;
+    var urutHariIni = jadwalHariIni.slice().sort(function (a, b) { return a.jam < b.jam ? -1 : 1; });
+    $("daftarJadwalHariIni").innerHTML = urutHariIni.length ? urutHariIni.map(function (j) {
+      var lencana = j.status === "Terjadwal" ? '<span class="lencana st-biru">Terjadwal</span>' :
+        j.status === "Selesai" ? '<span class="lencana st-aman">Selesai</span>' : '<span class="lencana st-habis">Dibatalkan</span>';
+      return '<div class="baris"><div><b>' + esc(namaPelanggan(j.pelangganId)) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(j.jam) + ' · ' + esc(j.layanan) + ' · ' + esc(namaKapster(j.kapsterId)) + ' · ' + rupiah(hargaLayanan(j.layanan)) + '</span></div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal hari ini.</p>';
+    var terbaru = state.transaksi.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarTransaksiRingkas").innerHTML = terbaru.length ? terbaru.map(function (t) {
+      return '<div class="baris"><div><b>' + esc(namaPelanggan(t.pelangganId)) + '</b> <span class="tag">' + esc(t.metode) + '</span>' +
+        '<br><span class="sub">' + esc(t.layanan) + ' · ' + esc(namaKapster(t.kapsterId)) + ' · ' + tglSingkat(t.tanggal) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(t.harga) + '</b><br><span class="sub">komisi ' + rupiah(t.komisi) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada transaksi.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKeJadwal").addEventListener("click", function () { pindahTab("jadwal"); });
+  $("btnKeKasir").addEventListener("click", function () { pindahTab("kasir"); });
+  $("btnKeKomisi").addEventListener("click", function () { pindahTab("komisi"); });
+
+  /* ---------- Pelanggan ---------- */
+  function renderPelanggan() {
+    var list = state.pelanggan.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    $("ringkasanPelanggan").textContent = list.length + " pelanggan terdaftar.";
+    $("daftarPelanggan").innerHTML = list.length ? list.map(function (p) {
+      var trxPelanggan = state.transaksi.filter(function (x) { return x.pelangganId === p.id; });
+      var totalBelanja = 0;
+      trxPelanggan.forEach(function (x) { totalBelanja += Number(x.harga) || 0; });
+      var terakhir = kunjunganTerakhir(p.id);
+      var bolehHapus = bolehKelola() && trxPelanggan.length === 0 && state.jadwal.filter(function (x) { return x.pelangganId === p.id; }).length === 0;
+      var aksi = bolehHapus ? '<button class="btn ghost kecil" data-hapus-pelanggan="' + p.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(p.nama) + '</b>' +
+        '<br><span class="sub">' + esc(p.telepon) + (p.email ? ' · ' + esc(p.email) : '') + ' · kunjungan terakhir ' + (terakhir ? tglSingkat(terakhir) : '—') + ' · ' + trxPelanggan.length + ' transaksi · total belanja ' + rupiah(totalBelanja) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada pelanggan.</p>';
+    document.querySelectorAll("[data-hapus-pelanggan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariPelanggan(Number(b.getAttribute("data-hapus-pelanggan")));
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Pelanggan", "Hapus pelanggan \"" + p.nama + "\"?", function () {
+          state.pelanggan = state.pelanggan.filter(function (x) { return x.id !== p.id; });
+          saveState(); renderSemua(); toast("Pelanggan \"" + p.nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPelanggan").addEventListener("click", function () {
+    var nama = $("plNama").value.trim();
+    var telepon = $("plTelepon").value.trim();
+    var email = $("plEmail").value.trim();
+    if (!nama) { toast("Isi nama pelanggan."); return; }
+    if (!telepon) { toast("Isi nomor telepon pelanggan."); return; }
+    state.pelanggan.push({ id: state.nextPelangganId++, nama: nama, telepon: telepon, email: email });
+    saveState();
+    $("plNama").value = ""; $("plTelepon").value = ""; $("plEmail").value = "";
+    renderSemua();
+    toast("Pelanggan \"" + nama + "\" tersimpan.");
+  });
+
+  /* ---------- Jadwal ---------- */
+  function isiPilihanPelanggan(selId) {
+    var sel = $(selId);
+    var simpan = sel.value;
+    sel.innerHTML = state.pelanggan.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (p) {
+      return '<option value="' + p.id + '">' + esc(p.nama) + ' · ' + esc(p.telepon) + '</option>';
+    }).join("");
+    if (simpan) sel.value = simpan;
+  }
+  function isiPilihanKapster(selId) {
+    var sel = $(selId);
+    var simpan = sel.value;
+    sel.innerHTML = state.kapster.filter(function (k) { return k.aktif; }).slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (k) {
+      return '<option value="' + k.id + '">' + esc(k.nama) + ' · ' + esc(k.spesialisasi) + ' · komisi ' + k.komisi + '%</option>';
+    }).join("");
+    if (simpan) sel.value = simpan;
+  }
+  function isiPilihanLayanan(selId) {
+    var sel = $(selId);
+    var simpan = sel.value;
+    sel.innerHTML = state.layanan.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (l) {
+      return '<option value="' + esc(l.nama) + '">' + esc(l.nama) + ' · ' + rupiah(l.harga) + '</option>';
+    }).join("");
+    if (simpan) sel.value = simpan;
+  }
+  function tampilHargaJadwal() {
+    var nama = $("jdLayanan").value;
+    $("jdHarga").value = nama ? rupiah(hargaLayanan(nama)) : "—";
+  }
+  function buatTransaksiDariJadwal(j) {
+    var kp = cariKapster(j.kapsterId);
+    var harga = hargaLayanan(j.layanan);
+    var komisiNilai = kp ? Math.round(harga * kp.komisi / 100) : 0;
+    state.transaksi.push({ id: state.nextTransaksiId++, pelangganId: j.pelangganId, kapsterId: j.kapsterId,
+      layanan: j.layanan, harga: harga, komisi: komisiNilai, komisiDibayar: false,
+      metode: "Tunai", bayar: harga, tanggal: j.tanggal, jadwalId: j.id, keterangan: "Dari jadwal" });
+  }
+  function selesaikanJadwal(jadwalId) {
+    var j = cariJadwal(jadwalId);
+    if (!j || j.status !== "Terjadwal") return;
+    var sudahAda = state.transaksi.some(function (t) { return t.jadwalId === j.id; });
+    if (!sudahAda) buatTransaksiDariJadwal(j);
+    j.status = "Selesai";
+    saveState(); renderSemua();
+    toast("Jadwal " + namaPelanggan(j.pelangganId) + " selesai — transaksi " + rupiah(hargaLayanan(j.layanan)) + " tercatat.");
+  }
+  function renderJadwal() {
+    isiPilihanPelanggan("jdPelanggan");
+    isiPilihanKapster("jdKapster");
+    isiPilihanLayanan("jdLayanan");
+    if (!$("jdTanggal").value) $("jdTanggal").value = hariIniKey();
+    tampilHargaJadwal();
+    var selF = $("fJadwalKapster");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kapster</option>'];
+    state.kapster.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filter = $("fJadwal").value || "semua";
+    var filterKapster = selF.value || "semua";
+    var list = state.jadwal.slice();
+    if (filter !== "semua") list = list.filter(function (x) { return x.status === filter; });
+    if (filterKapster !== "semua") list = list.filter(function (x) { return String(x.kapsterId) === filterKapster; });
+    list = list.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : a.jam < b.jam ? -1 : b.id - a.id; });
+    var nTerjadwal = state.jadwal.filter(function (x) { return x.status === "Terjadwal"; }).length;
+    var nSelesai = state.jadwal.filter(function (x) { return x.status === "Selesai"; }).length;
+    $("ringkasanJadwal").textContent = list.length + " jadwal · terjadwal " + nTerjadwal + " · selesai " + nSelesai + ".";
+    $("daftarJadwal").innerHTML = list.length ? list.map(function (j) {
+      var lencana = j.status === "Terjadwal" ? '<span class="lencana st-biru">Terjadwal</span>' :
+        j.status === "Selesai" ? '<span class="lencana st-aman">Selesai</span>' : '<span class="lencana st-habis">Dibatalkan</span>';
+      var lewat = j.status === "Terjadwal" && selisihHari(j.tanggal) < 0 ? ' <span class="lencana st-habis">Lewat</span>' : '';
+      var aksi = "";
+      if (j.status === "Terjadwal") {
+        aksi += '<button class="btn hijau kecil" data-selesai-jadwal="' + j.id + '" type="button">Selesaikan</button> ';
+        if (bolehKelola()) aksi += '<button class="btn ghost kecil" data-batal-jadwal="' + j.id + '" type="button">Batalkan</button> ';
+      }
+      if (j.status === "Dibatalkan" && bolehKelola()) {
+        aksi += '<button class="btn ghost kecil" data-hapus-jadwal="' + j.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(namaPelanggan(j.pelangganId)) + '</b> ' + lencana + lewat +
+        '<br><span class="sub">' + tglSingkat(j.tanggal) + ' · ' + esc(j.jam) + ' · ' + esc(j.layanan) + ' · ' + esc(namaKapster(j.kapsterId)) + ' · ' + rupiah(hargaLayanan(j.layanan)) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada jadwal yang cocok.</p>';
+    document.querySelectorAll("[data-selesai-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () { selesaikanJadwal(Number(b.getAttribute("data-selesai-jadwal"))); });
+    });
+    document.querySelectorAll("[data-batal-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = cariJadwal(Number(b.getAttribute("data-batal-jadwal")));
+        if (!j) return;
+        tanyaKonfirmasi("Batalkan Jadwal", "Batalkan jadwal " + namaPelanggan(j.pelangganId) + " (" + esc(j.layanan) + ", " + tglSingkat(j.tanggal) + " " + j.jam + ")?", function () {
+          j.status = "Dibatalkan"; saveState(); renderSemua();
+          toast("Jadwal " + namaPelanggan(j.pelangganId) + " dibatalkan.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-jadwal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = cariJadwal(Number(b.getAttribute("data-hapus-jadwal")));
+        if (!j) return;
+        tanyaKonfirmasi("Hapus Jadwal", "Hapus jadwal " + namaPelanggan(j.pelangganId) + " (" + esc(j.layanan) + ")?", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== j.id; });
+          saveState(); renderSemua(); toast("Jadwal dihapus.");
+        });
+      });
+    });
+  }
+  $("fJadwal").addEventListener("change", renderJadwal);
+  $("fJadwalKapster").addEventListener("change", renderJadwal);
+  $("jdLayanan").addEventListener("change", tampilHargaJadwal);
+  $("btnTambahJadwal").addEventListener("click", function () {
+    var pelangganId = Number($("jdPelanggan").value);
+    var kapsterId = Number($("jdKapster").value);
+    var layananNama = $("jdLayanan").value;
+    var tanggal = $("jdTanggal").value;
+    var jam = $("jdJam").value;
+    var p = cariPelanggan(pelangganId), k = cariKapster(kapsterId);
+    if (!p) { toast("Pilih pelanggan dulu."); return; }
+    if (!k) { toast("Pilih kapster dulu."); return; }
+    if (!layananNama) { toast("Pilih layanan dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal jadwal."); return; }
+    if (bentrokKapster(kapsterId, tanggal, jam, null)) {
+      toast("Kapster " + k.nama + " sudah ada jadwal pada " + tglSingkat(tanggal) + " jam " + jam + ". Pilih jam lain.");
+      return;
+    }
+    state.jadwal.push({ id: state.nextJadwalId++, pelangganId: pelangganId, kapsterId: kapsterId, layanan: layananNama, tanggal: tanggal, jam: jam, status: "Terjadwal" });
+    saveState();
+    renderSemua();
+    toast("Jadwal " + p.nama + " (" + layananNama + ", " + tglSingkat(tanggal) + " " + jam + ") tersimpan.");
+  });
+
+  /* ---------- Kapster & Layanan ---------- */
+  function renderKapster() {
+    var list = state.kapster.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    var nAktif = list.filter(function (k) { return k.aktif; }).length;
+    $("ringkasanKapster").textContent = list.length + " kapster · aktif " + nAktif + ".";
+    $("daftarKapster").innerHTML = list.length ? list.map(function (k) {
+      var trxKapster = state.transaksi.filter(function (x) { return x.kapsterId === k.id; });
+      var nilaiTrx = 0, totalKomisi = 0;
+      trxKapster.forEach(function (x) { nilaiTrx += Number(x.harga) || 0; totalKomisi += Number(x.komisi) || 0; });
+      var dipakai = trxKapster.length > 0 || state.jadwal.some(function (x) { return x.kapsterId === k.id; });
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi += '<label style="display:inline-block;font-weight:400;font-size:13px">Komisi <input class="input-kecil" style="width:70px" type="number" min="0" max="100" step="1" value="' + k.komisi + '" data-komisi-kapster="' + k.id + '"> %</label> ' +
+          '<button class="btn ghost kecil" data-simpan-komisi="' + k.id + '" type="button">Simpan Komisi</button> ';
+        if (!dipakai) aksi += '<button class="btn ghost kecil" data-hapus-kapster="' + k.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(k.nama) + '</b> <span class="tag">' + esc(k.spesialisasi) + '</span> ' + (k.aktif ? '<span class="lencana st-aman">Aktif</span>' : '<span class="lencana st-navy">Nonaktif</span>') +
+        '<br><span class="sub">Komisi ' + k.komisi + '% · ' + trxKapster.length + ' transaksi · nilai ' + rupiah(nilaiTrx) + ' · total komisi ' + rupiah(totalKomisi) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada kapster.</p>';
+    document.querySelectorAll("[data-simpan-komisi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKapster(Number(b.getAttribute("data-simpan-komisi")));
+        if (!k) return;
+        var inp = document.querySelector('[data-komisi-kapster="' + k.id + '"]');
+        var nilaiBaru = Number(inp ? inp.value : NaN);
+        if (isNaN(nilaiBaru) || nilaiBaru < 0 || nilaiBaru > 100) {
+          toast("Isi komisi 0–100%.");
+          if (inp) inp.value = k.komisi;
+          return;
+        }
+        k.komisi = nilaiBaru; saveState(); renderSemua();
+        toast("Komisi " + k.nama + " diubah menjadi " + nilaiBaru + "%.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-kapster]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = cariKapster(Number(b.getAttribute("data-hapus-kapster")));
+        if (!k) return;
+        tanyaKonfirmasi("Hapus Kapster", "Hapus kapster \"" + k.nama + "\"?", function () {
+          state.kapster = state.kapster.filter(function (x) { return x.id !== k.id; });
+          saveState(); renderSemua(); toast("Kapster \"" + k.nama + "\" dihapus.");
+        });
+      });
+    });
+    $("daftarLayanan").innerHTML = state.layanan.length ? state.layanan.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (l) {
+      var dipakai = state.transaksi.some(function (x) { return x.layanan === l.nama; }) || state.jadwal.some(function (x) { return x.layanan === l.nama; });
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi += '<label style="display:inline-block;font-weight:400;font-size:13px">Harga <input class="input-kecil" style="width:130px" type="number" min="0" step="1000" value="' + l.harga + '" data-harga-layanan="' + l.id + '"></label> ' +
+          '<button class="btn ghost kecil" data-simpan-harga="' + l.id + '" type="button">Simpan Harga</button> ';
+        if (!dipakai) aksi += '<button class="btn ghost kecil" data-hapus-layanan="' + l.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(l.nama) + '</b><br><span class="sub">' + rupiah(l.harga) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada layanan.</p>';
+    document.querySelectorAll("[data-simpan-harga]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var l = state.layanan.find(function (x) { return x.id === Number(b.getAttribute("data-simpan-harga")); });
+        if (!l) return;
+        var inp = document.querySelector('[data-harga-layanan="' + l.id + '"]');
+        var hargaBaru = Number(inp ? inp.value : 0);
+        if (!(hargaBaru > 0)) { toast("Isi harga layanan (lebih dari 0)."); if (inp) inp.value = l.harga; return; }
+        l.harga = hargaBaru; saveState(); renderSemua();
+        toast("Harga " + l.nama + " diubah menjadi " + rupiah(hargaBaru) + ".");
+      });
+    });
+    document.querySelectorAll("[data-hapus-layanan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var l = state.layanan.find(function (x) { return x.id === Number(b.getAttribute("data-hapus-layanan")); });
+        if (!l) return;
+        tanyaKonfirmasi("Hapus Layanan", "Hapus layanan \"" + l.nama + "\"?", function () {
+          state.layanan = state.layanan.filter(function (x) { return x.id !== l.id; });
+          saveState(); renderSemua(); toast("Layanan \"" + l.nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahKapster").addEventListener("click", function () {
+    var nama = $("kpNama").value.trim();
+    var spesialisasi = $("kpSpesialisasi").value.trim();
+    var komisiNilai = Number($("kpKomisi").value);
+    if (!nama) { toast("Isi nama kapster."); return; }
+    if (!spesialisasi) { toast("Isi spesialisasi kapster."); return; }
+    if (isNaN(komisiNilai) || komisiNilai < 0 || komisiNilai > 100) { toast("Isi komisi 0–100%."); return; }
+    state.kapster.push({ id: state.nextKapsterId++, nama: nama, spesialisasi: spesialisasi, komisi: komisiNilai, aktif: true });
+    saveState();
+    $("kpNama").value = ""; $("kpSpesialisasi").value = ""; $("kpKomisi").value = "";
+    renderSemua();
+    toast("Kapster \"" + nama + "\" tersimpan.");
+  });
+
+  /* ---------- Komisi ---------- */
+  function renderKomisi() {
+    var selF = $("fKomisiKapster");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kapster</option>'];
+    state.kapster.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var perKapster = {};
+    state.kapster.forEach(function (k) {
+      perKapster[k.id] = { nama: k.nama, persen: k.komisi, total: 0, sudah: 0, belum: 0, trx: 0 };
+    });
+    var totalKomisi = 0, totalSudah = 0, totalBelum = 0;
+    state.transaksi.forEach(function (t) {
+      var r = perKapster[t.kapsterId];
+      if (!r) return;
+      r.total += Number(t.komisi) || 0; r.trx += 1;
+      if (t.komisiDibayar) r.sudah += Number(t.komisi) || 0;
+      else r.belum += Number(t.komisi) || 0;
+      totalKomisi += Number(t.komisi) || 0;
+      if (t.komisiDibayar) totalSudah += Number(t.komisi) || 0;
+      else totalBelum += Number(t.komisi) || 0;
+    });
+    $("ringkasanKomisi").textContent = "Total komisi " + rupiah(totalKomisi) + " · sudah dibayar " + rupiah(totalSudah) + " · belum dibayar " + rupiah(totalBelum) + ".";
+    var kunciKapster = Object.keys(perKapster).sort(function (a, b) { return perKapster[b].total - perKapster[a].total; });
+    $("tabelKomisiKapster").innerHTML = "<tr><th>Kapster</th><th class=\"angka\">Komisi %</th><th class=\"angka\">Transaksi</th><th class=\"angka\">Total Komisi</th><th class=\"angka\">Sudah Dibayar</th><th class=\"angka\">Belum Dibayar</th></tr>" +
+      (kunciKapster.length ? kunciKapster.map(function (id) {
+        var r = perKapster[id];
+        return "<tr><td><b>" + esc(r.nama) + "</b></td><td class=\"angka\">" + r.persen + "%</td><td class=\"angka\">" + r.trx + "</td><td class=\"angka\">" + rupiah(r.total) + "</td><td class=\"angka\">" + rupiah(r.sudah) + "</td><td class=\"angka\">" + rupiah(r.belum) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada data.</td></tr>');
+    var filterKapster = selF.value || "semua";
+    var filterStatus = $("fKomisiStatus").value || "semua";
+    var list = state.transaksi.slice();
+    if (filterKapster !== "semua") list = list.filter(function (x) { return String(x.kapsterId) === filterKapster; });
+    if (filterStatus === "Belum") list = list.filter(function (x) { return !x.komisiDibayar; });
+    if (filterStatus === "Sudah") list = list.filter(function (x) { return x.komisiDibayar; });
+    list = list.sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var nBelum = list.filter(function (x) { return !x.komisiDibayar; }).length;
+    $("ringkasanKomisiDaftar").textContent = list.length + " komisi · belum dibayar " + nBelum + ".";
+    $("daftarKomisi").innerHTML = list.length ? list.map(function (t) {
+      var lencana = t.komisiDibayar ? '<span class="lencana st-aman">Sudah Dibayar</span>' : '<span class="lencana st-rendah">Belum Dibayar</span>';
+      var aksi = (!t.komisiDibayar && bolehKelola()) ? '<button class="btn hijau kecil" data-bayar-komisi="' + t.id + '" type="button">Tandai Sudah Dibayar</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaKapster(t.kapsterId)) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(namaPelanggan(t.pelangganId)) + ' · ' + esc(t.layanan) + ' · ' + tglSingkat(t.tanggal) + ' · harga ' + rupiah(t.harga) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(t.komisi) + '</b><br><span class="sub">komisi</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada komisi yang cocok.</p>';
+    document.querySelectorAll("[data-bayar-komisi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = cariTransaksi(Number(b.getAttribute("data-bayar-komisi")));
+        if (!t) return;
+        t.komisiDibayar = true; saveState(); renderSemua();
+        toast("Komisi " + namaKapster(t.kapsterId) + " (" + rupiah(t.komisi) + ") ditandai sudah dibayar.");
+      });
+    });
+  }
+  $("fKomisiKapster").addEventListener("change", renderKomisi);
+  $("fKomisiStatus").addEventListener("change", renderKomisi);
+
+  /* ---------- Kasir ---------- */
+  function tampilPratinjauKasir() {
+    var layananNama = $("ksLayanan").value;
+    var harga = layananNama ? hargaLayanan(layananNama) : 0;
+    $("ksHarga").value = layananNama ? rupiah(harga) : "—";
+    var metode = $("ksMetode").value;
+    var bayarEl = $("ksBayar");
+    if (metode === "QRIS") {
+      bayarEl.value = harga > 0 ? harga : "";
+      bayarEl.readOnly = true;
+      $("ksKembalian").value = "Rp0";
+    } else {
+      bayarEl.readOnly = false;
+      var bayar = Number(bayarEl.value) || 0;
+      $("ksKembalian").value = bayar > 0 ? rupiah(Math.max(0, bayar - harga)) : "—";
+    }
+  }
+  function renderKasir() {
+    isiPilihanPelanggan("ksPelanggan");
+    isiPilihanKapster("ksKapster");
+    isiPilihanLayanan("ksLayanan");
+    if (!$("ksTanggal").value) $("ksTanggal").value = hariIniKey();
+    tampilPratinjauKasir();
+    var selB = $("fKasirBulan");
+    var daftarBulan = bulanList(state.transaksi);
+    isiPilihanBulan(selB, daftarBulan, "semua");
+    var selF = $("fKasirKapster");
+    var simpanF = selF.value;
+    var opts = ['<option value="semua">Semua kapster</option>'];
+    state.kapster.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).forEach(function (k) { opts.push('<option value="' + k.id + '">' + esc(k.nama) + '</option>'); });
+    selF.innerHTML = opts.join("");
+    if (simpanF) selF.value = simpanF;
+    var filterBulan = selB.value || "semua";
+    var filterKapster = selF.value || "semua";
+    var list = state.transaksi.slice();
+    if (filterBulan !== "semua") list = list.filter(function (x) { return bulanKey(x.tanggal) === filterBulan; });
+    if (filterKapster !== "semua") list = list.filter(function (x) { return String(x.kapsterId) === filterKapster; });
+    list = list.sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var totalNilai = 0;
+    list.forEach(function (x) { totalNilai += Number(x.harga) || 0; });
+    $("ringkasanKasir").textContent = list.length + " transaksi · total " + rupiah(totalNilai) + ".";
+    $("daftarTransaksi").innerHTML = list.length ? list.map(function (t) {
+      var kembalian = kembalianTransaksi(t);
+      var aksi = bolehKelola() ? '<button class="btn ghost kecil" data-hapus-transaksi="' + t.id + '" type="button">Hapus</button>' : "";
+      return '<div class="baris"><div><b>' + esc(namaPelanggan(t.pelangganId)) + '</b> <span class="tag">' + esc(t.metode) + '</span>' + (t.jadwalId ? ' <span class="tag">dari jadwal</span>' : '') +
+        '<br><span class="sub">' + esc(t.layanan) + ' · ' + esc(namaKapster(t.kapsterId)) + ' · ' + tglSingkat(t.tanggal) + ' · bayar ' + rupiah(t.bayar) + (t.metode === "Tunai" ? ' · kembalian ' + rupiah(kembalian) : '') + ' · komisi ' + rupiah(t.komisi) + (t.komisiDibayar ? ' (sudah dibayar)' : ' (belum dibayar)') + (t.keterangan ? ' · ' + esc(t.keterangan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(t.harga) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada transaksi yang cocok.</p>';
+    document.querySelectorAll("[data-hapus-transaksi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = cariTransaksi(Number(b.getAttribute("data-hapus-transaksi")));
+        if (!t) return;
+        tanyaKonfirmasi("Hapus Transaksi", "Hapus transaksi " + namaPelanggan(t.pelangganId) + " (" + esc(t.layanan) + ", " + rupiah(t.harga) + ")?" + (t.jadwalId ? " Jadwal terkait kembali menjadi Terjadwal." : ""), function () {
+          if (t.jadwalId) {
+            var j = cariJadwal(t.jadwalId);
+            if (j && j.status === "Selesai") j.status = "Terjadwal";
+          }
+          state.transaksi = state.transaksi.filter(function (x) { return x.id !== t.id; });
+          saveState(); renderSemua(); toast("Transaksi dihapus.");
+        });
+      });
+    });
+  }
+  $("fKasirBulan").addEventListener("change", renderKasir);
+  $("fKasirKapster").addEventListener("change", renderKasir);
+  $("ksLayanan").addEventListener("change", tampilPratinjauKasir);
+  $("ksMetode").addEventListener("change", tampilPratinjauKasir);
+  $("ksBayar").addEventListener("input", tampilPratinjauKasir);
+  $("btnTambahTransaksi").addEventListener("click", function () {
+    var pelangganId = Number($("ksPelanggan").value);
+    var kapsterId = Number($("ksKapster").value);
+    var layananNama = $("ksLayanan").value;
+    var tanggal = $("ksTanggal").value;
+    var metode = $("ksMetode").value;
+    var bayar = Number($("ksBayar").value);
+    var keterangan = $("ksKeterangan").value.trim();
+    var p = cariPelanggan(pelangganId), k = cariKapster(kapsterId);
+    if (!p) { toast("Pilih pelanggan dulu."); return; }
+    if (!k) { toast("Pilih kapster dulu."); return; }
+    if (!layananNama) { toast("Pilih layanan dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal transaksi."); return; }
+    var harga = hargaLayanan(layananNama);
+    if (!(harga > 0)) { toast("Harga layanan tidak ditemukan."); return; }
+    if (metode === "QRIS") {
+      bayar = harga;
+    } else {
+      if (!(bayar > 0)) { toast("Isi jumlah dibayar."); return; }
+      if (bayar < harga) {
+        toast("Jumlah dibayar kurang dari harga (" + rupiah(harga) + ").");
+        $("ksBayar").value = harga;
+        tampilPratinjauKasir();
+        return;
+      }
+    }
+    var komisiNilai = Math.round(harga * k.komisi / 100);
+    state.transaksi.push({ id: state.nextTransaksiId++, pelangganId: pelangganId, kapsterId: kapsterId,
+      layanan: layananNama, harga: harga, komisi: komisiNilai, komisiDibayar: false,
+      metode: metode, bayar: bayar, tanggal: tanggal, jadwalId: null, keterangan: keterangan });
+    saveState();
+    $("ksKeterangan").value = "";
+    renderSemua();
+    var kembalian = metode === "Tunai" ? Math.max(0, bayar - harga) : 0;
+    toast("Transaksi " + p.nama + " (" + layananNama + ", " + rupiah(harga) + ") tersimpan" + (kembalian > 0 ? " · kembalian " + rupiah(kembalian) : "") + ".");
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(state.transaksi);
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login). Setelah
+       pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var pemasukanBulan = 0, trxBulan = 0;
+    state.transaksi.forEach(function (t) {
+      if (bulanKey(t.tanggal) === bulanKey(hariIniKey())) { pemasukanBulan += Number(t.harga) || 0; trxBulan += 1; }
+    });
+    var komisiBelum = 0;
+    state.transaksi.forEach(function (t) { if (!t.komisiDibayar) komisiBelum += Number(t.komisi) || 0; });
+    $("ringkasanLaporan").textContent = state.transaksi.length + " transaksi · pemasukan bulan berjalan " + rupiah(pemasukanBulan) + " (" + trxBulan + " transaksi) · komisi belum dibayar " + rupiah(komisiBelum) + ".";
+    var perLayanan = {};
+    state.transaksi.forEach(function (t) {
+      if (!perLayanan[t.layanan]) perLayanan[t.layanan] = { jumlah: 0, nilai: 0, komisi: 0 };
+      perLayanan[t.layanan].jumlah += 1;
+      perLayanan[t.layanan].nilai += Number(t.harga) || 0;
+      perLayanan[t.layanan].komisi += Number(t.komisi) || 0;
+    });
+    var kunciLayanan = Object.keys(perLayanan).sort(function (a, b) { return perLayanan[b].nilai - perLayanan[a].nilai; });
+    $("tabelPerLayanan").innerHTML = "<tr><th>Layanan</th><th class=\"angka\">Transaksi</th><th class=\"angka\">Pemasukan</th><th class=\"angka\">Komisi</th></tr>" +
+      (kunciLayanan.length ? kunciLayanan.map(function (nama) {
+        var r = perLayanan[nama];
+        return "<tr><td><b>" + esc(nama) + "</b></td><td class=\"angka\">" + r.jumlah + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.komisi) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perKapster = {};
+    state.kapster.forEach(function (k) {
+      perKapster[k.id] = { nama: k.nama, jumlah: 0, nilai: 0, komisi: 0 };
+    });
+    state.transaksi.forEach(function (t) {
+      var r = perKapster[t.kapsterId];
+      if (!r) return;
+      r.jumlah += 1; r.nilai += Number(t.harga) || 0; r.komisi += Number(t.komisi) || 0;
+    });
+    var kunciKapster = Object.keys(perKapster).sort(function (a, b) { return perKapster[b].nilai - perKapster[a].nilai; });
+    $("tabelPerKapster").innerHTML = "<tr><th>Kapster</th><th class=\"angka\">Transaksi</th><th class=\"angka\">Pemasukan</th><th class=\"angka\">Komisi</th></tr>" +
+      (kunciKapster.length ? kunciKapster.map(function (id) {
+        var r = perKapster[id];
+        return "<tr><td><b>" + esc(r.nama) + "</b></td><td class=\"angka\">" + r.jumlah + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.komisi) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perBulan = {};
+    state.transaksi.forEach(function (t) {
+      var bk = bulanKey(t.tanggal);
+      if (!perBulan[bk]) perBulan[bk] = { jumlah: 0, nilai: 0, komisi: 0 };
+      perBulan[bk].jumlah += 1;
+      perBulan[bk].nilai += Number(t.harga) || 0;
+      perBulan[bk].komisi += Number(t.komisi) || 0;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Transaksi</th><th class=\"angka\">Pemasukan</th><th class=\"angka\">Komisi</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (bk) {
+        var r = perBulan[bk];
+        return "<tr><td><b>" + namaBulan(bk) + "</b></td><td class=\"angka\">" + r.jumlah + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.komisi) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perMetode = {};
+    state.transaksi.forEach(function (t) {
+      if (!perMetode[t.metode]) perMetode[t.metode] = { jumlah: 0, nilai: 0 };
+      perMetode[t.metode].jumlah += 1;
+      perMetode[t.metode].nilai += Number(t.harga) || 0;
+    });
+    var kunciMetode = Object.keys(perMetode).sort(function (a, b) { return perMetode[b].nilai - perMetode[a].nilai; });
+    $("tabelPerMetode").innerHTML = "<tr><th>Metode Bayar</th><th class=\"angka\">Transaksi</th><th class=\"angka\">Total</th></tr>" +
+      (kunciMetode.length ? kunciMetode.map(function (m) {
+        var r = perMetode[m];
+        return "<tr><td><b>" + esc(m) + "</b></td><td class=\"angka\">" + r.jumlah + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = state.transaksi.slice();
+    if (bk !== "semua") list = list.filter(function (t) { return bulanKey(t.tanggal) === bk; });
+    list = list.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : a.tanggal > b.tanggal ? 1 : b.id - a.id; });
+    var baris = [["Tanggal", "Pelanggan", "Kapster", "Layanan", "Harga", "Metode", "Dibayar", "Kembalian", "Komisi", "Komisi Dibayar", "Keterangan"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (t) {
+      n++;
+      baris.push([t.tanggal, namaPelanggan(t.pelangganId), namaKapster(t.kapsterId), t.layanan, t.harga, t.metode, t.bayar, kembalianTransaksi(t), t.komisi, t.komisiDibayar ? "Sudah" : "Belum", t.keterangan || ""].map(csvCell).join(","));
+    });
+    unduh("laporan-transaksi-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("manajemen-salon-barbershop-backup.json", JSON.stringify({ aplikasi: "manajemen-salon-barbershop", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.transaksi) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Pelanggan, jadwal, kapster, komisi, dan transaksi akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderPelanggan(); renderJadwal(); renderKapster(); renderKomisi(); renderKasir(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
