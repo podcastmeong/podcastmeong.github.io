@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Property Management — PM Oyen</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 620px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+  .part-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px;
+  }
+  .part-row label { margin: 0; font-weight: 400; display: flex; gap: 8px; align-items: center; flex: 1 1 200px; }
+  .part-row input[type="number"] { max-width: 90px; }
+</style>
+</head>
+<body>
+<style>
+  .bar-progres { background: var(--surface-2); border-radius: 999px; height: 10px; overflow: hidden; margin-top: 6px; }
+  .bar-progres > div { background: var(--blue); height: 100%; border-radius: 999px; }
+  .bar-progres.penuh > div { background: var(--green); }
+  .bar-progres.rendah > div { background: var(--oren); }
+  .daftar-properti .prp { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--surface); }
+  .daftar-properti .prp .nm { font-weight: 800; font-size: 16px; }
+  .daftar-properti .prp .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-properti .prp .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .daftar-jadwal .jdw { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; background: var(--surface); }
+  .daftar-jadwal .jdw .nm { font-weight: 700; }
+  .daftar-jadwal .jdw .dt { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .daftar-jadwal .jdw .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .catatan { border-left: 3px solid var(--soft); padding: 6px 10px; margin-bottom: 8px; background: var(--surface-2); border-radius: 0 8px 8px 0; }
+  .catatan .nm { font-weight: 700; font-size: 13px; }
+  .catatan .dt { color: var(--muted); font-size: 12px; }
+</style>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">CONTOH DEMO</span>
+    <h1>Aplikasi <span class="aksen">Property Management</span></h1>
+    <p>Kelola properti, penyewa, pembeli, dan jadwal showing dalam satu tempat — lengkap dengan laporan properti.</p>
+    <p class="tanggal" id="tanggalHariIni"></p>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="properti">Properti <span class="badge" id="badgeProperti">0</span></button>
+    <button class="tab-btn" type="button" data-tab="penyewa">Penyewa <span class="badge" id="badgePenyewa">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pembeli">Pembeli <span class="badge" id="badgePembeli">0</span></button>
+    <button class="tab-btn" type="button" data-tab="jadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor</h2><p>Ringkasan properti, sewa, penjualan, dan jadwal showing hari ini.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Properti</div><div class="angka" id="dProperti">0</div><div class="sub" id="dPropertiSub"></div></div>
+      <div class="stat"><div class="label">Nilai Properti Terjual</div><div class="angka" id="dTerjual" style="font-size:22px">Rp0</div><div class="sub" id="dTerjualSub"></div></div>
+      <div class="stat"><div class="label">Sewa Bulanan Aktif</div><div class="angka" id="dSewa" style="font-size:22px">Rp0</div><div class="sub" id="dSewaSub"></div></div>
+      <div class="stat warn"><div class="label">Showing Hari Ini</div><div class="angka" id="dShowing">0</div><div class="sub" id="dShowingSub"></div></div>
+    </div>
+    <div class="card">
+      <h3>Perlu perhatian</h3>
+      <div id="daftarPerhatian"></div>
+    </div>
+    <div class="card">
+      <h3>Jadwal showing hari ini</h3>
+      <div id="daftarHariIni"></div>
+    </div>
+    <div class="card">
+      <h3>Properti terbaru</h3>
+      <div id="daftarPropertiTerbaru"></div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola pengguna</h3>
+      <p class="sub">Hanya admin. Tambah pengguna baru, nonaktifkan akun, atau reset kata sandi pengguna menjadi <b>bk123</b>.</p>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Wulandari"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran"><option value="agen">Agen</option><option value="pemilik">Pemilik</option></select></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ganti kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Ganti Kata Sandi</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-properti">
+    <div class="page-head"><h2>Properti</h2><p>Data properti (rumah, apartemen, ruko) beserta harga, status, pemilik, dan agennya.</p></div>
+    <div class="card" id="cardTambahProperti">
+      <h3>Tambah properti baru</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="ppNama">Nama properti</label><input id="ppNama" type="text" placeholder="cth: Rumah 2 Lantai — Cibubur"></div>
+        <div class="field"><label for="ppJenis">Jenis</label><select id="ppJenis"><option>Rumah</option><option>Apartemen</option><option>Ruko</option></select></div>
+        <div class="field"><label for="ppAlamat">Alamat</label><input id="ppAlamat" type="text" placeholder="cth: Jl. Raya Cibubur No. 12"></div>
+        <div class="field"><label for="ppKota">Kota</label><input id="ppKota" type="text" placeholder="cth: Jakarta Timur"></div>
+        <div class="field"><label for="ppHarga">Harga jual (Rp)</label><input id="ppHarga" type="number" min="0" placeholder="cth: 1450000000"></div>
+        <div class="field"><label for="ppSewa">Harga sewa / bulan (Rp, 0 bila tidak disewakan)</label><input id="ppSewa" type="number" min="0" placeholder="cth: 8500000"></div>
+        <div class="field"><label for="ppStatus">Status</label><select id="ppStatus"><option>Dijual</option><option>Disewakan</option><option>Terjual</option><option>Tersewa</option></select></div>
+        <div class="field"><label for="ppPemilik">Pemilik</label><select id="ppPemilik"></select></div>
+        <div class="field"><label for="ppAgen">Agen</label><select id="ppAgen"></select></div>
+        <div class="field"><label for="ppLuas">Luas bangunan (m2)</label><input id="ppLuas" type="number" min="0" placeholder="cth: 150"></div>
+        <div class="field"><label for="ppKamar">Jumlah kamar</label><input id="ppKamar" type="number" min="0" placeholder="cth: 4"></div>
+        <div class="field" style="grid-column:1/-1"><label for="ppDeskripsi">Deskripsi</label><textarea id="ppDeskripsi" rows="2" placeholder="Ringkasan properti"></textarea></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanProperti" type="button">Simpan Properti</button>
+    </div>
+    <div class="card">
+      <h3>Semua properti</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="fPpJenis">Jenis</label><select id="fPpJenis"><option value="semua">Semua jenis</option><option>Rumah</option><option>Apartemen</option><option>Ruko</option></select></div>
+        <div class="field"><label for="fPpStatus">Status</label><select id="fPpStatus"><option value="semua">Semua status</option><option>Dijual</option><option>Disewakan</option><option>Terjual</option><option>Tersewa</option></select></div>
+        <div class="field"><label for="fPpPemilik">Pemilik</label><select id="fPpPemilik"><option value="semua">Semua pemilik</option></select></div>
+        <div class="field"><label for="cariPp">Cari properti</label><input id="cariPp" type="text" placeholder="cth: cibubur, apartemen"></div>
+      </div>
+      <p class="sub" id="ringkasanProperti"></p>
+      <div class="daftar-properti" id="daftarProperti" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-penyewa">
+    <div class="page-head"><h2>Penyewa</h2><p>Data penyewa, masa sewa, dan sewa bulanan per properti.</p></div>
+    <div class="card" id="cardTambahPenyewa">
+      <h3>Tambah penyewa</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="pyNama">Nama penyewa</label><input id="pyNama" type="text" placeholder="cth: Andi Wijaya"></div>
+        <div class="field"><label for="pyProperti">Properti yang disewa</label><select id="pyProperti"></select></div>
+        <div class="field"><label for="pyTelepon">Telepon</label><input id="pyTelepon" type="text" placeholder="cth: 0812-0000-0000"></div>
+        <div class="field"><label for="pySewa">Sewa / bulan (Rp)</label><input id="pySewa" type="number" min="0" placeholder="cth: 8500000"></div>
+        <div class="field"><label for="pyMulai">Mulai sewa</label><input id="pyMulai" type="date"></div>
+        <div class="field"><label for="pyAkhir">Akhir sewa</label><input id="pyAkhir" type="date"></div>
+        <div class="field"><label for="pyStatus">Status</label><select id="pyStatus"><option>Aktif</option><option>Menunggak</option><option>Selesai</option></select></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanPenyewa" type="button">Simpan Penyewa</button>
+    </div>
+    <div class="card">
+      <h3>Semua penyewa</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="fPyProperti">Properti</label><select id="fPyProperti"><option value="semua">Semua properti</option></select></div>
+        <div class="field"><label for="fPyStatus">Status</label><select id="fPyStatus"><option value="semua">Semua status</option><option>Aktif</option><option>Menunggak</option><option>Selesai</option></select></div>
+        <div class="field"><label for="cariPy">Cari penyewa</label><input id="cariPy" type="text" placeholder="cth: andi, cibubur"></div>
+      </div>
+      <p class="sub" id="ringkasanPenyewa"></p>
+      <div id="daftarPenyewa" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pembeli">
+    <div class="page-head"><h2>Pembeli</h2><p>Data calon pembeli, harga tawaran, dan tahap negosiasi per properti.</p></div>
+    <div class="card" id="cardTambahPembeli">
+      <h3>Tambah pembeli</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="pbNama">Nama pembeli</label><input id="pbNama" type="text" placeholder="cth: Bambang Sutrisno"></div>
+        <div class="field"><label for="pbProperti">Properti yang diminati</label><select id="pbProperti"></select></div>
+        <div class="field"><label for="pbTelepon">Telepon</label><input id="pbTelepon" type="text" placeholder="cth: 0812-0000-0000"></div>
+        <div class="field"><label for="pbTawar">Harga tawaran (Rp)</label><input id="pbTawar" type="number" min="0" placeholder="cth: 1400000000"></div>
+        <div class="field"><label for="pbStatus">Status</label><select id="pbStatus"><option>Minat</option><option>Negosiasi</option><option>Deal</option><option>Batal</option></select></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanPembeli" type="button">Simpan Pembeli</button>
+    </div>
+    <div class="card">
+      <h3>Semua pembeli</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="fPbProperti">Properti</label><select id="fPbProperti"><option value="semua">Semua properti</option></select></div>
+        <div class="field"><label for="fPbStatus">Status</label><select id="fPbStatus"><option value="semua">Semua status</option><option>Minat</option><option>Negosiasi</option><option>Deal</option><option>Batal</option></select></div>
+        <div class="field"><label for="cariPb">Cari pembeli</label><input id="cariPb" type="text" placeholder="cth: bambang, cibubur"></div>
+      </div>
+      <p class="sub" id="ringkasanPembeli"></p>
+      <div id="daftarPembeli" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head"><h2>Jadwal Showing</h2><p>Jadwal kunjungan calon penyewa / pembeli ke properti, beserta agen yang mendampingi.</p></div>
+    <div class="card" id="cardTambahJadwal">
+      <h3>Buat jadwal showing baru</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="jdProperti">Properti</label><select id="jdProperti"></select></div>
+        <div class="field"><label for="jdCalon">Nama calon (penyewa / pembeli)</label><input id="jdCalon" type="text" placeholder="cth: Dedi Kurniawan"></div>
+        <div class="field"><label for="jdTanggal">Tanggal showing</label><input id="jdTanggal" type="date"></div>
+        <div class="field"><label for="jdJam">Jam</label><input id="jdJam" type="time" value="10:00"></div>
+        <div class="field"><label for="jdAgen">Agen pendamping</label><select id="jdAgen"></select></div>
+        <div class="field"><label for="jdStatus">Status awal</label><select id="jdStatus"><option>Terjadwal</option><option>Selesai</option><option>Batal</option></select></div>
+      </div>
+      <button class="btn kecil" id="btnSimpanJadwal" type="button">Simpan Jadwal Showing</button>
+    </div>
+    <div class="card">
+      <h3>Semua jadwal showing</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="fJdProperti">Properti</label><select id="fJdProperti"><option value="semua">Semua properti</option></select></div>
+        <div class="field"><label for="fJdStatus">Status</label><select id="fJdStatus"><option value="semua">Semua status</option><option>Terjadwal</option><option>Selesai</option><option>Batal</option></select></div>
+        <div class="field"><label for="fJdAgen">Agen</label><select id="fJdAgen"><option value="semua">Semua agen</option></select></div>
+        <div class="field"><label for="cariJd">Cari jadwal</label><input id="cariJd" type="text" placeholder="cth: dedi, cibubur"></div>
+      </div>
+      <p class="sub" id="ringkasanJadwal" style="margin-top:10px"></p>
+      <div class="daftar-jadwal" id="daftarJadwal" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan</h2><p>Laporan showing, penjualan, dan sewa per periode, plus ekspor data.</p></div>
+    <div class="card">
+      <h3>Ringkasan laporan</h3>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label for="lapPeriode">Periode</label><select id="lapPeriode"><option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option><option value="30hari" selected>30 hari terakhir</option><option value="semua">Semua</option></select></div>
+        <div class="field"><label for="lapProperti">Properti</label><select id="lapProperti"><option value="semua">Semua properti</option></select></div>
+      </div>
+      <div class="grid-stat" style="margin-top:12px">
+        <div class="stat"><div class="label">Showing dalam periode</div><div class="angka" id="lJumlah">0</div></div>
+        <div class="stat"><div class="label">Showing selesai</div><div class="angka" id="lSelesai">0</div></div>
+        <div class="stat warn"><div class="label">Showing batal</div><div class="angka" id="lBatal">0</div></div>
+        <div class="stat"><div class="label">Showing selesai</div><div class="angka" id="lProgres">0%</div></div>
+      </div>
+      <div class="grid-stat" style="margin-top:12px">
+        <div class="stat"><div class="label">Nilai properti Terjual</div><div class="angka" id="lTerjual" style="font-size:20px">Rp0</div></div>
+        <div class="stat"><div class="label">Sewa bulanan aktif</div><div class="angka" id="lSewa" style="font-size:20px">Rp0</div></div>
+      </div>
+      <div class="tabel-wrap" style="margin-top:12px"><table class="tabel" id="tabelLaporan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Per properti</h3>
+      <div id="daftarLaporanProperti"></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; cadangan</h3>
+      <p class="sub">Ekspor CSV berisi jadwal showing dalam periode yang dipilih. Backup JSON berisi seluruh data aplikasi (properti, penyewa, pembeli, jadwal showing, catatan).</p>
+      <div class="aksi" style="margin-top:10px">
+        <button class="btn kecil" id="btnExportCSV" type="button">Ekspor CSV</button>
+        <button class="btn kecil" id="btnBackupJSON" type="button">Backup JSON</button>
+        <button class="btn ghost kecil" id="btnPulihkan" type="button">Pulihkan dari JSON</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai Aplikasi Property Management, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur semua data termasuk pengguna; sebagai <b>Agen</b> untuk mengelola properti, penyewa, pembeli, dan jadwal showing; atau sebagai <b>Pemilik</b> untuk melihat properti milik Anda beserta penyewa, pembeli, dan jadwal showing-nya.</li>
+        <li>Di tab <b>Properti</b>, tambah properti baru (rumah, apartemen, atau ruko) beserta harga jual, harga sewa, status, pemilik, dan agen. Status properti bisa diubah: Dijual menjadi Terjual, Disewakan menjadi Tersewa — dan sebaliknya bila transaksi batal.</li>
+        <li>Di tab <b>Penyewa</b>, catat penyewa beserta masa sewa dan sewa bulanannya. Penyewa yang menunggak ditandai "Menunggak" supaya mudah ditagih.</li>
+        <li>Di tab <b>Pembeli</b>, catat calon pembeli beserta harga tawarannya. Bila pembeli mencapai <b>Deal</b>, status propertinya otomatis berubah menjadi Terjual.</li>
+        <li>Di tab <b>Jadwal</b>, buat jadwal showing: pilih properti, calon, tanggal, jam, dan agen pendamping. Klik <b>Detail &amp; Catatan</b> untuk mengubah status dan menambahkan catatan kunjungan.</li>
+        <li>Di tab <b>Laporan</b>, pilih periode dan properti lalu gunakan <b>Ekspor CSV</b> dan <b>Backup JSON</b> untuk arsip. Data contoh bisa dikembalikan dari kartu <b>Data contoh</b> di bawah.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna); Agen — <b>agen</b> / <b>agen123</b> (properti, penyewa, pembeli, jadwal, laporan; tidak bisa kelola pengguna); Pemilik — <b>pemilik</b> / <b>pemilik123</b> (hanya properti milik Bpk. Hartono + laporan). Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+      <p class="sub">Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh PM Oyen (8 properti, 5 penyewa, 5 pembeli, 10 jadwal showing, 3 catatan: 3 properti Dijual, 1 Disewakan, 1 Terjual, 3 Tersewa; 2 penyewa Aktif, 1 Menunggak, 2 Selesai). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p class="sub">Status "Deal" pada pembeli mengubah status properti menjadi Terjual secara otomatis — pastikan harga tawaran sudah disepakati sebelum menandai Deal. Aplikasi ini <b>bukan</b> sistem akuntansi dan <b>bukan</b> payment gateway (pembayaran dicatat manual). Data <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh tim di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Aplikasi Property Management v1.</b> Data properti (rumah, apartemen, ruko), status properti (dijual/disewa), data penyewa dan pembeli, jadwal showing, dan laporan properti (admin, agen, dan pemilik). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh PM Oyen, bukan data penjualan sungguhan.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Property%20Management." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi" id="modalAksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Property Management</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk mengelola properti. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Agen: <b>agen</b> / <b>agen123</b> (properti, penyewa, pembeli, jadwal, laporan; tidak bisa kelola pengguna)<br>Pemilik: <b>pemilik</b> / <b>pemilik123</b> (hanya properti milik Bpk. Hartono + laporan)</p>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function rupiahSingkat(n) {
+    n = Number(n || 0);
+    if (n >= 1000000000) return "Rp" + (n / 1000000000).toLocaleString("id-ID", { maximumFractionDigits: 2 }) + " M";
+    if (n >= 1000000) return "Rp" + (n / 1000000).toLocaleString("id-ID", { maximumFractionDigits: 2 }) + " jt";
+    return rupiah(n);
+  }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function kunciTanggal(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var p = kunci.split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  }
+  function selisihHari(a, b) {
+    var pa = String(a || "").split("-"), pb = String(b || "").split("-");
+    var da = new Date(Number(pa[0]), Number(pa[1]) - 1, Number(pa[2]));
+    var db = new Date(Number(pb[0]), Number(pb[1]) - 1, Number(pb[2]));
+    return Math.round((db - da) / 86400000);
+  }
+  function kunciPlus(hari) {
+    var d = new Date();
+    d.setDate(d.getDate() + hari);
+    return kunciTanggal(d);
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa");
+    var baru = ya.cloneNode(true);
+    baru.style.display = "";
+    ya.parentNode.replaceChild(baru, ya);
+    baru.addEventListener("click", function () {
+      tutupModal();
+      callback();
+    });
+  }
+  function bukaModalForm(judul, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = "";
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "none";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBatal").addEventListener("click", tutupModal);
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = namaFile;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  var STORAGE_KEY = "aplikasiPropertyManagement.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  var STATUS_PROPERTI = ["Dijual", "Disewakan", "Terjual", "Tersewa"];
+  var STATUS_PENYEWA = ["Aktif", "Menunggak", "Selesai"];
+  var STATUS_PEMBELI = ["Minat", "Negosiasi", "Deal", "Batal"];
+  var STATUS_JADWAL = ["Terjadwal", "Selesai", "Batal"];
+
+  function seedState() {
+    return {
+      pemilik: [
+        { id: 1, nama: "Bpk. Hartono" },
+        { id: 2, nama: "PT Maju Bersama" },
+        { id: 3, nama: "Ibu Ratna" }
+      ],
+      agen: [
+        { id: 1, nama: "Rudi Santoso" },
+        { id: 2, nama: "Sinta Maharani" }
+      ],
+      properti: [
+        { id: 1, kode: "PRP-001", nama: "Rumah 2 Lantai — Cibubur", jenis: "Rumah", alamat: "Jl. Raya Cibubur No. 12", kota: "Jakarta Timur", harga: 1450000000, hargaSewa: 0, status: "Dijual", pemilikId: 1, agenId: 1, luas: 150, kamar: 4, deskripsi: "Rumah tinggal 2 lantai, luas tanah 150 m2, luas bangunan 220 m2.", tanggal: kunciPlus(-40) },
+        { id: 2, kode: "PRP-002", nama: "Apartemen 2BR — Sudirman", jenis: "Apartemen", alamat: "Jl. Sudirman Kav. 52", kota: "Jakarta Selatan", harga: 2800000000, hargaSewa: 0, status: "Dijual", pemilikId: 2, agenId: 2, luas: 68, kamar: 2, deskripsi: "Apartemen 2 kamar tidur, lantai 18, pemandangan kota.", tanggal: kunciPlus(-25) },
+        { id: 3, kode: "PRP-003", nama: "Ruko 3 Lantai — Margonda", jenis: "Ruko", alamat: "Jl. Margonda Raya No. 88", kota: "Depok", harga: 3500000000, hargaSewa: 25000000, status: "Disewakan", pemilikId: 2, agenId: 1, luas: 240, kamar: 0, deskripsi: "Ruko 3 lantai untuk kantor dan toko, luas bangunan 360 m2.", tanggal: kunciPlus(-15) },
+        { id: 4, kode: "PRP-004", nama: "Rumah Minimalis — Bekasi", jenis: "Rumah", alamat: "Jl. Kemang Pratama No. 5", kota: "Bekasi", harga: 850000000, hargaSewa: 0, status: "Terjual", pemilikId: 3, agenId: 2, luas: 90, kamar: 3, deskripsi: "Rumah minimalis 1 lantai, dekat sekolah dan pasar.", tanggal: kunciPlus(-90) },
+        { id: 5, kode: "PRP-005", nama: "Apartemen Studio — Kelapa Gading", jenis: "Apartemen", alamat: "Jl. Boulevard Raya No. 21", kota: "Jakarta Utara", harga: 950000000, hargaSewa: 8500000, status: "Tersewa", pemilikId: 1, agenId: 1, luas: 32, kamar: 1, deskripsi: "Apartemen studio furnished, dekat mal dan perkantoran.", tanggal: kunciPlus(-60) },
+        { id: 6, kode: "PRP-006", nama: "Rumah Cluster — Tangerang", jenis: "Rumah", alamat: "Cluster Alam Sutera Blok C-10", kota: "Tangerang", harga: 1200000000, hargaSewa: 7500000, status: "Tersewa", pemilikId: 1, agenId: 2, luas: 120, kamar: 3, deskripsi: "Rumah cluster one gate system, keamanan 24 jam.", tanggal: kunciPlus(-30) },
+        { id: 7, kode: "PRP-007", nama: "Ruko Pinggir Jalan — Bogor", jenis: "Ruko", alamat: "Jl. Raya Pajajaran No. 45", kota: "Bogor", harga: 2200000000, hargaSewa: 0, status: "Dijual", pemilikId: 3, agenId: 1, luas: 180, kamar: 0, deskripsi: "Ruko pinggir jalan utama, cocok untuk usaha kuliner.", tanggal: kunciPlus(-10) },
+        { id: 8, kode: "PRP-008", nama: "Apartemen 1BR — Bandung", jenis: "Apartemen", alamat: "Jl. Dago No. 77", kota: "Bandung", harga: 1050000000, hargaSewa: 6000000, status: "Tersewa", pemilikId: 2, agenId: 2, luas: 45, kamar: 1, deskripsi: "Apartemen 1 kamar tidur, dekat kampus dan pusat kota.", tanggal: kunciPlus(-45) }
+      ],
+      penyewa: [
+        { id: 1, nama: "Andi Wijaya", propertiId: 5, telepon: "0812-2222-0001", mulai: kunciPlus(-60), akhir: kunciPlus(300), sewa: 8500000, status: "Aktif" },
+        { id: 2, nama: "Siti Rahma", propertiId: 6, telepon: "0812-2222-0002", mulai: kunciPlus(-30), akhir: kunciPlus(335), sewa: 7500000, status: "Aktif" },
+        { id: 3, nama: "Dewi Lestari", propertiId: 8, telepon: "0812-2222-0003", mulai: kunciPlus(-45), akhir: kunciPlus(320), sewa: 6000000, status: "Menunggak" },
+        { id: 4, nama: "Budi Santoso", propertiId: 7, telepon: "0812-2222-0004", mulai: kunciPlus(-200), akhir: kunciPlus(-30), sewa: 9000000, status: "Selesai" },
+        { id: 5, nama: "Joko Susilo", propertiId: 5, telepon: "0812-2222-0005", mulai: kunciPlus(-400), akhir: kunciPlus(-40), sewa: 8000000, status: "Selesai" }
+      ],
+      pembeli: [
+        { id: 1, nama: "Bambang Sutrisno", propertiId: 1, telepon: "0812-3333-0001", tawar: 1400000000, status: "Negosiasi" },
+        { id: 2, nama: "Ratna Dewi", propertiId: 2, telepon: "0812-3333-0002", tawar: 2750000000, status: "Minat" },
+        { id: 3, nama: "Agus Prasetyo", propertiId: 4, telepon: "0812-3333-0003", tawar: 850000000, status: "Deal" },
+        { id: 4, nama: "Lina Marlina", propertiId: 7, telepon: "0812-3333-0004", tawar: 2100000000, status: "Minat" },
+        { id: 5, nama: "Fajar Nugroho", propertiId: 1, telepon: "0812-3333-0005", tawar: 1300000000, status: "Batal" }
+      ],
+      jadwal: [
+        { id: 1, kode: "SHW-001", propertiId: 1, calon: "Bambang Sutrisno", tanggal: kunciPlus(-5), jam: "10:00", agenId: 1, status: "Selesai" },
+        { id: 2, kode: "SHW-002", propertiId: 2, calon: "Ratna Dewi", tanggal: kunciPlus(-2), jam: "14:00", agenId: 2, status: "Selesai" },
+        { id: 3, kode: "SHW-003", propertiId: 7, calon: "Lina Marlina", tanggal: kunciPlus(-1), jam: "11:00", agenId: 1, status: "Selesai" },
+        { id: 4, kode: "SHW-004", propertiId: 1, calon: "Fajar Nugroho", tanggal: kunciPlus(-1), jam: "15:00", agenId: 2, status: "Batal" },
+        { id: 5, kode: "SHW-005", propertiId: 2, calon: "Agus Prasetyo", tanggal: kunciPlus(0), jam: "09:00", agenId: 1, status: "Terjadwal" },
+        { id: 6, kode: "SHW-006", propertiId: 3, calon: "Dedi Kurniawan", tanggal: kunciPlus(0), jam: "13:00", agenId: 2, status: "Terjadwal" },
+        { id: 7, kode: "SHW-007", propertiId: 7, calon: "Sari Wulandari", tanggal: kunciPlus(1), jam: "10:00", agenId: 1, status: "Terjadwal" },
+        { id: 8, kode: "SHW-008", propertiId: 1, calon: "Eko Purnomo", tanggal: kunciPlus(2), jam: "16:00", agenId: 2, status: "Terjadwal" },
+        { id: 9, kode: "SHW-009", propertiId: 6, calon: "Nina Kartika", tanggal: kunciPlus(3), jam: "10:00", agenId: 1, status: "Terjadwal" },
+        { id: 10, kode: "SHW-010", propertiId: 8, calon: "Yoga Saputra", tanggal: kunciPlus(5), jam: "14:00", agenId: 2, status: "Terjadwal" }
+      ],
+      catatan: [
+        { id: 1, jadwalId: 1, penulis: "Rudi Santoso", teks: "Calon suka lokasi dan pencahayaan rumah, lanjut negosiasi harga.", tanggal: kunciPlus(-5) },
+        { id: 2, jadwalId: 3, penulis: "Rudi Santoso", teks: "Calon minta cek kondisi atap ruko sebelum lanjut.", tanggal: kunciPlus(-1) },
+        { id: 3, jadwalId: 4, penulis: "Sinta Maharani", teks: "Calon batal karena harga di atas anggaran.", tanggal: kunciPlus(-1) }
+      ]
+    };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true, pemilikId: null },
+      { username: "agen", password: "agen123", name: "Agen (Rudi)", role: "agen", aktif: true, pemilikId: null },
+      { username: "pemilik", password: "pemilik123", name: "Pemilik (Bpk. Hartono)", role: "pemilik", aktif: true, pemilikId: 1 }
+    ];
+  }
+
+  var state = null;
+  var users = [];
+  var currentUser = null;
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { state = JSON.parse(raw); return; }
+    } catch (e) { /* abaikan */ }
+    state = seedState();
+    saveState();
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (raw) { users = JSON.parse(raw); return; }
+    } catch (e) { /* abaikan */ }
+    users = seedUsers();
+    saveUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+
+  function namaPemilik(id) {
+    var a = state.pemilik.find(function (x) { return x.id === id; });
+    return a ? a.nama : "—";
+  }
+  function namaAgen(id) {
+    var a = state.agen.find(function (x) { return x.id === id; });
+    return a ? a.nama : "—";
+  }
+  function cariProperti(id) {
+    return state.properti.find(function (x) { return x.id === id; });
+  }
+  function namaProperti(id) {
+    var p = cariProperti(id);
+    return p ? p.nama : "—";
+  }
+  function kodeProperti(id) {
+    var p = cariProperti(id);
+    return p ? p.kode : "—";
+  }
+  function labelStatusProperti(s) {
+    var cls = { "Dijual": "st-biru", "Disewakan": "st-emas", "Terjual": "st-aman", "Tersewa": "st-oren" }[s] || "st-biru";
+    return '<span class="lencana ' + cls + '">' + esc(s) + '</span>';
+  }
+  function labelStatusPenyewa(s) {
+    var cls = { "Aktif": "st-aman", "Menunggak": "st-habis", "Selesai": "st-navy" }[s] || "st-biru";
+    return '<span class="lencana ' + cls + '">' + esc(s) + '</span>';
+  }
+  function labelStatusPembeli(s) {
+    var cls = { "Minat": "st-biru", "Negosiasi": "st-emas", "Deal": "st-aman", "Batal": "st-habis" }[s] || "st-biru";
+    return '<span class="lencana ' + cls + '">' + esc(s) + '</span>';
+  }
+  function labelStatusJadwal(s) {
+    var cls = { "Terjadwal": "st-biru", "Selesai": "st-aman", "Batal": "st-habis" }[s] || "st-biru";
+    return '<span class="lencana ' + cls + '">' + esc(s) + '</span>';
+  }
+  function idPropertiPemilik() {
+    if (!currentUser || currentUser.role !== "pemilik") return null;
+    var ids = {};
+    state.properti.forEach(function (p) { if (p.pemilikId === currentUser.pemilikId) ids[p.id] = true; });
+    return ids;
+  }
+  function propertiTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.role === "pemilik") {
+      return state.properti.filter(function (p) { return p.pemilikId === currentUser.pemilikId; });
+    }
+    return state.properti.slice();
+  }
+  function penyewaTerlihat() {
+    if (!currentUser) return [];
+    var ids = idPropertiPemilik();
+    if (ids) return state.penyewa.filter(function (x) { return ids[x.propertiId]; });
+    return state.penyewa.slice();
+  }
+  function pembeliTerlihat() {
+    if (!currentUser) return [];
+    var ids = idPropertiPemilik();
+    if (ids) return state.pembeli.filter(function (x) { return ids[x.propertiId]; });
+    return state.pembeli.slice();
+  }
+  function jadwalTerlihat() {
+    if (!currentUser) return [];
+    var ids = idPropertiPemilik();
+    if (ids) return state.jadwal.filter(function (x) { return ids[x.propertiId]; });
+    return state.jadwal.slice();
+  }
+
+  // ---------- Login & peran ----------
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.role : "";
+    var isAdmin = peran === "admin";
+    var isPemilik = peran === "pemilik";
+    $("cardPengguna").style.display = isAdmin ? "" : "none";
+    $("cardTambahProperti").style.display = isPemilik ? "none" : "";
+    $("cardTambahPenyewa").style.display = isPemilik ? "none" : "";
+    $("cardTambahPembeli").style.display = isPemilik ? "none" : "";
+    $("cardTambahJadwal").style.display = isPemilik ? "none" : "";
+    // Kartu ganti sandi selalu terlihat semua peran (jangan pernah disembunyikan).
+    $("cardSandiSaya").style.display = "";
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + (peran === "admin" ? "Admin" : peran === "agen" ? "Agen" : "Pemilik") + ")" : "Belum masuk";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ username: user.username }));
+    $("loginOverlay").style.display = "none";
+    terapkanPeran();
+  }
+  function keluar() {
+    currentUser = null;
+    localStorage.removeItem(SESSION_KEY);
+    $("loginOverlay").style.display = "";
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim();
+    var p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (!found) {
+      $("loginError").hidden = false;
+      return;
+    }
+    $("loginError").hidden = true;
+    $("loginUser").value = "";
+    $("loginPass").value = "";
+    masuk(found);
+    toast("Selamat datang, " + found.name + ".");
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+
+  // ---------- Tab ----------
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      btn.classList.add("active");
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+    });
+  });
+  function pindahTab(nama) {
+    var btn = document.querySelector('[data-tab="' + nama + '"]');
+    if (btn) btn.click();
+  }
+
+  // ---------- Render ----------
+  function isiSelect() {
+    var daftarPr = propertiTerlihat();
+    var optPr = daftarPr.map(function (p) { return '<option value="' + p.id + '">' + esc(p.kode + " — " + p.nama) + '</option>'; }).join("");
+    var optPrSemua = '<option value="semua">Semua properti</option>' + optPr;
+    var optPemilik = state.pemilik.map(function (a) { return '<option value="' + a.id + '">' + esc(a.nama) + '</option>'; }).join("");
+    var optAgen = state.agen.map(function (a) { return '<option value="' + a.id + '">' + esc(a.nama) + '</option>'; }).join("");
+    $("ppPemilik").innerHTML = optPemilik;
+    $("ppAgen").innerHTML = optAgen;
+    $("fPpPemilik").innerHTML = '<option value="semua">Semua pemilik</option>' + optPemilik;
+    $("pyProperti").innerHTML = optPr;
+    $("fPyProperti").innerHTML = optPrSemua;
+    $("pbProperti").innerHTML = optPr;
+    $("fPbProperti").innerHTML = optPrSemua;
+    $("jdProperti").innerHTML = optPr;
+    $("fJdProperti").innerHTML = optPrSemua;
+    $("jdAgen").innerHTML = optAgen;
+    $("fJdAgen").innerHTML = '<option value="semua">Semua agen</option>' + optAgen;
+    $("lapProperti").innerHTML = optPrSemua;
+  }
+  function renderDashboard() {
+    var daftarPr = propertiTerlihat();
+    var dijual = daftarPr.filter(function (p) { return p.status === "Dijual"; }).length;
+    var disewakan = daftarPr.filter(function (p) { return p.status === "Disewakan"; }).length;
+    var terjual = daftarPr.filter(function (p) { return p.status === "Terjual"; }).length;
+    var tersewa = daftarPr.filter(function (p) { return p.status === "Tersewa"; }).length;
+    var nilaiTerjual = daftarPr.filter(function (p) { return p.status === "Terjual"; }).reduce(function (s, p) { return s + Number(p.harga || 0); }, 0);
+    var penyewaAktif = penyewaTerlihat().filter(function (x) { return x.status === "Aktif"; });
+    var sewaAktif = penyewaAktif.reduce(function (s, x) { return s + Number(x.sewa || 0); }, 0);
+    var menunggak = penyewaTerlihat().filter(function (x) { return x.status === "Menunggak"; });
+    var sewaMenunggak = menunggak.reduce(function (s, x) { return s + Number(x.sewa || 0); }, 0);
+    var hariIni = jadwalTerlihat().filter(function (j) { return j.tanggal === hariIniKey(); });
+    var terjadwal = jadwalTerlihat().filter(function (j) { return j.status === "Terjadwal"; }).length;
+    var selesaiJd = jadwalTerlihat().filter(function (j) { return j.status === "Selesai"; }).length;
+    $("dProperti").textContent = daftarPr.length;
+    $("dPropertiSub").textContent = "Dijual " + dijual + " · Disewakan " + disewakan + " · Terjual " + terjual + " · Tersewa " + tersewa;
+    $("dTerjual").textContent = rupiahSingkat(nilaiTerjual);
+    $("dTerjualSub").textContent = terjual + " properti terjual";
+    $("dSewa").textContent = rupiahSingkat(sewaAktif);
+    $("dSewaSub").textContent = penyewaAktif.length + " penyewa aktif · Menunggak " + menunggak.length + " (" + rupiahSingkat(sewaMenunggak) + ")";
+    $("dShowing").textContent = hariIni.length;
+    $("dShowingSub").textContent = "Terjadwal " + terjadwal + " · Selesai " + selesaiJd;
+    $("badgeProperti").textContent = daftarPr.length;
+    $("badgePenyewa").textContent = penyewaTerlihat().length;
+    $("badgePembeli").textContent = pembeliTerlihat().length;
+    $("badgeJadwal").textContent = jadwalTerlihat().length;
+
+    var html = "";
+    menunggak.forEach(function (x) {
+      html += '<div class="item-bar"><div><div class="nm">' + esc(x.nama) + '</div><div class="dt">Menunggak sewa ' + rupiah(Number(x.sewa || 0)) + '/bulan · ' + esc(kodeProperti(x.propertiId) + " — " + namaProperti(x.propertiId)) + ' · ' + tglSingkat(x.mulai) + ' s.d. ' + tglSingkat(x.akhir) + '</div></div><span class="lencana st-habis">Menunggak</span></div>';
+    });
+    daftarPr.filter(function (p) { return p.status === "Disewakan"; }).forEach(function (p) {
+      var adaAktif = penyewaTerlihat().some(function (x) { return x.propertiId === p.id && x.status === "Aktif"; });
+      if (!adaAktif) {
+        html += '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">Disewakan ' + rupiah(Number(p.hargaSewa || 0)) + '/bulan, belum ada penyewa aktif</div></div><span class="lencana st-rendah">Belum tersewa</span></div>';
+      }
+    });
+    $("daftarPerhatian").innerHTML = html || '<p class="kosong">Tidak ada yang perlu perhatian.</p>';
+
+    $("daftarHariIni").innerHTML = hariIni.length ? hariIni.map(function (j) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(j.kode + " — " + j.calon) + '</div><div class="dt">' + esc(kodeProperti(j.propertiId) + " — " + namaProperti(j.propertiId)) + ' · Jam ' + esc(j.jam) + ' · Agen: ' + esc(namaAgen(j.agenId)) + '</div></div>' + labelStatusJadwal(j.status) + '</div>';
+    }).join("") : '<p class="kosong">Tidak ada jadwal showing hari ini.</p>';
+
+    var terbaru = propertiTerlihat().slice().sort(function (a, b) { return b.id - a.id; }).slice(0, 5);
+    $("daftarPropertiTerbaru").innerHTML = terbaru.map(function (p) {
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + esc(p.jenis) + ' · ' + esc(p.kota) + ' · Pemilik: ' + esc(namaPemilik(p.pemilikId)) + ' · Agen: ' + esc(namaAgen(p.agenId)) + '</div></div><div class="aksi"><span class="harga">' + rupiah(Number(p.harga || 0)) + '</span>' + labelStatusProperti(p.status) + '</div></div>';
+    }).join("") || '<p class="kosong">Belum ada properti.</p>';
+  }
+  function renderProperti() {
+    var fJ = $("fPpJenis").value, fS = $("fPpStatus").value, fPm = $("fPpPemilik").value;
+    var cari = $("cariPp").value.trim().toLowerCase();
+    var daftar = propertiTerlihat().filter(function (p) {
+      if (fJ !== "semua" && p.jenis !== fJ) return false;
+      if (fS !== "semua" && p.status !== fS) return false;
+      if (fPm !== "semua" && String(p.pemilikId) !== fPm) return false;
+      if (cari && (p.nama + " " + p.kode + " " + p.alamat + " " + p.kota + " " + p.jenis).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    });
+    var dijual = daftar.filter(function (p) { return p.status === "Dijual"; }).length;
+    var terjual = daftar.filter(function (p) { return p.status === "Terjual"; }).length;
+    $("ringkasanProperti").textContent = daftar.length + " properti — Dijual " + dijual + ", Terjual " + terjual + ".";
+    var bisaUbah = currentUser && currentUser.role !== "pemilik";
+    $("daftarProperti").innerHTML = daftar.length ? daftar.map(function (p) {
+      var aksi = '<button class="btn ghost kecil" type="button" data-aksi-properti="jadwal" data-id="' + p.id + '">Lihat Jadwal</button>';
+      if (bisaUbah) {
+        if (p.status === "Dijual") aksi += '<button class="btn kecil" type="button" data-aksi-properti="terjual" data-id="' + p.id + '">Tandai Terjual</button>';
+        if (p.status === "Disewakan") aksi += '<button class="btn kecil" type="button" data-aksi-properti="tersewa" data-id="' + p.id + '">Tandai Tersewa</button>';
+        if (p.status === "Terjual") aksi += '<button class="btn kecil" type="button" data-aksi-properti="dijual" data-id="' + p.id + '">Kembali Dijual</button>';
+        if (p.status === "Tersewa") aksi += '<button class="btn kecil" type="button" data-aksi-properti="disewakan" data-id="' + p.id + '">Kembali Disewakan</button>';
+        if (currentUser.role === "admin") aksi += '<button class="btn ghost kecil" type="button" data-aksi-properti="hapus" data-id="' + p.id + '">Hapus</button>';
+      }
+      var hargaTxt = rupiah(Number(p.harga || 0)) + (Number(p.hargaSewa || 0) ? ' · Sewa ' + rupiah(Number(p.hargaSewa)) + '/bln' : '');
+      return '<div class="prp"><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + esc(p.deskripsi || "") + '</div><div class="dt">' + esc(p.jenis) + ' · ' + esc(p.alamat) + ', ' + esc(p.kota) + ' · Luas ' + fmtAngka(p.luas) + ' m2 · ' + fmtAngka(p.kamar) + ' kamar</div><div class="dt">Pemilik: ' + esc(namaPemilik(p.pemilikId)) + ' · Agen: ' + esc(namaAgen(p.agenId)) + '</div><div class="dt">' + hargaTxt + '</div><div class="aksi">' + labelStatusProperti(p.status) + aksi + '</div></div>';
+    }).join("") : '<p class="kosong">Tidak ada properti yang cocok.</p>';
+  }
+  function renderPenyewa() {
+    var fP = $("fPyProperti").value, fS = $("fPyStatus").value;
+    var cari = $("cariPy").value.trim().toLowerCase();
+    var daftar = penyewaTerlihat().filter(function (x) {
+      if (fP !== "semua" && String(x.propertiId) !== fP) return false;
+      if (fS !== "semua" && x.status !== fS) return false;
+      if (cari && (x.nama + " " + namaProperti(x.propertiId)).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    });
+    var aktif = daftar.filter(function (x) { return x.status === "Aktif"; }).length;
+    var menunggak = daftar.filter(function (x) { return x.status === "Menunggak"; }).length;
+    var totalSewa = daftar.filter(function (x) { return x.status === "Aktif"; }).reduce(function (s, x) { return s + Number(x.sewa || 0); }, 0);
+    $("ringkasanPenyewa").textContent = daftar.length + " penyewa — Aktif " + aktif + ", Menunggak " + menunggak + " · Sewa aktif " + rupiah(totalSewa) + "/bulan.";
+    var bisaUbah = currentUser && currentUser.role !== "pemilik";
+    $("daftarPenyewa").innerHTML = daftar.length ? daftar.map(function (x) {
+      var sisa = x.status !== "Selesai" ? selisihHari(hariIniKey(), x.akhir) : null;
+      var aksi = "";
+      if (bisaUbah) {
+        if (x.status === "Aktif") aksi += '<button class="btn kecil" type="button" data-aksi-penyewa="menunggak" data-id="' + x.id + '">Tandai Menunggak</button>';
+        if (x.status !== "Selesai") aksi += '<button class="btn kecil" type="button" data-aksi-penyewa="selesai" data-id="' + x.id + '">Tandai Selesai</button>';
+        aksi += '<button class="btn ghost kecil" type="button" data-aksi-penyewa="hapus" data-id="' + x.id + '">Hapus</button>';
+      }
+      return '<div class="item-bar"><div><div class="nm">' + esc(x.nama) + '</div><div class="dt">' + esc(kodeProperti(x.propertiId) + " — " + namaProperti(x.propertiId)) + (x.telepon ? ' · ' + esc(x.telepon) : '') + '</div><div class="dt">' + tglSingkat(x.mulai) + ' s.d. ' + tglSingkat(x.akhir) + (sisa !== null ? ' · Sisa ' + sisa + ' hari' : '') + '</div></div><div class="aksi"><span class="harga">' + rupiah(Number(x.sewa || 0)) + '/bln</span>' + labelStatusPenyewa(x.status) + aksi + '</div></div>';
+    }).join("") : '<p class="kosong">Tidak ada penyewa yang cocok.</p>';
+  }
+  function renderPembeli() {
+    var fP = $("fPbProperti").value, fS = $("fPbStatus").value;
+    var cari = $("cariPb").value.trim().toLowerCase();
+    var daftar = pembeliTerlihat().filter(function (x) {
+      if (fP !== "semua" && String(x.propertiId) !== fP) return false;
+      if (fS !== "semua" && x.status !== fS) return false;
+      if (cari && (x.nama + " " + namaProperti(x.propertiId)).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    });
+    var deal = daftar.filter(function (x) { return x.status === "Deal"; }).length;
+    var negosiasi = daftar.filter(function (x) { return x.status === "Negosiasi"; }).length;
+    $("ringkasanPembeli").textContent = daftar.length + " pembeli — Negosiasi " + negosiasi + ", Deal " + deal + ".";
+    var bisaUbah = currentUser && currentUser.role !== "pemilik";
+    $("daftarPembeli").innerHTML = daftar.length ? daftar.map(function (x) {
+      var p = cariProperti(x.propertiId);
+      var aksi = "";
+      if (bisaUbah) {
+        if (x.status === "Minat") aksi += '<button class="btn kecil" type="button" data-aksi-pembeli="negosiasi" data-id="' + x.id + '">Mulai Negosiasi</button>';
+        if (x.status === "Negosiasi") aksi += '<button class="btn kecil" type="button" data-aksi-pembeli="deal" data-id="' + x.id + '">Tandai Deal</button>';
+        if (x.status !== "Batal" && x.status !== "Deal") aksi += '<button class="btn ghost kecil" type="button" data-aksi-pembeli="batal" data-id="' + x.id + '">Batalkan</button>';
+        aksi += '<button class="btn ghost kecil" type="button" data-aksi-pembeli="hapus" data-id="' + x.id + '">Hapus</button>';
+      }
+      return '<div class="item-bar"><div><div class="nm">' + esc(x.nama) + '</div><div class="dt">' + esc(kodeProperti(x.propertiId) + " — " + namaProperti(x.propertiId)) + (x.telepon ? ' · ' + esc(x.telepon) : '') + '</div><div class="dt">Harga properti ' + rupiah(p ? Number(p.harga || 0) : 0) + ' · Tawaran ' + rupiah(Number(x.tawar || 0)) + '</div></div><div class="aksi">' + labelStatusPembeli(x.status) + aksi + '</div></div>';
+    }).join("") : '<p class="kosong">Tidak ada pembeli yang cocok.</p>';
+  }
+
+  function renderJadwal() {
+    var fP = $("fJdProperti").value, fS = $("fJdStatus").value, fA = $("fJdAgen").value;
+    var cari = $("cariJd").value.trim().toLowerCase();
+    var daftar = jadwalTerlihat().filter(function (j) {
+      if (fP !== "semua" && String(j.propertiId) !== fP) return false;
+      if (fS !== "semua" && j.status !== fS) return false;
+      if (fA !== "semua" && String(j.agenId) !== fA) return false;
+      if (cari && (j.calon + " " + j.kode + " " + namaProperti(j.propertiId)).toLowerCase().indexOf(cari) < 0) return false;
+      return true;
+    });
+    var selesai = daftar.filter(function (j) { return j.status === "Selesai"; }).length;
+    var terjadwal = daftar.filter(function (j) { return j.status === "Terjadwal"; }).length;
+    $("ringkasanJadwal").textContent = daftar.length + " jadwal — Terjadwal " + terjadwal + ", Selesai " + selesai + ".";
+    var bisaUbah = currentUser && currentUser.role !== "pemilik";
+    $("daftarJadwal").innerHTML = daftar.length ? daftar.map(function (j) {
+      var jmlCatatan = state.catatan.filter(function (k) { return k.jadwalId === j.id; }).length;
+      var aksi = '<button class="btn ghost kecil" type="button" data-aksi-jadwal="detail" data-id="' + j.id + '">Detail &amp; Catatan (' + jmlCatatan + ')</button>';
+      if (bisaUbah && j.status === "Terjadwal") aksi += '<button class="btn kecil" type="button" data-aksi-jadwal="selesai" data-id="' + j.id + '">Tandai Selesai</button>';
+      if (bisaUbah) aksi += '<button class="btn ghost kecil" type="button" data-aksi-jadwal="hapus" data-id="' + j.id + '">Hapus</button>';
+      return '<div class="jdw"><div class="nm">' + esc(j.kode + " — " + j.calon) + '</div><div class="dt">' + esc(kodeProperti(j.propertiId) + " — " + namaProperti(j.propertiId)) + '</div><div class="dt">' + tglSingkat(j.tanggal) + ' · Jam ' + esc(j.jam) + ' · Agen: ' + esc(namaAgen(j.agenId)) + '</div><div class="aksi">' + labelStatusJadwal(j.status) + aksi + '</div></div>';
+    }).join("") : '<p class="kosong">Tidak ada jadwal yang cocok.</p>';
+  }
+  function jendelaLaporan() {
+    var mode = $("lapPeriode").value;
+    var hariIni = hariIniKey();
+    if (mode === "hari") return { dari: hariIni, sampai: hariIni };
+    if (mode === "7hari") return { dari: kunciPlus(-6), sampai: hariIni };
+    if (mode === "30hari") return { dari: kunciPlus(-29), sampai: hariIni };
+    return { dari: null, sampai: null };
+  }
+  function jadwalDalamPeriode() {
+    var w = jendelaLaporan();
+    var daftar = jadwalTerlihat();
+    var fP = $("lapProperti").value;
+    if (fP !== "semua") daftar = daftar.filter(function (j) { return String(j.propertiId) === fP; });
+    if (!w.dari) return daftar;
+    return daftar.filter(function (j) { return j.tanggal >= w.dari && j.tanggal <= w.sampai; });
+  }
+  function renderLaporan() {
+    var daftar = jadwalDalamPeriode();
+    var selesai = daftar.filter(function (j) { return j.status === "Selesai"; }).length;
+    var batal = daftar.filter(function (j) { return j.status === "Batal"; }).length;
+    $("lJumlah").textContent = daftar.length;
+    $("lSelesai").textContent = selesai;
+    $("lBatal").textContent = batal;
+    $("lProgres").textContent = (daftar.length ? Math.round(selesai / daftar.length * 100) : 0) + "%";
+    var nilaiTerjual = propertiTerlihat().filter(function (p) { return p.status === "Terjual"; }).reduce(function (s, p) { return s + Number(p.harga || 0); }, 0);
+    var sewaAktif = penyewaTerlihat().filter(function (x) { return x.status === "Aktif"; }).reduce(function (s, x) { return s + Number(x.sewa || 0); }, 0);
+    $("lTerjual").textContent = rupiah(nilaiTerjual);
+    $("lSewa").textContent = rupiah(sewaAktif);
+    var baris = STATUS_JADWAL.map(function (s) {
+      var n = daftar.filter(function (j) { return j.status === s; }).length;
+      var pct = daftar.length ? Math.round(n / daftar.length * 100) : 0;
+      return "<tr><td>" + esc(s) + "</td><td>" + n + "</td><td>" + pct + "%</td></tr>";
+    }).join("");
+    $("tabelLaporan").innerHTML = "<tr><th>Status showing</th><th>Jumlah</th><th>Porsi</th></tr>" + baris;
+    $("daftarLaporanProperti").innerHTML = propertiTerlihat().map(function (p) {
+      var d = daftar.filter(function (j) { return j.propertiId === p.id; });
+      var s = d.filter(function (j) { return j.status === "Selesai"; }).length;
+      var pb = pembeliTerlihat().filter(function (x) { return x.propertiId === p.id; }).length;
+      var py = penyewaTerlihat().filter(function (x) { return x.propertiId === p.id; }).length;
+      return '<div class="item-bar"><div><div class="nm">' + esc(p.kode + " — " + p.nama) + '</div><div class="dt">' + d.length + ' showing dalam periode · ' + s + ' selesai · ' + pb + ' pembeli · ' + py + ' penyewa · ' + rupiah(Number(p.harga || 0)) + '</div></div>' + labelStatusProperti(p.status) + '</div>';
+    }).join("");
+  }
+  function renderPengguna() {
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var peranTxt = u.role === "admin" ? "Admin" : u.role === "agen" ? "Agen" : "Pemilik";
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
+        aksi += u.aktif
+          ? '<button class="btn ghost kecil" type="button" data-aksi-pengguna="nonaktif" data-user="' + esc(u.username) + '">Nonaktifkan</button>'
+          : '<button class="btn kecil" type="button" data-aksi-pengguna="aktifkan" data-user="' + esc(u.username) + '">Aktifkan</button>';
+      }
+      return '<div class="user-row"><div><b>' + esc(u.username) + '</b> — ' + esc(u.name) + ' (' + peranTxt + ')' + (u.aktif ? '' : ' <span class="lencana st-oren">Nonaktif</span>') + '</div><div class="aksi">' + aksi + '</div></div>';
+    }).join("");
+  }
+  function renderSemua() {
+    isiSelect();
+    renderDashboard();
+    renderProperti();
+    renderPenyewa();
+    renderPembeli();
+    renderJadwal();
+    renderLaporan();
+    renderPengguna();
+  }
+
+  // ---------- Form properti / penyewa / pembeli / jadwal ----------
+  $("btnSimpanProperti").addEventListener("click", function () {
+    var nama = $("ppNama").value.trim();
+    var harga = Number($("ppHarga").value || 0);
+    if (!nama || !harga) { toast("Isi nama properti dan harga jual dulu."); return; }
+    var id = state.properti.length ? Math.max.apply(null, state.properti.map(function (p) { return p.id; })) + 1 : 1;
+    var kode = "PRP-" + String(id).padStart(3, "0");
+    state.properti.push({ id: id, kode: kode, nama: nama, jenis: $("ppJenis").value, alamat: $("ppAlamat").value.trim(), kota: $("ppKota").value.trim(), harga: harga, hargaSewa: Number($("ppSewa").value || 0), status: $("ppStatus").value, pemilikId: Number($("ppPemilik").value), agenId: Number($("ppAgen").value), luas: Number($("ppLuas").value || 0), kamar: Number($("ppKamar").value || 0), deskripsi: $("ppDeskripsi").value.trim(), tanggal: hariIniKey() });
+    saveState();
+    $("ppNama").value = ""; $("ppAlamat").value = ""; $("ppKota").value = ""; $("ppHarga").value = ""; $("ppSewa").value = ""; $("ppLuas").value = ""; $("ppKamar").value = ""; $("ppDeskripsi").value = "";
+    renderSemua();
+    toast(kode + " tersimpan.");
+  });
+  $("btnSimpanPenyewa").addEventListener("click", function () {
+    var nama = $("pyNama").value.trim();
+    var akhir = $("pyAkhir").value;
+    if (!nama || !akhir) { toast("Isi nama penyewa dan akhir sewa dulu."); return; }
+    var id = state.penyewa.length ? Math.max.apply(null, state.penyewa.map(function (x) { return x.id; })) + 1 : 1;
+    state.penyewa.push({ id: id, nama: nama, propertiId: Number($("pyProperti").value), telepon: $("pyTelepon").value.trim(), mulai: $("pyMulai").value || hariIniKey(), akhir: akhir, sewa: Number($("pySewa").value || 0), status: $("pyStatus").value });
+    saveState();
+    $("pyNama").value = ""; $("pyTelepon").value = ""; $("pySewa").value = ""; $("pyMulai").value = ""; $("pyAkhir").value = "";
+    renderSemua();
+    toast("Penyewa " + nama + " tersimpan.");
+  });
+  $("btnSimpanPembeli").addEventListener("click", function () {
+    var nama = $("pbNama").value.trim();
+    var tawar = Number($("pbTawar").value || 0);
+    if (!nama || !tawar) { toast("Isi nama pembeli dan harga tawaran dulu."); return; }
+    var id = state.pembeli.length ? Math.max.apply(null, state.pembeli.map(function (x) { return x.id; })) + 1 : 1;
+    state.pembeli.push({ id: id, nama: nama, propertiId: Number($("pbProperti").value), telepon: $("pbTelepon").value.trim(), tawar: tawar, status: $("pbStatus").value });
+    saveState();
+    $("pbNama").value = ""; $("pbTelepon").value = ""; $("pbTawar").value = "";
+    renderSemua();
+    toast("Pembeli " + nama + " tersimpan.");
+  });
+  $("btnSimpanJadwal").addEventListener("click", function () {
+    var calon = $("jdCalon").value.trim();
+    var tanggal = $("jdTanggal").value;
+    if (!calon || !tanggal) { toast("Isi nama calon dan tanggal showing dulu."); return; }
+    var id = state.jadwal.length ? Math.max.apply(null, state.jadwal.map(function (j) { return j.id; })) + 1 : 1;
+    var kode = "SHW-" + String(id).padStart(3, "0");
+    state.jadwal.push({ id: id, kode: kode, propertiId: Number($("jdProperti").value), calon: calon, tanggal: tanggal, jam: $("jdJam").value || "10:00", agenId: Number($("jdAgen").value), status: $("jdStatus").value });
+    saveState();
+    $("jdCalon").value = ""; $("jdTanggal").value = "";
+    renderSemua();
+    toast(kode + " tersimpan.");
+  });
+  ["fPpJenis", "fPpStatus", "fPpPemilik"].forEach(function (id) {
+    $(id).addEventListener("change", renderProperti);
+  });
+  $("cariPp").addEventListener("input", renderProperti);
+  ["fPyProperti", "fPyStatus"].forEach(function (id) {
+    $(id).addEventListener("change", renderPenyewa);
+  });
+  $("cariPy").addEventListener("input", renderPenyewa);
+  ["fPbProperti", "fPbStatus"].forEach(function (id) {
+    $(id).addEventListener("change", renderPembeli);
+  });
+  $("cariPb").addEventListener("input", renderPembeli);
+  ["fJdProperti", "fJdStatus", "fJdAgen"].forEach(function (id) {
+    $(id).addEventListener("change", renderJadwal);
+  });
+  $("cariJd").addEventListener("input", renderJadwal);
+  $("lapPeriode").addEventListener("change", renderLaporan);
+  $("lapProperti").addEventListener("change", renderLaporan);
+
+  // ---------- Aksi properti / penyewa / pembeli / jadwal / pengguna ----------
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-aksi-properti]");
+    if (el) {
+      var pid = Number(el.getAttribute("data-id"));
+      var aksi = el.getAttribute("data-aksi-properti");
+      var p = cariProperti(pid);
+      if (!p) return;
+      if (aksi === "jadwal") {
+        pindahTab("jadwal");
+        $("fJdProperti").value = String(pid);
+        renderJadwal();
+      } else if (aksi === "terjual" || aksi === "tersewa" || aksi === "dijual" || aksi === "disewakan") {
+        var statusBaru = { terjual: "Terjual", tersewa: "Tersewa", dijual: "Dijual", disewakan: "Disewakan" }[aksi];
+        p.status = statusBaru; saveState(); renderSemua(); toast(p.kode + " kini " + statusBaru + ".");
+      } else if (aksi === "hapus") {
+        tanyaKonfirmasi("Hapus properti?", p.kode + " — " + p.nama + " beserta " + state.penyewa.filter(function (x) { return x.propertiId === pid; }).length + " penyewa, " + state.pembeli.filter(function (x) { return x.propertiId === pid; }).length + " pembeli, dan " + state.jadwal.filter(function (j) { return j.propertiId === pid; }).length + " jadwal showing-nya akan dihapus.", function () {
+          state.jadwal = state.jadwal.filter(function (j) { return j.propertiId !== pid; });
+          state.catatan = state.catatan.filter(function (k) { return state.jadwal.some(function (j) { return j.id === k.jadwalId; }); });
+          state.penyewa = state.penyewa.filter(function (x) { return x.propertiId !== pid; });
+          state.pembeli = state.pembeli.filter(function (x) { return x.propertiId !== pid; });
+          state.properti = state.properti.filter(function (x) { return x.id !== pid; });
+          saveState(); renderSemua(); toast(p.kode + " dihapus.");
+        });
+      }
+      return;
+    }
+    var ey = e.target.closest("[data-aksi-penyewa]");
+    if (ey) {
+      var yid = Number(ey.getAttribute("data-id"));
+      var aksiY = ey.getAttribute("data-aksi-penyewa");
+      var y = state.penyewa.find(function (x) { return x.id === yid; });
+      if (!y) return;
+      if (aksiY === "menunggak") {
+        y.status = "Menunggak"; saveState(); renderSemua(); toast(y.nama + " ditandai menunggak.");
+      } else if (aksiY === "selesai") {
+        y.status = "Selesai"; saveState(); renderSemua(); toast(y.nama + " ditandai selesai.");
+      } else if (aksiY === "hapus") {
+        tanyaKonfirmasi("Hapus penyewa?", y.nama + " akan dihapus.", function () {
+          state.penyewa = state.penyewa.filter(function (x) { return x.id !== yid; });
+          saveState(); renderSemua(); toast(y.nama + " dihapus.");
+        });
+      }
+      return;
+    }
+    var eb = e.target.closest("[data-aksi-pembeli]");
+    if (eb) {
+      var bid = Number(eb.getAttribute("data-id"));
+      var aksiB = eb.getAttribute("data-aksi-pembeli");
+      var b = state.pembeli.find(function (x) { return x.id === bid; });
+      if (!b) return;
+      if (aksiB === "negosiasi") {
+        b.status = "Negosiasi"; saveState(); renderSemua(); toast(b.nama + " masuk tahap negosiasi.");
+      } else if (aksiB === "deal") {
+        b.status = "Deal";
+        var pr = cariProperti(b.propertiId);
+        if (pr) pr.status = "Terjual";
+        saveState(); renderSemua(); toast(b.nama + " Deal — properti " + (pr ? pr.kode : "") + " kini Terjual.");
+      } else if (aksiB === "batal") {
+        b.status = "Batal"; saveState(); renderSemua(); toast(b.nama + " dibatalkan.");
+      } else if (aksiB === "hapus") {
+        tanyaKonfirmasi("Hapus pembeli?", b.nama + " akan dihapus.", function () {
+          state.pembeli = state.pembeli.filter(function (x) { return x.id !== bid; });
+          saveState(); renderSemua(); toast(b.nama + " dihapus.");
+        });
+      }
+      return;
+    }
+    var ej = e.target.closest("[data-aksi-jadwal]");
+    if (ej) {
+      var jid = Number(ej.getAttribute("data-id"));
+      var aksiJ = ej.getAttribute("data-aksi-jadwal");
+      var j = state.jadwal.find(function (x) { return x.id === jid; });
+      if (!j) return;
+      if (aksiJ === "selesai") {
+        j.status = "Selesai"; saveState(); renderSemua(); toast(j.kode + " ditandai selesai.");
+      } else if (aksiJ === "hapus") {
+        tanyaKonfirmasi("Hapus jadwal showing?", j.kode + " — " + j.calon + " akan dihapus beserta catatannya.", function () {
+          state.jadwal = state.jadwal.filter(function (x) { return x.id !== jid; });
+          state.catatan = state.catatan.filter(function (k) { return k.jadwalId !== jid; });
+          saveState(); renderSemua(); toast(j.kode + " dihapus.");
+        });
+      } else if (aksiJ === "detail") {
+        bukaDetailJadwal(j);
+      }
+      return;
+    }
+    var ep = e.target.closest("[data-aksi-pengguna]");
+    if (ep) {
+      var uname = ep.getAttribute("data-user");
+      var aksiP = ep.getAttribute("data-aksi-pengguna");
+      var u = users.find(function (x) { return x.username === uname; });
+      if (!u) return;
+      if (aksiP === "sandi") {
+        tanyaKonfirmasi("Reset kata sandi?", "Kata sandi " + uname + " akan direset menjadi bk123.", function () {
+          u.password = "bk123"; saveUsers(); toast("Kata sandi " + uname + " direset menjadi bk123.");
+        });
+      } else if (aksiP === "nonaktif") {
+        u.aktif = false; saveUsers(); renderPengguna(); toast(uname + " dinonaktifkan.");
+      } else if (aksiP === "aktifkan") {
+        u.aktif = true; saveUsers(); renderPengguna(); toast(uname + " diaktifkan.");
+      }
+    }
+  });
+
+  // ---------- Detail showing + catatan ----------
+  function bukaDetailJadwal(j) {
+    var bisaUbah = currentUser && currentUser.role !== "pemilik";
+    var daftarK = state.catatan.filter(function (k) { return k.jadwalId === j.id; });
+    var html = '<p class="sub"><b>' + esc(j.kode) + '</b> · ' + esc(kodeProperti(j.propertiId) + " — " + namaProperti(j.propertiId)) + '<br>Calon: <b>' + esc(j.calon) + '</b> · ' + tglSingkat(j.tanggal) + ' · Jam ' + esc(j.jam) + ' · Agen: <b>' + esc(namaAgen(j.agenId)) + '</b></p>'
+      + '<div class="field" style="margin-top:10px"><label for="mdStatus">Status showing</label><select id="mdStatus" ' + (bisaUbah ? "" : "disabled") + '>' + STATUS_JADWAL.map(function (s) { return '<option' + (s === j.status ? ' selected' : '') + '>' + s + '</option>'; }).join("") + '</select></div>'
+      + '<h3 style="margin-top:14px">Catatan kunjungan (' + daftarK.length + ')</h3><div id="mdDaftarCatatan" style="margin-top:8px">'
+      + (daftarK.length ? daftarK.map(function (k) { return '<div class="catatan"><div class="nm">' + esc(k.penulis) + '</div><div class="dt">' + tglSingkat(k.tanggal) + '</div><div>' + esc(k.teks) + '</div></div>'; }).join("") : '<p class="kosong">Belum ada catatan kunjungan.</p>')
+      + '</div><div class="field" style="margin-top:10px"><label for="mdCatatanBaru">Tambah catatan kunjungan</label><textarea id="mdCatatanBaru" rows="2" placeholder="Tulis hasil kunjungan hari ini..."></textarea></div>'
+      + '<div class="aksi"><button class="btn kecil" id="mdSimpan" type="button">Simpan Perubahan</button></div>';
+    bukaModalForm("Detail showing — " + j.calon, html);
+    $("mdSimpan").addEventListener("click", function () {
+      if (bisaUbah) {
+        j.status = $("mdStatus").value;
+      }
+      var teks = $("mdCatatanBaru").value.trim();
+      if (teks) {
+        var kid = state.catatan.length ? Math.max.apply(null, state.catatan.map(function (k) { return k.id; })) + 1 : 1;
+        state.catatan.push({ id: kid, jadwalId: j.id, penulis: currentUser.name, teks: teks, tanggal: hariIniKey() });
+      }
+      saveState();
+      tutupModal();
+      renderSemua();
+      toast("Jadwal " + j.kode + " diperbarui.");
+    });
+  }
+
+  // ---------- Pengguna & sandi ----------
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim();
+    var nama = $("pgNama").value.trim();
+    var pw = $("pgPass").value;
+    if (!u || !nama || !pw) { toast("Isi nama pengguna, nama lengkap, dan kata sandi dulu."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: u, password: pw, name: nama, role: $("pgPeran").value, aktif: true, pemilikId: null });
+    saveUsers();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value;
+    var baru = $("sandiBaru").value;
+    if (lama !== currentUser.password) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    var u = users.find(function (x) { return x.username === currentUser.username; });
+    if (u) u.password = baru;
+    saveUsers();
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi berhasil diganti.");
+  });
+
+  // ---------- Laporan: ekspor & cadangan ----------
+  function csvJadwal(daftar) {
+    var baris = [["Kode", "Calon", "Properti", "Tanggal", "Jam", "Agen", "Status"]];
+    daftar.forEach(function (j) {
+      baris.push([j.kode, j.calon, kodeProperti(j.propertiId) + " " + namaProperti(j.propertiId), j.tanggal, j.jam, namaAgen(j.agenId), j.status]);
+    });
+    return baris.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+  }
+  $("btnExportCSV").addEventListener("click", function () {
+    unduh("laporan-property-management.csv", csvJadwal(jadwalDalamPeriode()), "text/csv;charset=utf-8");
+    toast("CSV diekspor.");
+  });
+  $("btnBackupJSON").addEventListener("click", function () {
+    var data = { app: "property-management", versi: 1, diekspor: hariIniKey(), data: state, pengguna: users };
+    unduh("backup-property-management.json", JSON.stringify(data, null, 2), "application/json");
+    toast("Backup JSON diunduh.");
+  });
+  $("btnPulihkan").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var d = JSON.parse(r.result);
+        var s = d.data || d;
+        if (!s.properti || !s.penyewa || !s.pembeli || !s.jadwal) throw new Error("format");
+        state = s;
+        if (d.pengguna) { users = d.pengguna; saveUsers(); }
+        saveState();
+        renderSemua();
+        toast("Data dipulihkan dari backup.");
+      } catch (err) {
+        toast("File backup tidak valid.");
+      }
+      $("inputRestore").value = "";
+    };
+    r.readAsText(f);
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Kembalikan data contoh?", "Semua perubahan Anda akan dihapus dan data contoh PM Oyen dikembalikan.", function () {
+      state = seedState();
+      users = seedUsers();
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Init ----------
+  $("tanggalHariIni").textContent = tanggalHariIni();
+  loadState();
+  loadUsers();
+  var sesi = null;
+  try { sesi = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) { /* abaikan */ }
+  if (sesi && sesi.username) {
+    var u = users.find(function (x) { return x.username === sesi.username && x.aktif; });
+    if (u) { masuk(u); } else { $("loginOverlay").style.display = ""; }
+  } else {
+    $("loginOverlay").style.display = "";
+  }
+  renderSemua();
+})();
+</script>
+</body>
+</html>
