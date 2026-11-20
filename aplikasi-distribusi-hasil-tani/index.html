@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aplikasi Distribusi Hasil Tani</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progres { height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; min-width: 110px; }
+  .progres > span { display: block; height: 100%; background: var(--blue); }
+  .progres.menipis > span { background: var(--amber); }
+  .progres.habis > span { background: var(--red); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .input-kecil { min-height: 2rem; padding: 5px 9px; font-size: 13.5px; }
+  select.input-kecil { width: auto; }
+  .bar-stok { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-stok .nama { width: 190px; font-weight: 700; font-size: 13.5px; }
+  .bar-stok .progres { flex: 1; }
+  .bar-stok .nilai { width: 90px; text-align: right; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO · APLIKASI DISTRIBUSI HASIL TANI</span>
+    <h1>Aplikasi <span class="aksen">Distribusi Hasil Tani</span></h1>
+    <p>Data hasil tani siap jual, pesanan pembeli, jadwal pengiriman, harga per komoditas, dan laporan distribusi — dalam satu aplikasi untuk petani, pengepul, dan distributor hasil tani.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="hasil">Hasil Tani <span class="badge" id="badgeHasil">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pesanan">Pesanan <span class="badge" id="badgePesanan">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pengiriman">Pengiriman <span class="badge" id="badgePengiriman">0</span></button>
+    <button class="tab-btn" type="button" data-tab="harga">Harga</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Distribusi</h2><p>Ringkasan stok hasil tani, pesanan pembeli, pengiriman, dan nilai distribusi.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Stok Tersisa</div><div class="angka" id="dStok" style="font-size:22px">0 kg</div><div class="sub" id="dStokSub"></div></div>
+      <div class="stat"><div class="label">Nilai Pesanan Aktif</div><div class="angka" id="dNilaiPesanan" style="font-size:22px">Rp0</div><div class="sub" id="dNilaiPesananSub"></div></div>
+      <div class="stat"><div class="label">Pesanan Selesai</div><div class="angka" id="dSelesai" style="font-size:22px">Rp0</div><div class="sub" id="dSelesaiSub"></div></div>
+      <div class="stat"><div class="label">Total Ongkir</div><div class="angka" id="dOngkir" style="font-size:22px">Rp0</div><div class="sub" id="dOngkirSub"></div></div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat warn"><div class="label">Pengiriman Hari Ini</div><div class="angka" id="dKirimHariIni" style="font-size:22px">0</div><div class="sub" id="dKirimHariIniSub"></div></div>
+      <div class="stat"><div class="label">Pengiriman Segera (1–7 hari)</div><div class="angka" id="dKirimSegera" style="font-size:22px">0</div><div class="sub" id="dKirimSegeraSub"></div></div>
+      <div class="stat bahaya"><div class="label">Pengiriman Lewat</div><div class="angka" id="dKirimLewat" style="font-size:22px">0</div><div class="sub" id="dKirimLewatSub"></div></div>
+      <div class="stat"><div class="label">Pesanan Dipesan</div><div class="angka" id="dDipesan" style="font-size:22px">0</div><div class="sub" id="dDipesanSub"></div></div>
+    </div>
+    <div class="card"><h3>Pengiriman yang Perlu Perhatian</h3><p class="sub">Pengiriman hari ini yang belum berangkat dan yang sudah lewat tanggal kirim (masih Dijadwalkan).</p><div id="daftarKirimPerhatian"></div></div>
+    <div class="card"><h3>Stok Tersisa per Komoditas</h3><p class="sub">Stok awal dikurangi pesanan aktif (Dipesan, Dikirim, Selesai). Pesanan yang dibatalkan mengembalikan stok.</p><div id="daftarStokRingkas"></div></div>
+    <div class="card"><h3>Pesanan Terbaru</h3><p class="sub">Lima pesanan terbaru dari data yang Anda lihat.</p><div id="daftarPesananRingkas"></div></div>
+    <div class="card">
+      <h3>Catat Cepat</h3>
+      <p class="sub">Tambah hasil tani, catat pesanan pembeli, atau buat jadwal pengiriman.</p>
+      <div class="row">
+        <button class="btn kecil oren" id="btnKeHasil" type="button">Tambah Hasil Tani</button>
+        <button class="btn kecil hijau hanya-kelola" id="btnKePesanan" type="button">Catat Pesanan</button>
+        <button class="btn kecil biru hanya-kelola" id="btnKePengiriman" type="button">Buat Pengiriman</button>
+      </div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Distributor atau Petani.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+        <div class="field"><label for="pgPeran">Peran</label><select id="pgPeran">
+          <option value="distributor">Distributor</option>
+          <option value="petani">Petani</option>
+        </select></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-hasil">
+    <div class="page-head"><h2>Hasil Tani Siap Jual</h2><p>Hasil tani yang tersedia untuk dijual. Stok tersisa = stok awal dikurangi pesanan aktif. Petani hanya melihat hasil taninya sendiri.</p></div>
+    <div class="card" id="cardTambahHasil">
+      <h3>Tambah Hasil Tani</h3>
+      <p class="sub">Harga per kg otomatis mengikuti daftar harga komoditas (bisa diubah di tab Harga).</p>
+      <div class="form-grid">
+        <div class="field"><label for="htKomoditas">Komoditas</label><select id="htKomoditas"></select></div>
+        <div class="field"><label for="htKg">Jumlah tersedia (kg)</label><input id="htKg" type="number" min="0" step="0.1" placeholder="cth: 500"></div>
+        <div class="field"><label for="htHarga">Harga per kg (Rp)</label><input id="htHarga" type="number" min="0" step="100" placeholder="cth: 5500"></div>
+        <div class="field"><label for="htLokasi">Lokasi / lahan</label><input id="htLokasi" type="text" placeholder="cth: Sawah Utara"></div>
+        <div class="field"><label for="htTanggal">Tanggal tersedia</label><input id="htTanggal" type="date"></div>
+        <div class="field"><label for="htPemilik">Pemilik</label><select id="htPemilik">
+          <option value="distributor">Distributor (Dedi Kurniawan)</option>
+          <option value="petani">Petani (Budi Santoso)</option>
+        </select></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahHasil" type="button">Simpan Hasil Tani</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fHasil">Filter stok</label><select id="fHasil">
+          <option value="semua">Semua</option>
+          <option value="tersedia">Masih tersedia</option>
+          <option value="habis">Stok habis</option>
+        </select></div>
+        <div class="field"><label for="cariHasil">Cari</label><input id="cariHasil" type="text" placeholder="cth: Padi atau Sawah"></div>
+      </div>
+      <p class="sub" id="ringkasanHasil"></p>
+      <div id="daftarHasil"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pesanan">
+    <div class="page-head"><h2>Pesanan Pembeli</h2><p>Pesanan mengurangi stok tersedia. Pesanan yang dibatalkan mengembalikan stok. Hanya Admin dan Distributor yang mencatat pesanan.</p></div>
+    <div class="card hanya-kelola" id="cardTambahPesanan">
+      <h3>Catat Pesanan Pembeli</h3>
+      <p class="sub">Pilih hasil tani — harga per kg dan stok tersisa tampil otomatis. Jumlah pesanan tidak boleh melebihi stok tersisa.</p>
+      <div class="form-grid">
+        <div class="field"><label for="psHasil">Hasil tani</label><select id="psHasil"></select></div>
+        <div class="field"><label for="psPembeli">Nama pembeli</label><input id="psPembeli" type="text" placeholder="cth: Toko Beras Jaya"></div>
+        <div class="field"><label for="psKg">Jumlah (kg)</label><input id="psKg" type="number" min="0" step="0.1" placeholder="cth: 100"></div>
+        <div class="field"><label for="psHarga">Harga per kg (Rp)</label><input id="psHarga" type="number" min="0" step="100" placeholder="cth: 5500"></div>
+        <div class="field"><label for="psTanggal">Tanggal pesanan</label><input id="psTanggal" type="date"></div>
+        <div class="field"><label>Total pesanan</label><input id="psTotal" type="text" readonly value="Rp0"></div>
+      </div>
+      <p class="sub" id="psInfo"></p>
+      <button class="btn kecil oren" id="btnTambahPesanan" type="button">Simpan Pesanan</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPesanan">Filter status</label><select id="fPesanan">
+          <option value="semua">Semua</option>
+          <option value="Dipesan">Dipesan</option>
+          <option value="Dikirim">Dikirim</option>
+          <option value="Selesai">Selesai</option>
+          <option value="Batal">Batal</option>
+        </select></div>
+        <div class="field"><label for="cariPesanan">Cari</label><input id="cariPesanan" type="text" placeholder="cth: Beras atau Padi"></div>
+      </div>
+      <p class="sub" id="ringkasanPesanan"></p>
+      <div id="daftarPesanan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pengiriman">
+    <div class="page-head"><h2>Jadwal Pengiriman</h2><p>Pengiriman dibuat dari pesanan yang masih Dipesan. Tandai Dikirim saat barang berangkat, Tandai Sampai saat diterima — status pesanan ikut berubah. Segera = 1–7 hari lagi, Lewat = tanggal sudah lewat dan masih Dijadwalkan.</p></div>
+    <div class="card hanya-kelola" id="cardTambahPengiriman">
+      <h3>Buat Jadwal Pengiriman</h3>
+      <p class="sub">Hanya pesanan berstatus Dipesan yang bisa dibuatkan pengiriman.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgPesanan">Pesanan</label><select id="pgPesanan"></select></div>
+        <div class="field"><label for="pgTanggal">Tanggal kirim</label><input id="pgTanggal" type="date"></div>
+        <div class="field"><label for="pgTujuan">Tujuan</label><input id="pgTujuan" type="text" placeholder="cth: Pasar Induk Kramat Jati"></div>
+        <div class="field"><label for="pgOngkir">Ongkir (Rp)</label><input id="pgOngkir" type="number" min="0" step="1000" placeholder="cth: 500000"></div>
+      </div>
+      <button class="btn kecil oren" id="btnTambahPengiriman" type="button">Simpan Pengiriman</button>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPengiriman">Filter status</label><select id="fPengiriman">
+          <option value="semua">Semua</option>
+          <option value="hariini">Hari ini</option>
+          <option value="segera">Segera (1–7 hari)</option>
+          <option value="lewat">Lewat tanggal</option>
+          <option value="Dijadwalkan">Dijadwalkan</option>
+          <option value="Dikirim">Dikirim</option>
+          <option value="Sampai">Sampai</option>
+        </select></div>
+        <div class="field"><label for="cariPengiriman">Cari</label><input id="cariPengiriman" type="text" placeholder="cth: Beras atau Pasar"></div>
+      </div>
+      <p class="sub" id="ringkasanPengiriman"></p>
+      <div id="daftarPengiriman"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-harga">
+    <div class="page-head"><h2>Harga per Komoditas</h2><p>Harga acuan per kg untuk setiap komoditas. Harga baru dipakai pesanan dan hasil tani yang dicatat setelah perubahan — pesanan lama tetap memakai harga saat dicatat.</p></div>
+    <div class="card hanya-kelola" id="cardTambahHarga">
+      <h3>Tambah / Ubah Harga Komoditas</h3>
+      <p class="sub">Hanya Admin dan Distributor. Bila komoditas sudah ada, harganya diperbarui.</p>
+      <div class="form-grid">
+        <div class="field"><label for="hgKomoditas">Komoditas</label><input id="hgKomoditas" type="text" placeholder="cth: Padi Ciherang"></div>
+        <div class="field"><label for="hgHarga">Harga per kg (Rp)</label><input id="hgHarga" type="number" min="0" step="100" placeholder="cth: 5500"></div>
+      </div>
+      <button class="btn kecil oren" id="btnSimpanHarga" type="button">Simpan Harga</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Harga</h3>
+      <p class="sub" id="ringkasanHarga"></p>
+      <div id="daftarHarga"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Distribusi</h2><p>Rekap per komoditas, per pembeli, per bulan, dan stok tersisa — serta ekspor ke CSV.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fBulanLaporan">Bulan laporan (untuk ekspor CSV)</label><select id="fBulanLaporan"></select></div>
+      </div>
+      <p class="sub" id="ringkasanLaporan"></p>
+      <h3 style="margin-top:10px">Per Komoditas</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerKomoditas"></table></div>
+      <h3 style="margin-top:18px">Per Pembeli</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerPembeli"></table></div>
+      <h3 style="margin-top:18px">Per Bulan (Pesanan &amp; Ongkir)</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelPerBulan"></table></div>
+      <h3 style="margin-top:18px">Stok Tersisa</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelStok"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor pesanan bulan yang dipilih ke CSV, cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Pesanan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Distribusi Hasil Tani.</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Hasil Tani</b> untuk melihat stok hasil tani siap jual. Tambah hasil tani baru dengan komoditas, jumlah kg, harga per kg, dan lokasi.</li>
+        <li>Buka tab <b>Pesanan</b> untuk mencatat pesanan pembeli. Pilih hasil tani — harga per kg dan stok tersisa tampil otomatis. Jumlah pesanan tidak boleh melebihi stok tersisa, karena pesanan langsung mengurangi stok.</li>
+        <li>Buka tab <b>Pengiriman</b> untuk membuat jadwal pengiriman dari pesanan yang masih Dipesan. Tandai <b>Dikirim</b> saat barang berangkat (pesanan ikut berubah jadi Dikirim), lalu <b>Sampai</b> saat diterima (pesanan jadi Selesai).</li>
+        <li>Buka tab <b>Harga</b> untuk melihat dan mengubah harga per kg tiap komoditas. Harga baru dipakai pesanan dan hasil tani yang dicatat setelah perubahan; pesanan lama tetap memakai harga saat dicatat.</li>
+        <li>Buka tab <b>Laporan</b> untuk rekap per komoditas, per pembeli, dan per bulan, serta stok tersisa. Ekspor pesanan ke CSV dari sini.</li>
+      </ol>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna dan melihat semua data.</li>
+        <li><b>Distributor</b> — mengelola hasil tani, pesanan, pengiriman, harga, dan laporan. Tidak bisa kelola pengguna.</li>
+        <li><b>Petani</b> — melihat hasil taninya sendiri, pesanan yang masuk untuk hasil taninya, dan jadwal pengirimannya. Bisa menambah hasil tani miliknya sendiri. Tidak bisa mencatat pesanan, pengiriman, atau mengubah harga.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat dan tidak ada pembayaran otomatis.</li>
+        <li>Harga per kg adalah harga acuan yang Anda isi — selalu cocokkan dengan harga pasar sebenarnya sebelum mengikat pesanan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Distributor — <b>distributor / distributor123</b> (Dedi Kurniawan)</li>
+        <li>Petani — <b>petani / petani123</b> (Budi Santoso)</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Distribusi Hasil Tani — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">DISTRIBUSI · APLIKASI DISTRIBUSI HASIL TANI</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Data hasil tani siap jual, pesanan pembeli, jadwal pengiriman, harga per komoditas, dan laporan distribusi.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Distributor — <b>distributor / distributor123</b> (Dedi Kurniawan)<br>
+      Petani — <b>petani / petani123</b> (Budi Santoso)
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function bulanKey(tanggal) { return String(tanggal || "").slice(0, 7); }
+  function namaBulan(bk) {
+    if (!bk) return "—";
+    var bg = bk.split("-");
+    var nama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][Number(bg[1]) - 1];
+    return nama + " " + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+  function selisihHari(kunci) {
+    if (!kunci) return 9999;
+    var bg = kunci.split("-");
+    var t = new Date(Number(bg[0]), Number(bg[1]) - 1, Number(bg[2]));
+    var kini = new Date(); kini.setHours(0, 0, 0, 0);
+    return Math.round((t - kini) / 86400000);
+  }
+  function angkaId(n) { return (Math.round(Number(n) * 10) / 10).toLocaleString("id-ID"); }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "aplikasiDistribusiHasilTani.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini, 20 Nov 2026) ----------
+     Diuji silang Python.
+       Harga 8 komoditas: Padi 5500, Jagung 4500, Tomat 9000, Udang 65000, Sawi 6000,
+         Lele 25000, Cabai 32000, Kopi 45000 (per kg).
+       Hasil tani 8: total stok awal 8.080 kg (Padi 4200, Jagung 1750, Tomat 580, Udang 380,
+         Sawi 140, Lele 480, Cabai 250, Kopi 300).
+       Pesanan 11 (1 Batal): aktif 10, total 4.530 kg / Rp44.660.000.
+         Dipesan 4 (2.050 kg / Rp22.050.000), Dikirim 2 (1.700 kg / Rp13.250.000),
+         Selesai 4 (780 kg / Rp9.360.000), Batal 1 (500 kg / Rp2.750.000).
+         Nov: 4.010 kg / Rp37.460.000; Okt: 520 kg / Rp7.200.000.
+       Stok tersisa: Padi 1700, Jagung 550, Tomat 380, Udang 230, Sawi 80, Lele 280,
+         Cabai 150, Kopi 180 — total 3.550 kg.
+       Pengiriman 8: Dijadwalkan 2 (segera 2: PG6 T+1, PG7 T+2; lewat 0), Dikirim 2,
+         Sampai 4; total ongkir Rp3.225.000 (Nov Rp2.425.000, Okt Rp800.000).
+       Petani (Tomat, Sawi, Cabai): stok awal 970 kg, pesanan aktif 360 kg / Rp5.360.000,
+         tersisa 610 kg, selesai Rp2.160.000, pengiriman 2 (Sampai), ongkir Rp225.000. */
+  function seedState() {
+    var harga = [
+      { komoditas: "Padi Ciherang", hargaPerKg: 5500 },
+      { komoditas: "Jagung Manis", hargaPerKg: 4500 },
+      { komoditas: "Tomat", hargaPerKg: 9000 },
+      { komoditas: "Udang Vaname", hargaPerKg: 65000 },
+      { komoditas: "Sawi Hijau", hargaPerKg: 6000 },
+      { komoditas: "Lele", hargaPerKg: 25000 },
+      { komoditas: "Cabai Merah", hargaPerKg: 32000 },
+      { komoditas: "Kopi Robusta", hargaPerKg: 45000 }
+    ];
+    function ht(id, komoditas, kg, hargaPerKg, lokasi, tanggal, pemilik) {
+      return { id: id, komoditas: komoditas, kg: kg, hargaPerKg: hargaPerKg, lokasi: lokasi, tanggal: tanggal, pemilik: pemilik };
+    }
+    var hasil = [
+      ht(1, "Padi Ciherang", 4200, 5500, "Sawah Utara", kunciPlus(-12), "distributor"),
+      ht(2, "Jagung Manis", 1750, 4500, "Kebun Jagung Timur", kunciPlus(-9), "distributor"),
+      ht(3, "Tomat", 580, 9000, "Kebun Tomat", kunciPlus(-6), "petani"),
+      ht(4, "Udang Vaname", 380, 65000, "Tambak Udang 2", kunciPlus(-11), "distributor"),
+      ht(5, "Sawi Hijau", 140, 6000, "Kebun Sawi", kunciPlus(-4), "petani"),
+      ht(6, "Lele", 480, 25000, "Kolam Lele 1", kunciPlus(-8), "distributor"),
+      ht(7, "Cabai Merah", 250, 32000, "Kebun Cabai", kunciPlus(-5), "petani"),
+      ht(8, "Kopi Robusta", 300, 45000, "Kebun Kopi", kunciPlus(-15), "distributor")
+    ];
+    function ps(id, hasilId, pembeli, kg, hargaPerKg, status, tanggal, pemilik) {
+      return { id: id, hasilId: hasilId, pembeli: pembeli, kg: kg, hargaPerKg: hargaPerKg, status: status, tanggal: tanggal, pemilik: pemilik };
+    }
+    var pesanan = [
+      ps(1, 1, "Toko Beras Jaya", 1000, 5500, "Dipesan", kunciPlus(-2), "distributor"),
+      ps(2, 1, "Pasar Induk Kramat Jati", 1500, 5500, "Dikirim", kunciPlus(-5), "distributor"),
+      ps(3, 3, "Restoran Sederhana", 200, 9000, "Selesai", kunciPlus(-3), "petani"),
+      ps(4, 4, "PT Seafood Nusantara", 150, 65000, "Dipesan", kunciPlus(-1), "distributor"),
+      ps(5, 5, "Warung Sayur Bu Ani", 60, 6000, "Selesai", kunciPlus(-4), "petani"),
+      ps(6, 6, "Toko Ikan Segar", 200, 25000, "Dikirim", kunciPlus(-6), "distributor"),
+      ps(7, 2, "Koperasi Tani Makmur", 800, 4500, "Dipesan", kunciPlus(0), "distributor"),
+      ps(8, 1, "Toko Beras Jaya", 500, 5500, "Batal", kunciPlus(-7), "distributor"),
+      ps(9, 7, "Supermarket Segar", 100, 32000, "Dipesan", kunciPlus(-1), "petani"),
+      ps(10, 8, "Pasar Tradisional Cikini", 120, 45000, "Selesai", kunciPlus(-23), "distributor"),
+      ps(11, 2, "Pasar Induk", 400, 4500, "Selesai", kunciPlus(-25), "distributor")
+    ];
+    function pg(id, pesananId, tanggalKirim, tujuan, ongkir, status, pemilik) {
+      return { id: id, pesananId: pesananId, tanggalKirim: tanggalKirim, tujuan: tujuan, ongkir: ongkir, status: status, pemilik: pemilik };
+    }
+    var pengiriman = [
+      pg(1, 2, kunciPlus(-5), "Pasar Induk Kramat Jati", 750000, "Dikirim", "distributor"),
+      pg(2, 6, kunciPlus(-6), "Toko Ikan Segar", 400000, "Dikirim", "distributor"),
+      pg(3, 3, kunciPlus(-3), "Restoran Sederhana", 150000, "Sampai", "petani"),
+      pg(4, 5, kunciPlus(-4), "Warung Sayur Bu Ani", 75000, "Sampai", "petani"),
+      pg(5, 10, kunciPlus(-23), "Supermarket Segar", 500000, "Sampai", "distributor"),
+      pg(6, 1, kunciPlus(1), "Toko Beras Jaya", 600000, "Dijadwalkan", "distributor"),
+      pg(7, 7, kunciPlus(2), "Koperasi Tani Makmur", 450000, "Dijadwalkan", "distributor"),
+      pg(8, 11, kunciPlus(-25), "Pasar Induk", 300000, "Sampai", "distributor")
+    ];
+    return { harga: harga, hasil: hasil, pesanan: pesanan, pengiriman: pengiriman,
+      nextHasilId: 9, nextPesananId: 12, nextPengirimanId: 9 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "distributor", nama: "Dedi Kurniawan", peran: "distributor", password: "distributor123", aktif: true },
+      { username: "petani", nama: "Budi Santoso", peran: "petani", password: "petani123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+      if (!raw) saveState();
+    } catch (e) { state = seedState(); saveState(); }
+    if (!state.harga) state.harga = [];
+    if (!state.hasil) state.hasil = [];
+    if (!state.pesanan) state.pesanan = [];
+    if (!state.pengiriman) state.pengiriman = [];
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+      if (!raw) saveUsers();
+    } catch (e) { users = seedUsers(); saveUsers(); }
+    if (!users.length) { users = seedUsers(); saveUsers(); }
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : r === "distributor" ? "Distributor" : "Petani"; }
+  function isAdmin() { return currentUser && currentUser.peran === "admin"; }
+  function bolehKelola() { return currentUser && (currentUser.peran === "admin" || currentUser.peran === "distributor"); }
+  function cariHasil(id) { return state.hasil.find(function (x) { return x.id === id; }); }
+  function cariPesanan(id) { return state.pesanan.find(function (x) { return x.id === id; }); }
+  function cariPengiriman(id) { return state.pengiriman.find(function (x) { return x.id === id; }); }
+  function hargaKomoditas(nama) {
+    var h = state.harga.find(function (x) { return x.komoditas === nama; });
+    return h ? Number(h.hargaPerKg) || 0 : 0;
+  }
+  function hasilTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.hasil.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.hasil.slice();
+  }
+  function idHasilTerlihat() {
+    var ids = {};
+    hasilTerlihat().forEach(function (h) { ids[h.id] = true; });
+    return ids;
+  }
+  function pesananTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.pesanan.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.pesanan.slice();
+  }
+  function pengirimanTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "petani") return state.pengiriman.filter(function (x) { return x.pemilik === currentUser.username; });
+    return state.pengiriman.slice();
+  }
+  function pesananAktif(p) { return p.status !== "Batal"; }
+  function nilaiPesanan(p) { return (Number(p.kg) || 0) * (Number(p.hargaPerKg) || 0); }
+  function stokTersisa(hasilId) {
+    var h = cariHasil(hasilId);
+    if (!h) return 0;
+    var terpakai = 0;
+    state.pesanan.forEach(function (p) {
+      if (p.hasilId === hasilId && pesananAktif(p)) terpakai += Number(p.kg) || 0;
+    });
+    return (Number(h.kg) || 0) - terpakai;
+  }
+  function totalStokTersisa() {
+    var t = 0;
+    hasilTerlihat().forEach(function (h) { t += stokTersisa(h.id); });
+    return t;
+  }
+  function totalStokAwal() {
+    var t = 0;
+    hasilTerlihat().forEach(function (h) { t += Number(h.kg) || 0; });
+    return t;
+  }
+  function totalNilaiPesananAktif() {
+    var t = 0;
+    pesananTerlihat().forEach(function (p) { if (pesananAktif(p)) t += nilaiPesanan(p); });
+    return t;
+  }
+  function totalNilaiSelesai() {
+    var t = 0;
+    pesananTerlihat().forEach(function (p) { if (p.status === "Selesai") t += nilaiPesanan(p); });
+    return t;
+  }
+  function totalOngkir() {
+    var t = 0;
+    pengirimanTerlihat().forEach(function (g) { t += Number(g.ongkir) || 0; });
+    return t;
+  }
+  function kirimBelum() { return pengirimanTerlihat().filter(function (g) { return g.status === "Dijadwalkan"; }); }
+  function bulanList(list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var bk = bulanKey(x.tanggal || x.tanggalKirim);
+      if (bk && !seen[bk]) { seen[bk] = true; out.push(bk); }
+    });
+    out.sort().reverse();
+    return out;
+  }
+  function isiPilihanBulan(sel, daftarBulan, defValue) {
+    var opts = ['<option value="semua">Semua bulan</option>'];
+    daftarBulan.forEach(function (bk) {
+      opts.push('<option value="' + bk + '">' + namaBulan(bk) + '</option>');
+    });
+    var simpan = sel.value;
+    sel.innerHTML = opts.join("");
+    if (simpan && (simpan === "semua" || daftarBulan.indexOf(simpan) !== -1)) sel.value = simpan;
+    else if (defValue) sel.value = defValue;
+    if (!sel.value) sel.value = "semua";
+  }
+  function labelKirim(tanggalKirim) {
+    var d = selisihHari(tanggalKirim);
+    if (d < 0) return '<span class="lencana st-habis">Lewat ' + Math.abs(d) + ' hari</span>';
+    if (d === 0) return '<span class="lencana st-rendah">Hari ini</span>';
+    if (d <= 7) return '<span class="lencana st-rendah">Dalam ' + d + ' hari</span>';
+    return '<span class="lencana st-biru">Dalam ' + d + ' hari</span>';
+  }
+  function lencanaStatusPesanan(s) {
+    if (s === "Dipesan") return '<span class="lencana st-biru">Dipesan</span>';
+    if (s === "Dikirim") return '<span class="lencana st-rendah">Dikirim</span>';
+    if (s === "Selesai") return '<span class="lencana st-aman">Selesai</span>';
+    return '<span class="lencana st-habis">Batal</span>';
+  }
+  function lencanaStatusKirim(s) {
+    if (s === "Dijadwalkan") return '<span class="lencana st-biru">Dijadwalkan</span>';
+    if (s === "Dikirim") return '<span class="lencana st-rendah">Dikirim</span>';
+    return '<span class="lencana st-aman">Sampai</span>';
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    document.querySelectorAll(".hanya-kelola").forEach(function (el) {
+      el.style.display = bolehKelola() ? "" : "none";
+    });
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+    pindahTab("dashboard");
+    renderSemua();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "hasil") renderHasil();
+    if (nama === "pesanan") renderPesanan();
+    if (nama === "pengiriman") renderPengiriman();
+    if (nama === "harga") renderHarga();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var hs = hasilTerlihat();
+    var ps = pesananTerlihat();
+    var pg = pengirimanTerlihat();
+    var sisaTotal = totalStokTersisa();
+    var stokAwal = totalStokAwal();
+    var nilaiAktif = totalNilaiPesananAktif();
+    var nilaiSelesai = totalNilaiSelesai();
+    var ongkir = totalOngkir();
+    var belum = kirimBelum();
+    var hariIni = belum.filter(function (g) { return g.tanggalKirim === hariIniKey(); });
+    var lewat = belum.filter(function (g) { return selisihHari(g.tanggalKirim) < 0; });
+    var segera = belum.filter(function (g) { var d = selisihHari(g.tanggalKirim); return d >= 1 && d <= 7; });
+    var dipesan = ps.filter(function (p) { return p.status === "Dipesan"; });
+    var kgAktif = 0;
+    ps.forEach(function (p) { if (pesananAktif(p)) kgAktif += Number(p.kg) || 0; });
+    $("dStok").textContent = angkaId(sisaTotal) + " kg";
+    $("dStokSub").textContent = "dari " + angkaId(stokAwal) + " kg stok awal · " + hs.length + " komoditas";
+    $("dNilaiPesanan").textContent = rupiah(nilaiAktif);
+    $("dNilaiPesananSub").textContent = angkaId(kgAktif) + " kg pesanan aktif";
+    $("dSelesai").textContent = rupiah(nilaiSelesai);
+    $("dSelesaiSub").textContent = ps.filter(function (p) { return p.status === "Selesai"; }).length + " pesanan selesai";
+    $("dOngkir").textContent = rupiah(ongkir);
+    $("dOngkirSub").textContent = pg.length + " pengiriman";
+    $("dKirimHariIni").textContent = hariIni.length;
+    $("dKirimHariIniSub").textContent = hariIni.length ? hariIni.map(function (g) { return esc(g.tujuan); }).join(", ") : "tidak ada pengiriman hari ini";
+    $("dKirimSegera").textContent = segera.length;
+    $("dKirimSegeraSub").textContent = pg.filter(function (g) { return g.status === "Sampai"; }).length + " pengiriman sudah sampai";
+    $("dKirimLewat").textContent = lewat.length;
+    $("dKirimLewatSub").textContent = lewat.length ? lewat.map(function (g) { return esc(g.tujuan); }).join(", ") : "tidak ada yang lewat";
+    $("dDipesan").textContent = dipesan.length;
+    $("dDipesanSub").textContent = rupiah(dipesan.reduce(function (a, p) { return a + nilaiPesanan(p); }, 0)) + " menunggu pengiriman";
+    $("badgeHasil").textContent = hs.length;
+    $("badgePesanan").textContent = dipesan.length;
+    $("badgePengiriman").textContent = belum.length;
+    var perhatian = belum.filter(function (g) { return g.tanggalKirim === hariIniKey() || selisihHari(g.tanggalKirim) < 0; });
+    perhatian = perhatian.slice().sort(function (a, b) { return a.tanggalKirim < b.tanggalKirim ? -1 : a.tanggalKirim > b.tanggalKirim ? 1 : a.id - b.id; });
+    $("daftarKirimPerhatian").innerHTML = perhatian.length ? perhatian.map(function (g) {
+      var p = cariPesanan(g.pesananId) || {};
+      var h = p ? cariHasil(p.hasilId) : null;
+      return '<div class="baris"><div><b>' + esc(g.tujuan) + '</b> ' + labelKirim(g.tanggalKirim) +
+        '<br><span class="sub">' + esc(p.pembeli || "") + ' · ' + esc(h ? h.komoditas : "") + ' ' + angkaId(p.kg || 0) + ' kg · ' + tglSingkat(g.tanggalKirim) + ' · ongkir ' + rupiah(g.ongkir) + '</span></div>' +
+        '<div style="text-align:right"><button class="btn hijau kecil" data-kirim-dikirim="' + g.id + '" type="button">Tandai Dikirim</button></div></div>';
+    }).join("") : '<p class="sub">Tidak ada pengiriman yang perlu perhatian hari ini.</p>';
+    document.querySelectorAll("[data-kirim-dikirim]").forEach(function (b) {
+      b.addEventListener("click", function () { tandaiDikirim(Number(b.getAttribute("data-kirim-dikirim"))); });
+    });
+    $("daftarStokRingkas").innerHTML = hs.length ? hs.map(function (h) {
+      var sisa = stokTersisa(h.id);
+      var persen = Number(h.kg) > 0 ? Math.round(sisa / Number(h.kg) * 100) : 0;
+      var kelas = sisa <= 0 ? "habis" : persen <= 25 ? "menipis" : "";
+      return '<div class="bar-stok"><div class="nama">' + esc(h.komoditas) + '</div><div class="progres ' + kelas + '"><span style="width:' + persen + '%"></span></div><div class="nilai">' + angkaId(sisa) + ' / ' + angkaId(h.kg) + ' kg</div></div>';
+    }).join("") + '<p class="sub">Total tersisa ' + angkaId(sisaTotal) + ' kg dari ' + angkaId(stokAwal) + ' kg stok awal.</p>'
+      : '<p class="sub">Belum ada hasil tani.</p>';
+    var terbaru = ps.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; }).slice(0, 5);
+    $("daftarPesananRingkas").innerHTML = terbaru.length ? terbaru.map(function (p) {
+      var h = cariHasil(p.hasilId) || {};
+      return '<div class="baris"><div><b>' + esc(p.pembeli) + '</b> ' + lencanaStatusPesanan(p.status) +
+        '<br><span class="sub">' + esc(h.komoditas || "") + ' · ' + angkaId(p.kg) + ' kg × ' + rupiah(p.hargaPerKg) + ' · ' + tglSingkat(p.tanggal) + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(nilaiPesanan(p)) + '</b></div></div>';
+    }).join("") : '<p class="sub">Belum ada pesanan.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Datanya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: $("pgPeran").value, password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+  $("btnKeHasil").addEventListener("click", function () { pindahTab("hasil"); });
+  $("btnKePesanan").addEventListener("click", function () { pindahTab("pesanan"); });
+  $("btnKePengiriman").addEventListener("click", function () { pindahTab("pengiriman"); });
+
+  /* ---------- Hasil Tani ---------- */
+  function isiPilihanKomoditas() {
+    var sel = $("htKomoditas");
+    var simpan = sel.value;
+    sel.innerHTML = state.harga.map(function (h) {
+      return '<option value="' + esc(h.komoditas) + '">' + esc(h.komoditas) + ' · ' + rupiah(h.hargaPerKg) + '/kg</option>';
+    }).join("");
+    if (simpan && state.harga.some(function (h) { return h.komoditas === simpan; })) sel.value = simpan;
+    var harga = hargaKomoditas(sel.value);
+    if (harga > 0) $("htHarga").value = harga;
+  }
+  function renderHasil() {
+    isiPilihanKomoditas();
+    if (!$("htTanggal").value) $("htTanggal").value = hariIniKey();
+    if (currentUser && currentUser.peran === "petani") {
+      $("htPemilik").value = "petani";
+      $("htPemilik").disabled = true;
+    } else {
+      $("htPemilik").disabled = false;
+    }
+    var filter = $("fHasil").value || "semua";
+    var cari = ($("cariHasil").value || "").trim().toLowerCase();
+    var list = hasilTerlihat();
+    if (filter === "tersedia") list = list.filter(function (h) { return stokTersisa(h.id) > 0; });
+    else if (filter === "habis") list = list.filter(function (h) { return stokTersisa(h.id) <= 0; });
+    if (cari) list = list.filter(function (h) {
+      return (h.komoditas || "").toLowerCase().indexOf(cari) !== -1 || (h.lokasi || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    var totAwal = 0, totSisa = 0;
+    hasilTerlihat().forEach(function (h) { totAwal += Number(h.kg) || 0; totSisa += stokTersisa(h.id); });
+    $("ringkasanHasil").textContent = list.length + " hasil tani · stok awal " + angkaId(totAwal) + " kg · tersisa " + angkaId(totSisa) + " kg" +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    $("daftarHasil").innerHTML = list.length ? list.map(function (h) {
+      var sisa = stokTersisa(h.id);
+      var lencana = sisa <= 0 ? '<span class="lencana st-habis">Stok habis</span>' : sisa / Number(h.kg) <= 0.25 ? '<span class="lencana st-rendah">Stok menipis</span>' : '<span class="lencana st-aman">Tersedia</span>';
+      var aksi = "";
+      if (bolehKelola()) aksi += '<button class="btn biru kecil" data-hasil-pesan="' + h.id + '" type="button">Buat Pesanan</button> ';
+      if (bolehKelola() || (currentUser && currentUser.peran === "petani" && h.pemilik === currentUser.username)) {
+        aksi += '<button class="btn ghost kecil" data-hapus-hasil="' + h.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(h.komoditas) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(h.lokasi) + ' · tersedia ' + tglSingkat(h.tanggal) + ' · ' + rupiah(h.hargaPerKg) + '/kg · pemilik ' + esc(h.pemilik) + '</span></div>' +
+        '<div style="text-align:right"><b>' + angkaId(sisa) + ' / ' + angkaId(h.kg) + ' kg</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada hasil tani yang cocok.</p>';
+    document.querySelectorAll("[data-hasil-pesan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-hasil-pesan"));
+        pindahTab("pesanan");
+        $("psHasil").value = id;
+        isiPesananForm();
+        $("psKg").focus();
+      });
+    });
+    document.querySelectorAll("[data-hapus-hasil]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var h = cariHasil(Number(b.getAttribute("data-hapus-hasil")));
+        if (!h) return;
+        var aktif = state.pesanan.some(function (p) { return p.hasilId === h.id && pesananAktif(p); });
+        if (aktif) { toast("Tidak bisa hapus — \"" + h.komoditas + "\" masih punya pesanan aktif."); return; }
+        tanyaKonfirmasi("Hapus Hasil Tani", "Hapus \"" + h.komoditas + "\" (" + angkaId(h.kg) + " kg)?", function () {
+          state.hasil = state.hasil.filter(function (x) { return x.id !== h.id; });
+          saveState(); renderSemua(); toast("\"" + h.komoditas + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("fHasil").addEventListener("change", renderHasil);
+  $("cariHasil").addEventListener("input", renderHasil);
+  $("htKomoditas").addEventListener("change", function () {
+    var harga = hargaKomoditas($("htKomoditas").value);
+    if (harga > 0) $("htHarga").value = harga;
+  });
+  $("btnTambahHasil").addEventListener("click", function () {
+    var komoditas = $("htKomoditas").value;
+    var kg = Number($("htKg").value), harga = Number($("htHarga").value);
+    var lokasi = $("htLokasi").value.trim(), tanggal = $("htTanggal").value;
+    var pemilik = currentUser && currentUser.peran === "petani" ? "petani" : $("htPemilik").value;
+    if (!komoditas) { toast("Pilih komoditas dulu."); return; }
+    if (!(kg > 0)) { toast("Isi jumlah tersedia (lebih dari 0 kg)."); return; }
+    if (!(harga > 0)) { toast("Isi harga per kg."); return; }
+    if (!lokasi) { toast("Isi lokasi / lahan."); return; }
+    if (!tanggal) { toast("Isi tanggal tersedia."); return; }
+    state.hasil.push({ id: state.nextHasilId++, komoditas: komoditas, kg: kg, hargaPerKg: harga, lokasi: lokasi, tanggal: tanggal, pemilik: pemilik });
+    saveState();
+    $("htKg").value = ""; $("htLokasi").value = "";
+    renderSemua();
+    toast("Hasil tani \"" + komoditas + "\" (" + angkaId(kg) + " kg) tersimpan.");
+  });
+
+  /* ---------- Pesanan ---------- */
+  function isiPesananForm() {
+    var hasilId = Number($("psHasil").value);
+    var h = cariHasil(hasilId);
+    if (h) {
+      $("psHarga").value = h.hargaPerKg;
+      var sisa = stokTersisa(hasilId);
+      $("psInfo").textContent = "Stok tersisa " + angkaId(sisa) + " kg dari " + angkaId(h.kg) + " kg · harga " + rupiah(h.hargaPerKg) + "/kg · " + esc(h.lokasi) + ".";
+    } else {
+      $("psInfo").textContent = "";
+    }
+    hitungTotalPesanan();
+  }
+  function hitungTotalPesanan() {
+    var kg = Number($("psKg").value) || 0, harga = Number($("psHarga").value) || 0;
+    $("psTotal").value = rupiah(kg * harga);
+  }
+  function renderPesanan() {
+    var sel = $("psHasil");
+    var simpan = sel.value;
+    var listHasil = hasilTerlihat();
+    sel.innerHTML = listHasil.map(function (h) {
+      return '<option value="' + h.id + '">' + esc(h.komoditas) + ' · tersisa ' + angkaId(stokTersisa(h.id)) + ' kg · ' + rupiah(h.hargaPerKg) + '/kg</option>';
+    }).join("");
+    if (simpan && listHasil.some(function (h) { return String(h.id) === String(simpan); })) sel.value = simpan;
+    if (!$("psTanggal").value) $("psTanggal").value = hariIniKey();
+    isiPesananForm();
+    var filter = $("fPesanan").value || "semua";
+    var cari = ($("cariPesanan").value || "").trim().toLowerCase();
+    var list = pesananTerlihat();
+    var totAktif = 0, totSelesai = 0;
+    list.forEach(function (p) {
+      if (pesananAktif(p)) totAktif += nilaiPesanan(p);
+      if (p.status === "Selesai") totSelesai += nilaiPesanan(p);
+    });
+    if (filter !== "semua") list = list.filter(function (p) { return p.status === filter; });
+    if (cari) list = list.filter(function (p) {
+      var h = cariHasil(p.hasilId) || {};
+      return (p.pembeli || "").toLowerCase().indexOf(cari) !== -1 || (h.komoditas || "").toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return b.tanggal < a.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    $("ringkasanPesanan").textContent = list.length + " pesanan · nilai aktif " + rupiah(totAktif) + " · selesai " + rupiah(totSelesai) + ".";
+    $("daftarPesanan").innerHTML = list.length ? list.map(function (p) {
+      var h = cariHasil(p.hasilId) || {};
+      var aksi = "";
+      if (bolehKelola() && p.status === "Dipesan") {
+        aksi += '<button class="btn biru kecil" data-pesanan-kirim="' + p.id + '" type="button">Buat Pengiriman</button> ';
+        aksi += '<button class="btn ghost kecil" data-pesanan-batal="' + p.id + '" type="button">Batalkan</button> ';
+      }
+      if (bolehKelola() && p.status === "Batal") aksi += '<button class="btn ghost kecil" data-hapus-pesanan="' + p.id + '" type="button">Hapus</button>';
+      return '<div class="baris"><div><b>' + esc(p.pembeli) + '</b> ' + lencanaStatusPesanan(p.status) +
+        '<br><span class="sub">' + esc(h.komoditas || "") + ' · ' + angkaId(p.kg) + ' kg × ' + rupiah(p.hargaPerKg) + ' · ' + tglSingkat(p.tanggal) + ' · ' + esc(h.lokasi || "") + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(nilaiPesanan(p)) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada pesanan yang cocok.</p>';
+    document.querySelectorAll("[data-pesanan-kirim]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = Number(b.getAttribute("data-pesanan-kirim"));
+        pindahTab("pengiriman");
+        $("pgPesanan").value = id;
+        isiPengirimanForm();
+        $("pgTanggal").focus();
+      });
+    });
+    document.querySelectorAll("[data-pesanan-batal]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariPesanan(Number(b.getAttribute("data-pesanan-batal")));
+        if (!p) return;
+        tanyaKonfirmasi("Batalkan Pesanan", "Batalkan pesanan \"" + p.pembeli + "\" (" + angkaId(p.kg) + " kg)? Stok " + angkaId(p.kg) + " kg akan kembali tersedia.", function () {
+          p.status = "Batal";
+          saveState(); renderSemua(); toast("Pesanan dibatalkan — stok kembali tersedia.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-pesanan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = cariPesanan(Number(b.getAttribute("data-hapus-pesanan")));
+        if (!p) return;
+        tanyaKonfirmasi("Hapus Pesanan", "Hapus pesanan batal \"" + p.pembeli + "\"?", function () {
+          state.pesanan = state.pesanan.filter(function (x) { return x.id !== p.id; });
+          saveState(); renderSemua(); toast("Pesanan dihapus.");
+        });
+      });
+    });
+  }
+  $("fPesanan").addEventListener("change", renderPesanan);
+  $("cariPesanan").addEventListener("input", renderPesanan);
+  $("psHasil").addEventListener("change", isiPesananForm);
+  $("psKg").addEventListener("input", hitungTotalPesanan);
+  $("psHarga").addEventListener("input", hitungTotalPesanan);
+  $("btnTambahPesanan").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Distributor yang bisa mencatat pesanan."); return; }
+    var hasilId = Number($("psHasil").value);
+    var h = cariHasil(hasilId);
+    if (!h) { toast("Pilih hasil tani dulu."); return; }
+    var pembeli = $("psPembeli").value.trim();
+    var kg = Number($("psKg").value), harga = Number($("psHarga").value);
+    var tanggal = $("psTanggal").value;
+    if (!pembeli) { toast("Isi nama pembeli dulu."); return; }
+    if (!(kg > 0)) { toast("Isi jumlah pesanan (lebih dari 0 kg)."); return; }
+    if (!(harga > 0)) { toast("Isi harga per kg."); return; }
+    if (!tanggal) { toast("Isi tanggal pesanan."); return; }
+    var sisa = stokTersisa(hasilId);
+    if (kg > sisa + 0.001) {
+      toast("Pesanan ditolak — jumlah " + angkaId(kg) + " kg melebihi stok tersisa " + angkaId(sisa) + " kg.");
+      return;
+    }
+    state.pesanan.push({ id: state.nextPesananId++, hasilId: hasilId, pembeli: pembeli, kg: kg, hargaPerKg: harga, status: "Dipesan", tanggal: tanggal, pemilik: h.pemilik });
+    saveState();
+    $("psPembeli").value = ""; $("psKg").value = ""; hitungTotalPesanan();
+    renderSemua();
+    toast("Pesanan \"" + pembeli + "\" (" + angkaId(kg) + " kg, " + rupiah(kg * harga) + ") tersimpan.");
+  });
+
+  /* ---------- Pengiriman ---------- */
+  function isiPengirimanForm() {
+    var pesananId = Number($("pgPesanan").value);
+    var p = cariPesanan(pesananId);
+    if (p) {
+      if (!$("pgTujuan").value) $("pgTujuan").value = p.pembeli;
+    }
+  }
+  function tandaiDikirim(id) {
+    var g = cariPengiriman(id);
+    if (!g || g.status !== "Dijadwalkan") return;
+    g.status = "Dikirim";
+    var p = cariPesanan(g.pesananId);
+    if (p && p.status === "Dipesan") p.status = "Dikirim";
+    saveState(); renderSemua();
+    toast("Pengiriman ke \"" + g.tujuan + "\" ditandai Dikirim.");
+  }
+  function tandaiSampai(id) {
+    var g = cariPengiriman(id);
+    if (!g || g.status !== "Dikirim") return;
+    g.status = "Sampai";
+    var p = cariPesanan(g.pesananId);
+    if (p && p.status === "Dikirim") p.status = "Selesai";
+    saveState(); renderSemua();
+    toast("Pengiriman ke \"" + g.tujuan + "\" ditandai Sampai — pesanan selesai.");
+  }
+  function renderPengiriman() {
+    var sel = $("pgPesanan");
+    var simpan = sel.value;
+    var listPesanan = pesananTerlihat().filter(function (p) { return p.status === "Dipesan"; });
+    sel.innerHTML = listPesanan.map(function (p) {
+      var h = cariHasil(p.hasilId) || {};
+      return '<option value="' + p.id + '">' + esc(p.pembeli) + ' · ' + esc(h.komoditas || "") + ' ' + angkaId(p.kg) + ' kg · ' + tglSingkat(p.tanggal) + '</option>';
+    }).join("");
+    if (simpan && listPesanan.some(function (p) { return String(p.id) === String(simpan); })) sel.value = simpan;
+    if (!$("pgTanggal").value) $("pgTanggal").value = hariIniKey();
+    var filter = $("fPengiriman").value || "semua";
+    var cari = ($("cariPengiriman").value || "").trim().toLowerCase();
+    var semua = pengirimanTerlihat();
+    var belum = semua.filter(function (g) { return g.status === "Dijadwalkan"; });
+    var hariIni = belum.filter(function (g) { return g.tanggalKirim === hariIniKey(); });
+    var lewat = belum.filter(function (g) { return selisihHari(g.tanggalKirim) < 0; });
+    var segera = belum.filter(function (g) { var d = selisihHari(g.tanggalKirim); return d >= 1 && d <= 7; });
+    var list = semua;
+    if (filter === "hariini") list = hariIni;
+    else if (filter === "segera") list = segera;
+    else if (filter === "lewat") list = lewat;
+    else if (filter === "Dijadwalkan" || filter === "Dikirim" || filter === "Sampai") list = semua.filter(function (g) { return g.status === filter; });
+    if (cari) list = list.filter(function (g) {
+      var p = cariPesanan(g.pesananId) || {};
+      var h = p ? cariHasil(p.hasilId) : null;
+      return (g.tujuan || "").toLowerCase().indexOf(cari) !== -1 || (p.pembeli || "").toLowerCase().indexOf(cari) !== -1 || (h ? h.komoditas : "").toLowerCase().indexOf(cari) !== -1;
+    });
+    list = list.slice().sort(function (a, b) { return a.tanggalKirim < b.tanggalKirim ? -1 : a.tanggalKirim > b.tanggalKirim ? 1 : a.id - b.id; });
+    var totOngkir = 0;
+    semua.forEach(function (g) { totOngkir += Number(g.ongkir) || 0; });
+    $("ringkasanPengiriman").textContent = list.length + " pengiriman · hari ini " + hariIni.length + " · segera " + segera.length + " · lewat " + lewat.length + " · total ongkir " + rupiah(totOngkir) + ".";
+    $("daftarPengiriman").innerHTML = list.length ? list.map(function (g) {
+      var p = cariPesanan(g.pesananId) || {};
+      var h = p ? cariHasil(p.hasilId) : null;
+      var lencana = g.status === "Dijadwalkan" ? labelKirim(g.tanggalKirim) : lencanaStatusKirim(g.status);
+      var aksi = "";
+      if (bolehKelola()) {
+        if (g.status === "Dijadwalkan") {
+          aksi += '<button class="btn hijau kecil" data-kirim-dikirim="' + g.id + '" type="button">Tandai Dikirim</button> ';
+          aksi += '<button class="btn ghost kecil" data-hapus-kirim="' + g.id + '" type="button">Hapus</button>';
+        } else if (g.status === "Dikirim") {
+          aksi += '<button class="btn hijau kecil" data-kirim-sampai="' + g.id + '" type="button">Tandai Sampai</button> ';
+        }
+      }
+      return '<div class="baris"><div><b>' + esc(g.tujuan) + '</b> ' + lencana +
+        '<br><span class="sub">' + esc(p.pembeli || "") + ' · ' + esc(h ? h.komoditas : "") + ' ' + angkaId(p.kg || 0) + ' kg · kirim ' + tglSingkat(g.tanggalKirim) + ' · ongkir ' + rupiah(g.ongkir) + '</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada pengiriman yang cocok.</p>';
+    document.querySelectorAll("[data-kirim-dikirim]").forEach(function (b) {
+      b.addEventListener("click", function () { tandaiDikirim(Number(b.getAttribute("data-kirim-dikirim"))); });
+    });
+    document.querySelectorAll("[data-kirim-sampai]").forEach(function (b) {
+      b.addEventListener("click", function () { tandaiSampai(Number(b.getAttribute("data-kirim-sampai"))); });
+    });
+    document.querySelectorAll("[data-hapus-kirim]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var g = cariPengiriman(Number(b.getAttribute("data-hapus-kirim")));
+        if (!g) return;
+        tanyaKonfirmasi("Hapus Pengiriman", "Hapus jadwal pengiriman ke \"" + g.tujuan + "\"? Pesanan kembali berstatus Dipesan.", function () {
+          state.pengiriman = state.pengiriman.filter(function (x) { return x.id !== g.id; });
+          saveState(); renderSemua(); toast("Pengiriman dihapus.");
+        });
+      });
+    });
+  }
+  $("fPengiriman").addEventListener("change", renderPengiriman);
+  $("cariPengiriman").addEventListener("input", renderPengiriman);
+  $("pgPesanan").addEventListener("change", function () { $("pgTujuan").value = ""; isiPengirimanForm(); });
+  $("btnTambahPengiriman").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Distributor yang bisa membuat pengiriman."); return; }
+    var pesananId = Number($("pgPesanan").value);
+    var p = cariPesanan(pesananId);
+    if (!p) { toast("Pilih pesanan dulu."); return; }
+    if (p.status !== "Dipesan") { toast("Pesanan ini sudah tidak berstatus Dipesan."); return; }
+    var tanggal = $("pgTanggal").value;
+    var tujuan = $("pgTujuan").value.trim() || p.pembeli;
+    var ongkir = Number($("pgOngkir").value);
+    if (!tanggal) { toast("Isi tanggal kirim."); return; }
+    if (isNaN(ongkir) || ongkir < 0) { toast("Isi ongkir (angka, minimal 0)."); return; }
+    state.pengiriman.push({ id: state.nextPengirimanId++, pesananId: pesananId, tanggalKirim: tanggal, tujuan: tujuan, ongkir: ongkir, status: "Dijadwalkan", pemilik: p.pemilik });
+    saveState();
+    $("pgTujuan").value = ""; $("pgOngkir").value = "";
+    renderSemua();
+    toast("Pengiriman ke \"" + tujuan + "\" dijadwalkan " + tglSingkat(tanggal) + ".");
+  });
+
+  /* ---------- Harga ---------- */
+  function renderHarga() {
+    $("ringkasanHarga").textContent = state.harga.length + " komoditas dalam daftar harga.";
+    $("daftarHarga").innerHTML = state.harga.length ? state.harga.map(function (h) {
+      var aksi = "";
+      if (bolehKelola()) {
+        aksi = '<input class="input-kecil" style="width:130px" type="number" min="0" step="100" value="' + h.hargaPerKg + '" data-harga-ubah="' + esc(h.komoditas) + '"> ' +
+          '<button class="btn biru kecil" data-harga-simpan="' + esc(h.komoditas) + '" type="button">Simpan</button> ' +
+          '<button class="btn ghost kecil" data-harga-hapus="' + esc(h.komoditas) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(h.komoditas) + '</b><br><span class="sub">' + rupiah(h.hargaPerKg) + ' per kg</span></div>' +
+        '<div style="text-align:right">' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada daftar harga.</p>';
+    document.querySelectorAll("[data-harga-simpan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-harga-simpan");
+        var input = document.querySelector('[data-harga-ubah="' + nama.replace(/"/g, '\\"') + '"]');
+        var nilai = input ? Number(input.value) : NaN;
+        if (!(nilai > 0)) { toast("Isi harga per kg (lebih dari 0)."); return; }
+        var h = state.harga.find(function (x) { return x.komoditas === nama; });
+        if (!h) return;
+        h.hargaPerKg = nilai;
+        saveState(); renderSemua();
+        toast("Harga \"" + nama + "\" diubah menjadi " + rupiah(nilai) + "/kg.");
+      });
+    });
+    document.querySelectorAll("[data-harga-hapus]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-harga-hapus");
+        tanyaKonfirmasi("Hapus Harga", "Hapus harga komoditas \"" + nama + "\" dari daftar?", function () {
+          state.harga = state.harga.filter(function (x) { return x.komoditas !== nama; });
+          saveState(); renderSemua(); toast("Harga \"" + nama + "\" dihapus.");
+        });
+      });
+    });
+  }
+  $("btnSimpanHarga").addEventListener("click", function () {
+    if (!bolehKelola()) { toast("Hanya Admin dan Distributor yang bisa mengubah harga."); return; }
+    var nama = $("hgKomoditas").value.trim();
+    var nilai = Number($("hgHarga").value);
+    if (!nama) { toast("Isi nama komoditas dulu."); return; }
+    if (!(nilai > 0)) { toast("Isi harga per kg (lebih dari 0)."); return; }
+    var h = state.harga.find(function (x) { return x.komoditas.toLowerCase() === nama.toLowerCase(); });
+    if (h) {
+      h.hargaPerKg = nilai;
+      toast("Harga \"" + h.komoditas + "\" diperbarui menjadi " + rupiah(nilai) + "/kg.");
+    } else {
+      state.harga.push({ komoditas: nama, hargaPerKg: nilai });
+      toast("Harga \"" + nama + "\" ditambahkan: " + rupiah(nilai) + "/kg.");
+    }
+    saveState();
+    $("hgKomoditas").value = ""; $("hgHarga").value = "";
+    renderSemua();
+  });
+
+  /* ---------- Laporan ---------- */
+  var bulanLaporanDipilih = false;
+  function renderLaporan() {
+    var selBulan = $("fBulanLaporan");
+    var simpan = selBulan.value;
+    var bulanGabung = bulanList(pesananTerlihat().concat(pengirimanTerlihat()));
+    isiPilihanBulan(selBulan, bulanGabung, "semua");
+    /* Sebelum pengguna memilih sendiri, bulan laporan selalu bulan berjalan
+       (bukan "semua" yang menempel dari render sebelum login, saat data
+       per peran masih kosong). Setelah pengguna memilih, pilihan dihormati. */
+    if (!bulanLaporanDipilih) {
+      var bkBerjalan = bulanKey(hariIniKey());
+      selBulan.value = bulanGabung.indexOf(bkBerjalan) !== -1 ? bkBerjalan : "semua";
+    } else if (simpan && bulanGabung.indexOf(simpan) === -1 && simpan !== "semua") {
+      selBulan.value = "semua";
+    }
+    var hs = hasilTerlihat();
+    var ps = pesananTerlihat();
+    var pg = pengirimanTerlihat();
+    var psAktif = ps.filter(pesananAktif);
+    var kgAktif = 0, nilaiAktif = 0;
+    psAktif.forEach(function (p) { kgAktif += Number(p.kg) || 0; nilaiAktif += nilaiPesanan(p); });
+    $("ringkasanLaporan").textContent = hs.length + " komoditas · " + ps.length + " pesanan (" + psAktif.length + " aktif) · " + angkaId(kgAktif) + " kg · nilai aktif " + rupiah(nilaiAktif) + " · ongkir " + rupiah(totalOngkir()) +
+      (currentUser && currentUser.peran === "petani" ? " (milik Anda)" : " (semua)") + ".";
+    var perKomoditas = {};
+    psAktif.forEach(function (p) {
+      var h = cariHasil(p.hasilId) || {};
+      var k = h.komoditas || "—";
+      if (!perKomoditas[k]) perKomoditas[k] = { kg: 0, nilai: 0, pesanan: 0 };
+      perKomoditas[k].kg += Number(p.kg) || 0;
+      perKomoditas[k].nilai += nilaiPesanan(p);
+      perKomoditas[k].pesanan += 1;
+    });
+    var kunciKom = Object.keys(perKomoditas).sort();
+    $("tabelPerKomoditas").innerHTML = "<tr><th>Komoditas</th><th class=\"angka\">Pesanan</th><th class=\"angka\">Total (kg)</th><th class=\"angka\">Nilai</th></tr>" +
+      (kunciKom.length ? kunciKom.map(function (k) {
+        var r = perKomoditas[k];
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + r.pesanan + "</td><td class=\"angka\">" + angkaId(r.kg) + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perPembeli = {};
+    psAktif.forEach(function (p) {
+      if (!perPembeli[p.pembeli]) perPembeli[p.pembeli] = { kg: 0, nilai: 0, pesanan: 0 };
+      perPembeli[p.pembeli].kg += Number(p.kg) || 0;
+      perPembeli[p.pembeli].nilai += nilaiPesanan(p);
+      perPembeli[p.pembeli].pesanan += 1;
+    });
+    var kunciPem = Object.keys(perPembeli).sort();
+    $("tabelPerPembeli").innerHTML = "<tr><th>Pembeli</th><th class=\"angka\">Pesanan</th><th class=\"angka\">Total (kg)</th><th class=\"angka\">Nilai</th></tr>" +
+      (kunciPem.length ? kunciPem.map(function (k) {
+        var r = perPembeli[k];
+        return "<tr><td><b>" + esc(k) + "</b></td><td class=\"angka\">" + r.pesanan + "</td><td class=\"angka\">" + angkaId(r.kg) + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+    var perBulan = {};
+    psAktif.forEach(function (p) {
+      var k = bulanKey(p.tanggal);
+      if (!perBulan[k]) perBulan[k] = { kg: 0, nilai: 0, ongkir: 0 };
+      perBulan[k].kg += Number(p.kg) || 0;
+      perBulan[k].nilai += nilaiPesanan(p);
+    });
+    pg.forEach(function (g) {
+      var k = bulanKey(g.tanggalKirim);
+      if (!perBulan[k]) perBulan[k] = { kg: 0, nilai: 0, ongkir: 0 };
+      perBulan[k].ongkir += Number(g.ongkir) || 0;
+    });
+    var kunciBulan = Object.keys(perBulan).sort().reverse();
+    $("tabelPerBulan").innerHTML = "<tr><th>Bulan</th><th class=\"angka\">Total (kg)</th><th class=\"angka\">Nilai Pesanan</th><th class=\"angka\">Ongkir</th><th class=\"angka\">Nilai − Ongkir</th></tr>" +
+      (kunciBulan.length ? kunciBulan.map(function (k) {
+        var r = perBulan[k];
+        return "<tr><td><b>" + namaBulan(k) + "</b></td><td class=\"angka\">" + angkaId(r.kg) + "</td><td class=\"angka\">" + rupiah(r.nilai) + "</td><td class=\"angka\">" + rupiah(r.ongkir) + "</td><td class=\"angka\">" + rupiah(r.nilai - r.ongkir) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Belum ada data.</td></tr>');
+    $("tabelStok").innerHTML = "<tr><th>Komoditas</th><th class=\"angka\">Stok Awal (kg)</th><th class=\"angka\">Terpesan (kg)</th><th class=\"angka\">Tersisa (kg)</th></tr>" +
+      (hs.length ? hs.map(function (h) {
+        var terpesan = (Number(h.kg) || 0) - stokTersisa(h.id);
+        return "<tr><td><b>" + esc(h.komoditas) + "</b><br><span class=\"sub\">" + esc(h.lokasi) + "</span></td><td class=\"angka\">" + angkaId(h.kg) + "</td><td class=\"angka\">" + angkaId(terpesan) + "</td><td class=\"angka\">" + angkaId(stokTersisa(h.id)) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4">Belum ada data.</td></tr>');
+  }
+  $("fBulanLaporan").addEventListener("change", function () {
+    bulanLaporanDipilih = true;
+    renderLaporan();
+  });
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var bk = $("fBulanLaporan").value || "semua";
+    var list = pesananTerlihat();
+    if (bk !== "semua") list = list.filter(function (p) { return bulanKey(p.tanggal) === bk; });
+    list = list.slice().sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : b.tanggal > a.tanggal ? 1 : b.id - a.id; });
+    var baris = [["Tanggal", "Pembeli", "Komoditas", "Jumlah (kg)", "Harga per kg", "Total", "Status", "Dicatat untuk"].map(csvCell).join(",")];
+    var n = 0;
+    list.forEach(function (p) {
+      n++;
+      var h = cariHasil(p.hasilId) || {};
+      baris.push([p.tanggal, p.pembeli, h.komoditas || "", p.kg, p.hargaPerKg, nilaiPesanan(p), p.status, p.pemilik].map(csvCell).join(","));
+    });
+    unduh("laporan-distribusi-" + (bk === "semua" ? "semua" : bk) + ".csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV diunduh (" + n + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("aplikasi-distribusi-hasil-tani-backup.json", JSON.stringify({ aplikasi: "aplikasi-distribusi-hasil-tani", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.hasil) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        if (currentUser) {
+          currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+          if (!currentUser) { keluar(); return; }
+        }
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Hasil tani, pesanan, pengiriman, dan harga akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      if (currentUser) {
+        currentUser = users.find(function (x) { return x.username === currentUser.username; }) || null;
+        if (!currentUser) { keluar(); return; }
+      }
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderHasil(); renderPesanan(); renderPengiriman(); renderHarga(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
