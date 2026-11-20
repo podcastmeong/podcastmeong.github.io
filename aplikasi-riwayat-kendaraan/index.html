@@ -1,0 +1,1586 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Riwayat Kendaraan — Bengkel Oyen</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 620px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">CONTOH DEMO</span>
+    <h1>Aplikasi Riwayat Kendaraan <span class="aksen">— Bengkel Oyen</span></h1>
+    <p>Riwayat lengkap setiap kendaraan mobil &amp; motor: semua booking, work order, jasa, spare part, dan biaya yang pernah dikerjakan, plus pengingat servis berkala dan laporan riwayat.</p>
+    <p class="tanggal" id="tanggalHari">—</p>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="kendaraan">Kendaraan</button>
+    <button class="tab-btn" type="button" data-tab="riwayat">Riwayat <span class="badge" id="badgeRiwayat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pengingat" data-peran="admin,kasir">Pengingat <span class="badge" id="badgePengingat">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan" data-peran="admin,kasir">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dasbor</h2>
+      <p>Ringkasan riwayat bengkel: kendaraan terdaftar, catatan servis, pengingat servis berkala yang jatuh tempo, dan total biaya servis 30 hari terakhir.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Kendaraan</div><div class="angka" id="dKendaraan">0</div></div>
+      <div class="stat"><div class="label">Total Riwayat Servis</div><div class="angka" id="dRiwayat">0</div></div>
+      <div class="stat warn"><div class="label">Pengingat Jatuh Tempo</div><div class="angka" id="dPengingat">0</div></div>
+      <div class="stat accent"><div class="label">Biaya Servis 30 Hari</div><div class="angka" id="dBiaya30">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3>Pengingat Servis Berkala</h3>
+      <p class="sub">Kendaraan yang servis berkalanya jatuh tempo dalam 14 hari ke depan atau sudah lewat (mobil 6 bulan / 10.000 km, motor 90 hari / 2.000 km).</p>
+      <div id="daftarPengingatDasbor"></div>
+    </div>
+    <div class="card">
+      <h3>Riwayat Terbaru</h3>
+      <p class="sub">Lima catatan servis terakhir dari semua kendaraan, dari yang terbaru.</p>
+      <div id="daftarRiwayatDasbor"></div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk. Kasir adalah operator bengkel: bisa mengelola kendaraan, riwayat, pengingat, dan laporan — tapi tidak bisa mengelola pengguna. Mekanik adalah tim bengkel: bisa mengelola kendaraan dan riwayat — tapi tidak bisa membuka pengingat dan laporan.</p>
+      <div id="daftarPengguna"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="nuNama">Nama lengkap *</label>
+          <input type="text" id="nuNama" placeholder="cth: Dewi">
+        </div>
+        <div class="field">
+          <label for="nuUser">Nama pengguna *</label>
+          <input type="text" id="nuUser" placeholder="cth: dewi">
+        </div>
+        <div class="field">
+          <label for="nuPass">Kata sandi *</label>
+          <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+        </div>
+        <div class="field">
+          <label for="nuPeran">Peran</label>
+          <select id="nuPeran">
+            <option value="kasir">Kasir (operator bengkel)</option>
+            <option value="mekanik">Mekanik (tim bengkel)</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Masuk sebagai <b id="namaAkunSaya">—</b>. Kata sandi baru minimal 6 karakter.</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="sandiLama">Kata sandi lama *</label>
+            <input type="password" id="sandiLama" placeholder="Kata sandi lama">
+          </div>
+          <div class="field">
+            <label for="sandiBaru">Kata sandi baru *</label>
+            <input type="password" id="sandiBaru" placeholder="Kata sandi baru">
+          </div>
+        </div>
+        <button class="btn kecil" type="submit">Ganti Kata Sandi</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-kendaraan">
+    <div class="page-head">
+      <h2>Kendaraan &amp; Pelanggan</h2>
+      <p>Data pelanggan beserta kendaraan mobil dan motornya: plat nomor, merek, tahun, kilometer, dan jadwal servis berkala. Klik <b>Riwayat</b> untuk melihat semua booking dan servis kendaraan itu.</p>
+    </div>
+    <div class="card">
+      <h3>Pelanggan</h3>
+      <p class="sub">Pemilik kendaraan. Pelanggan yang masih dipakai kendaraan tidak bisa dihapus.</p>
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow"><input type="text" id="cariPelanggan" placeholder="Cari pelanggan…"></div>
+        <button class="btn kecil" id="btnTambahPelanggan" type="button">+ Tambah Pelanggan</button>
+      </div>
+      <div id="daftarPelanggan"></div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow"><input type="text" id="cariKendaraan" placeholder="Cari plat / merek / pemilik…"></div>
+        <select id="filterJenis" style="max-width:160px">
+          <option value="semua">Semua jenis</option>
+          <option value="Mobil">Mobil</option>
+          <option value="Motor">Motor</option>
+        </select>
+        <button class="btn kecil" id="btnTambahKendaraan" type="button">+ Tambah Kendaraan</button>
+      </div>
+      <div id="daftarKendaraan"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head">
+      <h2>Riwayat Kendaraan</h2>
+      <p>Semua yang pernah dikerjakan pada sebuah kendaraan — booking, servis, jasa, spare part, dan biaya — diurutkan dari tanggal terbaru. Klik <b>Detail</b> untuk melihat rincian tiap catatan.</p>
+    </div>
+    <div class="card">
+      <h3>Catat Servis Baru</h3>
+      <p class="sub">Catat pekerjaan servis yang selesai dikerjakan: kendaraan, tanggal, mekanik, jasa, dan spare part. Total biaya dihitung otomatis (jasa + spare part − diskon).</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="rsKendaraan">Kendaraan *</label>
+          <select id="rsKendaraan"></select>
+        </div>
+        <div class="field">
+          <label for="rsTanggal">Tanggal servis *</label>
+          <input type="date" id="rsTanggal">
+        </div>
+        <div class="field">
+          <label for="rsMekanik">Mekanik *</label>
+          <select id="rsMekanik">
+            <option value="Agus">Agus</option>
+            <option value="Rudi">Rudi</option>
+            <option value="Sinta">Sinta</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rsKm">Kilometer saat servis</label>
+          <input type="number" id="rsKm" min="0" step="1" placeholder="cth: 55000">
+        </div>
+        <div class="field">
+          <label for="rsDiagnosa">Diagnosa / pekerjaan *</label>
+          <input type="text" id="rsDiagnosa" placeholder="cth: Servis berkala + ganti kampas rem">
+        </div>
+        <div class="field">
+          <label for="rsDiskon">Diskon (Rp)</label>
+          <input type="number" id="rsDiskon" min="0" step="1000" value="0" placeholder="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>Jasa yang dikerjakan</label>
+        <div class="chips" id="rsJasa"></div>
+      </div>
+      <div class="field">
+        <label>Spare part yang dipakai</label>
+        <div id="rsParts"></div>
+      </div>
+      <div class="row" style="margin-bottom:12px">
+        <label style="margin:0;display:flex;gap:8px;align-items:center;font-weight:400">
+          <input type="checkbox" id="rsBerkala"> Ini servis berkala — perbarui jadwal servis berikutnya kendaraan ini
+        </label>
+      </div>
+      <div class="row">
+        <button class="btn kecil" id="btnSimpanRiwayat" type="button">Simpan Riwayat</button>
+        <span class="chip-pengguna" id="rsTotal">Total: Rp0</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <select id="rwKendaraan"></select>
+        </div>
+        <select id="filterRiwayatJenis" style="max-width:180px">
+          <option value="semua">Semua jenis</option>
+          <option value="Servis">Servis</option>
+          <option value="Booking">Booking</option>
+        </select>
+      </div>
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow"><input type="text" id="cariRiwayat" placeholder="Cari nomor / plat / diagnosa / mekanik…"></div>
+      </div>
+      <div id="ringkasanRiwayat"></div>
+      <div id="daftarRiwayat"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pengingat">
+    <div class="page-head">
+      <h2>Pengingat</h2>
+      <p>Pengingat booking besok (H-1) dan pengingat servis berkala. Pesan di bawah ini hanya <b>teks pengingat</b> — aplikasi tidak mengirim SMS atau WhatsApp sendiri. Salin pesannya, lalu kirim manual lewat WhatsApp atau SMS pelanggan. Tandai "Sudah Diingatkan" setelah pesan dikirim.</p>
+    </div>
+    <div class="card">
+      <h3>Pengingat Booking Besok (H-1)</h3>
+      <p class="sub">Booking yang dijadwalkan besok. Ingatkan pelanggan hari ini supaya tidak lupa datang.</p>
+      <div id="daftarPengingatBooking"></div>
+    </div>
+    <div class="card">
+      <h3>Pengingat Servis Berkala</h3>
+      <p class="sub">Kendaraan yang servis berkalanya jatuh tempo dalam 14 hari ke depan atau sudah lewat. Ajak pelanggan booking servis.</p>
+      <div id="daftarPengingatServis"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Riwayat</h2>
+      <p>Laporan catatan servis per periode dan per kendaraan: jumlah servis, total biaya, dan rata-rata biaya per servis.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <label for="lapPeriode">Periode</label>
+          <select id="lapPeriode">
+            <option value="hari">Hari ini</option>
+            <option value="7hari">7 hari terakhir</option>
+            <option value="30hari" selected>30 hari terakhir</option>
+            <option value="semua">Semua</option>
+          </select>
+        </div>
+        <div class="grow">
+          <label for="lapKendaraan">Kendaraan</label>
+          <select id="lapKendaraan"></select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div class="row">
+            <button class="btn biru kecil" id="btnExportCSV" type="button">Ekspor CSV</button>
+            <button class="btn kecil" id="btnBackupJSON" type="button">Backup JSON</button>
+            <button class="btn ghost kecil" id="btnPulihkan" type="button">Pulihkan Backup</button>
+            <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+          </div>
+        </div>
+      </div>
+      <div class="grid-stat">
+        <div class="stat"><div class="label">Total Servis</div><div class="angka" id="lTotal">0</div></div>
+        <div class="stat accent"><div class="label">Total Biaya</div><div class="angka" id="lBiaya">Rp0</div></div>
+        <div class="stat"><div class="label">Rata-rata / Servis</div><div class="angka" id="lRata">Rp0</div></div>
+        <div class="stat"><div class="label">Kendaraan Terbanyak</div><div class="angka" id="lTerbanyak" style="font-size:18px">—</div></div>
+      </div>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLaporan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Jasa Paling Sering Dikerjakan pada Periode Ini</h3>
+      <div id="daftarTerlaris"></div>
+    </div>
+    <div class="card">
+      <h3>Riwayat Servis pada Periode Ini</h3>
+      <div id="daftarLaporanRiwayat"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai Aplikasi Riwayat Kendaraan, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur semua data termasuk pengguna; sebagai <b>Kasir</b> untuk kendaraan, riwayat, pengingat, dan laporan; atau sebagai <b>Mekanik</b> untuk kendaraan dan riwayat.</li>
+        <li>Di tab <b>Kendaraan</b>, kelola pelanggan dan kendaraan mobil maupun motornya: plat nomor, merek, tahun, kilometer, dan jadwal servis berkala (mobil setiap 180 hari / 10.000 km, motor setiap 90 hari / 2.000 km). Klik <b>Riwayat</b> untuk melihat semua booking dan servis kendaraan itu.</li>
+        <li>Di tab <b>Riwayat</b>, pilih kendaraan untuk melihat seluruh riwayatnya — booking, servis, jasa, spare part, dan biaya — dari tanggal terbaru. Gunakan <b>Catat Servis Baru</b> untuk mencatat pekerjaan yang selesai: centang jasa dan spare part, isi diskon, lalu simpan. Bila dicentang "Ini servis berkala", jadwal servis berikutnya kendaraan itu diperbarui ke tanggal servis ini.</li>
+        <li>Di tab <b>Pengingat</b>, salin teks pengingat booking besok (H-1) dan pengingat servis berkala, lalu kirim manual lewat WhatsApp atau SMS — aplikasi tidak mengirim pesan sendiri. Setelah dikirim, klik <b>Sudah Diingatkan</b>.</li>
+        <li>Di tab <b>Laporan</b>, lihat jumlah servis dan total biaya per periode dan per kendaraan. Gunakan <b>Ekspor CSV</b> untuk mengunduh laporan, dan <b>Backup JSON</b> untuk menyimpan seluruh data; <b>Pulihkan Backup</b> mengembalikan data dari file backup.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>; Mekanik — <b>mekanik</b> / <b>mekanik123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+      <p class="sub">Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh Bengkel Oyen (8 pelanggan, 12 kendaraan — 6 mobil dan 6 motor, 14 layanan, 12 spare part, 15 catatan servis, dan 6 booking). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p class="sub">Aplikasi ini mencatat pelanggan, kendaraan, riwayat servis, pengingat, dan laporan riwayat — <b>bukan</b> sistem akuntansi dan <b>bukan</b> payment gateway (tidak ada kasir dan pembayaran di aplikasi ini). Pengingat berupa <b>teks saja</b> — aplikasi tidak mengirim SMS atau WhatsApp sendiri; pesan harus disalin dan dikirim manual. Data <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh kasir dan mekanik di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Aplikasi Riwayat Kendaraan v1.</b> Riwayat lengkap setiap kendaraan mobil &amp; motor — booking, servis, jasa, spare part, dan biaya — plus pengingat servis berkala dan laporan riwayat (admin, kasir, dan mekanik). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Bengkel Oyen, bukan data penjualan sungguhan.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Riwayat%20Kendaraan." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi" id="modalAksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Riwayat Kendaraan</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk mengelola riwayat kendaraan bengkel. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (kendaraan, riwayat, pengingat, laporan; tidak bisa kelola pengguna)<br>Mekanik: <b>mekanik</b> / <b>mekanik123</b> (kendaraan dan riwayat; tidak bisa membuka pengingat dan laporan)</p>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function kunciTanggal(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciDariIso(iso) { return iso ? kunciTanggal(new Date(iso)) : ""; }
+  function jamDari(waktu) {
+    if (!waktu) return "—";
+    var d = new Date(waktu);
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  function tglDari(waktu) {
+    if (!waktu) return "—";
+    var d = new Date(waktu);
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + " " + jamDari(waktu);
+  }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var p = kunci.split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa");
+    var baru = ya.cloneNode(true);
+    baru.style.display = "";
+    ya.parentNode.replaceChild(baru, ya);
+    baru.addEventListener("click", function () {
+      tutupModal();
+      callback();
+    });
+  }
+  function bukaModalForm(judul, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = "";
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalAksi").style.display = "flex";
+    $("modalYa").style.display = "none";
+    $("modalBatal").style.display = "";
+    $("modalBack").classList.add("open");
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBatal").addEventListener("click", tutupModal);
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = namaFile;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function salinTeks(teks, pesanOk) {
+    function selesai() { toast(pesanOk || "Pesan disalin."); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(teks).then(selesai, function () { selesai(); });
+      } else {
+        selesai();
+      }
+    } catch (e) { selesai(); }
+  }
+
+  // ---------- Data contoh ----------
+  var STORAGE_KEY = "aplikasiRiwayatKendaraan.v1";
+  function seedState() {
+    function tglOffset(hari, jam, menit) {
+      var d = new Date();
+      d.setDate(d.getDate() + hari);
+      d.setHours(jam, menit, 0, 0);
+      return d.toISOString();
+    }
+    function keyOffset(hari) {
+      var d = new Date();
+      d.setDate(d.getDate() + hari);
+      return kunciTanggal(d);
+    }
+    return {
+      usaha: { nama: "Bengkel Oyen", alamat: "Jl. Raya Pejaten No. 88, Jakarta Selatan", wa: "081247986994" },
+      pelanggan: [
+        { id: 1, nama: "Bapak Andi Wijaya", telp: "081212345678", alamat: "Jl. Pejaten Raya No. 40, Pasar Minggu" },
+        { id: 2, nama: "Ibu Sari Dewi", telp: "081377788899", alamat: "Jl. Bangka Raya No. 21, Mampang" },
+        { id: 3, nama: "Bapak Budi Santoso", telp: "082112233445", alamat: "Jl. Cipete Raya No. 15, Cilandak" },
+        { id: 4, nama: "Ibu Ratna Kusuma", telp: "081298765432", alamat: "Jl. Kemang Raya No. 8, Jakarta Selatan" },
+        { id: 5, nama: "Bapak Hendra Gunawan", telp: "081355566677", alamat: "Jl. Pasar Minggu No. 112, Jakarta Selatan" },
+        { id: 6, nama: "Ibu Maya Putri", telp: "081322233344", alamat: "Jl. Fatmawati No. 27, Cilandak" },
+        { id: 7, nama: "Bapak Joko Prasetyo", telp: "081255566677", alamat: "Jl. Kalibata No. 55, Pancoran" },
+        { id: 8, nama: "PT Antar Jaya", telp: "081244455566", alamat: "Jl. TB Simatupang Kav. 12, Jakarta Selatan" }
+      ],
+      kendaraan: [
+        { id: 1, pelangganId: 1, plat: "B 1234 ABC", merek: "Toyota Avanza", tahun: 2019, jenis: "Mobil", km: 68400, servisTerakhir: keyOffset(-170), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 2, pelangganId: 1, plat: "B 5678 DEF", merek: "Toyota Innova", tahun: 2021, jenis: "Mobil", km: 45200, servisTerakhir: keyOffset(-60), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 3, pelangganId: 2, plat: "B 2345 GHI", merek: "Honda Brio", tahun: 2020, jenis: "Mobil", km: 52300, servisTerakhir: keyOffset(-200), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 4, pelangganId: 3, plat: "B 3456 JKL", merek: "Mitsubishi Xpander", tahun: 2022, jenis: "Mobil", km: 28700, servisTerakhir: keyOffset(-30), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 5, pelangganId: 3, plat: "B 4567 MNO", merek: "Daihatsu Calya", tahun: 2021, jenis: "Mobil", km: 39100, servisTerakhir: keyOffset(-150), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 6, pelangganId: 4, plat: "B 6789 PQR", merek: "Honda HR-V", tahun: 2020, jenis: "Mobil", km: 61400, servisTerakhir: keyOffset(-185), intervalHari: 180, intervalKm: 10000, diingatkanServis: false },
+        { id: 7, pelangganId: 4, plat: "B 7890 STU", merek: "Honda PCX 160", tahun: 2022, jenis: "Motor", km: 21800, servisTerakhir: keyOffset(-25), intervalHari: 90, intervalKm: 2000, diingatkanServis: false },
+        { id: 8, pelangganId: 5, plat: "B 8901 VWX", merek: "Honda Beat", tahun: 2019, jenis: "Motor", km: 32400, servisTerakhir: keyOffset(-85), intervalHari: 90, intervalKm: 2000, diingatkanServis: false },
+        { id: 9, pelangganId: 6, plat: "B 9012 YZA", merek: "Yamaha Vario 160", tahun: 2021, jenis: "Motor", km: 18700, servisTerakhir: keyOffset(-40), intervalHari: 90, intervalKm: 2000, diingatkanServis: false },
+        { id: 10, pelangganId: 7, plat: "B 1122 BCD", merek: "Yamaha Aerox 155", tahun: 2022, jenis: "Motor", km: 12300, servisTerakhir: keyOffset(-95), intervalHari: 90, intervalKm: 2000, diingatkanServis: false },
+        { id: 11, pelangganId: 7, plat: "B 2233 EFG", merek: "Yamaha NMAX", tahun: 2022, jenis: "Motor", km: 9800, servisTerakhir: keyOffset(-5), intervalHari: 90, intervalKm: 2000, diingatkanServis: false },
+        { id: 12, pelangganId: 8, plat: "B 3344 HIJ", merek: "Honda Scoopy", tahun: 2023, jenis: "Motor", km: 5400, servisTerakhir: keyOffset(-100), intervalHari: 90, intervalKm: 2000, diingatkanServis: false }
+      ],
+      layanan: [
+        { id: 1, nama: "Ganti Oli Mesin", kat: "Servis Rutin", harga: 75000, durasi: 30 },
+        { id: 2, nama: "Servis Ringan (Oli + Filter)", kat: "Servis Rutin", harga: 150000, durasi: 60 },
+        { id: 3, nama: "Tune Up Mesin", kat: "Servis Rutin", harga: 350000, durasi: 120 },
+        { id: 4, nama: "Servis CVT", kat: "Motor", harga: 90000, durasi: 60 },
+        { id: 5, nama: "Ganti Kampas Rem", kat: "Rem", harga: 120000, durasi: 45 },
+        { id: 6, nama: "Ganti Ban", kat: "Ban", harga: 75000, durasi: 30 },
+        { id: 7, nama: "Tambal Ban", kat: "Ban", harga: 25000, durasi: 20 },
+        { id: 8, nama: "Ganti Busi", kat: "Kelistrikan", harga: 50000, durasi: 20 },
+        { id: 9, nama: "Ganti Aki", kat: "Kelistrikan", harga: 50000, durasi: 30 },
+        { id: 10, nama: "Servis AC", kat: "AC", harga: 250000, durasi: 90 },
+        { id: 11, nama: "Spooring & Balancing", kat: "Kaki-Kaki", harga: 200000, durasi: 60 },
+        { id: 12, nama: "Servis Injeksi", kat: "Mesin", harga: 180000, durasi: 75 },
+        { id: 13, nama: "Ganti Filter Udara", kat: "Servis Rutin", harga: 60000, durasi: 25 },
+        { id: 14, nama: "Servis Kaki-Kaki", kat: "Kaki-Kaki", harga: 220000, durasi: 90 }
+      ],
+      parts: [
+        { id: 1, nama: "Oli Mesin 10W-40", harga: 185000 },
+        { id: 2, nama: "Oli Motor 10W-30", harga: 95000 },
+        { id: 3, nama: "Filter Oli Mobil", harga: 45000 },
+        { id: 4, nama: "Filter Oli Motor", harga: 35000 },
+        { id: 5, nama: "Busi", harga: 35000 },
+        { id: 6, nama: "Kampas Rem Depan", harga: 210000 },
+        { id: 7, nama: "Kampas Rem Motor", harga: 95000 },
+        { id: 8, nama: "V-Belt", harga: 145000 },
+        { id: 9, nama: "Ban Belakang", harga: 320000 },
+        { id: 10, nama: "Freon AC", harga: 120000 },
+        { id: 11, nama: "Aki 12V", harga: 450000 },
+        { id: 12, nama: "Filter Udara", harga: 85000 }
+      ],
+      booking: [
+        { id: 1, no: "BK-001", kendaraanId: 3, layananId: 2, mekanik: "Agus", tanggal: tglOffset(0, 8, 0), keluhan: "Servis berkala 50.000 km + AC kurang dingin", status: "Dijadwalkan", diingatkan: false },
+        { id: 2, no: "BK-002", kendaraanId: 8, layananId: 4, mekanik: "Rudi", tanggal: tglOffset(0, 10, 0), keluhan: "Ganti oli + servis CVT", status: "Dijadwalkan", diingatkan: false },
+        { id: 3, no: "BK-003", kendaraanId: 11, layananId: 5, mekanik: "Sinta", tanggal: tglOffset(0, 13, 0), keluhan: "Rem belakang berdecit", status: "Dijadwalkan", diingatkan: false },
+        { id: 4, no: "BK-004", kendaraanId: 1, layananId: 2, mekanik: "Agus", tanggal: tglOffset(1, 9, 0), keluhan: "Servis berkala 70.000 km", status: "Dijadwalkan", diingatkan: false },
+        { id: 5, no: "BK-005", kendaraanId: 5, layananId: 3, mekanik: "Rudi", tanggal: tglOffset(-1, 9, 0), keluhan: "Ganti ban depan", status: "Selesai", diingatkan: true },
+        { id: 6, no: "BK-006", kendaraanId: 10, layananId: 1, mekanik: "Agus", tanggal: tglOffset(-2, 10, 0), keluhan: "Ganti oli + kampas rem", status: "Batal", diingatkan: false }
+      ],
+      riwayat: [
+        { id: 1, no: "RW-001", kendaraanId: 1, tanggal: tglOffset(-170, 9, 0), mekanik: "Agus", diagnosa: "Servis berkala 60.000 km", km: 65400, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }, { layananId: 1, harga: 75000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 2, no: "RW-002", kendaraanId: 1, tanggal: tglOffset(-350, 10, 0), mekanik: "Rudi", diagnosa: "Tune up + ganti busi", km: 58400, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 3, harga: 350000 }],
+          parts: [{ partId: 5, qty: 4, harga: 35000 }] },
+        { id: 3, no: "RW-003", kendaraanId: 2, tanggal: tglOffset(-60, 9, 30), mekanik: "Agus", diagnosa: "Servis berkala 40.000 km", km: 45200, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 4, no: "RW-004", kendaraanId: 3, tanggal: tglOffset(-200, 8, 30), mekanik: "Sinta", diagnosa: "Servis berkala 50.000 km + AC kurang dingin", km: 52300, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }, { layananId: 10, harga: 250000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }, { partId: 10, qty: 1, harga: 120000 }] },
+        { id: 5, no: "RW-005", kendaraanId: 3, tanggal: tglOffset(-2, 11, 0), mekanik: "Agus", diagnosa: "Ganti kampas rem depan", km: 51800, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 5, harga: 120000 }],
+          parts: [{ partId: 6, qty: 1, harga: 210000 }] },
+        { id: 6, no: "RW-006", kendaraanId: 4, tanggal: tglOffset(-32, 9, 0), mekanik: "Rudi", diagnosa: "Servis berkala 25.000 km", km: 28700, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 7, no: "RW-007", kendaraanId: 5, tanggal: tglOffset(-150, 10, 30), mekanik: "Sinta", diagnosa: "Tune up mesin", km: 37100, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 3, harga: 350000 }],
+          parts: [{ partId: 5, qty: 4, harga: 35000 }] },
+        { id: 8, no: "RW-008", kendaraanId: 6, tanggal: tglOffset(-185, 9, 0), mekanik: "Agus", diagnosa: "Servis berkala + spooring", km: 61400, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }, { layananId: 11, harga: 200000 }],
+          parts: [{ partId: 1, qty: 1, harga: 185000 }, { partId: 3, qty: 1, harga: 45000 }] },
+        { id: 9, no: "RW-009", kendaraanId: 7, tanggal: tglOffset(-3, 10, 0), mekanik: "Rudi", diagnosa: "Ganti ban belakang", km: 21500, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 6, harga: 75000 }],
+          parts: [{ partId: 9, qty: 1, harga: 320000 }] },
+        { id: 10, no: "RW-010", kendaraanId: 8, tanggal: tglOffset(-85, 8, 30), mekanik: "Sinta", diagnosa: "Ganti oli + servis CVT", km: 32400, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 1, harga: 75000 }, { layananId: 4, harga: 90000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }] },
+        { id: 11, no: "RW-011", kendaraanId: 9, tanggal: tglOffset(-40, 9, 0), mekanik: "Agus", diagnosa: "Servis berkala", km: 18700, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 4, qty: 1, harga: 35000 }] },
+        { id: 12, no: "RW-012", kendaraanId: 10, tanggal: tglOffset(-95, 11, 0), mekanik: "Rudi", diagnosa: "Ganti oli + kampas rem", km: 12300, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 1, harga: 75000 }, { layananId: 5, harga: 120000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 7, qty: 1, harga: 95000 }] },
+        { id: 13, no: "RW-013", kendaraanId: 11, tanggal: tglOffset(-5, 9, 0), mekanik: "Sinta", diagnosa: "Servis berkala", km: 9800, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 4, qty: 1, harga: 35000 }] },
+        { id: 14, no: "RW-014", kendaraanId: 12, tanggal: tglOffset(-100, 10, 0), mekanik: "Agus", diagnosa: "Ganti ban belakang + servis ringan", km: 5400, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 2, harga: 150000 }, { layananId: 6, harga: 75000 }],
+          parts: [{ partId: 2, qty: 1, harga: 95000 }, { partId: 9, qty: 1, harga: 320000 }] },
+        { id: 15, no: "RW-015", kendaraanId: 2, tanggal: tglOffset(-20, 10, 30), mekanik: "Sinta", diagnosa: "Ganti kampas rem", km: 44800, status: "Diambil", diskon: 0,
+          jasa: [{ layananId: 5, harga: 120000 }],
+          parts: [{ partId: 6, qty: 1, harga: 210000 }] }
+      ],
+      seqPelanggan: 9,
+      seqKendaraan: 13,
+      seqBooking: 7,
+      seqRiwayat: 16
+    };
+  }
+
+  var state = seedState();
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) { saveState(); return; }
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.kendaraan) || !Array.isArray(d.riwayat) || !Array.isArray(d.booking)) throw new Error("data rusak");
+      state = d;
+    } catch (e) { /* pakai data contoh */ }
+  }
+
+  // ---------- Pencarian & hitungan ----------
+  function cariPelanggan(id) { return state.pelanggan.find(function (x) { return x.id === id; }); }
+  function cariKendaraan(id) { return state.kendaraan.find(function (x) { return x.id === id; }); }
+  function cariLayanan(id) { return state.layanan.find(function (x) { return x.id === id; }); }
+  function cariPart(id) { return state.parts.find(function (x) { return x.id === id; }); }
+  function cariBooking(id) { return state.booking.find(function (x) { return x.id === id; }); }
+  function cariRiwayat(id) { return state.riwayat.find(function (x) { return x.id === id; }); }
+  function labelKendaraan(k) {
+    if (!k) return "—";
+    var p = cariPelanggan(k.pelangganId);
+    return k.plat + " — " + k.merek + " " + k.tahun + (p ? " (" + p.nama + ")" : "");
+  }
+  function totalRiwayat(r) {
+    var jasa = (r.jasa || []).reduce(function (a, j) { return a + Number(j.harga || 0); }, 0);
+    var parts = (r.parts || []).reduce(function (a, p) { return a + Number(p.harga || 0) * Number(p.qty || 1); }, 0);
+    return Math.max(0, jasa + parts - Number(r.diskon || 0));
+  }
+  function kelasStatus(s) {
+    if (s === "Dijadwalkan") return "st-biru";
+    if (s === "Datang") return "st-emas";
+    if (s === "Selesai" || s === "Diambil") return "st-aman";
+    return "st-habis";
+  }
+  function sisaHariServis(k) {
+    if (!k.servisTerakhir) return null;
+    var p = k.servisTerakhir.split("-");
+    var terakhir = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    var berikut = new Date(terakhir);
+    berikut.setDate(berikut.getDate() + (k.intervalHari || 180));
+    var kini = new Date();
+    kini.setHours(0, 0, 0, 0);
+    return Math.round((berikut - kini) / 86400000);
+  }
+  function servisJatuhTempo() {
+    return state.kendaraan.filter(function (k) {
+      var s = sisaHariServis(k);
+      return s !== null && s <= 14;
+    });
+  }
+  function bookingBesok() {
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    var kunci = kunciTanggal(d);
+    return state.booking.filter(function (b) { return kunciDariIso(b.tanggal) === kunci && b.status !== "Batal"; });
+  }
+  function jumlahPengingat() {
+    return bookingBesok().length + servisJatuhTempo().length;
+  }
+  function riwayatDalamPeriode(periode, kendaraanId) {
+    function dalam(tanggal) {
+      if (periode === "semua") return true;
+      var tgl = new Date(tanggal);
+      var kini = new Date();
+      kini.setHours(0, 0, 0, 0);
+      if (periode === "hari") return kunciDariIso(tanggal) === hariIniKey();
+      var mundur = periode === "7hari" ? 6 : 29;
+      var batas = new Date();
+      batas.setDate(batas.getDate() - mundur);
+      batas.setHours(0, 0, 0, 0);
+      return tgl >= batas && tgl <= new Date(kini.getTime() + 86399999);
+    }
+    return state.riwayat.filter(function (r) {
+      return dalam(r.tanggal) && (!kendaraanId || r.kendaraanId === kendaraanId);
+    });
+  }
+  function riwayatKendaraan(kendaraanId) {
+    var daftar = [];
+    state.riwayat.filter(function (r) { return r.kendaraanId === kendaraanId; }).forEach(function (r) {
+      daftar.push({ jenis: "Servis", kendaraanId: kendaraanId, no: r.no, tanggal: r.tanggal, mekanik: r.mekanik, teks: r.diagnosa, total: totalRiwayat(r), status: r.status, refId: r.id });
+    });
+    state.booking.filter(function (b) { return b.kendaraanId === kendaraanId; }).forEach(function (b) {
+      var l = cariLayanan(b.layananId);
+      daftar.push({ jenis: "Booking", kendaraanId: kendaraanId, no: b.no, tanggal: b.tanggal, mekanik: b.mekanik, teks: b.keluhan + (l ? " (" + l.nama + ")" : ""), total: null, status: b.status, refId: b.id });
+    });
+    daftar.sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    return daftar;
+  }
+  function semuaRiwayatGabungan() {
+    var daftar = [];
+    state.kendaraan.forEach(function (k) {
+      riwayatKendaraan(k.id).forEach(function (e) { daftar.push(e); });
+    });
+    daftar.sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    return daftar;
+  }
+  function isAdmin() { return currentUser && currentUser.role === "admin"; }
+  function bisaKasir() { return currentUser && (currentUser.role === "admin" || currentUser.role === "kasir"); }
+  function labelPeran(r) {
+    if (r === "admin") return "Admin";
+    if (r === "kasir") return "Kasir";
+    return "Mekanik";
+  }
+  function teksPengingatBooking(b) {
+    var k = cariKendaraan(b.kendaraanId);
+    var p = k ? cariPelanggan(k.pelangganId) : null;
+    var l = cariLayanan(b.layananId);
+    return "Halo " + (p ? p.nama : "Bapak/Ibu") + ", ini pengingat dari Bengkel Oyen. Booking servis " + (k ? k.plat + " (" + k.merek + ")" : "kendaraan Anda") +
+      " dijadwalkan besok, " + tglSingkat(kunciDariIso(b.tanggal)) + " pukul " + jamDari(b.tanggal) +
+      (l ? " — " + l.nama : "") + " (" + b.keluhan + "). Mohon datang tepat waktu. Balas YA untuk konfirmasi. Terima kasih.";
+  }
+  function teksPengingatServis(k) {
+    var p = cariPelanggan(k.pelangganId);
+    var s = sisaHariServis(k);
+    var ket = s < 0 ? "sudah terlambat " + Math.abs(s) + " hari" : (s === 0 ? "jatuh tempo hari ini" : "jatuh tempo " + s + " hari lagi");
+    return "Halo " + (p ? p.nama : "Bapak/Ibu") + ", ini pengingat dari Bengkel Oyen. Servis berkala " + k.plat + " (" + k.merek + ") Anda " + ket +
+      " (terakhir " + tglSingkat(k.servisTerakhir) + "). Yuk booking servis di Bengkel Oyen. Balas YA untuk booking.";
+  }
+
+  // ---------- Login & pengguna ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true },
+    { username: "mekanik", password: "mekanik123", name: "Mekanik", role: "mekanik", aktif: true }
+  ];
+  var users = [];
+  var currentUser = null;
+
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
+      var d = JSON.parse(raw);
+      if (!Array.isArray(d) || !d.length) throw new Error("users rusak");
+      users = d.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name, role: x.role, aktif: x.aktif !== false };
+      });
+    } catch (e) {
+      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+    }
+  }
+  function saveUsers() {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  }
+  function terapkanSesi() {
+    var chip = $("userChip");
+    if (currentUser) {
+      chip.textContent = currentUser.name + " (" + labelPeran(currentUser.role) + ")";
+      $("namaAkunSaya").textContent = currentUser.name + " (@" + currentUser.username + ")";
+    } else {
+      chip.textContent = "Belum masuk";
+    }
+    document.querySelectorAll(".tab-btn[data-peran]").forEach(function (btn) {
+      var peran = (btn.getAttribute("data-peran") || "").split(",");
+      btn.style.display = (!currentUser || peran.indexOf(currentUser.role) >= 0) ? "" : "none";
+    });
+    $("cardPengguna").style.display = isAdmin() ? "" : "none";
+    var aktif = document.querySelector(".tab-btn.active");
+    if (aktif && aktif.style.display === "none") {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      document.querySelector('[data-tab="dashboard"]').classList.add("active");
+      $("panel-dashboard").classList.add("active");
+    }
+    renderSemua();
+  }
+  function masuk(username, password) {
+    var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
+    if (!u) return false;
+    currentUser = u;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    $("loginOverlay").classList.add("hidden");
+    $("loginError").hidden = true;
+    terapkanSesi();
+    return true;
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    $("loginOverlay").classList.remove("hidden");
+    $("loginUser").value = "";
+    $("loginPass").value = "";
+    terapkanSesi();
+  }
+  function pulihkanSesi() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return false;
+      var s = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
+      if (!u) return false;
+      currentUser = u;
+      $("loginOverlay").classList.add("hidden");
+      return true;
+    } catch (e) { return false; }
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var ok = masuk($("loginUser").value.trim(), $("loginPass").value);
+    if (!ok) $("loginError").hidden = false;
+  });
+  $("btnKeluar").addEventListener("click", function () {
+    keluar();
+    toast("Anda sudah keluar.");
+  });
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      renderSemua();
+    });
+  });
+
+  // ---------- Render: Dasbor ----------
+  function renderDashboard() {
+    $("dKendaraan").textContent = fmtAngka(state.kendaraan.length);
+    $("dRiwayat").textContent = fmtAngka(state.riwayat.length);
+    var tempo = servisJatuhTempo();
+    $("dPengingat").textContent = fmtAngka(tempo.length);
+    var biaya30 = riwayatDalamPeriode("30hari").reduce(function (a, r) { return a + totalRiwayat(r); }, 0);
+    $("dBiaya30").textContent = rupiah(biaya30);
+    $("badgeRiwayat").textContent = String(state.riwayat.length + state.booking.length);
+    $("badgePengingat").textContent = String(jumlahPengingat());
+
+    $("daftarPengingatDasbor").innerHTML = tempo.length ? tempo.map(function (k) {
+      var s = sisaHariServis(k);
+      var teks = s < 0 ? "Terlambat " + Math.abs(s) + " hari" : (s === 0 ? "Jatuh tempo hari ini" : "Jatuh tempo " + s + " hari lagi");
+      return "<p style=\"margin-bottom:4px\">• <span class=\"plat\">" + esc(k.plat) + "</span> " + esc(k.merek) + " — " + teks + " (servis terakhir " + tglSingkat(k.servisTerakhir) + ")" + (k.diingatkanServis ? " <span class=\"lencana st-aman\">Sudah diingatkan</span>" : "") + "</p>";
+    }).join("") : "<p class=\"kosong\">Tidak ada servis yang jatuh tempo.</p>";
+
+    var terbaru = state.riwayat.slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); }).slice(0, 5);
+    $("daftarRiwayatDasbor").innerHTML = terbaru.map(function (r) {
+      var k = cariKendaraan(r.kendaraanId);
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(r.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(r.tanggal)) + " • " + esc(r.diagnosa) + " • Mekanik " + esc(r.mekanik) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalRiwayat(r)) + "</span></div></div>";
+    }).join("");
+  }
+
+  // ---------- Render: Pengguna ----------
+  function renderPengguna() {
+    var wrap = $("daftarPengguna");
+    wrap.innerHTML = users.map(function (u) {
+      return "<div class=\"user-row\"><div><div class=\"nm\" style=\"font-weight:700\">" + esc(u.name) + " <span style=\"color:var(--muted);font-weight:400\">(@" + esc(u.username) + ")</span></div><div class=\"dt\" style=\"color:var(--muted);font-size:13px\">" + labelPeran(u.role) + (u.aktif === false ? " • Nonaktif" : "") + "</div></div><div class=\"aksi\">" +
+        "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-pengguna=\"sandi\" data-user=\"" + esc(u.username) + "\">Reset Sandi</button>" +
+        "<button class=\"btn ghost kecil\" type=\"button\" data-aksi-pengguna=\"aktif\" data-user=\"" + esc(u.username) + "\">" + (u.aktif === false ? "Aktifkan" : "Nonaktifkan") + "</button>" +
+        "</div></div>";
+    }).join("");
+  }
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!isAdmin()) { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    if (aksi === "sandi") {
+      tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ') menjadi "bk123"?', function () {
+        u.password = "bk123";
+        saveUsers();
+        renderPengguna();
+        toast("Kata sandi " + u.name + " direset menjadi bk123.");
+      });
+    } else if (aksi === "aktif") {
+      if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa menonaktifkan satu-satunya admin aktif.");
+        return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers();
+      renderPengguna();
+      toast(u.aktif ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
+    }
+  });
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (pass.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
+    saveUsers();
+    $("nuNama").value = "";
+    $("nuUser").value = "";
+    $("nuPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + nama + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value;
+    var baru = $("sandiBaru").value;
+    if (currentUser.password !== lama) { toast("Kata sandi lama salah."); return; }
+    if (baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("sandiLama").value = "";
+    $("sandiBaru").value = "";
+    toast("Kata sandi berhasil diganti.");
+  });
+
+  // ---------- Render: Pelanggan & Kendaraan ----------
+  function renderPelanggan() {
+    var cari = ($("cariPelanggan").value || "").toLowerCase();
+    var daftar = state.pelanggan.filter(function (p) {
+      return !cari || p.nama.toLowerCase().indexOf(cari) >= 0 || p.telp.indexOf(cari) >= 0;
+    });
+    $("daftarPelanggan").innerHTML = daftar.length ? daftar.map(function (p) {
+      var jumlah = state.kendaraan.filter(function (k) { return k.pelangganId === p.id; }).length;
+      var dipakai = jumlah > 0;
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(p.nama) + "</div><div class=\"dt\">" + esc(p.telp) + " • " + esc(p.alamat) + " • " + jumlah + " kendaraan</div></div><div class=\"aksi\">" +
+        (isAdmin() && !dipakai ? "<button class=\"btn ghost kecil\" type=\"button\" data-hapus-pelanggan=\"" + p.id + "\">Hapus</button>" : "") +
+        "</div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada pelanggan yang cocok.</p>";
+  }
+  $("cariPelanggan").addEventListener("input", renderPelanggan);
+  $("daftarPelanggan").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-hapus-pelanggan]");
+    if (!btn) return;
+    var id = Number(btn.getAttribute("data-hapus-pelanggan"));
+    var p = cariPelanggan(id);
+    if (!p) return;
+    if (state.kendaraan.some(function (k) { return k.pelangganId === id; })) { toast("Pelanggan masih dipakai kendaraan."); return; }
+    tanyaKonfirmasi("Hapus pelanggan", "Hapus pelanggan " + p.nama + "?", function () {
+      state.pelanggan = state.pelanggan.filter(function (x) { return x.id !== id; });
+      saveState();
+      renderPelanggan();
+      toast("Pelanggan dihapus.");
+    });
+  });
+  $("btnTambahPelanggan").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa menambah pelanggan."); return; }
+    bukaModalForm("Tambah Pelanggan", "<form id=\"formPelanggan\">" +
+      "<div class=\"field\"><label for=\"fplNama\">Nama *</label><input type=\"text\" id=\"fplNama\" placeholder=\"cth: Bapak Slamet\"></div>" +
+      "<div class=\"field\"><label for=\"fplTelp\">No. HP / WA *</label><input type=\"text\" id=\"fplTelp\" placeholder=\"cth: 081234567890\"></div>" +
+      "<div class=\"field\"><label for=\"fplAlamat\">Alamat</label><input type=\"text\" id=\"fplAlamat\" placeholder=\"Alamat pelanggan\"></div>" +
+      "<div class=\"aksi\" style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:16px\"><button class=\"btn ghost kecil\" type=\"button\" id=\"fplBatal\">Batal</button><button class=\"btn kecil\" type=\"submit\">Simpan</button></div></form>");
+    $("fplBatal").addEventListener("click", tutupModal);
+    $("formPelanggan").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var nama = $("fplNama").value.trim();
+      var telp = $("fplTelp").value.trim();
+      var alamat = $("fplAlamat").value.trim();
+      if (!nama || !telp) { toast("Nama dan no. HP wajib diisi."); return; }
+      state.pelanggan.push({ id: state.seqPelanggan++, nama: nama, telp: telp, alamat: alamat });
+      saveState();
+      tutupModal();
+      renderPelanggan();
+      isiSelectKendaraan();
+      toast("Pelanggan " + nama + " ditambahkan.");
+    });
+  });
+
+  function renderKendaraan() {
+    var cari = ($("cariKendaraan").value || "").toLowerCase();
+    var jenis = $("filterJenis").value;
+    var daftar = state.kendaraan.filter(function (k) {
+      var p = cariPelanggan(k.pelangganId);
+      var cocokCari = !cari || k.plat.toLowerCase().indexOf(cari) >= 0 || k.merek.toLowerCase().indexOf(cari) >= 0 || (p && p.nama.toLowerCase().indexOf(cari) >= 0);
+      var cocokJenis = jenis === "semua" || k.jenis === jenis;
+      return cocokCari && cocokJenis;
+    });
+    $("daftarKendaraan").innerHTML = daftar.length ? daftar.map(function (k) {
+      var p = cariPelanggan(k.pelangganId);
+      var s = sisaHariServis(k);
+      var ketServis = s === null ? "" : (s < 0 ? "<span class=\"lencana st-habis\">Terlambat " + Math.abs(s) + " hari</span>" : (s <= 14 ? "<span class=\"lencana st-rendah\">Jatuh tempo " + s + " hari lagi</span>" : "<span class=\"lencana st-aman\">Servis " + s + " hari lagi</span>"));
+      var jumlah = riwayatKendaraan(k.id).length;
+      return "<div class=\"item-bar\"><div><div class=\"nm\"><span class=\"plat\">" + esc(k.plat) + "</span> " + esc(k.merek) + " " + k.tahun + " • " + esc(k.jenis) + "</div><div class=\"dt\">" + esc(p ? p.nama : "—") + " • " + fmtAngka(k.km) + " km • Servis terakhir " + tglSingkat(k.servisTerakhir) + " • " + jumlah + " riwayat</div></div><div class=\"aksi\">" + ketServis +
+        "<button class=\"btn biru kecil\" type=\"button\" data-riwayat-kendaraan=\"" + k.id + "\">Riwayat</button>" +
+        "</div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada kendaraan yang cocok.</p>";
+  }
+  $("cariKendaraan").addEventListener("input", renderKendaraan);
+  $("filterJenis").addEventListener("change", renderKendaraan);
+  $("daftarKendaraan").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-riwayat-kendaraan]");
+    if (!btn) return;
+    var id = Number(btn.getAttribute("data-riwayat-kendaraan"));
+    var k = cariKendaraan(id);
+    if (!k) return;
+    $("rwKendaraan").value = String(id);
+    document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+    document.querySelector('[data-tab="riwayat"]').classList.add("active");
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-riwayat").classList.add("active");
+    renderRiwayat();
+  });
+  $("btnTambahKendaraan").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa menambah kendaraan."); return; }
+    var opsiPelanggan = state.pelanggan.map(function (p) { return "<option value=\"" + p.id + "\">" + esc(p.nama) + "</option>"; }).join("");
+    bukaModalForm("Tambah Kendaraan", "<form id=\"formKendaraan\">" +
+      "<div class=\"field\"><label for=\"fkPelanggan\">Pelanggan *</label><select id=\"fkPelanggan\">" + opsiPelanggan + "</select></div>" +
+      "<div class=\"field\"><label for=\"fkPlat\">Plat nomor *</label><input type=\"text\" id=\"fkPlat\" placeholder=\"cth: B 1234 XYZ\"></div>" +
+      "<div class=\"field\"><label for=\"fkMerek\">Merek / model *</label><input type=\"text\" id=\"fkMerek\" placeholder=\"cth: Toyota Avanza\"></div>" +
+      "<div class=\"field\"><label for=\"fkTahun\">Tahun *</label><input type=\"number\" id=\"fkTahun\" min=\"1990\" max=\"2030\" value=\"2022\"></div>" +
+      "<div class=\"field\"><label for=\"fkJenis\">Jenis *</label><select id=\"fkJenis\"><option value=\"Mobil\">Mobil</option><option value=\"Motor\">Motor</option></select></div>" +
+      "<div class=\"field\"><label for=\"fkKm\">Kilometer</label><input type=\"number\" id=\"fkKm\" min=\"0\" step=\"1\" value=\"0\"></div>" +
+      "<div class=\"field\"><label for=\"fkServis\">Tanggal servis terakhir</label><input type=\"date\" id=\"fkServis\" value=\"" + hariIniKey() + "\"></div>" +
+      "<div class=\"aksi\" style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:16px\"><button class=\"btn ghost kecil\" type=\"button\" id=\"fkBatal\">Batal</button><button class=\"btn kecil\" type=\"submit\">Simpan</button></div></form>");
+    $("fkBatal").addEventListener("click", tutupModal);
+    $("formKendaraan").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var plat = $("fkPlat").value.trim();
+      var merek = $("fkMerek").value.trim();
+      var tahun = Number($("fkTahun").value);
+      if (!plat || !merek || !tahun) { toast("Plat, merek, dan tahun wajib diisi."); return; }
+      var jenis = $("fkJenis").value;
+      state.kendaraan.push({
+        id: state.seqKendaraan++, pelangganId: Number($("fkPelanggan").value), plat: plat, merek: merek, tahun: tahun, jenis: jenis,
+        km: Number($("fkKm").value) || 0, servisTerakhir: $("fkServis").value || hariIniKey(),
+        intervalHari: jenis === "Mobil" ? 180 : 90, intervalKm: jenis === "Mobil" ? 10000 : 2000, diingatkanServis: false
+      });
+      saveState();
+      tutupModal();
+      renderKendaraan();
+      isiSelectKendaraan();
+      toast("Kendaraan " + plat + " ditambahkan.");
+    });
+  });
+
+  // ---------- Render: Riwayat ----------
+  function isiSelectKendaraan() {
+    var opsi = state.kendaraan.map(function (k) { return "<option value=\"" + k.id + "\">" + esc(labelKendaraan(k)) + "</option>"; }).join("");
+    $("rsKendaraan").innerHTML = opsi;
+    $("rwKendaraan").innerHTML = "<option value=\"semua\">Semua kendaraan</option>" + opsi;
+    $("lapKendaraan").innerHTML = "<option value=\"semua\">Semua kendaraan</option>" + opsi;
+  }
+  function isiFormServis() {
+    $("rsJasa").innerHTML = state.layanan.map(function (l) {
+      return "<button type=\"button\" class=\"chip\" data-jasa-id=\"" + l.id + "\" data-harga=\"" + l.harga + "\">" + esc(l.nama) + " • " + rupiah(l.harga) + "</button>";
+    }).join("");
+    $("rsParts").innerHTML = state.parts.map(function (p) {
+      return "<div class=\"row\" style=\"margin-bottom:6px\"><label style=\"margin:0;display:flex;gap:8px;align-items:center;font-weight:400;flex:1\"><input type=\"checkbox\" data-part-id=\"" + p.id + "\" data-harga=\"" + p.harga + "\"> " + esc(p.nama) + " • " + rupiah(p.harga) + "</label><input type=\"number\" class=\"qty-part\" data-qty-part=\"" + p.id + "\" min=\"1\" step=\"1\" value=\"1\" style=\"max-width:80px\" title=\"Jumlah\"></div>";
+    }).join("");
+  }
+  function hitungTotalForm() {
+    var total = 0;
+    document.querySelectorAll("#rsJasa .chip.active").forEach(function (c) { total += Number(c.getAttribute("data-harga")) || 0; });
+    document.querySelectorAll("#rsParts input[type=checkbox]:checked").forEach(function (c) {
+      var id = c.getAttribute("data-part-id");
+      var qtyInput = document.querySelector("[data-qty-part=\"" + id + "\"]");
+      var qty = qtyInput ? Number(qtyInput.value) || 1 : 1;
+      total += (Number(c.getAttribute("data-harga")) || 0) * qty;
+    });
+    total = Math.max(0, total - (Number($("rsDiskon").value) || 0));
+    $("rsTotal").textContent = "Total: " + rupiah(total);
+    return total;
+  }
+  $("rsJasa").addEventListener("click", function (e) {
+    var chip = e.target.closest("[data-jasa-id]");
+    if (!chip) return;
+    chip.classList.toggle("active");
+    hitungTotalForm();
+  });
+  $("rsParts").addEventListener("change", hitungTotalForm);
+  $("rsParts").addEventListener("input", hitungTotalForm);
+  $("rsDiskon").addEventListener("input", hitungTotalForm);
+
+  function barRiwayat(e) {
+    var k = cariKendaraan(e.kendaraanId);
+    var plat = k ? k.plat : "—";
+    var total = e.total == null ? "" : "<span class=\"harga\">" + rupiah(e.total) + "</span>";
+    var tombol = e.jenis === "Servis"
+      ? "<button class=\"btn biru kecil\" type=\"button\" data-detail-riwayat=\"" + e.refId + "\">Detail</button>"
+      : "<button class=\"btn ghost kecil\" type=\"button\" data-detail-booking=\"" + e.refId + "\">Detail</button>";
+    return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(e.no) + " — <span class=\"plat\">" + esc(plat) + "</span> <span style=\"color:var(--muted);font-weight:400\">(" + esc(e.jenis) + ")</span></div><div class=\"dt\">" + tglDari(e.tanggal) + " • " + esc(e.teks) + " • Mekanik " + esc(e.mekanik || "—") + "</div></div><div class=\"aksi\">" + total + "<span class=\"lencana " + kelasStatus(e.status) + "\">" + esc(e.status) + "</span>" + tombol + "</div></div>";
+  }
+  function renderRiwayat() {
+    var pilih = $("rwKendaraan").value;
+    var jenis = $("filterRiwayatJenis").value;
+    var cari = ($("cariRiwayat").value || "").toLowerCase();
+    var daftar = pilih === "semua" ? semuaRiwayatGabungan() : riwayatKendaraan(Number(pilih));
+    if (jenis !== "semua") daftar = daftar.filter(function (e) { return e.jenis === jenis; });
+    if (cari) {
+      daftar = daftar.filter(function (e) {
+        var k = cariKendaraan(e.kendaraanId);
+        var hay = (e.no + " " + e.teks + " " + (e.mekanik || "") + " " + (k ? k.plat + " " + k.merek : "")).toLowerCase();
+        return hay.indexOf(cari) >= 0;
+      });
+    }
+    var totalBiaya = daftar.reduce(function (a, e) { return a + (e.total || 0); }, 0);
+    var kendaraanLabel = pilih === "semua" ? "Semua kendaraan" : (function () { var k = cariKendaraan(Number(pilih)); return k ? labelKendaraan(k) : ""; })();
+    $("ringkasanRiwayat").innerHTML = "<p class=\"sub\" style=\"margin-bottom:12px\"><b>" + esc(kendaraanLabel) + "</b> — " + daftar.length + " catatan • Total biaya: <b>" + rupiah(totalBiaya) + "</b></p>";
+    $("daftarRiwayat").innerHTML = daftar.length ? daftar.map(barRiwayat).join("") : "<p class=\"kosong\">Tidak ada riwayat yang cocok.</p>";
+  }
+  $("rwKendaraan").addEventListener("change", renderRiwayat);
+  $("filterRiwayatJenis").addEventListener("change", renderRiwayat);
+  $("cariRiwayat").addEventListener("input", renderRiwayat);
+
+  $("btnSimpanRiwayat").addEventListener("click", function () {
+    var kendaraanId = Number($("rsKendaraan").value);
+    var tanggal = $("rsTanggal").value;
+    var mekanik = $("rsMekanik").value;
+    var diagnosa = $("rsDiagnosa").value.trim();
+    var diskon = Number($("rsDiskon").value) || 0;
+    var km = Number($("rsKm").value) || 0;
+    if (!kendaraanId || !tanggal || !diagnosa) { toast("Kendaraan, tanggal, dan diagnosa wajib diisi."); return; }
+    var jasa = [];
+    document.querySelectorAll("#rsJasa .chip.active").forEach(function (c) {
+      jasa.push({ layananId: Number(c.getAttribute("data-jasa-id")), harga: Number(c.getAttribute("data-harga")) });
+    });
+    var parts = [];
+    document.querySelectorAll("#rsParts input[type=checkbox]:checked").forEach(function (c) {
+      var id = Number(c.getAttribute("data-part-id"));
+      var qtyInput = document.querySelector("[data-qty-part=\"" + id + "\"]");
+      parts.push({ partId: id, qty: qtyInput ? Number(qtyInput.value) || 1 : 1, harga: Number(c.getAttribute("data-harga")) });
+    });
+    if (!jasa.length && !parts.length) { toast("Pilih minimal satu jasa atau satu spare part."); return; }
+    var no = "RW-" + String(state.seqRiwayat).padStart(3, "0");
+    var d = new Date(tanggal + "T09:00:00");
+    var rec = {
+      id: state.seqRiwayat, no: no, kendaraanId: kendaraanId, tanggal: d.toISOString(),
+      mekanik: mekanik, diagnosa: diagnosa, km: km, status: "Diambil", diskon: diskon, jasa: jasa, parts: parts
+    };
+    state.seqRiwayat++;
+    state.riwayat.push(rec);
+    var k = cariKendaraan(kendaraanId);
+    if (k) {
+      if (km > 0) k.km = km;
+      if ($("rsBerkala").checked) {
+        k.servisTerakhir = tanggal;
+        k.diingatkanServis = false;
+      }
+    }
+    saveState();
+    document.querySelectorAll("#rsJasa .chip.active").forEach(function (c) { c.classList.remove("active"); });
+    document.querySelectorAll("#rsParts input[type=checkbox]:checked").forEach(function (c) { c.checked = false; });
+    $("rsDiagnosa").value = "";
+    $("rsKm").value = "";
+    $("rsDiskon").value = "0";
+    $("rsBerkala").checked = false;
+    hitungTotalForm();
+    renderSemua();
+    toast("Riwayat " + no + " disimpan (" + rupiah(totalRiwayat(rec)) + ").");
+  });
+
+  function detailRiwayatHtml(r) {
+    var k = cariKendaraan(r.kendaraanId);
+    var p = k ? cariPelanggan(k.pelangganId) : null;
+    var html = "<p><b>" + esc(r.no) + "</b> — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> " + esc(k ? k.merek : "") + "</p>" +
+      "<p>Tanggal: " + tglDari(r.tanggal) + "<br>Pemilik: " + esc(p ? p.nama : "—") + "<br>Mekanik: " + esc(r.mekanik) + "<br>Diagnosa: " + esc(r.diagnosa) + "<br>Kilometer: " + fmtAngka(r.km) + " km<br>Status: " + esc(r.status) + "</p>";
+    html += "<p style=\"margin-top:10px\"><b>Jasa:</b></p>";
+    html += (r.jasa || []).length ? "<ul style=\"margin:4px 0 8px;padding-left:20px\">" + r.jasa.map(function (j) {
+      var l = cariLayanan(j.layananId);
+      return "<li>" + esc(l ? l.nama : "Jasa") + " — " + rupiah(j.harga) + "</li>";
+    }).join("") + "</ul>" : "<p>—</p>";
+    html += "<p><b>Spare part:</b></p>";
+    html += (r.parts || []).length ? "<ul style=\"margin:4px 0 8px;padding-left:20px\">" + r.parts.map(function (pt) {
+      var s = cariPart(pt.partId);
+      return "<li>" + esc(s ? s.nama : "Part") + " × " + pt.qty + " — " + rupiah(Number(pt.harga) * Number(pt.qty)) + "</li>";
+    }).join("") + "</ul>" : "<p>—</p>";
+    html += "<p>Diskon: " + rupiah(r.diskon) + "<br><b>Total biaya: " + rupiah(totalRiwayat(r)) + "</b></p>";
+    return html;
+  }
+  $("daftarRiwayat").addEventListener("click", function (e) {
+    var btnR = e.target.closest("[data-detail-riwayat]");
+    if (btnR) {
+      var r = cariRiwayat(Number(btnR.getAttribute("data-detail-riwayat")));
+      if (!r) return;
+      bukaModalForm("Detail Riwayat " + r.no, detailRiwayatHtml(r));
+      return;
+    }
+    var btnB = e.target.closest("[data-detail-booking]");
+    if (btnB) {
+      var b = cariBooking(Number(btnB.getAttribute("data-detail-booking")));
+      if (!b) return;
+      var k = cariKendaraan(b.kendaraanId);
+      var l = cariLayanan(b.layananId);
+      bukaModalForm("Detail Booking " + b.no,
+        "<p><b>" + esc(b.no) + "</b> — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span> " + esc(k ? k.merek : "") + "</p>" +
+        "<p>Tanggal: " + tglDari(b.tanggal) + "<br>Layanan: " + esc(l ? l.nama : "—") + "<br>Keluhan: " + esc(b.keluhan) + "<br>Mekanik: " + esc(b.mekanik) + "<br>Status: " + esc(b.status) + "</p>");
+    }
+  });
+
+  // ---------- Render: Pengingat ----------
+  function renderPengingat() {
+    var besok = bookingBesok();
+    $("daftarPengingatBooking").innerHTML = besok.length ? besok.map(function (b) {
+      var k = cariKendaraan(b.kendaraanId);
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(b.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(b.tanggal)) + " pukul " + jamDari(b.tanggal) + " — " + esc(b.keluhan) + (b.diingatkan ? " <span class=\"lencana st-aman\">Sudah diingatkan</span>" : "") + "</div><div class=\"pesan-teks\">" + esc(teksPengingatBooking(b)) + "</div></div><div class=\"aksi\"><button class=\"btn ghost kecil\" type=\"button\" data-salin-pengingat-booking=\"" + b.id + "\">Salin Pesan</button><button class=\"btn kecil\" type=\"button\" data-ingatkan-booking=\"" + b.id + "\">Sudah Diingatkan</button></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada booking besok.</p>";
+
+    var tempo = servisJatuhTempo();
+    $("daftarPengingatServis").innerHTML = tempo.length ? tempo.map(function (k) {
+      var s = sisaHariServis(k);
+      var teks = s < 0 ? "Terlambat " + Math.abs(s) + " hari" : (s === 0 ? "Jatuh tempo hari ini" : "Jatuh tempo " + s + " hari lagi");
+      return "<div class=\"item-bar\"><div><div class=\"nm\"><span class=\"plat\">" + esc(k.plat) + "</span> " + esc(k.merek) + " — " + teks + (k.diingatkanServis ? " <span class=\"lencana st-aman\">Sudah diingatkan</span>" : "") + "</div><div class=\"dt\">Servis terakhir " + tglSingkat(k.servisTerakhir) + " • Interval " + k.intervalHari + " hari / " + fmtAngka(k.intervalKm) + " km</div><div class=\"pesan-teks\">" + esc(teksPengingatServis(k)) + "</div></div><div class=\"aksi\"><button class=\"btn ghost kecil\" type=\"button\" data-salin-pengingat-servis=\"" + k.id + "\">Salin Pesan</button><button class=\"btn kecil\" type=\"button\" data-ingatkan-servis=\"" + k.id + "\">Sudah Diingatkan</button></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada servis yang jatuh tempo.</p>";
+  }
+  $("daftarPengingatBooking").addEventListener("click", function (e) {
+    var btnIngat = e.target.closest("[data-ingatkan-booking]");
+    if (btnIngat) {
+      var b = cariBooking(Number(btnIngat.getAttribute("data-ingatkan-booking")));
+      if (!b) return;
+      b.diingatkan = true;
+      saveState();
+      renderPengingat();
+      renderDashboard();
+      toast(b.no + " ditandai sudah diingatkan.");
+      return;
+    }
+    var btnSalin = e.target.closest("[data-salin-pengingat-booking]");
+    if (btnSalin) {
+      var bs = cariBooking(Number(btnSalin.getAttribute("data-salin-pengingat-booking")));
+      if (!bs) return;
+      salinTeks(teksPengingatBooking(bs), "Pesan pengingat disalin.");
+    }
+  });
+  $("daftarPengingatServis").addEventListener("click", function (e) {
+    var btnIngat = e.target.closest("[data-ingatkan-servis]");
+    if (btnIngat) {
+      var k = cariKendaraan(Number(btnIngat.getAttribute("data-ingatkan-servis")));
+      if (!k) return;
+      k.diingatkanServis = true;
+      saveState();
+      renderPengingat();
+      renderDashboard();
+      toast(k.plat + " ditandai sudah diingatkan.");
+      return;
+    }
+    var btnSalin = e.target.closest("[data-salin-pengingat-servis]");
+    if (btnSalin) {
+      var ks = cariKendaraan(Number(btnSalin.getAttribute("data-salin-pengingat-servis")));
+      if (!ks) return;
+      salinTeks(teksPengingatServis(ks), "Pesan pengingat disalin.");
+    }
+  });
+
+  // ---------- Render: Laporan ----------
+  function renderLaporan() {
+    var periode = $("lapPeriode").value;
+    var kendId = $("lapKendaraan").value === "semua" ? null : Number($("lapKendaraan").value);
+    var daftar = riwayatDalamPeriode(periode, kendId).slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    var totalBiaya = daftar.reduce(function (a, r) { return a + totalRiwayat(r); }, 0);
+    $("lTotal").textContent = fmtAngka(daftar.length);
+    $("lBiaya").textContent = rupiah(totalBiaya);
+    $("lRata").textContent = rupiah(daftar.length ? Math.round(totalBiaya / daftar.length) : 0);
+
+    var perKendaraan = {};
+    daftar.forEach(function (r) {
+      if (!perKendaraan[r.kendaraanId]) perKendaraan[r.kendaraanId] = { jumlah: 0, biaya: 0 };
+      perKendaraan[r.kendaraanId].jumlah += 1;
+      perKendaraan[r.kendaraanId].biaya += totalRiwayat(r);
+    });
+    var barisKend = Object.keys(perKendaraan).map(function (id) {
+      var k = cariKendaraan(Number(id));
+      return { label: k ? k.plat + " — " + k.merek : "—", jumlah: perKendaraan[id].jumlah, biaya: perKendaraan[id].biaya };
+    }).sort(function (a, b) { return b.biaya - a.biaya; });
+    var terbanyak = barisKend.length ? barisKend.slice().sort(function (a, b) { return b.jumlah - a.jumlah; })[0] : null;
+    $("lTerbanyak").textContent = terbanyak ? terbanyak.label.split(" — ")[0] + " (" + terbanyak.jumlah + "×)" : "—";
+    $("tabelLaporan").innerHTML = "<tr><th>Kendaraan</th><th class=\"angka\">Jumlah Servis</th><th class=\"angka\">Total Biaya</th></tr>" +
+      (barisKend.length ? barisKend.map(function (r) {
+        return "<tr><td>" + esc(r.label) + "</td><td class=\"angka\">" + r.jumlah + "</td><td class=\"angka\">" + rupiah(r.biaya) + "</td></tr>";
+      }).join("") : "<tr><td colspan=\"3\">Tidak ada servis pada periode ini.</td></tr>");
+
+    var perJasa = {};
+    daftar.forEach(function (r) {
+      (r.jasa || []).forEach(function (j) {
+        var l = cariLayanan(j.layananId);
+        var nama = l ? l.nama : "Jasa";
+        if (!perJasa[nama]) perJasa[nama] = { kali: 0, estimasi: 0 };
+        perJasa[nama].kali += 1;
+        perJasa[nama].estimasi += Number(j.harga || 0);
+      });
+    });
+    var barisJasa = Object.keys(perJasa).map(function (nama) {
+      return { nama: nama, kali: perJasa[nama].kali, estimasi: perJasa[nama].estimasi };
+    }).sort(function (a, b) { return b.kali - a.kali || b.estimasi - a.estimasi; });
+    $("daftarTerlaris").innerHTML = barisJasa.length ? barisJasa.map(function (r) {
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(r.nama) + "</div><div class=\"dt\">" + r.kali + " kali dikerjakan</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(r.estimasi) + "</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada jasa pada periode ini.</p>";
+
+    $("daftarLaporanRiwayat").innerHTML = daftar.length ? daftar.map(function (r) {
+      var k = cariKendaraan(r.kendaraanId);
+      return "<div class=\"item-bar\"><div><div class=\"nm\">" + esc(r.no) + " — <span class=\"plat\">" + esc(k ? k.plat : "—") + "</span></div><div class=\"dt\">" + tglSingkat(kunciDariIso(r.tanggal)) + " • " + esc(r.diagnosa) + " • Mekanik " + esc(r.mekanik) + "</div></div><div class=\"aksi\"><span class=\"harga\">" + rupiah(totalRiwayat(r)) + "</span></div></div>";
+    }).join("") : "<p class=\"kosong\">Tidak ada riwayat servis pada periode ini.</p>";
+  }
+  $("lapPeriode").addEventListener("change", renderLaporan);
+  $("lapKendaraan").addEventListener("change", renderLaporan);
+  $("btnExportCSV").addEventListener("click", function () {
+    var periode = $("lapPeriode").value;
+    var kendId = $("lapKendaraan").value === "semua" ? null : Number($("lapKendaraan").value);
+    var daftar = riwayatDalamPeriode(periode, kendId).slice().sort(function (a, b) { return new Date(a.tanggal) - new Date(b.tanggal); });
+    function csvCell(v) { return "\"" + String(v == null ? "" : v).replace(/"/g, "\"\"") + "\""; }
+    var baris = [["Tanggal", "No. Riwayat", "Plat", "Kendaraan", "Pemilik", "Diagnosa", "Mekanik", "Jasa", "Spare Part", "Diskon (Rp)", "Total Biaya (Rp)"]];
+    daftar.forEach(function (r) {
+      var k = cariKendaraan(r.kendaraanId);
+      var p = k ? cariPelanggan(k.pelangganId) : null;
+      var jasa = (r.jasa || []).map(function (j) { var l = cariLayanan(j.layananId); return (l ? l.nama : "Jasa") + " " + rupiah(j.harga); }).join("; ");
+      var parts = (r.parts || []).map(function (pt) { var s = cariPart(pt.partId); return (s ? s.nama : "Part") + " x" + pt.qty + " " + rupiah(Number(pt.harga) * Number(pt.qty)); }).join("; ");
+      baris.push([tglSingkat(kunciDariIso(r.tanggal)), r.no, k ? k.plat : "", k ? k.merek : "", p ? p.nama : "", r.diagnosa, r.mekanik, jasa, parts, r.diskon || 0, totalRiwayat(r)]);
+    });
+    var isi = baris.map(function (r) { return r.map(csvCell).join(","); }).join("\r\n");
+    unduh("laporan-riwayat-kendaraan-" + hariIniKey() + ".csv", isi, "text/csv;charset=utf-8");
+    toast("Laporan CSV diunduh (" + daftar.length + " riwayat).");
+  });
+  $("btnBackupJSON").addEventListener("click", function () {
+    var data = { app: "aplikasi-riwayat-kendaraan", version: 1, exportedAt: new Date().toISOString(), state: state };
+    unduh("backup-riwayat-kendaraan-" + hariIniKey() + ".json", JSON.stringify(data, null, 2), "application/json");
+    toast("Backup JSON diunduh.");
+  });
+  $("btnPulihkan").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var d = JSON.parse(reader.result);
+        var s = d && d.state ? d.state : d;
+        if (!s || !Array.isArray(s.kendaraan) || !Array.isArray(s.riwayat) || !Array.isArray(s.booking)) throw new Error("format tidak dikenal");
+        state = s;
+        saveState();
+        isiSelectKendaraan();
+        renderSemua();
+        toast("Backup dipulihkan.");
+      } catch (err) {
+        toast("File backup tidak valid.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- Reset data ----------
+  $("btnResetData").addEventListener("click", function () {
+    if (!isAdmin()) { toast("Hanya admin yang bisa mengembalikan data contoh."); return; }
+    tanyaKonfirmasi("Kembalikan data contoh", "Semua perubahan Anda akan dihapus dan data contoh Bengkel Oyen dikembalikan. Lanjutkan?", function () {
+      state = seedState();
+      saveState();
+      isiSelectKendaraan();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Init ----------
+  function renderSemua() {
+    $("tanggalHari").textContent = tanggalHariIni();
+    renderDashboard();
+    renderPengguna();
+    renderPelanggan();
+    renderKendaraan();
+    renderRiwayat();
+    renderPengingat();
+    renderLaporan();
+  }
+  loadState();
+  loadUsers();
+  isiSelectKendaraan();
+  isiFormServis();
+  $("rsTanggal").value = hariIniKey();
+  var sesi = pulihkanSesi();
+  terapkanSesi();
+  if (!sesi) {
+    $("loginUser").focus();
+  }
+})();
+</script>
+</body>
+</html>
