@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Manajemen Resep &amp; Bahan Baku</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f4ce82; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .bar-stok { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 5px; min-width: 90px; }
+  .bar-stok > div { height: 100%; background: var(--green); }
+  .bar-stok.rendah > div { background: #d9a521; }
+  .bar-stok.habis > div { background: var(--red); }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 560px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">CONTOH DEMO</span>
+    <h1>Manajemen Resep &amp; Bahan Baku</h1>
+    <p>Resep per menu dengan takaran bahan, stok bahan baku, peringatan stok menipis, dan hitung biaya bahan per porsi — Warung Kopi Oyen.</p>
+    <p class="tanggal" id="tanggalHari">—</p>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="resep">Resep</button>
+    <button class="tab-btn" type="button" data-tab="bahan">Bahan Baku <span class="badge" id="badgeHampirHabis">0</span></button>
+    <button class="tab-btn" type="button" data-tab="produksi">Produksi</button>
+    <button class="tab-btn" type="button" data-tab="biaya">Biaya Porsi</button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head">
+      <h2>Dasbor</h2>
+      <p>Ringkasan resep, stok bahan baku, dan peringatan bahan yang hampir habis.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Resep Menu</div><div class="angka" id="dResep">0</div></div>
+      <div class="stat"><div class="label">Bahan Baku</div><div class="angka" id="dBahan">0</div></div>
+      <div class="stat warn"><div class="label">Bahan Hampir Habis</div><div class="angka" id="dHampirHabis">0</div></div>
+      <div class="stat accent"><div class="label">Nilai Stok Bahan</div><div class="angka" id="dNilaiStok">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3>Peringatan: Bahan Hampir Habis</h3>
+      <p class="sub">Bahan yang stoknya sudah di bawah stok minimum, atau habis. Segera pesan ulang.</p>
+      <div id="daftarPeringatan"></div>
+    </div>
+    <div class="card">
+      <h3>Produksi Hari Ini</h3>
+      <p class="sub">Porsi yang sudah diproduksi hari ini dan total biaya bahannya.</p>
+      <div id="produksiHariIni"></div>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
+      <div id="daftarPengguna"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="nuNama">Nama lengkap *</label>
+          <input type="text" id="nuNama" placeholder="cth: Dewi">
+        </div>
+        <div class="field">
+          <label for="nuUser">Nama pengguna *</label>
+          <input type="text" id="nuUser" placeholder="cth: dewi">
+        </div>
+        <div class="field">
+          <label for="nuPass">Kata sandi *</label>
+          <input type="password" id="nuPass" placeholder="Kata sandi pengguna baru">
+        </div>
+        <div class="field">
+          <label for="nuPeran">Peran</label>
+          <select id="nuPeran">
+            <option value="kasir">Kasir</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Masuk sebagai <b id="namaAkunSaya">—</b>. Kata sandi baru minimal 6 karakter.</p>
+      <form id="formSandiSaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="sandiLama">Kata sandi lama *</label>
+            <input type="password" id="sandiLama" placeholder="Kata sandi lama">
+          </div>
+          <div class="field">
+            <label for="sandiBaru">Kata sandi baru *</label>
+            <input type="password" id="sandiBaru" placeholder="Kata sandi baru">
+          </div>
+        </div>
+        <button class="btn kecil" type="submit">Ganti Kata Sandi</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-resep">
+    <div class="page-head">
+      <h2>Resep</h2>
+      <p>Resep per menu: bahan dan takaran untuk 1 porsi, beserta biaya bahannya.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow"><input type="text" id="cariResep" placeholder="Cari resep / menu…"></div>
+        <button class="btn kecil" id="btnTambahResep" type="button">+ Tambah Resep</button>
+      </div>
+      <div id="daftarResep"></div>
+    </div>
+    <div class="card" id="cardDetailResep" hidden>
+      <h3 id="detailResepJudul">Detail Resep</h3>
+      <p class="sub" id="detailResepSub"></p>
+      <div id="detailResepIsi"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost kecil" id="btnUbahResep" type="button">Ubah Resep</button>
+        <button class="btn merah kecil" id="btnHapusResep" type="button">Hapus Resep</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-bahan">
+    <div class="page-head">
+      <h2>Bahan Baku</h2>
+      <p>Stok, satuan, harga beli per satuan, dan stok minimum tiap bahan.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow"><input type="text" id="cariBahan" placeholder="Cari bahan…"></div>
+        <select id="filterBahan" style="max-width:200px">
+          <option value="semua">Semua status</option>
+          <option value="aman">Aman</option>
+          <option value="rendah">Hampir habis</option>
+          <option value="habis">Habis</option>
+        </select>
+        <button class="btn kecil" id="btnTambahBahan" type="button">+ Tambah Bahan</button>
+      </div>
+      <div class="tabel-wrap"><table class="tabel" id="tabelBahan"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-produksi">
+    <div class="page-head">
+      <h2>Produksi</h2>
+      <p>Produksi sejumlah porsi dari satu resep — stok bahan berkurang otomatis sesuai takaran. Ditolak bila stok tidak cukup.</p>
+    </div>
+    <div class="card">
+      <h3>Produksi Baru</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label for="prodResep">Resep *</label>
+          <select id="prodResep"></select>
+        </div>
+        <div class="field">
+          <label for="prodJumlah">Jumlah porsi *</label>
+          <input type="number" id="prodJumlah" min="1" max="500" value="1">
+        </div>
+      </div>
+      <div id="prodRincian" class="catatan" hidden></div>
+      <button class="btn" id="btnProduksi" type="button">Produksi Sekarang</button>
+    </div>
+    <div class="card">
+      <h3>Riwayat Produksi</h3>
+      <p class="sub">Produksi terbaru di atas. Setiap produksi mengurangi stok bahan sesuai resep.</p>
+      <div id="riwayatProduksi"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-biaya">
+    <div class="page-head">
+      <h2>Biaya Porsi</h2>
+      <p>Biaya bahan per porsi tiap menu, dihitung otomatis dari resep — dibandingkan dengan harga jual.</p>
+    </div>
+    <div class="card">
+      <h3>Biaya Bahan per Porsi vs Harga Jual</h3>
+      <p class="sub">Margin = harga jual − biaya bahan. Menu tanpa resep tidak bisa dihitung biayanya.</p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelBiaya"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Pemakaian Bahan</h2>
+      <p>Berapa bahan yang terpakai untuk produksi, dan berapa biaya bahannya.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <label for="lapPeriode">Periode</label>
+          <select id="lapPeriode">
+            <option value="hari">Hari ini</option>
+            <option value="7hari" selected>7 hari terakhir</option>
+            <option value="semua">Semua</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-stat">
+        <div class="stat"><div class="label">Total Porsi Diproduksi</div><div class="angka" id="lPorsi">0</div></div>
+        <div class="stat"><div class="label">Total Biaya Bahan</div><div class="angka" id="lBiaya">Rp0</div></div>
+        <div class="stat"><div class="label">Bahan Terpakai (jenis)</div><div class="angka" id="lJenis">0</div></div>
+        <div class="stat accent"><div class="label">Bahan Terlaris Dipakai</div><div class="angka" id="lTop" style="font-size:18px">—</div></div>
+      </div>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLaporan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Mutasi Stok (Masuk / Keluar)</h3>
+      <p class="sub">Stok masuk dari pembelian dan stok keluar manual, terbaru di atas.</p>
+      <div id="riwayatMutasi"></div>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan</h2>
+      <p>Cara memakai Manajemen Resep &amp; Bahan Baku, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Masuk sebagai <b>Admin</b> untuk mengatur pengguna, atau sebagai <b>Kasir</b> untuk mengelola resep dan stok.</li>
+        <li>Di tab <b>Resep</b>, klik resep untuk melihat bahan dan takarannya. Tambah resep baru untuk menu yang belum punya resep, atau ubah takaran bahan bila resep berubah.</li>
+        <li>Di tab <b>Bahan Baku</b>, catat stok tiap bahan beserta harga beli per satuan dan stok minimum. Tombol <b>+ Stok</b> untuk mencatat pembelian bahan baru; <b>− Stok</b> untuk mencatat pemakaian di luar produksi (misal bahan rusak atau terbuang).</li>
+        <li>Di tab <b>Produksi</b>, pilih resep dan jumlah porsi, lalu klik <b>Produksi Sekarang</b>. Stok bahan berkurang otomatis sesuai takaran resep × jumlah porsi. Bila ada bahan yang stoknya tidak cukup, produksi ditolak dan aplikasi menunjukkan bahan yang kurang.</li>
+        <li>Di tab <b>Biaya Porsi</b>, lihat biaya bahan per porsi tiap menu dan marginnya terhadap harga jual — menu dengan margin tipis perlu ditinjau harganya.</li>
+        <li>Di tab <b>Laporan</b>, lihat bahan apa saja yang paling banyak terpakai dan total biaya bahannya dalam periode yang dipilih.</li>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+      </ol>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <p class="sub">Harga mengikuti paket aplikasi di toko.</p>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p class="sub">Tambah APK Android: +Rp400.000 (semua paket). File dikirim lewat WhatsApp setelah pembayaran.</p>
+      <p class="sub">Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    </div>
+    <div class="card">
+      <h3>Data contoh</h3>
+      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (4 kategori, 12 item menu, 12 resep, 30 bahan baku, 2 produksi contoh). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p class="sub">Aplikasi ini menghitung biaya bahan dari resep dan mencatat stok bahan baku — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem akuntansi (tidak menghitung gaji, sewa, listrik, atau biaya lain). Data resep, bahan, dan produksi <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh dapur dan kasir di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, Aplikasi Pemesanan Makanan, dan Manajemen Meja kami.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Manajemen Resep &amp; Bahan Baku v1.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Warung Kopi Oyen, bukan data penjualan sungguhan.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Manajemen%20Resep%20%26%20Bahan%20Baku." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div id="modalKonten"></div>
+    <div class="aksi" id="modalAksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Masuk — Manajemen Resep &amp; Bahan Baku</h2>
+    <p class="login-sub">Masuk dengan akun Anda untuk mengelola resep dan bahan baku. Akun dibuat oleh admin; pengguna yang dinonaktifkan tidak bisa masuk.</p>
+    <form id="formLogin">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" autocomplete="username" placeholder="Nama pengguna Anda">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+      <button class="btn" type="submit">Masuk</button>
+    </form>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (resep, bahan baku, produksi, biaya porsi, laporan)</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function fmtAngka(n) { return Number(n || 0).toLocaleString("id-ID"); }
+  function tanggalHariIni() {
+    return new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  function hariIniKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function jamDari(waktu) {
+    if (!waktu) return "—";
+    var d = new Date(waktu);
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  function tglDari(waktu) {
+    if (!waktu) return "—";
+    var d = new Date(waktu);
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short" }) + " " + jamDari(waktu);
+  }
+  function persen(n) { return (Math.round(n * 10) / 10).toLocaleString("id-ID") + "%"; }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalKonten").innerHTML = "";
+    $("modalAksi").style.display = "flex";
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa");
+    var baru = ya.cloneNode(true);
+    ya.parentNode.replaceChild(baru, ya);
+    baru.addEventListener("click", function () {
+      tutupModal();
+      callback();
+    });
+  }
+  function bukaModalForm(judul, kontenHtml) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = "";
+    $("modalKonten").innerHTML = kontenHtml;
+    $("modalAksi").style.display = "none";
+    $("modalBack").classList.add("open");
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBatal").addEventListener("click", tutupModal);
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+
+  // ---------- Data contoh ----------
+  var STORAGE_KEY = "manajemenResep.v1";
+  function seedState() {
+    var kini = Date.now();
+    function mntLalu(m) { return new Date(kini - m * 60000).toISOString(); }
+    function jamHariIni(jam, menit) {
+      var d = new Date();
+      d.setHours(jam, menit, 0, 0);
+      return d.toISOString();
+    }
+    function hariLalu(h, jam, menit) {
+      var d = new Date();
+      d.setDate(d.getDate() - h);
+      d.setHours(jam, menit, 0, 0);
+      return d.toISOString();
+    }
+    return {
+      resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
+      kategori: [
+        { id: 1, nama: "Makanan" },
+        { id: 2, nama: "Minuman" },
+        { id: 3, nama: "Camilan" },
+        { id: 4, nama: "Paket" }
+      ],
+      items: [
+        { id: 1, kat: 1, nama: "Nasi Goreng Oyen", deskripsi: "Nasi goreng telur, ayam suwir, kerupuk, acar.", harga: 18000, tersedia: true },
+        { id: 2, kat: 1, nama: "Mie Goreng Spesial", deskripsi: "Mie goreng telur, sayur, ayam, dan bawang goreng.", harga: 17000, tersedia: true },
+        { id: 3, kat: 1, nama: "Ayam Geprek Sambal Matah", deskripsi: "Ayam goreng geprek, sambal matah, nasi putih.", harga: 20000, tersedia: true },
+        { id: 4, kat: 1, nama: "Soto Ayam Kampung", deskripsi: "Soto ayam, soun, telur, seledri, sambal.", harga: 15000, tersedia: true },
+        { id: 5, kat: 2, nama: "Es Teh Manis", deskripsi: "Teh melati manis dingin.", harga: 5000, tersedia: true },
+        { id: 6, kat: 2, nama: "Kopi Tubruk Oyen", deskripsi: "Kopi tubruk robusta, gula aren.", harga: 8000, tersedia: true },
+        { id: 7, kat: 2, nama: "Es Kopi Susu Gula Aren", deskripsi: "Es kopi susu, gula aren, es batu.", harga: 12000, tersedia: true },
+        { id: 8, kat: 2, nama: "Jus Alpukat", deskripsi: "Jus alpukat, susu kental manis, es batu.", harga: 15000, tersedia: false },
+        { id: 9, kat: 3, nama: "Kentang Goreng", deskripsi: "Kentang goreng renyah, saus sambal.", harga: 12000, tersedia: true },
+        { id: 10, kat: 3, nama: "Pisang Goreng Cokelat Keju", deskripsi: "Pisang goreng, meses cokelat, keju parut.", harga: 10000, tersedia: true },
+        { id: 11, kat: 3, nama: "Roti Bakar Cokelat", deskripsi: "Roti bakar cokelat, margarin.", harga: 9000, tersedia: true },
+        { id: 12, kat: 4, nama: "Paket Nasi + Ayam + Es Teh", deskripsi: "Nasi putih, ayam geprek, es teh manis.", harga: 25000, tersedia: true }
+      ],
+      bahan: [
+        { id: 1, nama: "Beras", satuan: "g", stok: 20000, stokMin: 3000, harga: 12, kat: "Bahan Pokok" },
+        { id: 2, nama: "Mie Kering", satuan: "g", stok: 5000, stokMin: 800, harga: 20, kat: "Bahan Pokok" },
+        { id: 3, nama: "Telur", satuan: "butir", stok: 60, stokMin: 12, harga: 2500, kat: "Bahan Pokok" },
+        { id: 4, nama: "Ayam", satuan: "g", stok: 8000, stokMin: 1500, harga: 45, kat: "Bahan Pokok" },
+        { id: 5, nama: "Minyak Goreng", satuan: "ml", stok: 4000, stokMin: 500, harga: 25, kat: "Bumbu" },
+        { id: 6, nama: "Kecap Manis", satuan: "ml", stok: 1500, stokMin: 200, harga: 30, kat: "Bumbu" },
+        { id: 7, nama: "Saus Sambal", satuan: "ml", stok: 1200, stokMin: 200, harga: 35, kat: "Bumbu" },
+        { id: 8, nama: "Bawang Merah", satuan: "g", stok: 2000, stokMin: 300, harga: 40, kat: "Bumbu" },
+        { id: 9, nama: "Bawang Putih", satuan: "g", stok: 1500, stokMin: 300, harga: 45, kat: "Bumbu" },
+        { id: 10, nama: "Cabai Rawit", satuan: "g", stok: 800, stokMin: 150, harga: 60, kat: "Bumbu" },
+        { id: 11, nama: "Tomat", satuan: "g", stok: 2000, stokMin: 300, harga: 15, kat: "Bumbu" },
+        { id: 12, nama: "Sayur (Sawi/Kol)", satuan: "g", stok: 3000, stokMin: 500, harga: 12, kat: "Bahan Pokok" },
+        { id: 13, nama: "Teh Melati", satuan: "g", stok: 500, stokMin: 100, harga: 150, kat: "Minuman" },
+        { id: 14, nama: "Gula Aren", satuan: "g", stok: 3000, stokMin: 500, harga: 30, kat: "Minuman" },
+        { id: 15, nama: "Gula Pasir", satuan: "g", stok: 3000, stokMin: 500, harga: 18, kat: "Minuman" },
+        { id: 16, nama: "Kopi Robusta", satuan: "g", stok: 1500, stokMin: 250, harga: 120, kat: "Minuman" },
+        { id: 17, nama: "Susu Kental Manis", satuan: "ml", stok: 2000, stokMin: 300, harga: 40, kat: "Minuman" },
+        { id: 18, nama: "Susu Cair", satuan: "ml", stok: 3000, stokMin: 500, harga: 20, kat: "Minuman" },
+        { id: 19, nama: "Alpukat", satuan: "buah", stok: 3, stokMin: 4, harga: 8000, kat: "Minuman" },
+        { id: 20, nama: "Es Batu", satuan: "g", stok: 5000, stokMin: 1000, harga: 3, kat: "Minuman" },
+        { id: 21, nama: "Kentang", satuan: "g", stok: 4000, stokMin: 500, harga: 20, kat: "Camilan" },
+        { id: 22, nama: "Pisang", satuan: "buah", stok: 30, stokMin: 6, harga: 3000, kat: "Camilan" },
+        { id: 23, nama: "Cokelat Meses", satuan: "g", stok: 120, stokMin: 150, harga: 60, kat: "Camilan" },
+        { id: 24, nama: "Keju Parut", satuan: "g", stok: 100, stokMin: 150, harga: 90, kat: "Camilan" },
+        { id: 25, nama: "Roti Tawar", satuan: "lembar", stok: 40, stokMin: 8, harga: 1500, kat: "Camilan" },
+        { id: 26, nama: "Margarin", satuan: "g", stok: 1000, stokMin: 150, harga: 35, kat: "Camilan" },
+        { id: 27, nama: "Soun", satuan: "g", stok: 1000, stokMin: 150, harga: 25, kat: "Bahan Pokok" },
+        { id: 28, nama: "Seledri", satuan: "g", stok: 500, stokMin: 100, harga: 50, kat: "Bumbu" },
+        { id: 29, nama: "Kerupuk", satuan: "pcs", stok: 50, stokMin: 10, harga: 1000, kat: "Bahan Pokok" },
+        { id: 30, nama: "Acar", satuan: "g", stok: 1000, stokMin: 150, harga: 20, kat: "Bumbu" }
+      ],
+      resep: [
+        { id: 1, menuId: 1, bahan: [{ b: 1, t: 200 }, { b: 3, t: 1 }, { b: 4, t: 50 }, { b: 6, t: 15 }, { b: 5, t: 10 }, { b: 8, t: 20 }, { b: 9, t: 10 }, { b: 10, t: 5 }, { b: 29, t: 1 }, { b: 30, t: 30 }] },
+        { id: 2, menuId: 2, bahan: [{ b: 2, t: 150 }, { b: 3, t: 1 }, { b: 4, t: 40 }, { b: 12, t: 50 }, { b: 6, t: 10 }, { b: 5, t: 10 }, { b: 9, t: 10 }, { b: 8, t: 15 }] },
+        { id: 3, menuId: 3, bahan: [{ b: 4, t: 150 }, { b: 1, t: 200 }, { b: 8, t: 30 }, { b: 10, t: 10 }, { b: 5, t: 15 }] },
+        { id: 4, menuId: 4, bahan: [{ b: 4, t: 80 }, { b: 27, t: 30 }, { b: 3, t: 1 }, { b: 28, t: 5 }, { b: 9, t: 10 }, { b: 5, t: 5 }] },
+        { id: 5, menuId: 5, bahan: [{ b: 13, t: 5 }, { b: 15, t: 20 }, { b: 20, t: 150 }] },
+        { id: 6, menuId: 6, bahan: [{ b: 16, t: 15 }, { b: 14, t: 15 }] },
+        { id: 7, menuId: 7, bahan: [{ b: 16, t: 15 }, { b: 18, t: 150 }, { b: 14, t: 20 }, { b: 20, t: 150 }] },
+        { id: 8, menuId: 8, bahan: [{ b: 19, t: 1 }, { b: 17, t: 30 }, { b: 20, t: 100 }] },
+        { id: 9, menuId: 9, bahan: [{ b: 21, t: 150 }, { b: 5, t: 20 }, { b: 7, t: 20 }] },
+        { id: 10, menuId: 10, bahan: [{ b: 22, t: 1 }, { b: 23, t: 15 }, { b: 24, t: 10 }, { b: 5, t: 10 }] },
+        { id: 11, menuId: 11, bahan: [{ b: 25, t: 2 }, { b: 23, t: 15 }, { b: 26, t: 10 }] },
+        { id: 12, menuId: 12, bahan: [{ b: 1, t: 200 }, { b: 4, t: 120 }, { b: 13, t: 5 }, { b: 15, t: 20 }, { b: 20, t: 150 }, { b: 5, t: 10 }, { b: 8, t: 10 }] }
+      ],
+      produksi: [
+        { id: 1, no: "PRD-001", resepId: 1, jumlah: 8, tanggal: jamHariIni(9, 0), totalBiaya: 88000,
+          pakai: [{ b: 1, j: 1600 }, { b: 3, j: 8 }, { b: 4, j: 400 }, { b: 6, j: 120 }, { b: 5, j: 80 }, { b: 8, j: 160 }, { b: 9, j: 80 }, { b: 10, j: 40 }, { b: 29, j: 8 }, { b: 30, j: 240 }] },
+        { id: 2, no: "PRD-002", resepId: 5, jumlah: 12, tanggal: jamHariIni(11, 30), totalBiaya: 18720,
+          pakai: [{ b: 13, j: 60 }, { b: 15, j: 240 }, { b: 20, j: 1800 }] }
+      ],
+      mutasi: [
+        { id: 1, bahanId: 1, jenis: "masuk", jumlah: 10000, tanggal: hariLalu(1, 10, 15), keterangan: "Beli beras 10 kg", nilai: 120000 },
+        { id: 2, bahanId: 5, jenis: "keluar", jumlah: 200, tanggal: hariLalu(1, 16, 40), keterangan: "Minyak tumpah saat pindah wadah", nilai: 5000 },
+        { id: 3, bahanId: 1, jenis: "produksi", jumlah: 1600, tanggal: jamHariIni(9, 0), keterangan: "PRD-001 Nasi Goreng Oyen × 8", nilai: 19200 },
+        { id: 4, bahanId: 13, jenis: "produksi", jumlah: 60, tanggal: jamHariIni(11, 30), keterangan: "PRD-002 Es Teh Manis × 12", nilai: 9000 }
+      ],
+      seqResep: 13,
+      seqBahan: 31,
+      seqProduksi: 3,
+      seqMutasi: 5
+    };
+  }
+
+  var state = seedState();
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.bahan) || !Array.isArray(d.resep)) throw new Error("data rusak");
+      state = d;
+    } catch (e) { /* pakai data contoh */ }
+  }
+
+  // ---------- Pencarian data ----------
+  function cariBahan(id) { return state.bahan.find(function (x) { return x.id === id; }); }
+  function cariMenu(id) { return state.items.find(function (x) { return x.id === id; }); }
+  function cariResep(id) { return state.resep.find(function (x) { return x.id === id; }); }
+  function cariResepByMenu(menuId) { return state.resep.find(function (x) { return x.menuId === menuId; }); }
+  function statusBahan(b) {
+    if (b.stok <= 0) return "habis";
+    if (b.stok < b.stokMin) return "rendah";
+    return "aman";
+  }
+  function labelStatusBahan(s) { return s === "habis" ? "Habis" : s === "rendah" ? "Hampir Habis" : "Aman"; }
+  function kelasStatusBahan(s) { return s === "habis" ? "st-habis" : s === "rendah" ? "st-rendah" : "st-aman"; }
+  function biayaResep(r) {
+    if (!r) return null;
+    var total = 0;
+    r.bahan.forEach(function (it) {
+      var b = cariBahan(it.b);
+      if (b) total += it.t * b.harga;
+    });
+    return Math.round(total);
+  }
+  function hampirHabis() {
+    return state.bahan.filter(function (b) { return statusBahan(b) !== "aman"; });
+  }
+  function nilaiStok() {
+    return state.bahan.reduce(function (a, b) { return a + b.stok * b.harga; }, 0);
+  }
+
+  // ---------- Login & pengguna ----------
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+  var DEFAULT_USERS = [
+    { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
+  ];
+  var users = [];
+  var currentUser = null;
+
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
+      var d = JSON.parse(raw);
+      if (!Array.isArray(d) || d.length === 0) throw new Error("kosong");
+      users = d.map(function (x) {
+        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
+      });
+    } catch (e) {
+      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+      saveUsers();
+    }
+  }
+  function saveUsers() {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  }
+  function terapkanSesi() {
+    document.body.setAttribute("data-role", currentUser ? currentUser.role : "");
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")" : "—";
+    $("namaAkunSaya").textContent = currentUser ? currentUser.name : "—";
+    $("loginOverlay").classList.toggle("hidden", !!currentUser);
+    $("cardPengguna").style.display = currentUser && currentUser.role === "admin" ? "" : "none";
+  }
+  function masuk(username, password) {
+    var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
+    if (!u) return false;
+    currentUser = u;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+    return true;
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    terapkanSesi();
+  }
+  function pulihkanSesi() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
+      if (u) { currentUser = u; terapkanSesi(); }
+    } catch (e) { /* abaikan */ }
+  }
+
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim();
+    var p = $("loginPass").value;
+    if (masuk(u, p)) {
+      $("loginError").hidden = true;
+      $("loginPass").value = "";
+      renderSemua();
+      toast("Selamat datang, " + currentUser.name + ".");
+    } else {
+      $("loginError").hidden = false;
+    }
+  });
+  $("btnKeluar").addEventListener("click", function () {
+    keluar();
+    toast("Anda sudah keluar.");
+  });
+
+  // ---------- Tab ----------
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      if (tab === "dashboard") renderDashboard();
+      if (tab === "resep") renderResep();
+      if (tab === "bahan") renderBahan();
+      if (tab === "produksi") renderProduksi();
+      if (tab === "biaya") renderBiaya();
+      if (tab === "laporan") renderLaporan();
+    });
+  });
+
+  // ---------- Dashboard ----------
+  function renderDashboard() {
+    $("dResep").textContent = state.resep.length;
+    $("dBahan").textContent = state.bahan.length;
+    var hh = hampirHabis();
+    $("dHampirHabis").textContent = hh.length;
+    $("dNilaiStok").textContent = rupiah(nilaiStok());
+    $("badgeHampirHabis").textContent = hh.length;
+    $("daftarPeringatan").innerHTML = hh.length ? hh.map(function (b) {
+      var s = statusBahan(b);
+      return '<div class="item-bar"><div><div class="nm">' + esc(b.nama) + ' <span class="lencana ' + kelasStatusBahan(s) + '">' + labelStatusBahan(s) + '</span></div>' +
+        '<div class="dt">Stok ' + fmtAngka(b.stok) + " " + esc(b.satuan) + " · Stok minimum " + fmtAngka(b.stokMin) + " " + esc(b.satuan) + "</div></div>" +
+        '<div class="aksi"><button class="btn hijau kecil" type="button" data-stok-masuk="' + b.id + '">+ Stok</button></div></div>';
+    }).join("") : '<p class="kosong">Semua bahan masih aman — tidak ada yang di bawah stok minimum.</p>';
+    var kunci = hariIniKey();
+    var hariIni = state.produksi.filter(function (p) { return p.tanggal.slice(0, 10) === kunci; });
+    var totalPorsi = hariIni.reduce(function (a, p) { return a + p.jumlah; }, 0);
+    var totalBiaya = hariIni.reduce(function (a, p) { return a + p.totalBiaya; }, 0);
+    $("produksiHariIni").innerHTML = hariIni.length ? '<div class="item-bar"><div><div class="nm">' + totalPorsi + ' porsi diproduksi</div>' +
+      '<div class="dt">' + hariIni.length + " batch produksi hari ini</div></div>" +
+      '<div class="harga">' + rupiah(totalBiaya) + "</div></div>" : '<p class="kosong">Belum ada produksi hari ini. Buat produksi di tab Produksi.</p>';
+    renderPengguna();
+  }
+
+  function renderPengguna() {
+    var wrap = $("daftarPengguna");
+    if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
+    wrap.innerHTML = users.map(function (u) {
+      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var tombol = "";
+      if (u.username !== currentUser.username) {
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif !== false ? "Nonaktifkan" : "Aktifkan") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
+      }
+      return '<div class="user-row"><div><b>' + esc(u.name) + '</b> <span style="color:var(--muted)">(@' + esc(u.username) + ")</span><br>" +
+        '<span class="lencana ' + (u.role === "admin" ? "st-biru" : "st-rendah") + '">' + labelPeran + "</span> " +
+        (u.aktif === false ? '<span class="lencana st-habis">Nonaktif</span>' : "") + "</div>" +
+        '<div class="aksi">' + tombol + "</div></div>";
+    }).join("");
+  }
+
+  $("daftarPengguna").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi-pengguna]");
+    if (!btn) return;
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa mengelola pengguna."); return; }
+    var username = btn.getAttribute("data-user");
+    var aksi = btn.getAttribute("data-aksi-pengguna");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    if (aksi === "peran") {
+      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin."); return;
+      }
+      u.role = u.role === "admin" ? "kasir" : "admin";
+      saveUsers();
+      renderPengguna();
+      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
+    } else if (aksi === "aktif") {
+      if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+        toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
+      }
+      u.aktif = u.aktif === false ? true : false;
+      saveUsers();
+      renderPengguna();
+      toast(u.aktif !== false ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
+    } else if (aksi === "sandi") {
+      tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ') menjadi "rb123"?', function () {
+        u.password = "rb123";
+        saveUsers();
+        toast("Kata sandi " + u.name + " direset menjadi rb123.");
+      });
+    }
+  });
+
+  $("btnTambahPengguna").addEventListener("click", function () {
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa menambah pengguna."); return; }
+    var nama = $("nuNama").value.trim();
+    var username = $("nuUser").value.trim().toLowerCase();
+    var pass = $("nuPass").value;
+    var peran = $("nuPeran").value;
+    if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+    users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
+    saveUsers();
+    $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
+    renderPengguna();
+    toast("Pengguna " + nama + " ditambahkan.");
+  });
+
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentUser) return;
+    var lama = $("sandiLama").value;
+    var baru = $("sandiBaru").value;
+    if (currentUser.password !== lama) { toast("Kata sandi lama salah."); return; }
+    if (!baru || baru.length < 6) { toast("Kata sandi baru minimal 6 karakter."); return; }
+    currentUser.password = baru;
+    saveUsers();
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diganti.");
+  });
+
+  // ---------- Resep ----------
+  var resepTerpilih = null;
+  function renderResep() {
+    var q = ($("cariResep").value || "").trim().toLowerCase();
+    var daftar = state.resep.filter(function (r) {
+      var m = cariMenu(r.menuId);
+      if (!m) return false;
+      return !q || m.nama.toLowerCase().indexOf(q) !== -1;
+    });
+    $("daftarResep").innerHTML = daftar.length ? daftar.map(function (r) {
+      var m = cariMenu(r.menuId);
+      var biaya = biayaResep(r);
+      var margin = m.harga - biaya;
+      var marginPersen = m.harga > 0 ? (margin / m.harga * 100) : 0;
+      return '<div class="item-bar"><div><div class="nm">' + esc(m.nama) + '</div>' +
+        '<div class="dt">' + r.bahan.length + " bahan · Biaya " + rupiah(biaya) + "/porsi · Margin " + rupiah(margin) + " (" + persen(marginPersen) + ")</div></div>" +
+        '<div class="aksi"><button class="btn ghost kecil" type="button" data-lihat-resep="' + r.id + '">Lihat Resep</button></div></div>';
+    }).join("") : '<p class="kosong">Tidak ada resep yang cocok. Tambah resep baru untuk menu yang belum punya resep.</p>';
+  }
+  function renderDetailResep(id) {
+    var r = cariResep(id);
+    if (!r) { $("cardDetailResep").hidden = true; resepTerpilih = null; return; }
+    resepTerpilih = r.id;
+    var m = cariMenu(r.menuId);
+    var biaya = biayaResep(r);
+    var margin = m.harga - biaya;
+    var marginPersen = m.harga > 0 ? (margin / m.harga * 100) : 0;
+    $("detailResepJudul").textContent = "Resep — " + m.nama;
+    $("detailResepSub").textContent = "Takaran untuk 1 porsi · Harga jual " + rupiah(m.harga) + " · Biaya bahan " + rupiah(biaya) + " · Margin " + rupiah(margin) + " (" + persen(marginPersen) + ")";
+    var baris = r.bahan.map(function (it) {
+      var b = cariBahan(it.b);
+      if (!b) return "";
+      return "<tr><td>" + esc(b.nama) + "</td><td class=\"angka\">" + fmtAngka(it.t) + " " + esc(b.satuan) + "</td><td class=\"angka\">" + rupiah(b.harga) + " / " + esc(b.satuan) + "</td><td class=\"angka\">" + rupiah(Math.round(it.t * b.harga)) + "</td></tr>";
+    }).join("");
+    $("detailResepIsi").innerHTML = '<div class="tabel-wrap"><table class="tabel"><tr><th>Bahan</th><th style="text-align:right">Takaran</th><th style="text-align:right">Harga Beli</th><th style="text-align:right">Biaya</th></tr>' + baris +
+      '<tr><td colspan="3"><b>Total biaya bahan / porsi</b></td><td class="angka"><b>' + rupiah(biaya) + "</b></td></tr></table></div>";
+    $("cardDetailResep").hidden = false;
+  }
+  $("daftarResep").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-lihat-resep]");
+    if (!btn) return;
+    renderDetailResep(Number(btn.getAttribute("data-lihat-resep")));
+    $("cardDetailResep").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  $("cariResep").addEventListener("input", renderResep);
+
+  function opsiBahan(terpilih) {
+    return state.bahan.map(function (b) {
+      return '<option value="' + b.id + '"' + (b.id === terpilih ? " selected" : "") + ">" + esc(b.nama) + " (" + esc(b.satuan) + " — " + rupiah(b.harga) + ")</option>";
+    }).join("");
+  }
+  function barisBahanHtml(bahanId, takaran) {
+    return '<div class="row" data-baris-bahan style="margin-bottom:8px">' +
+      '<div class="grow"><select class="bahan-pilih">' + opsiBahan(bahanId) + "</select></div>" +
+      '<div style="width:130px"><input type="number" class="takaran-input" min="0.01" step="any" value="' + (takaran == null ? "" : takaran) + '" placeholder="Takaran"></div>' +
+      '<button class="btn ghost kecil" type="button" data-hapus-baris>Hapus</button></div>';
+  }
+  function bukaFormResep(resepLama) {
+    var menuTanpaResep = state.items.filter(function (it) { return !cariResepByMenu(it.id) || (resepLama && resepLama.menuId === it.id); });
+    if (!resepLama && menuTanpaResep.length === 0) { toast("Semua menu sudah punya resep."); return; }
+    var opsiMenu = menuTanpaResep.map(function (it) {
+      return '<option value="' + it.id + '"' + (resepLama && resepLama.menuId === it.id ? " selected" : "") + ">" + esc(it.nama) + " — " + rupiah(it.harga) + "</option>";
+    }).join("");
+    var barisAwal = "";
+    if (resepLama) {
+      barisAwal = resepLama.bahan.map(function (it) { return barisBahanHtml(it.b, it.t); }).join("");
+    } else {
+      barisAwal = barisBahanHtml(state.bahan[0] ? state.bahan[0].id : 0, "");
+    }
+    bukaModalForm(resepLama ? "Ubah Resep" : "Tambah Resep",
+      '<form id="formResep"><div class="field"><label for="frMenu">Menu *</label><select id="frMenu"' + (resepLama ? " disabled" : "") + ">" + opsiMenu + "</select></div>" +
+      '<div class="field"><label>Bahan &amp; takaran per 1 porsi *</label><div id="frBaris">' + barisAwal + "</div>" +
+      '<button class="btn ghost kecil" type="button" id="frTambahBaris">+ Tambah Bahan</button></div>' +
+      '<div class="aksi" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost kecil" type="button" id="frBatal">Batal</button><button class="btn kecil" type="submit">Simpan Resep</button></div></form>');
+    $("frTambahBaris").addEventListener("click", function () {
+      var div = document.createElement("div");
+      div.innerHTML = barisBahanHtml(state.bahan[0] ? state.bahan[0].id : 0, "");
+      $("frBaris").appendChild(div.firstChild);
+    });
+    $("frBaris").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-hapus-baris]");
+      if (!btn) return;
+      var baris = document.querySelectorAll("[data-baris-bahan]");
+      if (baris.length <= 1) { toast("Resep minimal 1 bahan."); return; }
+      btn.closest("[data-baris-bahan]").remove();
+    });
+    $("frBatal").addEventListener("click", tutupModal);
+    $("formResep").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var menuId = Number($("frMenu").value);
+      var bahanList = [];
+      var duplikat = false;
+      var takaranSalah = false;
+      document.querySelectorAll("[data-baris-bahan]").forEach(function (row) {
+        var b = Number(row.querySelector(".bahan-pilih").value);
+        var t = Number(row.querySelector(".takaran-input").value);
+        if (bahanList.some(function (x) { return x.b === b; })) duplikat = true;
+        if (!(t > 0)) takaranSalah = true;
+        bahanList.push({ b: b, t: t });
+      });
+      if (duplikat) { toast("Satu bahan tidak boleh muncul dua kali dalam satu resep."); return; }
+      if (takaranSalah || bahanList.length === 0) { toast("Isi semua takaran dengan angka lebih dari 0."); return; }
+      if (resepLama) {
+        resepLama.bahan = bahanList;
+        toast("Resep diperbarui.");
+      } else {
+        state.resep.push({ id: state.seqResep++, menuId: menuId, bahan: bahanList });
+        toast("Resep baru ditambahkan.");
+      }
+      saveState();
+      tutupModal();
+      renderSemua();
+      if (resepLama) renderDetailResep(resepLama.id);
+    });
+  }
+  $("btnTambahResep").addEventListener("click", function () { bukaFormResep(null); });
+  $("btnUbahResep").addEventListener("click", function () {
+    var r = cariResep(resepTerpilih);
+    if (r) bukaFormResep(r);
+  });
+  $("btnHapusResep").addEventListener("click", function () {
+    var r = cariResep(resepTerpilih);
+    if (!r) return;
+    var m = cariMenu(r.menuId);
+    tanyaKonfirmasi("Hapus resep", "Hapus resep " + (m ? m.nama : "") + "? Biaya porsinya tidak bisa dihitung lagi sampai resep dibuat ulang.", function () {
+      state.resep = state.resep.filter(function (x) { return x.id !== r.id; });
+      saveState();
+      renderSemua();
+      renderDetailResep(null);
+      toast("Resep dihapus.");
+    });
+  });
+
+  // ---------- Bahan Baku ----------
+  function renderBahan() {
+    var q = ($("cariBahan").value || "").trim().toLowerCase();
+    var f = $("filterBahan").value;
+    var daftar = state.bahan.filter(function (b) {
+      if (q && b.nama.toLowerCase().indexOf(q) === -1) return false;
+      if (f !== "semua" && statusBahan(b) !== f) return false;
+      return true;
+    });
+    var head = "<tr><th>Bahan</th><th style=\"text-align:right\">Harga Beli</th><th>Stok</th><th style=\"text-align:right\">Stok Min</th><th>Status</th><th>Aksi</th></tr>";
+    var rows = daftar.map(function (b) {
+      var s = statusBahan(b);
+      var persenStok = b.stokMin > 0 ? Math.min(100, Math.round(b.stok / (b.stokMin * 2) * 100)) : 100;
+      var kelasBar = s === "habis" ? "habis" : s === "rendah" ? "rendah" : "";
+      return "<tr><td><b>" + esc(b.nama) + '</b><br><span style="color:var(--muted);font-size:12.5px">' + esc(b.kat) + "</span></td>" +
+        '<td class="angka">' + rupiah(b.harga) + " / " + esc(b.satuan) + "</td>" +
+        '<td><b>' + fmtAngka(b.stok) + " " + esc(b.satuan) + '</b><div class="bar-stok ' + kelasBar + '"><div style="width:' + persenStok + '%"></div></div></td>' +
+        '<td class="angka">' + fmtAngka(b.stokMin) + " " + esc(b.satuan) + "</td>" +
+        '<td><span class="lencana ' + kelasStatusBahan(s) + '">' + labelStatusBahan(s) + "</span></td>" +
+        '<td><div class="aksi" style="display:flex;gap:4px;flex-wrap:wrap">' +
+        '<button class="btn hijau kecil" type="button" data-stok-masuk="' + b.id + '">+ Stok</button>' +
+        '<button class="btn ghost kecil" type="button" data-stok-keluar="' + b.id + '">− Stok</button>' +
+        '<button class="btn ghost kecil" type="button" data-ubah-bahan="' + b.id + '">Ubah</button>' +
+        '<button class="btn merah kecil" type="button" data-hapus-bahan="' + b.id + '">Hapus</button>' +
+        "</div></td></tr>";
+    }).join("");
+    $("tabelBahan").innerHTML = head + (rows || '<tr><td colspan="6" class="kosong">Tidak ada bahan yang cocok.</td></tr>');
+  }
+  $("cariBahan").addEventListener("input", renderBahan);
+  $("filterBahan").addEventListener("change", renderBahan);
+
+  function bukaFormBahan(bahanLama) {
+    var satuanOpsi = ["g", "ml", "pcs", "butir", "lembar"].map(function (s) {
+      return '<option value="' + s + '"' + (bahanLama && bahanLama.satuan === s ? " selected" : "") + ">" + s + "</option>";
+    }).join("");
+    var katOpsi = ["Bahan Pokok", "Bumbu", "Minuman", "Camilan", "Kemasan"].map(function (k) {
+      return '<option value="' + k + '"' + (bahanLama && bahanLama.kat === k ? " selected" : "") + ">" + k + "</option>";
+    }).join("");
+    bukaModalForm(bahanLama ? "Ubah Bahan Baku" : "Tambah Bahan Baku",
+      '<form id="formBahan">' +
+      '<div class="field"><label for="fbNama">Nama bahan *</label><input type="text" id="fbNama" value="' + (bahanLama ? esc(bahanLama.nama) : "") + '" placeholder="cth: Beras"></div>' +
+      '<div class="form-grid"><div class="field"><label for="fbSatuan">Satuan *</label><select id="fbSatuan">' + satuanOpsi + '</select></div>' +
+      '<div class="field"><label for="fbKat">Kategori</label><select id="fbKat">' + katOpsi + '</select></div></div>' +
+      '<div class="form-grid"><div class="field"><label for="fbHarga">Harga beli per satuan (Rp) *</label><input type="number" id="fbHarga" min="1" value="' + (bahanLama ? bahanLama.harga : "") + '" placeholder="cth: 12000"></div>' +
+      '<div class="field"><label for="fbMin">Stok minimum *</label><input type="number" id="fbMin" min="0" value="' + (bahanLama ? bahanLama.stokMin : "") + '" placeholder="cth: 3000"></div></div>' +
+      (bahanLama ? "" : '<div class="field"><label for="fbStok">Stok awal *</label><input type="number" id="fbStok" min="0" value="" placeholder="cth: 20000"></div>') +
+      '<div class="aksi" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost kecil" type="button" id="fbBatal">Batal</button><button class="btn kecil" type="submit">Simpan Bahan</button></div></form>');
+    $("fbBatal").addEventListener("click", tutupModal);
+    $("formBahan").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var nama = $("fbNama").value.trim();
+      var satuan = $("fbSatuan").value;
+      var kat = $("fbKat").value;
+      var harga = Number($("fbHarga").value);
+      var stokMin = Number($("fbMin").value);
+      if (!nama) { toast("Nama bahan wajib diisi."); return; }
+      if (!(harga > 0)) { toast("Harga beli harus lebih dari 0."); return; }
+      if (!(stokMin >= 0)) { toast("Stok minimum harus 0 atau lebih."); return; }
+      if (bahanLama) {
+        bahanLama.nama = nama; bahanLama.satuan = satuan; bahanLama.kat = kat; bahanLama.harga = harga; bahanLama.stokMin = stokMin;
+        toast("Bahan diperbarui.");
+      } else {
+        var stok = Number($("fbStok").value);
+        if (!(stok >= 0)) { toast("Stok awal harus 0 atau lebih."); return; }
+        if (state.bahan.some(function (x) { return x.nama.toLowerCase() === nama.toLowerCase(); })) { toast("Bahan dengan nama itu sudah ada."); return; }
+        state.bahan.push({ id: state.seqBahan++, nama: nama, satuan: satuan, stok: stok, stokMin: stokMin, harga: harga, kat: kat });
+        toast("Bahan baru ditambahkan.");
+      }
+      saveState();
+      tutupModal();
+      renderSemua();
+    });
+  }
+  $("btnTambahBahan").addEventListener("click", function () { bukaFormBahan(null); });
+
+  function catatMutasi(bahanId, jenis, jumlah, keterangan) {
+    var b = cariBahan(bahanId);
+    state.mutasi.unshift({ id: state.seqMutasi++, bahanId: bahanId, jenis: jenis, jumlah: jumlah, tanggal: new Date().toISOString(), keterangan: keterangan, nilai: Math.round(jumlah * (b ? b.harga : 0)) });
+  }
+  function bukaFormStok(bahanId, arah) {
+    var b = cariBahan(bahanId);
+    if (!b) return;
+    var masuk = arah === "masuk";
+    bukaModalForm((masuk ? "Stok Masuk — " : "Stok Keluar — ") + b.nama,
+      '<form id="formStok"><p style="color:var(--muted);font-size:14px">Stok saat ini: <b>' + fmtAngka(b.stok) + " " + esc(b.satuan) + "</b> · Harga beli " + rupiah(b.harga) + " / " + esc(b.satuan) + ".</p>" +
+      '<div class="field"><label for="fsJumlah">Jumlah (' + esc(b.satuan) + ") *</label>" +
+      '<input type="number" id="fsJumlah" min="0.01" step="any" placeholder="cth: 5000"></div>' +
+      '<div class="field"><label for="fsKet">Keterangan</label><input type="text" id="fsKet" placeholder="' + (masuk ? "cth: Beli dari supplier" : "cth: Bahan rusak / terbuang") + '"></div>' +
+      '<div class="aksi" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost kecil" type="button" id="fsBatal">Batal</button><button class="btn kecil" type="submit">' + (masuk ? "Tambah Stok" : "Kurangi Stok") + "</button></div></form>");
+    $("fsBatal").addEventListener("click", tutupModal);
+    $("formStok").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var jumlah = Number($("fsJumlah").value);
+      var ket = $("fsKet").value.trim() || (masuk ? "Stok masuk" : "Stok keluar manual");
+      if (!(jumlah > 0)) { toast("Jumlah harus lebih dari 0."); return; }
+      if (!masuk && jumlah > b.stok) { toast("Stok tidak cukup. Stok " + b.nama + " hanya " + fmtAngka(b.stok) + " " + b.satuan + "."); return; }
+      b.stok = masuk ? b.stok + jumlah : b.stok - jumlah;
+      catatMutasi(b.id, masuk ? "masuk" : "keluar", jumlah, ket);
+      saveState();
+      tutupModal();
+      renderSemua();
+      toast(masuk ? "Stok " + b.nama + " ditambah " + fmtAngka(jumlah) + " " + b.satuan + "." : "Stok " + b.nama + " dikurangi " + fmtAngka(jumlah) + " " + b.satuan + ".");
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var btnMasuk = e.target.closest("[data-stok-masuk]");
+    if (btnMasuk) { bukaFormStok(Number(btnMasuk.getAttribute("data-stok-masuk")), "masuk"); return; }
+    var btnKeluar = e.target.closest("[data-stok-keluar]");
+    if (btnKeluar) { bukaFormStok(Number(btnKeluar.getAttribute("data-stok-keluar")), "keluar"); return; }
+    var btnUbah = e.target.closest("[data-ubah-bahan]");
+    if (btnUbah) { bukaFormBahan(cariBahan(Number(btnUbah.getAttribute("data-ubah-bahan")))); return; }
+    var btnHapus = e.target.closest("[data-hapus-bahan]");
+    if (btnHapus) {
+      var b = cariBahan(Number(btnHapus.getAttribute("data-hapus-bahan")));
+      if (!b) return;
+      var dipakai = state.resep.filter(function (r) { return r.bahan.some(function (it) { return it.b === b.id; }); });
+      if (dipakai.length) {
+        var namaMenu = dipakai.map(function (r) { var m = cariMenu(r.menuId); return m ? m.nama : ""; }).filter(Boolean).join(", ");
+        toast("Tidak bisa hapus: " + b.nama + " dipakai di resep " + namaMenu + ". Hapus dari resep dulu.");
+        return;
+      }
+      tanyaKonfirmasi("Hapus bahan", "Hapus bahan " + b.nama + " dari daftar?", function () {
+        state.bahan = state.bahan.filter(function (x) { return x.id !== b.id; });
+        saveState();
+        renderSemua();
+        toast("Bahan " + b.nama + " dihapus.");
+      });
+    }
+  });
+
+  // ---------- Produksi ----------
+  function kebutuhanProduksi(resepId, jumlah) {
+    var r = cariResep(resepId);
+    if (!r) return null;
+    var butuh = r.bahan.map(function (it) {
+      var b = cariBahan(it.b);
+      return { bahan: b, perlu: it.t * jumlah, cukup: b ? b.stok >= it.t * jumlah : false };
+    });
+    var totalBiaya = butuh.reduce(function (a, x) { return a + (x.bahan ? x.perlu * x.bahan.harga : 0); }, 0);
+    return { resep: r, butuh: butuh, totalBiaya: Math.round(totalBiaya), kurang: butuh.filter(function (x) { return !x.cukup; }) };
+  }
+  function renderProduksi() {
+    var sel = $("prodResep");
+    var nilai = sel.value;
+    sel.innerHTML = state.resep.map(function (r) {
+      var m = cariMenu(r.menuId);
+      return '<option value="' + r.id + '">' + esc(m ? m.nama : "?") + " — biaya " + rupiah(biayaResep(r)) + "/porsi</option>";
+    }).join("");
+    if (nilai && cariResep(Number(nilai))) sel.value = nilai;
+    renderRincianProduksi();
+    var daftar = state.produksi.slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    $("riwayatProduksi").innerHTML = daftar.length ? daftar.slice(0, 20).map(function (p) {
+      var r = cariResep(p.resepId);
+      var m = r ? cariMenu(r.menuId) : null;
+      return '<div class="item-bar"><div><div class="nm">' + p.no + " · " + esc(m ? m.nama : "?") + " × " + p.jumlah + ' porsi</div>' +
+        '<div class="dt">' + tglDari(p.tanggal) + " · Biaya bahan " + rupiah(p.totalBiaya) + "</div></div>" +
+        '<div class="harga">' + rupiah(p.totalBiaya) + "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada produksi. Produksi pertama Anda akan tercatat di sini.</p>';
+  }
+  function renderRincianProduksi() {
+    var resepId = Number($("prodResep").value);
+    var jumlah = Number($("prodJumlah").value);
+    var box = $("prodRincian");
+    if (!resepId || !(jumlah >= 1)) { box.hidden = true; return; }
+    var k = kebutuhanProduksi(resepId, jumlah);
+    if (!k) { box.hidden = true; return; }
+    var m = cariMenu(k.resep.menuId);
+    var baris = k.butuh.map(function (x) {
+      if (!x.bahan) return "";
+      var ok = x.cukup;
+      return "<li>" + esc(x.bahan.nama) + ": butuh <b>" + fmtAngka(x.perlu) + " " + esc(x.bahan.satuan) + "</b> · stok " + fmtAngka(x.bahan.stok) + " " + esc(x.bahan.satuan) + (ok ? "" : ' — <b style="color:var(--red)">KURANG ' + fmtAngka(x.perlu - x.bahan.stok) + " " + esc(x.bahan.satuan) + "</b>") + "</li>";
+    }).join("");
+    box.innerHTML = "<b>Kebutuhan bahan untuk " + jumlah + " porsi " + esc(m ? m.nama : "") + ":</b><ul style=\"margin:6px 0 4px;padding-left:20px\">" + baris + "</ul>" +
+      "<b>Total biaya bahan: " + rupiah(k.totalBiaya) + "</b>" +
+      (k.kurang.length ? '<p style="color:var(--red);margin-top:6px"><b>Stok tidak cukup untuk ' + k.kurang.length + " bahan — produksi akan ditolak.</b></p>" : '<p style="color:var(--green);margin-top:6px"><b>Stok cukup untuk produksi ini.</b></p>');
+    box.hidden = false;
+  }
+  $("prodResep").addEventListener("change", renderRincianProduksi);
+  $("prodJumlah").addEventListener("input", renderRincianProduksi);
+  $("btnProduksi").addEventListener("click", function () {
+    var resepId = Number($("prodResep").value);
+    var jumlah = Math.floor(Number($("prodJumlah").value));
+    if (!resepId) { toast("Pilih resep dulu."); return; }
+    if (!(jumlah >= 1) || jumlah > 500) { toast("Jumlah porsi harus 1–500."); return; }
+    var k = kebutuhanProduksi(resepId, jumlah);
+    if (!k) { toast("Resep tidak ditemukan."); return; }
+    if (k.kurang.length) {
+      var namaKurang = k.kurang.map(function (x) { return x.bahan ? x.bahan.nama + " (kurang " + fmtAngka(x.perlu - x.bahan.stok) + " " + x.bahan.satuan + ")" : "?"; }).join(", ");
+      toast("Produksi ditolak — stok tidak cukup: " + namaKurang + ".");
+      return;
+    }
+    var m = cariMenu(k.resep.menuId);
+    k.butuh.forEach(function (x) {
+      if (!x.bahan) return;
+      x.bahan.stok -= x.perlu;
+      catatMutasi(x.bahan.id, "produksi", x.perlu, "Produksi " + (m ? m.nama : "") + " × " + jumlah);
+    });
+    var no = "PRD-" + String(state.seqProduksi).padStart(3, "0");
+    state.produksi.push({
+      id: state.seqProduksi, no: no, resepId: resepId, jumlah: jumlah,
+      tanggal: new Date().toISOString(), totalBiaya: k.totalBiaya,
+      pakai: k.butuh.map(function (x) { return { b: x.bahan.id, j: x.perlu }; })
+    });
+    state.seqProduksi++;
+    saveState();
+    renderSemua();
+    toast("Produksi " + no + " berhasil: " + (m ? m.nama : "") + " × " + jumlah + " porsi, biaya bahan " + rupiah(k.totalBiaya) + ".");
+  });
+
+  // ---------- Biaya Porsi ----------
+  function renderBiaya() {
+    var baris = state.items.map(function (m) {
+      var r = cariResepByMenu(m.id);
+      var biaya = r ? biayaResep(r) : null;
+      var margin = biaya == null ? null : m.harga - biaya;
+      var marginPersen = biaya == null || m.harga <= 0 ? null : margin / m.harga * 100;
+      var tipis = marginPersen != null && marginPersen < 30;
+      return {
+        m: m, biaya: biaya, margin: margin, marginPersen: marginPersen, tipis: tipis,
+        html: "<tr><td><b>" + esc(m.nama) + "</b></td>" +
+          '<td class="angka">' + rupiah(m.harga) + "</td>" +
+          '<td class="angka">' + (biaya == null ? "— (belum ada resep)" : rupiah(biaya)) + "</td>" +
+          '<td class="angka">' + (margin == null ? "—" : rupiah(margin)) + "</td>" +
+          '<td class="angka">' + (marginPersen == null ? "—" : persen(marginPersen) + (tipis ? ' <span class="lencana st-rendah">Tipis</span>' : "")) + "</td></tr>"
+      };
+    });
+    baris.sort(function (a, b) {
+      if (a.marginPersen == null) return 1;
+      if (b.marginPersen == null) return -1;
+      return a.marginPersen - b.marginPersen;
+    });
+    $("tabelBiaya").innerHTML = "<tr><th>Menu</th><th style=\"text-align:right\">Harga Jual</th><th style=\"text-align:right\">Biaya Bahan / Porsi</th><th style=\"text-align:right\">Margin</th><th style=\"text-align:right\">Margin %</th></tr>" +
+      baris.map(function (x) { return x.html; }).join("");
+  }
+
+  // ---------- Laporan ----------
+  function renderLaporan() {
+    var periode = $("lapPeriode").value;
+    var kini = new Date();
+    var batas = null;
+    if (periode === "hari") {
+      batas = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate(), 0, 0, 0);
+    } else if (periode === "7hari") {
+      batas = new Date(kini.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+    var daftar = state.produksi.filter(function (p) {
+      return !batas || new Date(p.tanggal) >= batas;
+    });
+    var totalPorsi = daftar.reduce(function (a, p) { return a + p.jumlah; }, 0);
+    var totalBiaya = daftar.reduce(function (a, p) { return a + p.totalBiaya; }, 0);
+    var agregat = {};
+    daftar.forEach(function (p) {
+      p.pakai.forEach(function (it) {
+        var b = cariBahan(it.b);
+        if (!b) return;
+        if (!agregat[b.id]) agregat[b.id] = { bahan: b, jumlah: 0, biaya: 0 };
+        agregat[b.id].jumlah += it.j;
+        agregat[b.id].biaya += Math.round(it.j * b.harga);
+      });
+    });
+    var list = Object.keys(agregat).map(function (k) { return agregat[k]; }).sort(function (a, b) { return b.jumlah - a.jumlah; });
+    $("lPorsi").textContent = totalPorsi;
+    $("lBiaya").textContent = rupiah(totalBiaya);
+    $("lJenis").textContent = list.length;
+    $("lTop").textContent = list.length ? list[0].bahan.nama : "—";
+    $("tabelLaporan").innerHTML = "<tr><th>Bahan</th><th style=\"text-align:right\">Terpakai</th><th style=\"text-align:right\">Biaya Bahan</th></tr>" +
+      (list.length ? list.map(function (x) {
+        return "<tr><td><b>" + esc(x.bahan.nama) + "</b></td>" +
+          '<td class="angka">' + fmtAngka(x.jumlah) + " " + esc(x.bahan.satuan) + "</td>" +
+          '<td class="angka">' + rupiah(x.biaya) + "</td></tr>";
+      }).join("") : '<tr><td colspan="3" class="kosong">Tidak ada pemakaian bahan pada periode ini.</td></tr>');
+    var mutasi = state.mutasi.filter(function (x) { return x.jenis === "masuk" || x.jenis === "keluar"; })
+      .slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    $("riwayatMutasi").innerHTML = mutasi.length ? mutasi.slice(0, 20).map(function (x) {
+      var b = cariBahan(x.bahanId);
+      var masuk = x.jenis === "masuk";
+      return '<div class="item-bar"><div><div class="nm">' + (masuk ? "+ " : "− ") + fmtAngka(x.jumlah) + " " + esc(b ? b.satuan : "") + " · " + esc(b ? b.nama : "?") + ' <span class="lencana ' + (masuk ? "st-aman" : "st-habis") + '">' + (masuk ? "Masuk" : "Keluar") + "</span></div>" +
+        '<div class="dt">' + tglDari(x.tanggal) + " · " + esc(x.keterangan || "") + "</div></div>" +
+        '<div class="harga">' + rupiah(x.nilai || 0) + "</div></div>";
+    }).join("") : '<p class="kosong">Belum ada mutasi stok masuk/keluar.</p>';
+  }
+  $("lapPeriode").addEventListener("change", renderLaporan);
+
+  // ---------- Reset data ----------
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Kembalikan data contoh", "Hapus semua perubahan dan kembalikan data contoh Warung Kopi Oyen?", function () {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* abaikan */ }
+      state = seedState();
+      saveState();
+      resepTerpilih = null;
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- Init ----------
+  function renderSemua() {
+    renderDashboard();
+    renderResep();
+    renderBahan();
+    renderProduksi();
+    renderBiaya();
+    renderLaporan();
+    if (resepTerpilih) renderDetailResep(resepTerpilih);
+  }
+  $("tanggalHari").textContent = tanggalHariIni();
+  loadState();
+  loadUsers();
+  pulihkanSesi();
+  terapkanSesi();
+  renderSemua();
+})();
+</script>
+</body>
+</html>
