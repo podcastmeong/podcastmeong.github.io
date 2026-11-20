@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aplikasi Patungan (Split Bill) — Demo</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --oren: #e07b1f;
+    --oren-soft: #fdeeda;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero h1 .aksen { color: #f6a93c; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+  .hero .demo-badge {
+    display: inline-block; background: #f6a93c; color: #14263d; border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; letter-spacing: .04em; margin-bottom: 10px;
+  }
+
+  .bar-pengguna {
+    display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.warn { border-color: #e3c98a; background: #fdf9ec; }
+  .stat.warn .angka { color: var(--amber); }
+  .stat.bahaya { border-color: #ecc0bc; background: #fdf3f2; }
+  .stat.bahaya .angka { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.oren { background: var(--oren); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-aman { background: var(--green-soft); color: var(--green); }
+  .st-habis { background: var(--red-soft); color: var(--red); }
+  .st-rendah { background: var(--amber-soft); color: var(--amber); }
+  .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-emas { background: #f8eed3; color: #96690f; }
+  .st-oren { background: var(--oren-soft); color: var(--oren); }
+  .st-navy { background: #e3e9f1; color: var(--navy); }
+
+  .item-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .item-bar .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; min-height: 2rem;
+  }
+  .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .tabel { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabel th, .tabel td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .tabel th { background: var(--surface-2); }
+  .tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel-wrap { overflow-x: auto; }
+
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .pesan-teks {
+    background: var(--surface-2); border: 1px dashed var(--soft); border-radius: 12px;
+    padding: 12px 14px; font-size: 13.5px; color: var(--ink); margin: 8px 0 10px; white-space: pre-wrap;
+  }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 680px; width: 100%; max-height: 88vh; overflow: auto;
+  }
+  .modal h3 { margin-bottom: 8px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal p { color: var(--muted); font-size: 14px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 26px; width: 100%; max-width: 430px;
+  }
+  .login-card h2 { font-size: 21px; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin: 4px 0 10px; }
+  .login-note {
+    margin-top: 16px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--muted);
+  }
+  .login-note b { color: var(--ink); }
+  .plat {
+    display: inline-block; background: var(--navy); color: #fff; border-radius: 6px;
+    font-weight: 800; font-size: 13px; padding: 2px 9px; letter-spacing: .03em;
+  }
+
+  .baris { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .baris:last-child { border-bottom: none; }
+  .tag { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 6px; font-size: 12px; font-weight: 700; padding: 1px 8px; }
+  .cek-anggota { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 6px; }
+  .cek-anggota label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 0; }
+  .cek-anggota input { margin: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="demo-badge">DEMO</span>
+    <h1>Aplikasi <span class="aksen">Patungan</span> (Split Bill)</h1>
+    <p>Catat pengeluaran bersama, bagi rata atau bagi per orang, pantau siapa sudah bayar, dan lihat rekap patungan per acara — untuk anak kos, mahasiswa, dan rombongan traveling.</p>
+    <div class="tanggal" id="tanggalHari"></div>
+  </header>
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab-btn active" type="button" data-tab="dashboard">Dasbor</button>
+    <button class="tab-btn" type="button" data-tab="acara">Acara <span class="badge" id="badgeAcara">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pengeluaran">Pengeluaran <span class="badge" id="badgeKeluar">0</span></button>
+    <button class="tab-btn" type="button" data-tab="pembagian">Pembagian</button>
+    <button class="tab-btn" type="button" data-tab="bayar">Status Bayar <span class="badge" id="badgeBayar">0</span></button>
+    <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-dashboard">
+    <div class="page-head"><h2>Dasbor Patungan</h2><p>Ringkasan semua acara patungan yang Anda ikuti: total pengeluaran, sudah dibayar, dan yang masih menunggak.</p></div>
+    <div class="grid-stat">
+      <div class="stat accent"><div class="label">Total Acara</div><div class="angka" id="dAcara" style="font-size:22px">0</div><div class="sub" id="dAcaraSub"></div></div>
+      <div class="stat"><div class="label">Total Pengeluaran</div><div class="angka" id="dTotal" style="font-size:22px">Rp0</div><div class="sub" id="dTotalSub"></div></div>
+      <div class="stat"><div class="label">Sudah Dibayar</div><div class="angka" id="dSudah" style="font-size:22px">Rp0</div><div class="sub" id="dSudahSub"></div></div>
+      <div class="stat bahaya"><div class="label">Belum Dibayar</div><div class="angka" id="dBelum" style="font-size:22px">Rp0</div><div class="sub" id="dBelumSub"></div></div>
+    </div>
+    <div class="card"><h3>Tunggakan Terbesar (Acara Aktif)</h3><p class="sub" id="dTunggak">—</p></div>
+    <div class="card"><h3>Ringkasan per Acara</h3><div id="daftarAcaraRingkas"></div></div>
+    <div class="card" id="cardTambahAcara">
+      <h3>Buat Acara Cepat</h3>
+      <p class="sub">Buat acara patungan baru. Anggota ditulis dipisah koma. Acara masuk atas nama Anda.</p>
+      <div class="form-grid">
+        <div class="field"><label for="qNamaAcara">Nama acara</label><input id="qNamaAcara" type="text" placeholder="cth: Liburan ke Bandung"></div>
+        <div class="field"><label for="qTanggalAcara">Tanggal acara</label><input id="qTanggalAcara" type="date"></div>
+        <div class="field"><label for="qAnggotaAcara">Anggota (pisah koma)</label><input id="qAnggotaAcara" type="text" placeholder="cth: Budi Santoso, Sari Dewi, Andi Pratama"></div>
+        <div class="field"><label for="qCatatanAcara">Catatan (opsional)</label><input id="qCatatanAcara" type="text" placeholder="cth: Liburan akhir pekan"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahAcara" type="button">Simpan Acara</button>
+    </div>
+    <div class="card" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Admin. Pengguna baru memakai peran Pengguna.</p>
+      <div class="form-grid">
+        <div class="field"><label for="pgUser">Nama pengguna</label><input id="pgUser" type="text" placeholder="cth: sari"></div>
+        <div class="field"><label for="pgNama">Nama lengkap</label><input id="pgNama" type="text" placeholder="cth: Sari Dewi"></div>
+        <div class="field"><label for="pgPass">Kata sandi awal</label><input id="pgPass" type="text" placeholder="cth: sari123"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahPengguna" type="button">Tambah Pengguna</button>
+      <div id="daftarPengguna" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="cardSandiSaya">
+      <h3>Ganti Kata Sandi Saya</h3>
+      <p class="sub">Ubah kata sandi akun Anda sendiri. Berlaku untuk semua peran.</p>
+      <form id="formSandiSaya" style="margin-top:10px">
+        <div class="form-grid">
+          <div class="field"><label for="sandiLama">Kata sandi lama</label><input id="sandiLama" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="sandiBaru">Kata sandi baru (min. 6 karakter)</label><input id="sandiBaru" type="password" autocomplete="new-password"></div>
+        </div>
+        <button class="btn kecil" type="submit">Simpan Kata Sandi Baru</button>
+      </form>
+      <p class="sub" id="pesanSandi" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-acara">
+    <div class="page-head"><h2>Acara Patungan</h2><p>Semua acara patungan yang Anda ikuti. Admin melihat semua acara; Pengguna hanya melihat acara yang ia buat atau ia ikuti sebagai anggota.</p></div>
+    <div class="card">
+      <h3>Buat Acara Baru</h3>
+      <div class="form-grid">
+        <div class="field"><label for="aNama">Nama acara</label><input id="aNama" type="text" placeholder="cth: Liburan ke Bandung"></div>
+        <div class="field"><label for="aTanggal">Tanggal acara</label><input id="aTanggal" type="date"></div>
+        <div class="field"><label for="aAnggota">Anggota (pisah koma)</label><input id="aAnggota" type="text" placeholder="cth: Budi Santoso, Sari Dewi, Andi Pratama"></div>
+        <div class="field"><label for="aCatatan">Catatan (opsional)</label><input id="aCatatan" type="text" placeholder="cth: Liburan akhir pekan"></div>
+      </div>
+      <button class="btn kecil" id="btnTambahAcaraTab" type="button">Simpan Acara</button>
+    </div>
+    <div class="card">
+      <div class="chips" id="chipsAcara">
+        <button class="chip active" type="button" data-f="semua">Semua</button>
+        <button class="chip" type="button" data-f="aktif">Aktif</button>
+        <button class="chip" type="button" data-f="selesai">Selesai</button>
+      </div>
+      <div class="field"><label for="cariAcara">Cari acara / anggota</label><input id="cariAcara" type="text" placeholder="cth: Bandung atau Sari"></div>
+      <p class="sub" id="ringkasanAcara"></p>
+      <div id="daftarAcara" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pengeluaran">
+    <div class="page-head"><h2>Pengeluaran Bersama</h2><p>Catat pengeluaran untuk satu acara, lalu pilih cara baginya: bagi rata ke semua anggota yang dipilih, atau bagi per orang dengan nominal berbeda.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="pilihAcaraKeluar">Pilih acara</label><select id="pilihAcaraKeluar"></select></div>
+        <div class="field"><label for="kTanggal">Tanggal pengeluaran</label><input id="kTanggal" type="date"></div>
+      </div>
+    </div>
+    <div class="card" id="cardTambahKeluar">
+      <h3>Tambah Pengeluaran</h3>
+      <div class="form-grid">
+        <div class="field"><label for="kNama">Nama pengeluaran</label><input id="kNama" type="text" placeholder="cth: Hotel 2 malam"></div>
+        <div class="field"><label for="kJumlah">Jumlah (Rp)</label><input id="kJumlah" type="number" min="0" placeholder="cth: 1200000"></div>
+        <div class="field"><label for="kDibayarOleh">Dibayar oleh (yang menalangi)</label><select id="kDibayarOleh"></select></div>
+        <div class="field"><label>Cara bagi</label>
+          <div class="row" style="gap:16px">
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:0"><input type="radio" name="kCara" id="kCaraRata" value="rata" checked> Bagi rata</label>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:0"><input type="radio" name="kCara" id="kCaraOrang" value="perorang"> Bagi per orang</label>
+          </div>
+        </div>
+      </div>
+      <div id="areaRata">
+        <label>Anggota yang ikut dibagi (bagi rata)</label>
+        <div class="cek-anggota" id="kAnggotaRata"></div>
+      </div>
+      <div id="areaOrang" hidden>
+        <label>Nominal per anggota (jumlahnya harus sama dengan total pengeluaran)</label>
+        <div id="kRincian"></div>
+      </div>
+      <div class="catatan" id="pratinjauBagi">Isi jumlah pengeluaran untuk melihat pratinjau pembagian.</div>
+      <p class="sub" id="peringatanBagi" style="color:var(--red);font-weight:600"></p>
+      <button class="btn kecil" id="btnTambahKeluar" type="button">Simpan Pengeluaran</button>
+    </div>
+    <div class="card">
+      <h3>Daftar Pengeluaran</h3>
+      <p class="sub" id="ringkasanKeluar"></p>
+      <div id="daftarKeluar" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-pembagian">
+    <div class="page-head"><h2>Pembagian per Acara</h2><p>Berapa yang harus dibayar tiap anggota, berapa yang sudah dibayar, dan sisanya — dihitung dari semua pengeluaran acara tersebut.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="pilihAcaraBagi">Pilih acara</label><select id="pilihAcaraBagi"></select></div>
+      </div>
+      <p class="sub" id="ringkasanBagi"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelBagi"></table></div>
+    </div>
+    <div class="card">
+      <h3>Rincian per Pengeluaran</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelRinciBagi"></table></div>
+    </div>
+    <div class="card">
+      <h3>Kalkulator Bagi Rata Cepat</h3>
+      <p class="sub">Hitung pembagian tanpa menyimpan — berguna sebelum mencatat pengeluaran.</p>
+      <div class="form-grid">
+        <div class="field"><label for="cTotal">Total pengeluaran (Rp)</label><input id="cTotal" type="number" min="0" placeholder="cth: 100000"></div>
+        <div class="field"><label for="cOrang">Jumlah orang</label><input id="cOrang" type="number" min="1" placeholder="cth: 3"></div>
+      </div>
+      <button class="btn kecil" id="btnHitungBagi" type="button">Hitung Pembagian</button>
+      <div class="catatan" id="hasilBagi" style="margin-top:12px">Isi total dan jumlah orang, lalu tekan Hitung Pembagian.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-bayar">
+    <div class="page-head"><h2>Status Bayar</h2><p>Siapa sudah bayar bagiannya dan siapa yang masih menunggak, per pengeluaran. Admin, pembuat acara, atau anggota yang bersangkutan bisa menandai bayar.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="pilihAcaraBayar">Acara</label><select id="pilihAcaraBayar"></select></div>
+        <div class="field"><label for="fStatusBayar">Status</label><select id="fStatusBayar"><option value="semua">Semua</option><option value="sudah">Sudah bayar</option><option value="belum">Belum bayar</option></select></div>
+      </div>
+      <p class="sub" id="ringkasanBayar"></p>
+      <div class="tabel-wrap"><table class="tabel" id="tabelBayar"></table></div>
+    </div>
+    <div class="card">
+      <h3>Teks Pengingat WhatsApp</h3>
+      <p class="sub">Pilih acara dan anggota untuk membuat teks pengingat. Salin teksnya, lalu kirim sendiri lewat WhatsApp — aplikasi ini tidak mengirim pesan.</p>
+      <div class="form-grid">
+        <div class="field"><label for="wAcara">Acara</label><select id="wAcara"></select></div>
+        <div class="field"><label for="wAnggota">Anggota</label><select id="wAnggota"></select></div>
+      </div>
+      <button class="btn wa kecil" id="btnTampilWA" type="button">Buat &amp; Salin Teks WA</button>
+      <div id="cardPesanWA" hidden>
+        <div class="pesan-teks" id="kotakPesanWA"></div>
+        <p class="sub">Salin teks di atas lalu tempel di WhatsApp. Aplikasi ini tidak mengirim pesan sendiri.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-laporan">
+    <div class="page-head"><h2>Laporan Patungan</h2><p>Total per periode, per acara, dan per anggota — berdasarkan tanggal pengeluaran.</p></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="fPeriode">Periode (tanggal pengeluaran)</label><select id="fPeriode"><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="semua" selected>Semua</option></select></div>
+      </div>
+      <div class="grid-stat" style="margin-top:14px">
+        <div class="stat accent"><div class="label">Total Pengeluaran (periode)</div><div class="angka" id="lTotal" style="font-size:22px">Rp0</div><div class="sub" id="lTotalSub"></div></div>
+        <div class="stat"><div class="label">Sudah Dibayar</div><div class="angka" id="lSudah" style="font-size:22px">Rp0</div><div class="sub" id="lSudahSub"></div></div>
+        <div class="stat bahaya"><div class="label">Belum Dibayar</div><div class="angka" id="lBelum" style="font-size:22px">Rp0</div><div class="sub" id="lBelumSub"></div></div>
+        <div class="stat"><div class="label">Pengeluaran</div><div class="angka" id="lJumlah" style="font-size:22px">0</div><div class="sub" id="lJumlahSub"></div></div>
+      </div>
+      <p class="sub" id="lSelisih"></p>
+    </div>
+    <div class="card">
+      <h3>Per Acara</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLapAcara"></table></div>
+    </div>
+    <div class="card">
+      <h3>Per Anggota</h3>
+      <div class="tabel-wrap"><table class="tabel" id="tabelLapAnggota"></table></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Cadangan Data</h3>
+      <p class="sub">Ekspor laporan periode ini ke CSV (satu baris per anggota per pengeluaran), cadangkan semua data ke JSON, atau pulihkan dari file cadangan.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn kecil biru" id="btnCsvLaporan" type="button">Ekspor CSV Laporan</button>
+        <button class="btn kecil" id="btnBackup" type="button">Cadangkan Data (JSON)</button>
+        <button class="btn kecil" id="btnRestore" type="button">Pulihkan Data (JSON)</button>
+        <input type="file" id="inputRestore" accept="application/json,.json" hidden>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn kecil merah" id="btnResetData" type="button">Reset ke Data Demo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-panduan">
+    <div class="page-head"><h2>Panduan</h2><p>Cara memakai Aplikasi Patungan (Split Bill).</p></div>
+    <div class="card panduan">
+      <h3>Cara Memakai</h3>
+      <ol>
+        <li>Masuk dengan salah satu akun demo di bawah.</li>
+        <li>Buka tab <b>Acara</b> untuk membuat acara patungan baru — tulis nama acara, tanggal, dan anggota dipisah koma. Ubah status acara menjadi <b>Selesai</b> bila patungan sudah beres.</li>
+        <li>Buka tab <b>Pengeluaran</b>, pilih acara, lalu catat pengeluaran: nama, jumlah, siapa yang menalangi, dan cara bagi — <b>bagi rata</b> atau <b>bagi per orang</b>. Bagian orang yang menalangi langsung ditandai sudah bayar.</li>
+        <li>Buka tab <b>Pembagian</b> untuk melihat berapa yang harus dibayar tiap anggota, berapa yang sudah dibayar, dan sisanya, per acara. Ada juga kalkulator bagi rata cepat.</li>
+        <li>Buka tab <b>Status Bayar</b> untuk menandai anggota yang sudah membayar bagiannya dan menyalin teks pengingat WhatsApp untuk yang masih menunggak. Aplikasi tidak mengirim pesan — Anda yang mengirim sendiri lewat WhatsApp.</li>
+        <li>Tab <b>Laporan</b> merangkum total per periode, per acara, dan per anggota, serta menyediakan ekspor CSV dan cadangan JSON.</li>
+      </ol>
+      <h3>Rumus Pembagian yang Dipakai</h3>
+      <ul>
+        <li><b>Bagi rata:</b> bagian tiap anggota = total ÷ jumlah anggota, dibulatkan ke bawah ke rupiah. Sisa rupiah (bila total tidak habis dibagi) diberikan Rp1 kepada anggota pertama, kedua, dan seterusnya sesuai urutan anggota — sehingga jumlah semua bagian selalu sama persis dengan total pengeluaran. Contoh: Rp100.001 dibagi 4 orang = Rp25.001, Rp25.000, Rp25.000, Rp25.000.</li>
+        <li><b>Bagi per orang:</b> nominal tiap anggota diisi manual; jumlah semua nominal harus sama persis dengan total pengeluaran, kalau tidak pengeluaran tidak bisa disimpan.</li>
+        <li><b>Status bayar:</b> orang yang menalangi pengeluaran langsung ditandai sudah bayar untuk bagiannya sendiri; bagian anggota lain berstatus belum sampai ditandai sudah bayar.</li>
+        <li><b>Rekap per anggota:</b> harus bayar = jumlah semua bagiannya di semua pengeluaran acara; sudah bayar = jumlah bagiannya yang berstatus sudah; sisa = harus bayar − sudah bayar.</li>
+      </ul>
+      <h3>Peran Pengguna</h3>
+      <ul>
+        <li><b>Admin</b> — semua akses, termasuk kelola pengguna, melihat semua acara, dan hapus data.</li>
+        <li><b>Pengguna</b> — membuat acara, mencatat pengeluaran, dan melihat pembagian serta status bayar acara yang ia buat atau ia ikuti sebagai anggota. Tidak bisa kelola pengguna atau melihat acara yang tidak ia ikuti.</li>
+      </ul>
+      <h3>Batasan yang Jujur</h3>
+      <ul>
+        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Aplikasi ini bukan sistem multi-perangkat dan bukan payment gateway. Tidak ada sinkronisasi antar-perangkat, tidak ada transfer uang, dan tidak ada penagihan otomatis di dalam aplikasi.</li>
+        <li>Pengingat hanya berupa teks yang Anda salin dan kirim sendiri lewat WhatsApp — aplikasi tidak mengirim pesan otomatis dan tidak tahu apakah pesan sudah dibaca.</li>
+        <li>Angka dan nama di sini adalah contoh demo, bukan harga resmi atau data sungguhan.</li>
+      </ul>
+      <h3>Harga</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli Sekali</th><th>Langganan / bulan</th><th>Garansi</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td><td>30 hari</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td><td>60 hari</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td><td>90 hari</td></tr>
+      </table>
+      <p>Tambahan APK Android: +Rp400.000. Harga contoh di atas adalah harga demo untuk aplikasi ini.</p>
+      <h3>Akun Demo</h3>
+      <ul>
+        <li>Admin — <b>admin / admin123</b></li>
+        <li>Pengguna — <b>pengguna / pengguna123</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Aplikasi Patungan (Split Bill) — demo satu file HTML. Data hanya tersimpan di perangkat ini.</p>
+    <a class="btn ghost kecil" href="https://podcastmeong.github.io/aplikasi/">← Kembali ke Kamar Aplikasi</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalTidak" type="button">Batal</button>
+      <button class="btn kecil merah" id="modalYa" type="button">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <span class="plat">APLIKASI PATUNGAN (SPLIT BILL)</span>
+    <h2 style="margin-top:10px">Masuk ke Aplikasi</h2>
+    <p class="login-sub">Catat pengeluaran bersama, bagi rata atau per orang, dan pantau siapa sudah bayar.</p>
+    <form id="formLogin">
+      <div class="field"><label for="loginUser">Nama pengguna</label><input id="loginUser" type="text" autocomplete="username" placeholder="cth: admin"></div>
+      <div class="field"><label for="loginPass">Kata sandi</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Kata sandi Anda"></div>
+      <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah.</p>
+      <button class="btn" type="submit" style="width:100%">Masuk</button>
+    </form>
+    <div class="login-note">
+      <b>Akun demo:</b><br>
+      Admin — <b>admin / admin123</b><br>
+      Pengguna — <b>pengguna / pengguna123</b>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function rupiah(n) { return "Rp" + Math.round(Number(n) || 0).toLocaleString("id-ID"); }
+  function kunciTanggal(d) {
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function hariIniKey() { return kunciTanggal(new Date()); }
+  function kunciPlus(hari) { var d = new Date(); d.setDate(d.getDate() + hari); return kunciTanggal(d); }
+  function tglSingkat(kunci) {
+    if (!kunci) return "—";
+    var bg = kunci.split("-");
+    return bg[2] + "/" + bg[1] + "/" + bg[0];
+  }
+  function tanggalHariIni() {
+    var d = new Date();
+    var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()];
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()];
+    return hari + ", " + d.getDate() + " " + bulan + " " + d.getFullYear();
+  }
+
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast"); t.textContent = pesan; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function tanyaKonfirmasi(judul, isi, callback) {
+    $("modalJudul").textContent = judul; $("modalIsi").textContent = isi;
+    $("modalBack").classList.add("open");
+    var ya = $("modalYa"), tidak = $("modalTidak");
+    var baru = ya.cloneNode(true); ya.parentNode.replaceChild(baru, ya);
+    var baruTidak = tidak.cloneNode(true); tidak.parentNode.replaceChild(baruTidak, tidak);
+    baru.addEventListener("click", function () { tutupModal(); callback(); });
+    baruTidak.addEventListener("click", function () { tutupModal(); });
+  }
+  function tutupModal() { $("modalBack").classList.remove("open"); }
+  $("modalBack").addEventListener("click", function (e) { if (e.target === $("modalBack")) tutupModal(); });
+  function unduh(namaFile, isi, tipe) {
+    var blob = new Blob([isi], { type: tipe || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = namaFile; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+
+  var STORAGE_KEY = "aplikasiPatungan.v1";
+  var USERS_KEY = STORAGE_KEY + ".users";
+  var SESSION_KEY = STORAGE_KEY + ".session";
+
+  /* ---------- Rumus pembagian (diuji silang dengan Python) ---------- */
+  function bagiRata(total, anggota) {
+    total = Math.round(Number(total) || 0);
+    var n = anggota.length;
+    if (n === 0) return {};
+    var dasar = Math.floor(total / n);
+    var sisa = total - dasar * n;
+    var hasil = {};
+    anggota.forEach(function (nama, i) {
+      hasil[nama] = dasar + (i < sisa ? 1 : 0);
+    });
+    return hasil;
+  }
+  function jumlahRincian(rincian) {
+    var s = 0;
+    Object.keys(rincian).forEach(function (k) { s += Number(rincian[k]) || 0; });
+    return s;
+  }
+
+  /* ---------- State & seed (tanggal relatif terhadap hari ini) ---------- */
+  function seedState() {
+    var acara = [
+      { id: 1, nama: "Liburan ke Bandung", tanggal: kunciPlus(-10), dibuat: kunciPlus(-10), dibuatOleh: "admin", anggota: ["Budi Santoso", "Sari Dewi", "Andi Pratama", "Dewi Lestari"], status: "aktif", catatan: "Liburan akhir pekan ke Bandung" },
+      { id: 2, nama: "Buka Puasa Bersama Kos", tanggal: kunciPlus(-5), dibuat: kunciPlus(-5), dibuatOleh: "pengguna", anggota: ["Budi Santoso", "Sari Dewi", "Joko Susilo"], status: "aktif", catatan: "Buka puasa bareng anak kos" },
+      { id: 3, nama: "Arisan Bulanan", tanggal: kunciPlus(-31), dibuat: kunciPlus(-31), dibuatOleh: "admin", anggota: ["Sari Dewi", "Andi Pratama"], status: "selesai", catatan: "Arisan bulan November" },
+      { id: 4, nama: "Traveling ke Yogyakarta", tanggal: kunciPlus(-2), dibuat: kunciPlus(-2), dibuatOleh: "admin", anggota: ["Budi Santoso", "Andi Pratama", "Dewi Lestari", "Joko Susilo", "Rina Marlina"], status: "aktif", catatan: "Liburan 3 hari ke Jogja" },
+      { id: 5, nama: "Patungan Kado Pernikahan", tanggal: kunciPlus(-20), dibuat: kunciPlus(-20), dibuatOleh: "pengguna", anggota: ["Budi Santoso", "Sari Dewi"], status: "selesai", catatan: "Kado untuk Rina & Dimas" }
+    ];
+    var keluar = [];
+    function tambah(acaraId, nama, jumlah, dibayarOleh, cara, rincian, tglOffset) {
+      var a = acara.find(function (x) { return x.id === acaraId; });
+      var rinc = cara === "rata" ? bagiRata(jumlah, a.anggota) : rincian;
+      var status = {};
+      if (rinc[dibayarOleh] > 0) status[dibayarOleh] = true;
+      keluar.push({
+        id: keluar.length + 1, acaraId: acaraId, nama: nama, jumlah: jumlah,
+        dibayarOleh: dibayarOleh, tanggal: kunciPlus(tglOffset), dibuat: kunciPlus(tglOffset),
+        cara: cara, rincian: rinc, status: status
+      });
+    }
+    tambah(1, "Hotel 2 malam", 1200000, "Budi Santoso", "rata", null, -10);
+    tambah(1, "Makan malam di Dago", 400000, "Sari Dewi", "rata", null, -10);
+    tambah(1, "Bensin & tol", 250000, "Andi Pratama", "rata", null, -10);
+    tambah(1, "Tiket wisata", 100001, "Dewi Lestari", "rata", null, -10);
+    tambah(2, "Catering buka puasa", 300000, "Budi Santoso", "rata", null, -5);
+    tambah(2, "Minuman & takjil", 90000, "Joko Susilo", "perorang", { "Budi Santoso": 50000, "Sari Dewi": 20000, "Joko Susilo": 20000 }, -5);
+    tambah(3, "Konsumsi arisan", 200000, "Sari Dewi", "rata", null, -31);
+    tambah(4, "Sewa mobil 3 hari", 900000, "Andi Pratama", "rata", null, -2);
+    tambah(4, "Penginapan", 1000000, "Budi Santoso", "rata", null, -2);
+    tambah(4, "Makan siang", 150000, "Rina Marlina", "perorang", { "Budi Santoso": 30000, "Andi Pratama": 30000, "Dewi Lestari": 30000, "Joko Susilo": 30000, "Rina Marlina": 30000 }, -2);
+    tambah(5, "Kado + amplop", 500000, "Budi Santoso", "rata", null, -20);
+    return { acara: acara, pengeluaran: keluar, nextAcaraId: 6, nextPengeluaranId: 12 };
+  }
+  function seedUsers() {
+    return [
+      { username: "admin", nama: "Administrator", peran: "admin", password: "admin123", aktif: true },
+      { username: "pengguna", nama: "Budi Santoso", peran: "pengguna", password: "pengguna123", aktif: true }
+    ];
+  }
+
+  var state = null, users = [], currentUser = null;
+  var filterAcara = "semua";
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      state = raw ? JSON.parse(raw) : seedState();
+    } catch (e) { state = seedState(); }
+    if (!state.acara) state.acara = [];
+    if (!state.pengeluaran) state.pengeluaran = [];
+    if (!state.nextAcaraId) state.nextAcaraId = state.acara.length + 1;
+    if (!state.nextPengeluaranId) state.nextPengeluaranId = state.pengeluaran.length + 1;
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadUsers() {
+    try {
+      var raw = localStorage.getItem(USERS_KEY);
+      users = raw ? JSON.parse(raw) : seedUsers();
+    } catch (e) { users = seedUsers(); }
+    if (!users.length) users = seedUsers();
+  }
+  function saveUsers() { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+  function peranTxt(r) { return r === "admin" ? "Admin" : "Pengguna"; }
+
+  function cariAcara(id) { return state.acara.find(function (x) { return x.id === id; }); }
+  function cariKeluar(id) { return state.pengeluaran.find(function (x) { return x.id === id; }); }
+  function acaraTerlihat() {
+    if (!currentUser) return [];
+    if (currentUser.peran === "admin") return state.acara.slice();
+    return state.acara.filter(function (a) {
+      return a.dibuatOleh === currentUser.username || a.anggota.indexOf(currentUser.nama) !== -1;
+    });
+  }
+  function keluarTerlihat() {
+    var ids = {};
+    acaraTerlihat().forEach(function (a) { ids[a.id] = true; });
+    return state.pengeluaran.filter(function (x) { return ids[x.acaraId]; });
+  }
+  function bolehUbahAcara(a) {
+    return currentUser && (currentUser.peran === "admin" || a.dibuatOleh === currentUser.username);
+  }
+  function bolehTambahKeluar(a) {
+    return currentUser && (currentUser.peran === "admin" || a.dibuatOleh === currentUser.username || a.anggota.indexOf(currentUser.nama) !== -1);
+  }
+  function bolehTandai(a, namaAnggota) {
+    return currentUser && (currentUser.peran === "admin" || a.dibuatOleh === currentUser.username || currentUser.nama === namaAnggota);
+  }
+
+  /* ---------- Rekap ---------- */
+  function rekapAcara(a) {
+    var list = state.pengeluaran.filter(function (x) { return x.acaraId === a.id; });
+    var perAnggota = {};
+    a.anggota.forEach(function (nama) { perAnggota[nama] = { harus: 0, sudah: 0, sisa: 0 }; });
+    var total = 0, sudah = 0;
+    list.forEach(function (x) {
+      total += Number(x.jumlah) || 0;
+      Object.keys(x.rincian).forEach(function (nama) {
+        if (!perAnggota[nama]) perAnggota[nama] = { harus: 0, sudah: 0, sisa: 0 };
+        var bagian = Number(x.rincian[nama]) || 0;
+        perAnggota[nama].harus += bagian;
+        if (x.status[nama]) { perAnggota[nama].sudah += bagian; sudah += bagian; }
+      });
+    });
+    Object.keys(perAnggota).forEach(function (nama) {
+      perAnggota[nama].sisa = perAnggota[nama].harus - perAnggota[nama].sudah;
+    });
+    return { total: total, sudah: sudah, belum: total - sudah, jumlah: list.length, perAnggota: perAnggota };
+  }
+  function rekapAnggotaGlobal(daftarAcara) {
+    var hasil = {};
+    daftarAcara.forEach(function (a) {
+      var r = rekapAcara(a);
+      Object.keys(r.perAnggota).forEach(function (nama) {
+        if (!hasil[nama]) hasil[nama] = { harus: 0, sudah: 0, sisa: 0 };
+        hasil[nama].harus += r.perAnggota[nama].harus;
+        hasil[nama].sudah += r.perAnggota[nama].sudah;
+        hasil[nama].sisa += r.perAnggota[nama].sisa;
+      });
+    });
+    return hasil;
+  }
+  function lencanaStatusAcara(a) {
+    return a.status === "selesai"
+      ? '<span class="lencana st-aman">Selesai</span>'
+      : '<span class="lencana st-biru">Aktif</span>';
+  }
+  function lencanaBayar(sudah) {
+    return sudah ? '<span class="lencana st-aman">Sudah bayar</span>' : '<span class="lencana st-habis">Belum bayar</span>';
+  }
+
+  /* ---------- Peran & login ---------- */
+  function terapkanPeran() {
+    var peran = currentUser ? currentUser.peran : "admin";
+    $("cardPengguna").style.display = peran === "admin" ? "" : "none";
+    renderSemua();
+  }
+  function masuk(user) {
+    currentUser = user;
+    try { localStorage.setItem(SESSION_KEY, user.username); } catch (e) {}
+    $("loginOverlay").classList.add("hidden");
+    $("userChip").textContent = user.nama + " (" + peranTxt(user.peran) + ")";
+    terapkanPeran();
+  }
+  function keluar() {
+    currentUser = null;
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    $("loginOverlay").classList.remove("hidden");
+    $("userChip").textContent = "Belum masuk";
+  }
+  $("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("loginUser").value.trim(), p = $("loginPass").value;
+    var found = users.find(function (x) { return x.username === u && x.password === p && x.aktif; });
+    if (found) { $("loginError").hidden = true; masuk(found); }
+    else { $("loginError").hidden = false; }
+  });
+  $("btnKeluar").addEventListener("click", function () { keluar(); toast("Anda sudah keluar."); });
+  document.querySelectorAll("#tabbar .tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { pindahTab(btn.getAttribute("data-tab")); });
+  });
+  function pindahTab(nama) {
+    document.querySelectorAll("#tabbar .tab-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    if (nama === "dashboard") renderDashboard();
+    if (nama === "acara") renderAcara();
+    if (nama === "pengeluaran") renderKeluar();
+    if (nama === "pembagian") renderBagi();
+    if (nama === "bayar") renderBayar();
+    if (nama === "laporan") renderLaporan();
+  }
+
+  /* ---------- Dasbor ---------- */
+  function renderDashboard() {
+    var list = acaraTerlihat();
+    var aktif = list.filter(function (a) { return a.status === "aktif"; });
+    var selesai = list.filter(function (a) { return a.status === "selesai"; });
+    var total = 0, sudah = 0, jmlKeluar = 0;
+    list.forEach(function (a) {
+      var r = rekapAcara(a);
+      total += r.total; sudah += r.sudah; jmlKeluar += r.jumlah;
+    });
+    $("dAcara").textContent = list.length;
+    $("dAcaraSub").textContent = aktif.length + " aktif · " + selesai.length + " selesai";
+    $("dTotal").textContent = rupiah(total);
+    $("dTotalSub").textContent = jmlKeluar + " pengeluaran";
+    $("dSudah").textContent = rupiah(sudah);
+    $("dSudahSub").textContent = total > 0 ? Math.round(sudah / total * 100) + "% dari total" : "belum ada pengeluaran";
+    $("dBelum").textContent = rupiah(total - sudah);
+    $("dBelumSub").textContent = total > 0 ? Math.round((total - sudah) / total * 100) + "% dari total" : "belum ada pengeluaran";
+    $("badgeAcara").textContent = list.length;
+    $("badgeKeluar").textContent = jmlKeluar;
+    var belumBaris = keluarTerlihat().reduce(function (n, x) {
+      Object.keys(x.rincian).forEach(function (nama) { if (!x.status[nama]) n++; });
+      return n;
+    }, 0);
+    $("badgeBayar").textContent = belumBaris;
+    var tunggak = rekapAnggotaGlobal(aktif);
+    var namaTop = null, nilaiTop = 0;
+    Object.keys(tunggak).forEach(function (nama) {
+      if (tunggak[nama].sisa > nilaiTop) { nilaiTop = tunggak[nama].sisa; namaTop = nama; }
+    });
+    $("dTunggak").textContent = namaTop
+      ? namaTop + " masih menunggak " + rupiah(nilaiTop) + " di acara aktif — paling besar di antara semua anggota."
+      : "Tidak ada tunggakan di acara aktif.";
+    $("daftarAcaraRingkas").innerHTML = list.length ? list.map(function (a) {
+      var r = rekapAcara(a);
+      return '<div class="baris"><div><b>' + esc(a.nama) + '</b> ' + lencanaStatusAcara(a) +
+        '<br><span class="sub">' + tglSingkat(a.tanggal) + ' · ' + a.anggota.length + ' anggota · ' + r.jumlah + ' pengeluaran · dibuat oleh ' + esc(a.dibuatOleh) +
+        (a.catatan ? ' · ' + esc(a.catatan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(r.total) + '</b><br><span class="sub">sudah ' + rupiah(r.sudah) + ' · belum ' + rupiah(r.belum) + '</span></div></div>';
+    }).join("") : '<p class="sub">Belum ada acara.</p>';
+    renderPengguna();
+  }
+
+  /* ---------- Pengguna (admin) ---------- */
+  function renderPengguna() {
+    if (!currentUser || currentUser.peran !== "admin") { $("daftarPengguna").innerHTML = ""; return; }
+    $("daftarPengguna").innerHTML = users.map(function (u) {
+      var aksi = "";
+      if (u.username !== "admin") {
+        aksi = '<button class="btn ghost kecil" data-reset="' + esc(u.username) + '" type="button">Reset ke bk123</button> ' +
+          '<button class="btn ghost kecil" data-hapus-user="' + esc(u.username) + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(u.nama) + '</b> <span class="tag">' + peranTxt(u.peran) + '</span><br><span class="sub">@' + esc(u.username) + (u.aktif ? "" : " · nonaktif") + '</span></div><div>' + aksi + '</div></div>';
+    }).join("");
+    document.querySelectorAll("[data-reset]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var u = users.find(function (x) { return x.username === b.getAttribute("data-reset"); });
+        if (!u) return;
+        tanyaKonfirmasi("Reset Kata Sandi", "Reset kata sandi " + u.nama + " menjadi bk123?", function () {
+          u.password = "bk123"; saveUsers(); renderPengguna(); toast("Kata sandi " + u.nama + " direset ke bk123.");
+        });
+      });
+    });
+    document.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var nama = b.getAttribute("data-hapus-user");
+        tanyaKonfirmasi("Hapus Pengguna", "Hapus pengguna @" + nama + "? Acaranya tetap tersimpan.", function () {
+          users = users.filter(function (x) { return x.username !== nama; });
+          saveUsers(); renderPengguna(); toast("Pengguna @" + nama + " dihapus.");
+        });
+      });
+    });
+  }
+  $("btnTambahPengguna").addEventListener("click", function () {
+    var u = $("pgUser").value.trim(), nama = $("pgNama").value.trim(), p = $("pgPass").value;
+    if (!u || !nama || !p) { toast("Isi nama pengguna, nama lengkap, dan kata sandi."); return; }
+    if (users.some(function (x) { return x.username === u; })) { toast("Nama pengguna sudah dipakai."); return; }
+    if (p.length < 6) { toast("Kata sandi minimal 6 karakter."); return; }
+    users.push({ username: u, nama: nama, peran: "pengguna", password: p, aktif: true });
+    saveUsers(); renderPengguna();
+    $("pgUser").value = ""; $("pgNama").value = ""; $("pgPass").value = "";
+    toast("Pengguna @" + u + " ditambahkan.");
+  });
+  $("formSandiSaya").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var lama = $("sandiLama").value, baru = $("sandiBaru").value;
+    if (!currentUser) return;
+    if (lama !== currentUser.password) { $("pesanSandi").textContent = "Kata sandi lama salah."; return; }
+    if (baru.length < 6) { $("pesanSandi").textContent = "Kata sandi baru minimal 6 karakter."; return; }
+    currentUser.password = baru; saveUsers();
+    $("pesanSandi").textContent = "Kata sandi berhasil diubah.";
+    $("sandiLama").value = ""; $("sandiBaru").value = "";
+    toast("Kata sandi Anda berhasil diubah.");
+  });
+
+  /* ---------- Tambah acara (dasbor + tab acara) ---------- */
+  function parseAnggota(teks) {
+    var seen = {};
+    return teks.split(",").map(function (s) { return s.trim(); }).filter(function (s) {
+      if (!s || seen[s]) return false;
+      seen[s] = true;
+      return true;
+    });
+  }
+  function simpanAcara(nama, tanggal, anggotaTeks, catatan) {
+    var anggota = parseAnggota(anggotaTeks);
+    if (!nama) { toast("Isi nama acara dulu."); return false; }
+    if (!tanggal) { toast("Isi tanggal acara dulu."); return false; }
+    if (anggota.length < 2) { toast("Isi minimal 2 anggota (pisah koma)."); return false; }
+    var a = {
+      id: state.nextAcaraId++, nama: nama, tanggal: tanggal, dibuat: hariIniKey(),
+      dibuatOleh: currentUser ? currentUser.username : "—", anggota: anggota,
+      status: "aktif", catatan: catatan || ""
+    };
+    state.acara.push(a);
+    saveState();
+    return a;
+  }
+  $("btnTambahAcara").addEventListener("click", function () {
+    var a = simpanAcara($("qNamaAcara").value.trim(), $("qTanggalAcara").value, $("qAnggotaAcara").value, $("qCatatanAcara").value.trim());
+    if (!a) return;
+    $("qNamaAcara").value = ""; $("qTanggalAcara").value = hariIniKey(); $("qAnggotaAcara").value = ""; $("qCatatanAcara").value = "";
+    renderSemua();
+    toast("Acara " + a.nama + " tersimpan.");
+  });
+  $("btnTambahAcaraTab").addEventListener("click", function () {
+    var a = simpanAcara($("aNama").value.trim(), $("aTanggal").value, $("aAnggota").value, $("aCatatan").value.trim());
+    if (!a) return;
+    $("aNama").value = ""; $("aTanggal").value = hariIniKey(); $("aAnggota").value = ""; $("aCatatan").value = "";
+    renderSemua();
+    toast("Acara " + a.nama + " tersimpan.");
+  });
+
+  /* ---------- Tab Acara ---------- */
+  function renderAcara() {
+    var list = acaraTerlihat();
+    var cari = ($("cariAcara").value || "").trim().toLowerCase();
+    if (filterAcara !== "semua") list = list.filter(function (a) { return a.status === filterAcara; });
+    if (cari) list = list.filter(function (a) {
+      return a.nama.toLowerCase().indexOf(cari) !== -1 || a.anggota.some(function (m) { return m.toLowerCase().indexOf(cari) !== -1; });
+    });
+    $("ringkasanAcara").textContent = list.length + " acara" +
+      (currentUser && currentUser.peran === "admin" ? " (semua pengguna)" : " (yang Anda buat atau ikuti)");
+    $("daftarAcara").innerHTML = list.length ? list.map(function (a) {
+      var r = rekapAcara(a);
+      var aksi = "";
+      if (bolehUbahAcara(a)) {
+        if (a.status === "aktif") aksi += '<button class="btn hijau kecil" data-selesai="' + a.id + '" type="button">Tandai Selesai</button> ';
+        else aksi += '<button class="btn ghost kecil" data-aktifkan="' + a.id + '" type="button">Aktifkan Lagi</button> ';
+        aksi += '<button class="btn ghost kecil" data-hapus-acara="' + a.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(a.nama) + '</b> ' + lencanaStatusAcara(a) +
+        '<br><span class="sub">' + tglSingkat(a.tanggal) + ' · anggota: ' + esc(a.anggota.join(", ")) + ' · dibuat oleh ' + esc(a.dibuatOleh) +
+        (a.catatan ? ' · ' + esc(a.catatan) : '') + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(r.total) + '</b><br><span class="sub">' + r.jumlah + ' pengeluaran · sudah ' + rupiah(r.sudah) + ' · belum ' + rupiah(r.belum) + '</span><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Tidak ada acara yang cocok.</p>';
+    document.querySelectorAll("[data-selesai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = cariAcara(Number(b.getAttribute("data-selesai")));
+        if (!a) return;
+        a.status = "selesai"; saveState(); renderSemua();
+        toast("Acara " + a.nama + " ditandai selesai.");
+      });
+    });
+    document.querySelectorAll("[data-aktifkan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = cariAcara(Number(b.getAttribute("data-aktifkan")));
+        if (!a) return;
+        a.status = "aktif"; saveState(); renderSemua();
+        toast("Acara " + a.nama + " diaktifkan lagi.");
+      });
+    });
+    document.querySelectorAll("[data-hapus-acara]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = cariAcara(Number(b.getAttribute("data-hapus-acara")));
+        if (!a) return;
+        tanyaKonfirmasi("Hapus Acara", "Hapus acara " + a.nama + " beserta semua pengeluarannya?", function () {
+          state.pengeluaran = state.pengeluaran.filter(function (x) { return x.acaraId !== a.id; });
+          state.acara = state.acara.filter(function (y) { return y.id !== a.id; });
+          saveState(); renderSemua(); toast("Acara dihapus.");
+        });
+      });
+    });
+  }
+  document.querySelectorAll("#chipsAcara .chip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      document.querySelectorAll("#chipsAcara .chip").forEach(function (x) { x.classList.remove("active"); });
+      c.classList.add("active");
+      filterAcara = c.getAttribute("data-f");
+      renderAcara();
+    });
+  });
+  $("cariAcara").addEventListener("input", renderAcara);
+
+  /* ---------- Tab Pengeluaran ---------- */
+  function isiPilihanAcara() {
+    var list = acaraTerlihat();
+    function isi(sel, nilaiLama) {
+      var opsi = list.map(function (a) {
+        return '<option value="' + a.id + '">' + esc(a.nama) + ' — ' + a.anggota.length + ' anggota (' + a.status + ')</option>';
+      }).join("");
+      sel.innerHTML = opsi || '<option value="">Belum ada acara</option>';
+      if (nilaiLama && list.some(function (a) { return String(a.id) === nilaiLama; })) sel.value = nilaiLama;
+    }
+    isi($("pilihAcaraKeluar"), $("pilihAcaraKeluar").value);
+    isi($("pilihAcaraBagi"), $("pilihAcaraBagi").value);
+    isi($("pilihAcaraBayar"), $("pilihAcaraBayar").value);
+    isi($("wAcara"), $("wAcara").value);
+  }
+  function acaraDipilihKeluar() {
+    var id = Number($("pilihAcaraKeluar").value || 0);
+    return cariAcara(id) || acaraTerlihat()[0];
+  }
+  function renderFormKeluar() {
+    var a = acaraDipilihKeluar();
+    if (!a) {
+      $("kDibayarOleh").innerHTML = "";
+      $("kAnggotaRata").innerHTML = "";
+      $("kRincian").innerHTML = "";
+      $("cardTambahKeluar").style.display = "none";
+      return;
+    }
+    $("cardTambahKeluar").style.display = bolehTambahKeluar(a) ? "" : "none";
+    $("kDibayarOleh").innerHTML = a.anggota.map(function (m) {
+      return '<option value="' + esc(m) + '">' + esc(m) + '</option>';
+    }).join("");
+    $("kAnggotaRata").innerHTML = a.anggota.map(function (m) {
+      return '<label><input type="checkbox" class="kAnggotaCek" value="' + esc(m) + '" checked> ' + esc(m) + '</label>';
+    }).join("");
+    $("kRincian").innerHTML = a.anggota.map(function (m, i) {
+      return '<div class="field"><label for="kRincian' + i + '">' + esc(m) + ' (Rp)</label><input id="kRincian' + i + '" type="number" min="0" value="0" data-anggota="' + esc(m) + '"></div>';
+    }).join("");
+    document.querySelectorAll(".kAnggotaCek").forEach(function (c) { c.addEventListener("change", pratinjauBagi); });
+    document.querySelectorAll("#kRincian input").forEach(function (inp) { inp.addEventListener("input", pratinjauBagi); });
+    pratinjauBagi();
+  }
+  function bacaRincianForm(a) {
+    var cara = $("kCaraOrang").checked ? "perorang" : "rata";
+    var jumlah = Number($("kJumlah").value || 0);
+    if (cara === "rata") {
+      var dipilih = [];
+      document.querySelectorAll(".kAnggotaCek").forEach(function (c) { if (c.checked) dipilih.push(c.value); });
+      if (dipilih.length === 0) return { cara: cara, rincian: {}, error: "Pilih minimal 1 anggota untuk dibagi rata." };
+      return { cara: cara, rincian: bagiRata(jumlah, dipilih), error: "" };
+    }
+    var rincian = {};
+    document.querySelectorAll("#kRincian input").forEach(function (inp) {
+      rincian[inp.getAttribute("data-anggota")] = Math.round(Number(inp.value || 0));
+    });
+    Object.keys(rincian).forEach(function (k) { if (rincian[k] <= 0) delete rincian[k]; });
+    if (Object.keys(rincian).length === 0) return { cara: cara, rincian: {}, error: "Isi nominal minimal 1 anggota." };
+    var totalRincian = jumlahRincian(rincian);
+    if (totalRincian !== Math.round(jumlah)) {
+      return { cara: cara, rincian: rincian, error: "Jumlah rincian (" + rupiah(totalRincian) + ") harus sama dengan total pengeluaran (" + rupiah(jumlah) + ")." };
+    }
+    return { cara: cara, rincian: rincian, error: "" };
+  }
+  function pratinjauBagi() {
+    var a = acaraDipilihKeluar();
+    var jumlah = Number($("kJumlah").value || 0);
+    var rata = $("kCaraRata").checked;
+    $("areaRata").hidden = !rata;
+    $("areaOrang").hidden = rata;
+    if (!a || !(jumlah > 0)) {
+      $("pratinjauBagi").textContent = "Isi jumlah pengeluaran untuk melihat pratinjau pembagian.";
+      $("peringatanBagi").textContent = "";
+      return;
+    }
+    var b = bacaRincianForm(a);
+    if (b.error && b.cara === "perorang") {
+      $("pratinjauBagi").textContent = "Pratinjau: " + Object.keys(b.rincian).map(function (k) { return k + " " + rupiah(b.rincian[k]); }).join(" · ") + ".";
+      $("peringatanBagi").textContent = b.error;
+      return;
+    }
+    if (b.error) { $("peringatanBagi").textContent = b.error; }
+    else { $("peringatanBagi").textContent = ""; }
+    var teks = Object.keys(b.rincian).map(function (k) { return k + " " + rupiah(b.rincian[k]); }).join(" · ");
+    $("pratinjauBagi").textContent = "Pratinjau (" + (b.cara === "rata" ? "bagi rata" : "bagi per orang") + "): " + teks + ". Total " + rupiah(jumlahRincian(b.rincian)) + ".";
+  }
+  ["kJumlah"].forEach(function (id) { $(id).addEventListener("input", pratinjauBagi); });
+  $("kCaraRata").addEventListener("change", pratinjauBagi);
+  $("kCaraOrang").addEventListener("change", pratinjauBagi);
+  $("pilihAcaraKeluar").addEventListener("change", function () { renderFormKeluar(); renderKeluar(); });
+  $("btnTambahKeluar").addEventListener("click", function () {
+    var a = acaraDipilihKeluar();
+    if (!a) { toast("Belum ada acara."); return; }
+    if (!bolehTambahKeluar(a)) { toast("Anda tidak bisa menambah pengeluaran di acara ini."); return; }
+    var nama = $("kNama").value.trim();
+    var jumlah = Math.round(Number($("kJumlah").value || 0));
+    var dibayarOleh = $("kDibayarOleh").value;
+    var tanggal = $("kTanggal").value;
+    if (!nama) { toast("Isi nama pengeluaran dulu."); return; }
+    if (!(jumlah > 0)) { toast("Isi jumlah pengeluaran (Rp) dulu."); return; }
+    if (!tanggal) { toast("Isi tanggal pengeluaran dulu."); return; }
+    var b = bacaRincianForm(a);
+    if (b.error) { $("peringatanBagi").textContent = b.error; toast(b.error); return; }
+    var status = {};
+    if (b.rincian[dibayarOleh] > 0) status[dibayarOleh] = true;
+    state.pengeluaran.push({
+      id: state.nextPengeluaranId++, acaraId: a.id, nama: nama, jumlah: jumlah,
+      dibayarOleh: dibayarOleh, tanggal: tanggal, dibuat: tanggal,
+      cara: b.cara, rincian: b.rincian, status: status
+    });
+    saveState();
+    $("kNama").value = ""; $("kJumlah").value = "";
+    renderSemua();
+    toast("Pengeluaran " + nama + " tersimpan.");
+  });
+  function renderKeluar() {
+    isiPilihanAcara();
+    var a = acaraDipilihKeluar();
+    if (!a) {
+      $("ringkasanKeluar").textContent = "Belum ada acara.";
+      $("daftarKeluar").innerHTML = '<p class="sub">Buat acara dulu di tab Acara.</p>';
+      renderFormKeluar();
+      return;
+    }
+    if (String(a.id) !== $("pilihAcaraKeluar").value) $("pilihAcaraKeluar").value = String(a.id);
+    var list = state.pengeluaran.filter(function (x) { return x.acaraId === a.id; });
+    var r = rekapAcara(a);
+    $("ringkasanKeluar").textContent = a.nama + " — " + list.length + " pengeluaran, total " + rupiah(r.total) + ", sudah " + rupiah(r.sudah) + ", belum " + rupiah(r.belum) + ".";
+    $("daftarKeluar").innerHTML = list.length ? list.map(function (x) {
+      var rincianTeks = Object.keys(x.rincian).map(function (k) {
+        return esc(k) + " " + rupiah(x.rincian[k]) + (x.status[k] ? " ✓" : "");
+      }).join(" · ");
+      var aksi = "";
+      if (currentUser && (currentUser.peran === "admin" || a.dibuatOleh === currentUser.username)) {
+        aksi = '<button class="btn ghost kecil" data-hapus-keluar="' + x.id + '" type="button">Hapus</button>';
+      }
+      return '<div class="baris"><div><b>' + esc(x.nama) + '</b> <span class="tag">' + (x.cara === "rata" ? "Bagi rata" : "Bagi per orang") + '</span>' +
+        '<br><span class="sub">' + tglSingkat(x.tanggal) + ' · dibayar oleh ' + esc(x.dibayarOleh) + ' · ' + rincianTeks + '</span></div>' +
+        '<div style="text-align:right"><b>' + rupiah(x.jumlah) + '</b><br>' + aksi + '</div></div>';
+    }).join("") : '<p class="sub">Belum ada pengeluaran di acara ini.</p>';
+    document.querySelectorAll("[data-hapus-keluar]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var x = cariKeluar(Number(btn.getAttribute("data-hapus-keluar")));
+        if (!x) return;
+        tanyaKonfirmasi("Hapus Pengeluaran", "Hapus pengeluaran " + x.nama + " " + rupiah(x.jumlah) + "?", function () {
+          state.pengeluaran = state.pengeluaran.filter(function (y) { return y.id !== x.id; });
+          saveState(); renderSemua(); toast("Pengeluaran dihapus.");
+        });
+      });
+    });
+    renderFormKeluar();
+  }
+
+  /* ---------- Tab Pembagian ---------- */
+  function renderBagi() {
+    isiPilihanAcara();
+    var a = acaraTerlihat().find(function (x) { return String(x.id) === $("pilihAcaraBagi").value; }) || acaraTerlihat()[0];
+    if (!a) {
+      $("ringkasanBagi").textContent = "Belum ada acara.";
+      $("tabelBagi").innerHTML = "";
+      $("tabelRinciBagi").innerHTML = "";
+      return;
+    }
+    if (String(a.id) !== $("pilihAcaraBagi").value) $("pilihAcaraBagi").value = String(a.id);
+    var r = rekapAcara(a);
+    $("ringkasanBagi").textContent = a.nama + " — total pengeluaran " + rupiah(r.total) + " (" + r.jumlah + " pengeluaran), sudah dibayar " + rupiah(r.sudah) + ", belum " + rupiah(r.belum) + ".";
+    $("tabelBagi").innerHTML = "<tr><th>Anggota</th><th>Harus Bayar</th><th>Sudah Bayar</th><th>Sisa</th><th>Status</th></tr>" +
+      a.anggota.map(function (nama) {
+        var p = r.perAnggota[nama] || { harus: 0, sudah: 0, sisa: 0 };
+        return "<tr><td>" + esc(nama) + "</td><td class=\"angka\">" + rupiah(p.harus) + "</td><td class=\"angka\">" + rupiah(p.sudah) + "</td><td class=\"angka\">" + rupiah(p.sisa) + "</td><td>" + (p.sisa <= 0 ? '<span class="lencana st-aman">Lunas</span>' : '<span class="lencana st-habis">Belum lunas</span>') + "</td></tr>";
+      }).join("");
+    var list = state.pengeluaran.filter(function (x) { return x.acaraId === a.id; });
+    $("tabelRinciBagi").innerHTML = "<tr><th>Pengeluaran</th><th>Dibayar Oleh</th><th>Cara</th><th>Pembagian per Anggota</th><th>Sudah</th><th>Belum</th></tr>" +
+      (list.length ? list.map(function (x) {
+        var rincianTeks = Object.keys(x.rincian).map(function (k) {
+          return esc(k) + ": " + rupiah(x.rincian[k]) + (x.status[k] ? " ✓" : "");
+        }).join("<br>");
+        var sudahX = 0;
+        Object.keys(x.rincian).forEach(function (k) { if (x.status[k]) sudahX += Number(x.rincian[k]) || 0; });
+        return "<tr><td>" + esc(x.nama) + "<br><span class=\"sub\">" + tglSingkat(x.tanggal) + "</span></td><td>" + esc(x.dibayarOleh) + "</td><td>" + (x.cara === "rata" ? "Bagi rata" : "Bagi per orang") + "</td><td>" + rincianTeks + "</td><td class=\"angka\">" + rupiah(sudahX) + "</td><td class=\"angka\">" + rupiah(x.jumlah - sudahX) + "</td></tr>";
+      }).join("") : '<tr><td colspan="6">Belum ada pengeluaran di acara ini.</td></tr>');
+  }
+  $("pilihAcaraBagi").addEventListener("change", renderBagi);
+  $("btnHitungBagi").addEventListener("click", function () {
+    var total = Math.round(Number($("cTotal").value || 0));
+    var orang = Math.round(Number($("cOrang").value || 0));
+    if (!(total > 0)) { $("hasilBagi").textContent = "Isi total pengeluaran dulu."; return; }
+    if (!(orang >= 1)) { $("hasilBagi").textContent = "Isi jumlah orang dulu (minimal 1)."; return; }
+    var anggota = [];
+    for (var i = 1; i <= orang; i++) anggota.push("Orang " + i);
+    var rincian = bagiRata(total, anggota);
+    var teks = anggota.map(function (nama) { return nama + " " + rupiah(rincian[nama]); }).join(" · ");
+    $("hasilBagi").textContent = rupiah(total) + " dibagi " + orang + " orang = " + teks + ". Jumlah semua bagian " + rupiah(jumlahRincian(rincian)) + " (sama dengan total).";
+  });
+
+  /* ---------- Tab Status Bayar ---------- */
+  function renderBayar() {
+    isiPilihanAcara();
+    var listAcara = acaraTerlihat();
+    var a = listAcara.find(function (x) { return String(x.id) === $("pilihAcaraBayar").value; }) || listAcara[0];
+    if (!a) {
+      $("ringkasanBayar").textContent = "Belum ada acara.";
+      $("tabelBayar").innerHTML = "";
+      return;
+    }
+    if (String(a.id) !== $("pilihAcaraBayar").value) $("pilihAcaraBayar").value = String(a.id);
+    var f = $("fStatusBayar").value;
+    var baris = [];
+    state.pengeluaran.filter(function (x) { return x.acaraId === a.id; }).forEach(function (x) {
+      Object.keys(x.rincian).forEach(function (nama) {
+        var sudah = !!x.status[nama];
+        if (f === "sudah" && !sudah) return;
+        if (f === "belum" && sudah) return;
+        baris.push({ x: x, nama: nama, sudah: sudah });
+      });
+    });
+    var jmlSudah = baris.filter(function (b) { return b.sudah; }).length;
+    $("ringkasanBayar").textContent = a.nama + " — " + baris.length + " bagian anggota (" + jmlSudah + " sudah bayar, " + (baris.length - jmlSudah) + " belum).";
+    $("tabelBayar").innerHTML = "<tr><th>Pengeluaran</th><th>Anggota</th><th>Bagian</th><th>Status</th><th>Aksi</th></tr>" +
+      (baris.length ? baris.map(function (b) {
+        var aksi = "";
+        if (bolehTandai(a, b.nama)) {
+          aksi = b.sudah
+            ? '<button class="btn ghost kecil" data-batal-bayar="' + b.x.id + "|" + esc(b.nama) + '" type="button">Batalkan Sudah</button>'
+            : '<button class="btn hijau kecil" data-tandai-bayar="' + b.x.id + "|" + esc(b.nama) + '" type="button">Tandai Sudah Bayar</button>';
+        }
+        return "<tr><td>" + esc(b.x.nama) + "<br><span class=\"sub\">" + tglSingkat(b.x.tanggal) + " · ditalangi " + esc(b.x.dibayarOleh) + "</span></td><td>" + esc(b.nama) + "</td><td class=\"angka\">" + rupiah(b.x.rincian[b.nama]) + "</td><td>" + lencanaBayar(b.sudah) + "</td><td>" + aksi + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Tidak ada data yang cocok.</td></tr>');
+    document.querySelectorAll("[data-tandai-bayar]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bg = btn.getAttribute("data-tandai-bayar").split("|");
+        var x = cariKeluar(Number(bg[0]));
+        if (!x) return;
+        x.status[bg[1]] = true;
+        saveState(); renderSemua();
+        toast(bg[1] + " ditandai sudah bayar " + x.nama + ".");
+      });
+    });
+    document.querySelectorAll("[data-batal-bayar]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bg = btn.getAttribute("data-batal-bayar").split("|");
+        var x = cariKeluar(Number(bg[0]));
+        if (!x) return;
+        delete x.status[bg[1]];
+        saveState(); renderSemua();
+        toast("Status bayar " + bg[1] + " dibatalkan.");
+      });
+    });
+    isiWA(a);
+  }
+  $("pilihAcaraBayar").addEventListener("change", renderBayar);
+  $("fStatusBayar").addEventListener("change", renderBayar);
+  function teksPengingat(a, nama) {
+    var r = rekapAcara(a);
+    var p = r.perAnggota[nama] || { harus: 0, sudah: 0, sisa: 0 };
+    return "Halo " + nama + ", pengingat patungan " + a.nama + " (" + tglSingkat(a.tanggal) + "). " +
+      "Total pengeluaran acara " + rupiah(r.total) + ". Bagianmu " + rupiah(p.harus) + ", sudah bayar " + rupiah(p.sudah) +
+      ", sisa " + rupiah(p.sisa) + ". " +
+      (p.sisa > 0 ? "Mohon segera dibayar ya, terima kasih." : "Terima kasih, bagianmu sudah lunas.");
+  }
+  function isiWA(a) {
+    var anggotaLama = $("wAnggota").value;
+    $("wAcara").value = String(a.id);
+    $("wAnggota").innerHTML = a.anggota.map(function (m) {
+      return '<option value="' + esc(m) + '">' + esc(m) + '</option>';
+    }).join("");
+    if (anggotaLama && a.anggota.indexOf(anggotaLama) !== -1) $("wAnggota").value = anggotaLama;
+  }
+  $("wAcara").addEventListener("change", function () {
+    var a = cariAcara(Number($("wAcara").value || 0)) || acaraTerlihat()[0];
+    if (a) isiWA(a);
+  });
+  $("btnTampilWA").addEventListener("click", function () {
+    var a = cariAcara(Number($("wAcara").value || 0)) || acaraTerlihat()[0];
+    if (!a) { toast("Belum ada acara."); return; }
+    var nama = $("wAnggota").value;
+    if (!nama) { toast("Pilih anggota dulu."); return; }
+    var teks = teksPengingat(a, nama);
+    $("kotakPesanWA").textContent = teks;
+    $("cardPesanWA").hidden = false;
+    var tersalin = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(teks).then(function () { tersalin = true; }).catch(function () {});
+      }
+    } catch (e) {}
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = teks; document.body.appendChild(ta); ta.select();
+      if (document.execCommand("copy")) tersalin = true;
+      document.body.removeChild(ta);
+    } catch (e) {}
+    toast(tersalin ? "Teks pengingat disalin." : "Teks pengingat ditampilkan di bawah — salin manual.");
+  });
+
+  /* ---------- Tab Laporan ---------- */
+  function laporanTerfilter() {
+    var list = keluarTerlihat();
+    var periode = $("fPeriode").value;
+    if (periode === "semua") return list;
+    var batas = kunciPlus(-Number(periode));
+    return list.filter(function (x) { return x.tanggal >= batas; });
+  }
+  function renderLaporan() {
+    var list = laporanTerfilter();
+    var total = list.reduce(function (s, x) { return s + Number(x.jumlah); }, 0);
+    var sudah = 0;
+    list.forEach(function (x) {
+      Object.keys(x.rincian).forEach(function (k) { if (x.status[k]) sudah += Number(x.rincian[k]) || 0; });
+    });
+    $("lTotal").textContent = rupiah(total);
+    $("lTotalSub").textContent = list.length + " pengeluaran pada periode ini";
+    $("lSudah").textContent = rupiah(sudah);
+    $("lSudahSub").textContent = total > 0 ? Math.round(sudah / total * 100) + "% dari total" : "belum ada pengeluaran";
+    $("lBelum").textContent = rupiah(total - sudah);
+    $("lBelumSub").textContent = total > 0 ? Math.round((total - sudah) / total * 100) + "% dari total" : "belum ada pengeluaran";
+    var acaraIds = {};
+    list.forEach(function (x) { acaraIds[x.acaraId] = true; });
+    $("lJumlah").textContent = list.length;
+    $("lJumlahSub").textContent = Object.keys(acaraIds).length + " acara pada periode ini";
+    $("lSelisih").textContent = "Selisih periode ini: total " + rupiah(total) + " − sudah dibayar " + rupiah(sudah) + " = belum " + rupiah(total - sudah) + ".";
+    var perAcara = {};
+    list.forEach(function (x) {
+      if (!perAcara[x.acaraId]) perAcara[x.acaraId] = { total: 0, sudah: 0, jumlah: 0 };
+      perAcara[x.acaraId].total += Number(x.jumlah);
+      perAcara[x.acaraId].jumlah++;
+      Object.keys(x.rincian).forEach(function (k) { if (x.status[k]) perAcara[x.acaraId].sudah += Number(x.rincian[k]) || 0; });
+    });
+    $("tabelLapAcara").innerHTML = "<tr><th>Acara</th><th>Pengeluaran</th><th>Total</th><th>Sudah Dibayar</th><th>Belum Dibayar</th></tr>" +
+      (Object.keys(perAcara).length ? Object.keys(perAcara).map(function (id) {
+        var a = cariAcara(Number(id));
+        var p = perAcara[id];
+        return "<tr><td>" + esc(a ? a.nama : "Acara #" + id) + "</td><td>" + p.jumlah + "</td><td class=\"angka\">" + rupiah(p.total) + "</td><td class=\"angka\">" + rupiah(p.sudah) + "</td><td class=\"angka\">" + rupiah(p.total - p.sudah) + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Tidak ada data pada periode ini.</td></tr>');
+    var perAnggota = {};
+    list.forEach(function (x) {
+      Object.keys(x.rincian).forEach(function (nama) {
+        if (!perAnggota[nama]) perAnggota[nama] = { harus: 0, sudah: 0 };
+        perAnggota[nama].harus += Number(x.rincian[nama]) || 0;
+        if (x.status[nama]) perAnggota[nama].sudah += Number(x.rincian[nama]) || 0;
+      });
+    });
+    $("tabelLapAnggota").innerHTML = "<tr><th>Anggota</th><th>Harus Bayar</th><th>Sudah Bayar</th><th>Sisa</th><th>Status</th></tr>" +
+      (Object.keys(perAnggota).length ? Object.keys(perAnggota).sort().map(function (nama) {
+        var p = perAnggota[nama];
+        return "<tr><td>" + esc(nama) + "</td><td class=\"angka\">" + rupiah(p.harus) + "</td><td class=\"angka\">" + rupiah(p.sudah) + "</td><td class=\"angka\">" + rupiah(p.harus - p.sudah) + "</td><td>" + (p.harus - p.sudah <= 0 ? '<span class="lencana st-aman">Lunas</span>' : '<span class="lencana st-habis">Belum lunas</span>') + "</td></tr>";
+      }).join("") : '<tr><td colspan="5">Tidak ada data pada periode ini.</td></tr>');
+  }
+  $("fPeriode").addEventListener("change", renderLaporan);
+  $("btnCsvLaporan").addEventListener("click", function () {
+    var list = laporanTerfilter();
+    var baris = [["Acara", "Pengeluaran", "Anggota", "Bagian (Rp)", "Status Bayar", "Dibayar Oleh", "Cara Bagi", "Tanggal"].map(csvCell).join(",")];
+    list.forEach(function (x) {
+      var a = cariAcara(x.acaraId);
+      Object.keys(x.rincian).forEach(function (nama) {
+        baris.push([a ? a.nama : "Acara #" + x.acaraId, x.nama, nama, x.rincian[nama], x.status[nama] ? "Sudah bayar" : "Belum bayar", x.dibayarOleh, x.cara === "rata" ? "Bagi rata" : "Bagi per orang", x.tanggal].map(csvCell).join(","));
+      });
+    });
+    unduh("laporan-patungan.csv", baris.join("\n"), "text/csv;charset=utf-8");
+    toast("CSV laporan diunduh (" + (baris.length - 1) + " baris).");
+  });
+  $("btnBackup").addEventListener("click", function () {
+    unduh("aplikasi-patungan-backup.json", JSON.stringify({ aplikasi: "aplikasi-patungan", versi: 1, state: state, users: users }, null, 2), "application/json");
+    toast("Cadangan JSON diunduh.");
+  });
+  $("btnRestore").addEventListener("click", function () { $("inputRestore").click(); });
+  $("inputRestore").addEventListener("change", function () {
+    var f = $("inputRestore").files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d.state || !Array.isArray(d.state.acara) || !Array.isArray(d.state.pengeluaran) || !Array.isArray(d.users)) throw new Error("format");
+        state = d.state; users = d.users;
+        saveState(); saveUsers();
+        renderSemua();
+        toast("Data berhasil dipulihkan.");
+      } catch (e) { toast("File cadangan tidak valid."); }
+    };
+    rd.readAsText(f);
+    $("inputRestore").value = "";
+  });
+  $("btnResetData").addEventListener("click", function () {
+    tanyaKonfirmasi("Reset Data Demo", "Kembalikan semua data ke data demo awal? Acara dan pengguna tambahan akan hilang.", function () {
+      state = seedState(); users = seedUsers();
+      saveState(); saveUsers();
+      renderSemua();
+      toast("Data direset ke data demo.");
+    });
+  });
+
+  /* ---------- Render semua ---------- */
+  function renderSemua() {
+    renderDashboard(); renderAcara(); renderKeluar(); renderBagi(); renderBayar(); renderLaporan();
+  }
+
+  /* ---------- Mulai ---------- */
+  $("tanggalHari").textContent = tanggalHariIni();
+  $("qTanggalAcara").value = hariIniKey();
+  $("aTanggal").value = hariIniKey();
+  $("kTanggal").value = hariIniKey();
+  loadState(); loadUsers();
+  var sesi = null;
+  try { sesi = localStorage.getItem(SESSION_KEY); } catch (e) {}
+  var userSesi = sesi ? users.find(function (x) { return x.username === sesi && x.aktif; }) : null;
+  if (userSesi) masuk(userSesi); else { renderSemua(); }
+})();
+</script>
+</body>
+</html>
