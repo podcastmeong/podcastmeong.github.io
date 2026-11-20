@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Booking &amp; Reservasi</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat .angka.uang { font-size: 20px; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .booking {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .booking .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .booking .nama { font-weight: 800; font-size: 15.5px; }
+  .booking .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .booking .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .booking .jam {
+    font-weight: 800; color: var(--blue); background: var(--blue-soft);
+    border-radius: 8px; padding: 3px 10px; font-size: 13.5px; white-space: nowrap;
+  }
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-dikonfirmasi { background: var(--blue-soft); color: var(--blue); }
+  .st-selesai { background: var(--green-soft); color: var(--green); }
+  .st-dibatalkan { background: var(--red-soft); color: var(--red); }
+
+  .item-layanan {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .item-layanan .nm { font-weight: 700; }
+  .item-layanan .dt { color: var(--muted); font-size: 13px; }
+  .item-layanan .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(20, 38, 61, .45);
+    display: none; align-items: center; justify-content: center; z-index: 90; padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px; max-width: 420px; width: 100%;
+  }
+  .modal h3 { margin-bottom: 6px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+  .modal .aksi { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Booking &amp; Reservasi</h1>
+    <p>Kelola booking pelanggan usaha jasa Anda: salon, barbershop, klinik, bengkel, dan lainnya.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
+    <button class="tab-btn" data-tab="baru">Booking Baru</button>
+    <button class="tab-btn" data-tab="jadwal">Jadwal <span class="badge" id="badgeJadwal">0</span></button>
+    <button class="tab-btn" data-tab="layanan">Layanan &amp; Staf</button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <section class="panel active" id="panel-ringkasan">
+    <div class="page-head">
+      <h2>Ringkasan Hari Ini</h2>
+      <p>Booking dan pemasukan pada tanggal yang dipilih di bawah ini.</p>
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <div class="grow">
+        <label for="tanggalRingkasan">Tanggal ringkasan</label>
+        <input type="date" id="tanggalRingkasan">
+      </div>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Booking Masuk</div><div class="angka" id="statMasuk">0</div></div>
+      <div class="stat"><div class="label">Dikonfirmasi</div><div class="angka" id="statKonfirmasi">0</div></div>
+      <div class="stat"><div class="label">Selesai</div><div class="angka" id="statSelesai">0</div></div>
+      <div class="stat"><div class="label">Dibatalkan</div><div class="angka" id="statBatal">0</div></div>
+      <div class="stat accent"><div class="label">Pemasukan</div><div class="angka uang" id="statPemasukan">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3>Jadwal hari ini</h3>
+      <p class="sub">Booking pada tanggal yang dipilih, diurutkan dari jam paling pagi.</p>
+      <div id="daftarHariIni"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-baru">
+    <div class="page-head">
+      <h2 id="judulForm">Booking Baru</h2>
+      <p>Isi data pelanggan dan layanan, lalu simpan. Booking langsung masuk ke Jadwal.</p>
+    </div>
+    <div class="card">
+      <form id="formBooking">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNama">Nama pelanggan *</label>
+            <input type="text" id="fNama" placeholder="Contoh: Budi Santoso" required>
+          </div>
+          <div class="field">
+            <label for="fHp">No. HP / WhatsApp (opsional)</label>
+            <input type="tel" id="fHp" placeholder="Contoh: 081234567890">
+          </div>
+          <div class="field">
+            <label for="fLayanan">Layanan *</label>
+            <select id="fLayanan" required></select>
+          </div>
+          <div class="field">
+            <label for="fStaf">Staf *</label>
+            <select id="fStaf" required></select>
+          </div>
+          <div class="field">
+            <label for="fTanggal">Tanggal *</label>
+            <input type="date" id="fTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fJam">Jam *</label>
+            <input type="time" id="fJam" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fCatatan">Catatan (opsional)</label>
+          <textarea id="fCatatan" rows="2" placeholder="Contoh: Minta potongan pendek, datang lebih awal 10 menit."></textarea>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanBooking">Simpan Booking</button>
+          <button type="button" class="btn ghost" id="btnBatalUbah" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-jadwal">
+    <div class="page-head">
+      <h2>Jadwal Booking</h2>
+      <p>Pilih tanggal untuk melihat booking, lalu ubah status atau hapus bila perlu.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterTanggal">Tanggal</label>
+          <input type="date" id="filterTanggal">
+        </div>
+        <div class="grow">
+          <label for="filterStatus">Status</label>
+          <select id="filterStatus">
+            <option value="">Semua status</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Dikonfirmasi">Dikonfirmasi</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Dibatalkan">Dibatalkan</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarJadwal"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-layanan">
+    <div class="page-head">
+      <h2>Layanan &amp; Staf</h2>
+      <p>Atur layanan beserta harga dan durasinya, serta daftar staf yang melayani booking.</p>
+    </div>
+    <div class="card">
+      <h3>Daftar Layanan</h3>
+      <p class="sub">Harga dipakai untuk menghitung pemasukan booking yang selesai.</p>
+      <div id="daftarLayanan"></div>
+      <form id="formLayanan" style="margin-top:14px">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNamaLayanan">Nama layanan *</label>
+            <input type="text" id="fNamaLayanan" placeholder="Contoh: Pijat Relaksasi 30 mnt" required>
+          </div>
+          <div class="field">
+            <label for="fHargaLayanan">Harga (Rp) *</label>
+            <input type="number" id="fHargaLayanan" min="0" step="1000" placeholder="Contoh: 75000" required>
+          </div>
+          <div class="field">
+            <label for="fDurasiLayanan">Durasi (menit) *</label>
+            <input type="number" id="fDurasiLayanan" min="5" step="5" placeholder="Contoh: 45" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil" id="btnTambahLayanan">+ Tambah Layanan</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Staf</h3>
+      <p class="sub">Staf yang bisa dipilih saat membuat booking.</p>
+      <div id="daftarStaf"></div>
+      <form id="formStaf" style="margin-top:14px">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fNamaStaf">Nama staf *</label>
+            <input type="text" id="fNamaStaf" placeholder="Contoh: Rudi" required>
+          </div>
+          <div class="field">
+            <label for="fPeranStaf">Peran *</label>
+            <input type="text" id="fPeranStaf" placeholder="Contoh: Kapster" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil" id="btnTambahStaf">+ Tambah Staf</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan Penggunaan</h2>
+      <p>Cara memakai aplikasi Booking &amp; Reservasi, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Atur dulu <b>Layanan &amp; Staf</b>: tambahkan layanan beserta harga dan durasinya, lalu tambahkan staf.</li>
+        <li>Buka tab <b>Booking Baru</b> dan isi nama pelanggan, layanan, staf, tanggal, dan jam.</li>
+        <li>Di tab <b>Jadwal</b>, pilih tanggal untuk melihat semua booking. Ubah statusnya: <b>Menunggu</b> → <b>Dikonfirmasi</b> → <b>Selesai</b>, atau <b>Dibatalkan</b> bila pelanggan membatalkan.</li>
+        <li>Tab <b>Ringkasan</b> menampilkan jumlah booking dan pemasukan pada tanggal yang dipilih. Pemasukan dihitung dari booking berstatus <b>Selesai</b>.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Pemula</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Profesional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Bisnis</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
+    </div>
+    <div class="card">
+      <h3>Garansi</h3>
+      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Pemula 30 hari</b>, <b>Profesional 60 hari</b>, <b>Bisnis 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p style="font-size:14px">Data booking, layanan, dan staf <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi). Data tidak tersinkron ke perangkat lain dan tidak bisa diakses dari HP atau laptop lain. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (multi-user lintas perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <div style="margin-top:14px">
+        <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Booking &amp; Reservasi v1.</b> Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Pemula 30 hari / Profesional 60 hari / Bisnis 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Booking%20%26%20Reservasi." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalJudul">Konfirmasi</h3>
+    <p id="modalIsi"></p>
+    <div class="aksi">
+      <button class="btn ghost kecil" id="modalBatal" type="button">Batal</button>
+      <button class="btn kecil" id="modalYa" type="button">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "bookingReservasi.v1";
+  var STATUS = ["Menunggu", "Dikonfirmasi", "Selesai", "Dibatalkan"];
+
+  function $(id) { return document.getElementById(id); }
+  function rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function hariIniISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function besokISO() {
+    var d = new Date(); d.setDate(d.getDate() + 1);
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function tanggalCantik(iso) {
+    var p = iso.split("-");
+    var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    return Number(p[2]) + " " + bulan[Number(p[1]) - 1] + " " + p[0];
+  }
+
+  // ---------- Data contoh ----------
+  function dataContoh() {
+    var t = hariIniISO(), b = besokISO();
+    return {
+      nextId: 9,
+      layanan: [
+        { id: 1, nama: "Potong Rambut Pria", harga: 35000, durasi: 45 },
+        { id: 2, nama: "Potong Rambut + Cuci", harga: 50000, durasi: 60 },
+        { id: 3, nama: "Creambath", harga: 75000, durasi: 60 },
+        { id: 4, nama: "Facial Dasar", harga: 120000, durasi: 60 },
+        { id: 5, nama: "Pijat Relaksasi 60 mnt", harga: 150000, durasi: 60 },
+        { id: 6, nama: "Manicure & Pedicure", harga: 85000, durasi: 90 }
+      ],
+      staf: [
+        { id: 1, nama: "Andi", peran: "Kapster" },
+        { id: 2, nama: "Budi", peran: "Kapster" },
+        { id: 3, nama: "Sari", peran: "Terapis" },
+        { id: 4, nama: "Dewi", peran: "Terapis" }
+      ],
+      booking: [
+        { id: 1, nama: "Budi Santoso", hp: "081234567001", layanan: "Potong Rambut Pria", harga: 35000, staf: "Andi", tanggal: t, jam: "09:00", status: "Dikonfirmasi", catatan: "" },
+        { id: 2, nama: "Siti Rahma", hp: "081234567002", layanan: "Creambath", harga: 75000, staf: "Dewi", tanggal: t, jam: "10:30", status: "Menunggu", catatan: "Minta creambath lidah buaya." },
+        { id: 3, nama: "Agus Wijaya", hp: "081234567003", layanan: "Pijat Relaksasi 60 mnt", harga: 150000, staf: "Sari", tanggal: t, jam: "13:00", status: "Selesai", catatan: "" },
+        { id: 4, nama: "Dewi Lestari", hp: "081234567004", layanan: "Facial Dasar", harga: 120000, staf: "Sari", tanggal: t, jam: "15:00", status: "Dikonfirmasi", catatan: "" },
+        { id: 5, nama: "Rizky Pratama", hp: "081234567005", layanan: "Potong Rambut + Cuci", harga: 50000, staf: "Budi", tanggal: t, jam: "16:30", status: "Menunggu", catatan: "" },
+        { id: 6, nama: "Maya Putri", hp: "081234567006", layanan: "Manicure & Pedicure", harga: 85000, staf: "Dewi", tanggal: t, jam: "11:00", status: "Dibatalkan", catatan: "Batal karena ada acara keluarga." },
+        { id: 7, nama: "Joko Susilo", hp: "081234567007", layanan: "Potong Rambut Pria", harga: 35000, staf: "Andi", tanggal: b, jam: "09:30", status: "Menunggu", catatan: "" },
+        { id: 8, nama: "Ratna Sari", hp: "081234567008", layanan: "Facial Dasar", harga: 120000, staf: "Sari", tanggal: b, jam: "14:00", status: "Menunggu", catatan: "" }
+      ]
+    };
+  }
+
+  // ---------- Penyimpanan ----------
+  var state = null;
+  function saveData() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+  }
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.layanan && parsed.staf && parsed.booking) { state = parsed; return; }
+      }
+    } catch (e) { /* pakai data contoh */ }
+    state = dataContoh();
+    saveData();
+  }
+
+  // ---------- Util tampilan ----------
+  var toastTimer = null;
+  function toast(pesan) {
+    var t = $("toast");
+    t.textContent = pesan;
+    t.classList.add("show");
+    if (toastTimer) { clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  var modalCallback = null;
+  function mintaKonfirmasi(judul, isi, labelYa, cb) {
+    $("modalJudul").textContent = judul;
+    $("modalIsi").textContent = isi;
+    $("modalYa").textContent = labelYa;
+    modalCallback = cb;
+    $("modalBack").classList.add("open");
+  }
+  $("modalBatal").addEventListener("click", function () {
+    $("modalBack").classList.remove("open"); modalCallback = null;
+  });
+  $("modalBack").addEventListener("click", function (e) {
+    if (e.target === this) { this.classList.remove("open"); modalCallback = null; }
+  });
+  $("modalYa").addEventListener("click", function () {
+    $("modalBack").classList.remove("open");
+    var cb = modalCallback; modalCallback = null;
+    if (cb) { cb(); }
+  });
+
+  function kelasStatus(s) {
+    return s === "Menunggu" ? "st-menunggu" : s === "Dikonfirmasi" ? "st-dikonfirmasi" : s === "Selesai" ? "st-selesai" : "st-dibatalkan";
+  }
+  function cariLayanan(nama) {
+    for (var i = 0; i < state.layanan.length; i++) { if (state.layanan[i].nama === nama) { return state.layanan[i]; } }
+    return null;
+  }
+
+  // ---------- Tab ----------
+  var tabBtns = document.querySelectorAll(".tab-btn");
+  function bukaTab(nama) {
+    tabBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === nama); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    $("panel-" + nama).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () { bukaTab(btn.getAttribute("data-tab")); });
+  });
+
+  // ---------- Render ----------
+  function renderRingkasan() {
+    var tgl = $("tanggalRingkasan").value || hariIniISO();
+    var list = state.booking.filter(function (b) { return b.tanggal === tgl; });
+    var masuk = list.length;
+    var konfirmasi = list.filter(function (b) { return b.status === "Dikonfirmasi"; }).length;
+    var selesai = list.filter(function (b) { return b.status === "Selesai"; }).length;
+    var batal = list.filter(function (b) { return b.status === "Dibatalkan"; }).length;
+    var pemasukan = list.filter(function (b) { return b.status === "Selesai"; })
+      .reduce(function (s, b) { return s + Number(b.harga || 0); }, 0);
+    $("statMasuk").textContent = masuk;
+    $("statKonfirmasi").textContent = konfirmasi;
+    $("statSelesai").textContent = selesai;
+    $("statBatal").textContent = batal;
+    $("statPemasukan").textContent = rupiah(pemasukan);
+    $("badgeJadwal").textContent = state.booking.filter(function (b) { return b.status === "Menunggu"; }).length;
+    var box = $("daftarHariIni");
+    if (!list.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada booking pada " + esc(tanggalCantik(tgl)) + ".</div>";
+      return;
+    }
+    list.sort(function (a, b) { return a.jam.localeCompare(b.jam); });
+    box.innerHTML = list.map(function (b) {
+      return "<div class=\"booking\"><div class=\"atas\"><div><div class=\"nama\">" + esc(b.nama) +
+        " <span class=\"lencana " + kelasStatus(b.status) + "\">" + esc(b.status) + "</span></div>" +
+        "<div class=\"detail\">" + esc(b.layanan) + " · " + esc(b.staf) + " · " + rupiah(b.harga) + "</div></div>" +
+        "<span class=\"jam\">" + esc(b.jam) + "</span></div></div>";
+    }).join("");
+  }
+
+  function kartuBooking(b) {
+    var html = "<div class=\"booking\" data-id=\"" + b.id + "\"><div class=\"atas\"><div>" +
+      "<div class=\"nama\">" + esc(b.nama) + " <span class=\"lencana " + kelasStatus(b.status) + "\">" + esc(b.status) + "</span></div>" +
+      "<div class=\"detail\">" + esc(b.layanan) + " · " + esc(b.staf) + " · " + rupiah(b.harga) +
+      (b.hp ? " · " + esc(b.hp) : "") + "</div>" +
+      (b.catatan ? "<div class=\"detail\">Catatan: " + esc(b.catatan) + "</div>" : "") +
+      "</div><span class=\"jam\">" + esc(b.jam) + "</span></div><div class=\"aksi\">";
+    if (b.status === "Menunggu") {
+      html += "<button class=\"btn kecil biru\" data-aksi=\"konfirmasi\" data-id=\"" + b.id + "\">Konfirmasi</button>";
+    }
+    if (b.status === "Dikonfirmasi") {
+      html += "<button class=\"btn kecil hijau\" data-aksi=\"selesai\" data-id=\"" + b.id + "\">Selesai</button>";
+    }
+    if (b.status !== "Selesai" && b.status !== "Dibatalkan") {
+      html += "<button class=\"btn kecil ghost\" data-aksi=\"batalkan\" data-id=\"" + b.id + "\">Batalkan</button>";
+    }
+    html += "<button class=\"btn kecil ghost\" data-aksi=\"ubah\" data-id=\"" + b.id + "\">Ubah</button>" +
+      "<button class=\"btn kecil merah\" data-aksi=\"hapus\" data-id=\"" + b.id + "\">Hapus</button>" +
+      "</div></div>";
+    return html;
+  }
+
+  function renderJadwal() {
+    var tgl = $("filterTanggal").value || hariIniISO();
+    var fs = $("filterStatus").value;
+    var list = state.booking.filter(function (b) {
+      return b.tanggal === tgl && (!fs || b.status === fs);
+    });
+    list.sort(function (a, b) { return a.jam.localeCompare(b.jam); });
+    var box = $("daftarJadwal");
+    if (!list.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada booking pada " + esc(tanggalCantik(tgl)) + (fs ? " dengan status " + esc(fs) : "") + ".</div>";
+      return;
+    }
+    box.innerHTML = list.map(kartuBooking).join("");
+  }
+
+  function renderLayanan() {
+    var box = $("daftarLayanan");
+    if (!state.layanan.length) {
+      box.innerHTML = "<div class=\"kosong\">Belum ada layanan. Tambahkan layanan di bawah ini.</div>";
+    } else {
+      box.innerHTML = state.layanan.map(function (l) {
+        return "<div class=\"item-layanan\"><div><div class=\"nm\">" + esc(l.nama) + "</div>" +
+          "<div class=\"dt\">" + l.durasi + " menit</div></div>" +
+          "<div class=\"row\"><span class=\"harga\">" + rupiah(l.harga) + "</span>" +
+          "<button class=\"btn kecil merah\" data-hapus-layanan=\"" + l.id + "\">Hapus</button></div></div>";
+      }).join("");
+    }
+    var boxS = $("daftarStaf");
+    if (!state.staf.length) {
+      boxS.innerHTML = "<div class=\"kosong\">Belum ada staf. Tambahkan staf di bawah ini.</div>";
+    } else {
+      boxS.innerHTML = state.staf.map(function (s) {
+        return "<div class=\"item-layanan\"><div><div class=\"nm\">" + esc(s.nama) + "</div>" +
+          "<div class=\"dt\">" + esc(s.peran) + "</div></div>" +
+          "<button class=\"btn kecil merah\" data-hapus-staf=\"" + s.id + "\">Hapus</button></div>";
+      }).join("");
+    }
+    $("fLayanan").innerHTML = state.layanan.map(function (l) {
+      return "<option value=\"" + esc(l.nama) + "\">" + esc(l.nama) + " — " + rupiah(l.harga) + " (" + l.durasi + " mnt)</option>";
+    }).join("");
+    $("fStaf").innerHTML = state.staf.map(function (s) {
+      return "<option value=\"" + esc(s.nama) + "\">" + esc(s.nama) + " (" + esc(s.peran) + ")</option>";
+    }).join("");
+  }
+
+  function renderSemua() {
+    renderRingkasan();
+    renderJadwal();
+    renderLayanan();
+    saveData();
+  }
+
+  // ---------- Form booking ----------
+  var sedangUbahId = null;
+  $("formBooking").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNama").value.trim();
+    var layananNama = $("fLayanan").value;
+    var lay = cariLayanan(layananNama);
+    if (!nama || !lay) { toast("Lengkapi nama pelanggan dan layanan."); return; }
+    var data = {
+      nama: nama,
+      hp: $("fHp").value.trim(),
+      layanan: layananNama,
+      harga: lay.harga,
+      staf: $("fStaf").value,
+      tanggal: $("fTanggal").value,
+      jam: $("fJam").value,
+      catatan: $("fCatatan").value.trim()
+    };
+    if (sedangUbahId) {
+      var ada = state.booking.find(function (b) { return b.id === sedangUbahId; });
+      if (ada) {
+        ada.nama = data.nama; ada.hp = data.hp; ada.layanan = data.layanan; ada.harga = data.harga;
+        ada.staf = data.staf; ada.tanggal = data.tanggal; ada.jam = data.jam; ada.catatan = data.catatan;
+        toast("Booking " + ada.nama + " berhasil diubah.");
+      }
+      sedangUbahId = null;
+      $("judulForm").textContent = "Booking Baru";
+      $("btnSimpanBooking").textContent = "Simpan Booking";
+      $("btnBatalUbah").style.display = "none";
+    } else {
+      data.id = state.nextId++;
+      data.status = "Menunggu";
+      state.booking.push(data);
+      toast("Booking " + data.nama + " berhasil disimpan.");
+    }
+    $("formBooking").reset();
+    $("fTanggal").value = hariIniISO();
+    renderSemua();
+    bukaTab("jadwal");
+    $("filterTanggal").value = data.tanggal;
+    renderJadwal();
+  });
+  $("btnBatalUbah").addEventListener("click", function () {
+    sedangUbahId = null;
+    $("formBooking").reset();
+    $("fTanggal").value = hariIniISO();
+    $("judulForm").textContent = "Booking Baru";
+    $("btnSimpanBooking").textContent = "Simpan Booking";
+    $("btnBatalUbah").style.display = "none";
+  });
+
+  // ---------- Aksi jadwal (delegasi) ----------
+  $("daftarJadwal").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-aksi]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-id"));
+    var aksi = btn.getAttribute("data-aksi");
+    var b = state.booking.find(function (x) { return x.id === id; });
+    if (!b) { return; }
+    if (aksi === "konfirmasi") {
+      b.status = "Dikonfirmasi"; renderSemua(); toast("Booking " + b.nama + " dikonfirmasi.");
+    } else if (aksi === "selesai") {
+      b.status = "Selesai"; renderSemua(); toast("Booking " + b.nama + " selesai. Pemasukan tercatat.");
+    } else if (aksi === "batalkan") {
+      mintaKonfirmasi("Batalkan booking?", "Booking " + b.nama + " (" + b.layanan + ", " + b.jam + ") akan dibatalkan.", "Ya, batalkan", function () {
+        b.status = "Dibatalkan"; renderSemua(); toast("Booking " + b.nama + " dibatalkan.");
+      });
+    } else if (aksi === "hapus") {
+      mintaKonfirmasi("Hapus booking?", "Booking " + b.nama + " (" + b.layanan + ", " + b.jam + ") akan dihapus permanen.", "Ya, hapus", function () {
+        state.booking = state.booking.filter(function (x) { return x.id !== id; });
+        renderSemua(); toast("Booking " + b.nama + " dihapus.");
+      });
+    } else if (aksi === "ubah") {
+      sedangUbahId = b.id;
+      $("fNama").value = b.nama;
+      $("fHp").value = b.hp || "";
+      $("fLayanan").value = b.layanan;
+      $("fStaf").value = b.staf;
+      $("fTanggal").value = b.tanggal;
+      $("fJam").value = b.jam;
+      $("fCatatan").value = b.catatan || "";
+      $("judulForm").textContent = "Ubah Booking — " + b.nama;
+      $("btnSimpanBooking").textContent = "Simpan Perubahan";
+      $("btnBatalUbah").style.display = "";
+      bukaTab("baru");
+    }
+  });
+
+  // ---------- Filter jadwal & ringkasan ----------
+  $("filterTanggal").addEventListener("change", renderJadwal);
+  $("filterStatus").addEventListener("change", renderJadwal);
+  $("tanggalRingkasan").addEventListener("change", renderRingkasan);
+
+  // ---------- Form layanan & staf ----------
+  $("formLayanan").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNamaLayanan").value.trim();
+    var harga = Number($("fHargaLayanan").value);
+    var durasi = Number($("fDurasiLayanan").value);
+    if (!nama || !(harga >= 0) || !(durasi > 0)) { toast("Lengkapi nama, harga, dan durasi layanan."); return; }
+    if (cariLayanan(nama)) { toast("Layanan dengan nama itu sudah ada."); return; }
+    var idBaru = state.layanan.length ? Math.max.apply(null, state.layanan.map(function (l) { return l.id; })) + 1 : 1;
+    state.layanan.push({ id: idBaru, nama: nama, harga: harga, durasi: durasi });
+    $("formLayanan").reset();
+    renderSemua();
+    toast("Layanan " + nama + " ditambahkan.");
+  });
+  $("formStaf").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = $("fNamaStaf").value.trim();
+    var peran = $("fPeranStaf").value.trim();
+    if (!nama || !peran) { toast("Lengkapi nama dan peran staf."); return; }
+    var idBaru = state.staf.length ? Math.max.apply(null, state.staf.map(function (s) { return s.id; })) + 1 : 1;
+    state.staf.push({ id: idBaru, nama: nama, peran: peran });
+    $("formStaf").reset();
+    renderSemua();
+    toast("Staf " + nama + " ditambahkan.");
+  });
+  $("daftarLayanan").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-hapus-layanan]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-hapus-layanan"));
+    var lay = state.layanan.find(function (l) { return l.id === id; });
+    var dipakai = state.booking.some(function (b) { return b.layanan === (lay && lay.nama); });
+    if (dipakai) { toast("Layanan ini masih dipakai booking — tidak bisa dihapus."); return; }
+    mintaKonfirmasi("Hapus layanan?", "Layanan " + (lay ? lay.nama : "") + " akan dihapus.", "Ya, hapus", function () {
+      state.layanan = state.layanan.filter(function (l) { return l.id !== id; });
+      renderSemua(); toast("Layanan dihapus.");
+    });
+  });
+  $("daftarStaf").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-hapus-staf]");
+    if (!btn) { return; }
+    var id = Number(btn.getAttribute("data-hapus-staf"));
+    var s = state.staf.find(function (x) { return x.id === id; });
+    var dipakai = state.booking.some(function (b) { return b.staf === (s && s.nama); });
+    if (dipakai) { toast("Staf ini masih dipakai booking — tidak bisa dihapus."); return; }
+    mintaKonfirmasi("Hapus staf?", "Staf " + (s ? s.nama : "") + " akan dihapus.", "Ya, hapus", function () {
+      state.staf = state.staf.filter(function (x) { return x.id !== id; });
+      renderSemua(); toast("Staf dihapus.");
+    });
+  });
+
+  // ---------- Reset data contoh ----------
+  $("btnResetData").addEventListener("click", function () {
+    mintaKonfirmasi("Kembalikan data contoh?", "Semua data booking, layanan, dan staf akan diganti dengan data contoh awal.", "Ya, kembalikan", function () {
+      state = dataContoh();
+      sedangUbahId = null;
+      $("formBooking").reset();
+      renderSemua();
+      toast("Data contoh dikembalikan.");
+    });
+  });
+
+  // ---------- MULAI ----------
+  var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  var skrg = new Date();
+  $("tanggalHariIni").textContent = hari[skrg.getDay()] + ", " + skrg.getDate() + " " + bulan[skrg.getMonth()] + " " + skrg.getFullYear();
+  $("tanggalRingkasan").value = hariIniISO();
+  $("filterTanggal").value = hariIniISO();
+  $("fTanggal").value = hariIniISO();
+  loadData();
+  renderSemua();
+})();
+</script>
+</body>
+</html>
