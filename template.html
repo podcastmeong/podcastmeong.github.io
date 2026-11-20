@@ -376,18 +376,18 @@ body{color:var(--pm2-ink)}body .hero{background:linear-gradient(125deg,#12243a 0
         --surface:#182c44;
         --surface-2:#1f3a5a;
         --ink:#f2f7fc;
-        --ink-soft:#c6d7ea;
-        --ink-faint:#8fa9c4;
+        --ink-soft:#fff;
+        --ink-faint:#fff;
         --line:#2e4c6e;
         --gold:#8fb4d9;
         --gold-soft:#a9c8e6;
         --gold-bg:#24405f;
-        --sage:#8fb4d9;
+        --sage:#fff;
         --sage-bg:#24405f;
-        --oyen:#f08a2e;
-        --oyen-dark:#f7b26a;
-        --bubble-user:#8fb4d9;
-        --bubble-user-ink:#122539;
+        --oyen:#8fb4d9;
+        --oyen-dark:#a9c8e6;
+        --bubble-user:#1d3b58;
+        --bubble-user-ink:#fff;
         --shadow:0 18px 44px rgba(2,8,18,.5);
         --shadow-sm:0 6px 18px rgba(2,8,18,.35);
         --radius:20px;
@@ -624,7 +624,7 @@ body{color:var(--pm2-ink)}body .hero{background:linear-gradient(125deg,#12243a 0
 
           <div class="oy-voice-bar">
             <label class="oy-voice-switch">
-              <input type="checkbox" id="voiceToggle" />
+              <input type="checkbox" id="voiceToggle" checked />
               <span class="oy-voice-label">Suara Oyen</span>
             </label>
             <span class="oy-voice-hint">Nyalakan agar setiap jawaban Oyen dibacakan keras — atau tap tombol speaker di tiap jawaban.</span>
@@ -976,7 +976,7 @@ body{color:var(--pm2-ink)}body .hero{background:linear-gradient(125deg,#12243a 0
         return { cat: "Lainnya", missed: true, text: "Maaf, yang itu belum bisa Oyen jawab dari data katalog toko. Di pratinjau ini Oyen menjawab seputar produk Toko Aplikasi Podcast Meong — aplikasi, eBook, game, kaos, jasa — soal harga, paket, garansi, cara pesan, cara pakai, dan pengiriman.\n\nTapi pertanyaanmu sudah Oyen catat di laporan sesi di bawah — nanti diteruskan ke pemilik toko untuk ditindaklanjuti. Mau coba tanya soal produk dulu? Misalnya: \"aplikasi untuk sekolah apa saja?\"" };
       }
       /* ================= SUARA OYEN (TTS Bahasa Indonesia) ================= */
-      var voiceOn = false;
+      var voiceOn = true;
       var voiceToggle = document.getElementById("voiceToggle");
       var idVoice = null;
       var currentSpeakBtn = null;
@@ -989,12 +989,11 @@ body{color:var(--pm2-ink)}body .hero{background:linear-gradient(125deg,#12243a 0
         for (var i = 0; i < vs.length; i++){
           if ((vs[i].lang || "").toLowerCase().indexOf("id") === 0){ idVoice = vs[i]; return; }
         }
+        if (vs.length) idVoice = vs[0];
       }
       if ("speechSynthesis" in window){
         pickVoice();
         window.speechSynthesis.onvoiceschanged = pickVoice;
-      } else if (voiceToggle){
-        voiceToggle.disabled = true;
       }
       function stopSpeak(){
         if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -1004,6 +1003,8 @@ body{color:var(--pm2-ink)}body .hero{background:linear-gradient(125deg,#12243a 0
         if (!("speechSynthesis" in window)){ toast("Browser ini tidak mendukung suara bacaan."); return; }
         if (btn && btn === currentSpeakBtn && window.speechSynthesis.speaking){ stopSpeak(); return; }
         stopSpeak();
+        pickVoice();
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
         var clean = text.replace(/•/g, " ").replace(/\s+/g, " ").trim();
         var u = new SpeechSynthesisUtterance(clean);
         u.lang = "id-ID";
