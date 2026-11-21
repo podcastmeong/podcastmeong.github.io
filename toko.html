@@ -763,6 +763,20 @@
       .oy-head h2 { margin: 0 0 6px; font-size: clamp(1.55rem, 3.4vw, 2.1rem); line-height: 1.12; font-weight: 800; color: #fff; }
       .oy-head h2 em { color: #a9c8e6; font-style: normal; }
       .oy-head p { margin: 0; color: #fff; font-size: .95rem; }
+      .oy-voice-row { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+      .oy-voice-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #1d3a5c; color: #fff; border: 1.5px solid #4a6f96;
+        border-radius: 999px; font: inherit; font-weight: 700; font-size: 0.86rem;
+        padding: 7px 15px; cursor: pointer; min-height: 40px;
+      }
+      .oy-voice-btn:hover { border-color: #a9c8e6; }
+      .oy-voice-btn:focus-visible { outline: 3px solid #a9c8e6; outline-offset: 2px; }
+      .oy-voice-btn svg { flex: none; }
+      .oy-voice-btn .oy-voice-off-icon { display: none; }
+      .oy-voice-btn[aria-pressed="false"] .oy-voice-on-icon { display: none; }
+      .oy-voice-btn[aria-pressed="false"] .oy-voice-off-icon { display: block; }
+      .oy-head p.oy-voice-note { margin-top: 10px; font-size: 0.8rem; color: #b9d2ea; }
       .oy-frame-wrap { padding: 14px 16px 18px; }
       .oy-frame {
         display: block; width: 100%; height: 520px;
@@ -866,6 +880,14 @@
               <div class="oy-status"><span class="oy-dot" aria-hidden="true"></span><span class="oy-status-text" id="oyStatusText">Oyen siap membantu</span></div>
               <h2>Tanya <em>Oyen</em> langsung di sini</h2>
               <p>Tidak perlu pindah halaman — tanya apa saja soal produk, harga, garansi, demo, atau cara pesan, Oyen jawab langsung di kotak obrolan ini.</p>
+              <div class="oy-voice-row">
+                <button type="button" class="oy-voice-btn" id="oyVoiceBtn" aria-pressed="true" aria-label="Nyalakan atau matikan suara Oyen">
+                  <svg class="oy-voice-on-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.6 5.4a9.5 9.5 0 0 1 0 13.2"/></svg>
+                  <svg class="oy-voice-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
+                  <span id="oyVoiceLabel">Suara: Nyala</span>
+                </button>
+              </div>
+              <p class="oy-voice-note">Suara dibacakan oleh perangkat (bukan suara asli Oyen).</p>
             </div>
             <div class="oy-frame-wrap">
               <iframe class="oy-frame" id="oyFrame" src="https://udify.app/chat/6gwe1d47jb7ImqnA" title="Asisten SatuKiki — obrolan dengan Oyen" loading="lazy" allow="microphone"></iframe>
@@ -4348,11 +4370,42 @@
         var speakSeq = 0;
         var talkTimer = null;
 
+        /* Pilihan suara pengunjung: default NYALA, disimpan di localStorage
+           supaya tetap saat pengunjung kembali. Mengontrol SEMUA ucapan. */
+        var voiceBtn = document.getElementById("oyVoiceBtn");
+        var voiceLabel = document.getElementById("oyVoiceLabel");
+        var soundOn = true;
+        try { soundOn = window.localStorage.getItem("oyenSuara") !== "0"; } catch (e) {}
+        function renderVoiceBtn() {
+          if (voiceBtn) voiceBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+          if (voiceLabel) voiceLabel.textContent = soundOn ? "Suara: Nyala" : "Suara: Mati";
+        }
+        renderVoiceBtn();
+        if (voiceBtn) {
+          voiceBtn.addEventListener("click", function () {
+            soundOn = !soundOn;
+            try { window.localStorage.setItem("oyenSuara", soundOn ? "1" : "0"); } catch (e) {}
+            renderVoiceBtn();
+            if (!soundOn && ttsOK) {
+              speakSeq++;
+              try { window.speechSynthesis.cancel(); } catch (e) {}
+              setTalking(false);
+            }
+          });
+        }
+
         function pickVoice() {
+          /* HANYA suara sistem bawaan perangkat — tidak ada rekaman dan tidak
+             ada kloning suara siapa pun. Urutan pilihan:
+             1) suara id-ID bernada perempuan/tinggi bila tersedia,
+             2) suara id-ID lain, 3) suara bernama "Indonesia",
+             4) null = suara default perangkat. */
           try {
             var voices = window.speechSynthesis.getVoices() || [];
-            var i, v;
-            for (i = 0; i < voices.length; i++) { v = voices[i]; if (/^id(-|_)/i.test(v.lang || "")) return v; }
+            var idVoices = [], i, v;
+            for (i = 0; i < voices.length; i++) { v = voices[i]; if (/^id(-|_)/i.test(v.lang || "")) idVoices.push(v); }
+            for (i = 0; i < idVoices.length; i++) { v = idVoices[i]; if (/female|perempuan|wanita|damayanti/i.test(v.name || "")) return v; }
+            if (idVoices.length) return idVoices[0];
             for (i = 0; i < voices.length; i++) { v = voices[i]; if (/indonesia/i.test(v.name || "")) return v; }
           } catch (e) {}
           return null;
@@ -4379,21 +4432,28 @@
 
         var GREETING_SAY = "Meong! Halo, aku Oyen, asisten Toko Podcast Meong. Tanya aku apa saja di kotak obrolan ini \u2014 soal harga aplikasi, cara pesan, demo, eBook, kaos, atau jasa video. Nanti kujawab di sana!";
 
-        function greet() {
-          hop();
-          if (!ttsOK) { talkFor(1600); return; }
+        /* Satu pintu untuk semua ucapan: hanya bersuara bila tombol speaker
+           NYALA dan perangkat mendukung speechSynthesis. Gagal diam-diam. */
+        function speakText(text) {
+          if (!ttsOK || !soundOn || !text) return false;
           var seq = ++speakSeq;
           try { window.speechSynthesis.cancel(); } catch (e) {}
-          var u = new SpeechSynthesisUtterance(GREETING_SAY);
+          var u = new SpeechSynthesisUtterance(text);
           u.lang = "id-ID";
-          u.pitch = 1.55; /* suara Oyen: tinggi, sesuai karakter MAI_01 */
+          u.pitch = 1.3; /* nada sedikit tinggi (rentang 1.2–1.4): karakter Oyen, jelas bukan suara laki-laki dewasa */
           u.rate = 1.03;
           var v = pickVoice();
           if (v) u.voice = v;
           u.onstart = function () { if (seq === speakSeq) setTalking(true); };
           u.onend = function () { if (seq === speakSeq) setTalking(false); };
           u.onerror = function () { if (seq === speakSeq) setTalking(false); };
-          try { window.speechSynthesis.speak(u); } catch (e) { talkFor(1600); }
+          try { window.speechSynthesis.speak(u); return true; } catch (e) { return false; }
+        }
+
+        function greet() {
+          hop();
+          /* Bila perangkat tak mendukung TTS, tetap tampilkan animasi bicara. */
+          if (!speakText(GREETING_SAY) && !ttsOK) { talkFor(1600); }
         }
         media.addEventListener("click", greet);
         media.addEventListener("keydown", function (ev) {
@@ -4410,6 +4470,23 @@
             window.setTimeout(function () { talkFor(2400); }, 500);
             window.setTimeout(function () { frameBusy = false; }, 4000);
           }
+        });
+
+        /* Pendengar postMessage — PERSIAPAN masa depan saja.
+           Saat ini Dify (udify.app) TIDAK mengirim event balasan apa pun ke
+           halaman induk, jadi pendengar ini belum pernah terpicu dan tidak
+           berpengaruh apa-apa. Bila suatu saat Dify mengirim teks balasan
+           (string, {text}, {answer}, atau {message}), teks itu dibacakan
+           lewat speakText() — hanya bila tombol speaker NYALA. */
+        window.addEventListener("message", function (ev) {
+          if (ev.origin !== "https://udify.app") return;
+          var d = ev.data, text = "";
+          if (typeof d === "string") { text = d; }
+          else if (d && typeof d === "object") { text = d.text || d.answer || d.message || ""; }
+          if (typeof text !== "string") return;
+          text = text.replace(/\s+/g, " ").trim();
+          if (!text) return;
+          speakText(text.slice(0, 800));
         });
       })();
     </script>
