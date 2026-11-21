@@ -1712,5 +1712,395 @@
   }
 })();
 </script>
+
+<!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->
+<script>
+/* ============================================================
+   KIKI-PENGATURAN v1 — Panel Pengaturan (nama, warna, logo,
+   pengguna). Cuplikan mandiri, tanpa dependensi eksternal.
+   Disimpan per aplikasi di localStorage. Mode: app
+   (app = aplikasi bisnis, game = game, web = website demo)
+   ============================================================ */
+(function () {
+  if (window.__kikiSet) return;
+  window.__kikiSet = true;
+  var KIKI_MODE = 'app'; /* app | game | web */
+
+  var slug = (location.pathname.replace(/\/index\.html?$/i, '').split('/').filter(Boolean).pop() || 'beranda');
+  var KEY = 'kikiSet:' + slug;
+  var DEF = { nama: '', warna: '', logo: '', users: [], aktif: '' };
+  var S = load();
+  var defaultName = detectDefaultName();
+  var nameTarget = findNameTarget();
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var o = JSON.parse(raw); if (o && typeof o === 'object') return merge(DEF, o); }
+    } catch (e) {}
+    return merge(DEF, {});
+  }
+  function merge(d, o) {
+    var r = {};
+    for (var k in d) r[k] = (o[k] !== undefined && o[k] !== null) ? o[k] : d[k];
+    if (!Array.isArray(r.users)) r.users = [];
+    return r;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  /* ---------- deteksi nama & target ---------- */
+  function detectDefaultName() {
+    var cn = document.getElementById('companyName');
+    if (cn) return cn.textContent.trim();
+    var h1 = document.querySelector('.hero h1') || document.querySelector('h1');
+    if (h1) {
+      var t = h1.textContent.trim();
+      var m = t.split(/\s+[—–-]\s+/);
+      if (m.length > 1) return m[m.length - 1].trim();
+    }
+    return '';
+  }
+  function findNameTarget() {
+    var cn = document.getElementById('companyName');
+    if (cn) return cn;
+    var h1 = document.querySelector('.hero h1') || document.querySelector('h1');
+    if (h1 && KIKI_MODE !== 'game') return h1;
+    if (KIKI_MODE === 'web') {
+      var b = document.querySelector('header .brand, header .logo-text, header .logo, header a');
+      if (b && b.textContent.trim().length < 40) return b;
+    }
+    return null;
+  }
+  function effName() { return (S.nama || '').trim() || defaultName; }
+
+  /* ---------- warna ---------- */
+  function shade(hex, pct) {
+    var h = String(hex || '').replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) return '#14263d';
+    var n = parseInt(h, 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255, f = 1 + pct / 100;
+    r = Math.max(0, Math.min(255, Math.round(r * f)));
+    g = Math.max(0, Math.min(255, Math.round(g * f)));
+    b = Math.max(0, Math.min(255, Math.round(b * f)));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  function applyColor() {
+    var root = document.documentElement;
+    var st = document.getElementById('kiki-theme');
+    if (!S.warna) {
+      ['--kiki-accent', '--kiki-accent-dark', '--navy', '--blue'].forEach(function (v) { root.style.removeProperty(v); });
+      if (st) st.remove();
+      return;
+    }
+    var dark = shade(S.warna, -35);
+    root.style.setProperty('--kiki-accent', S.warna);
+    root.style.setProperty('--kiki-accent-dark', dark);
+    root.style.setProperty('--navy', dark);
+    root.style.setProperty('--blue', S.warna);
+    if (KIKI_MODE === 'app') {
+      if (!st) {
+        st = document.createElement('style');
+        st.id = 'kiki-theme';
+        document.head.appendChild(st);
+      }
+      st.textContent =
+        '.hero{background:linear-gradient(135deg,var(--kiki-accent-dark),var(--kiki-accent))!important}' +
+        '.tab-btn.active{background:var(--kiki-accent)!important;border-color:var(--kiki-accent)!important}' +
+        '.btn:not(.secondary):not(.btn-ghost):not(.ghost):not(.danger){background:var(--kiki-accent)!important;border-color:var(--kiki-accent)!important}';
+    } else if (st) { st.remove(); }
+  }
+
+  /* ---------- nama ---------- */
+  function applyName() {
+    var name = effName();
+    if (!nameTarget || KIKI_MODE === 'game') { updateBtnTitle(); return; }
+    if (nameTarget.id === 'companyName') { nameTarget.textContent = name; updateBtnTitle(); return; }
+    if (nameTarget.tagName === 'H1') {
+      if (!nameTarget.dataset.kikiOrig) nameTarget.dataset.kikiOrig = nameTarget.textContent.trim();
+      var orig = nameTarget.dataset.kikiOrig;
+      var parts = orig.split(/\s+[—–-]\s+/);
+      if (parts.length > 1) {
+        nameTarget.textContent = parts.slice(0, -1).join(' — ') + ' — ' + name;
+      } else if (S.nama.trim()) {
+        nameTarget.textContent = orig + ' — ' + S.nama.trim();
+      } else {
+        nameTarget.textContent = orig;
+      }
+    } else {
+      if (S.nama.trim()) nameTarget.textContent = S.nama.trim();
+    }
+    updateBtnTitle();
+  }
+
+  /* ---------- logo ---------- */
+  function applyLogo() {
+    var old = document.querySelector('.kiki-logo');
+    if (old) old.remove();
+    var fav = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
+    if (S.logo) {
+      if (nameTarget && KIKI_MODE !== 'game') {
+        var img = document.createElement('img');
+        img.className = 'kiki-logo';
+        img.src = S.logo;
+        img.alt = 'Logo';
+        img.style.cssText = 'height:42px;width:42px;object-fit:cover;border-radius:10px;vertical-align:middle;margin-right:10px;background:#fff';
+        nameTarget.parentNode.insertBefore(img, nameTarget);
+      }
+      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+      fav.href = S.logo;
+    }
+  }
+  function applyAll() { applyName(); applyColor(); applyLogo(); }
+
+  /* ---------- CSS panel ---------- */
+  var css = document.createElement('style');
+  css.textContent = [
+    '.kiki-fab{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:8px;background:#14263d;color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 14px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;box-shadow:0 8px 24px rgba(20,38,61,.35);cursor:pointer}',
+    '.kiki-fab:hover{background:#2f639e}',
+    '@media (max-width:600px){.kiki-fab span{display:none}.kiki-fab{padding:12px 14px}}',
+    '.kiki-overlay{position:fixed;inset:0;z-index:10000;background:rgba(20,38,61,.5);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto}',
+    '.kiki-overlay[hidden]{display:none}',
+    '.kiki-card{box-sizing:border-box;width:100%;max-width:520px;background:#fff;color:#14263d;border-radius:16px;box-shadow:0 16px 48px rgba(20,38,61,.3);padding:22px;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}',
+    '.kiki-card *{box-sizing:border-box}',
+    '.kiki-card h2{margin:0 0 4px;font-size:20px}',
+    '.kiki-card .kiki-sub{color:#5b6b80;font-size:13.5px;margin:0 0 16px}',
+    '.kiki-sec{border-top:1px solid #dbe4ef;padding:14px 0}',
+    '.kiki-sec[hidden]{display:none}',
+    '.kiki-sec h3{margin:0 0 8px;font-size:15px}',
+    '.kiki-sec p{margin:0 0 8px;color:#5b6b80;font-size:13.5px}',
+    '.kiki-card label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}',
+    '.kiki-card input[type=text],.kiki-card input[type=color],.kiki-card select{width:100%;padding:10px 12px;border:1.5px solid #dbe4ef;border-radius:10px;background:#f7f9fc;color:#14263d;font:inherit}',
+    '.kiki-card input[type=color]{height:44px;padding:4px}',
+    '.kiki-swatches{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}',
+    '.kiki-sw{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #dbe4ef;cursor:pointer;padding:0}',
+    '.kiki-sw.on{box-shadow:0 0 0 2.5px #14263d}',
+    '.kiki-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
+    '.kiki-btn{background:#14263d;color:#fff;border:0;border-radius:10px;padding:9px 15px;font:700 13.5px system-ui,sans-serif;cursor:pointer}',
+    '.kiki-btn.sec{background:#eef3f9;color:#14263d;border:1px solid #dbe4ef}',
+    '.kiki-btn.danger{background:#f9e6e3;color:#b3372f}',
+    '.kiki-user{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #dbe4ef;border-radius:10px;padding:8px 12px;margin-bottom:8px}',
+    '.kiki-user b{font-size:14px}',
+    '.kiki-user .tag{font-size:12px;color:#5b6b80}',
+    '.kiki-close{float:right;background:#eef3f9;border:0;border-radius:10px;width:34px;height:34px;font-size:18px;cursor:pointer;color:#14263d}',
+    '.kiki-logo-preview{max-height:64px;max-width:200px;border-radius:10px;border:1px solid #dbe4ef;display:block;margin:8px 0}',
+    '.kiki-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:10001;background:#14263d;color:#fff;border-radius:999px;padding:10px 18px;font:700 13.5px system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,38,61,.35);opacity:0;pointer-events:none;transition:opacity .2s}',
+    '.kiki-toast.show{opacity:1}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  /* ---------- tombol & panel ---------- */
+  var fab = document.createElement('button');
+  fab.type = 'button';
+  fab.className = 'kiki-fab';
+  fab.innerHTML = '&#9881; <span>Pengaturan</span>';
+  fab.title = 'Pengaturan';
+  document.body.appendChild(fab);
+
+  var overlay = document.createElement('div');
+  overlay.className = 'kiki-overlay';
+  overlay.hidden = true;
+  overlay.innerHTML =
+    '<div class="kiki-card" role="dialog" aria-label="Pengaturan">' +
+    '<button class="kiki-close" type="button" data-kiki-close title="Tutup">&times;</button>' +
+    '<h2>Pengaturan</h2><p class="kiki-sub">Tersimpan di perangkat ini saja (localStorage). Berlaku untuk aplikasi ini.</p>' +
+    '<div class="kiki-sec"><h3>Nama Usaha / Toko</h3>' +
+    '<label for="kiki-nama">Nama yang tampil di aplikasi</label>' +
+    '<input type="text" id="kiki-nama" autocomplete="off" placeholder="cth: Toko Sari Jaya">' +
+    '<p>Nama ini tampil di judul aplikasi. Kosongkan untuk kembali ke nama awal.</p></div>' +
+    '<div class="kiki-sec"><h3>Warna Tema</h3>' +
+    '<div class="kiki-swatches" id="kiki-swatches"></div>' +
+    '<label for="kiki-warna">Warna utama (pilih sendiri)</label>' +
+    '<input type="color" id="kiki-warna" value="#14263d">' +
+    '<div class="kiki-row" style="margin-top:10px"><button class="kiki-btn sec" type="button" id="kiki-reset-warna">Kembalikan warna awal</button></div></div>' +
+    '<div class="kiki-sec"><h3>Logo</h3>' +
+    '<img class="kiki-logo-preview" id="kiki-logo-preview" hidden alt="Logo">' +
+    '<label for="kiki-logo">Unggah logo (gambar, maks 1,5 MB)</label>' +
+    '<input type="file" id="kiki-logo" accept="image/*">' +
+    '<div class="kiki-row" style="margin-top:10px"><button class="kiki-btn sec" type="button" id="kiki-hapus-logo">Hapus logo</button></div></div>' +
+    '<div class="kiki-sec" id="kiki-sec-user"><h3>Pengguna</h3><div id="kiki-user-body"></div></div>' +
+    '<div class="kiki-sec"><div class="kiki-row"><button class="kiki-btn" type="button" data-kiki-close>Tutup</button>' +
+    '<button class="kiki-btn sec" type="button" id="kiki-reset-semua">Reset semua pengaturan</button></div></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var toastEl = document.createElement('div');
+  toastEl.className = 'kiki-toast';
+  document.body.appendChild(toastEl);
+  var toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------- pengguna ---------- */
+  function hasLoginSystem() {
+    if (document.getElementById('userChip')) return 'chip';
+    if (document.querySelector('.login-overlay, #loginOverlay, [id*=login i]')) return 'login';
+    return null;
+  }
+  function renderUsers() {
+    var body = document.getElementById('kiki-user-body');
+    var sec = document.getElementById('kiki-sec-user');
+    if (KIKI_MODE === 'web') { sec.hidden = true; sec.style.display = 'none'; return; }
+    sec.hidden = false; sec.style.display = '';
+    var sys = hasLoginSystem();
+    if (sys === 'chip') {
+      var chip = document.getElementById('userChip');
+      var cur = chip ? chip.textContent.trim() : '—';
+      var tabBtn = document.querySelector('[data-tab="pengguna"]');
+      var tabHidden = tabBtn && getComputedStyle(tabBtn).display === 'none';
+      body.innerHTML = '<p>Pengguna aktif: <b>' + esc(cur) + '</b></p>' +
+        (tabHidden
+          ? '<p>Aplikasi ini punya kelola pengguna sendiri — masuk sebagai Admin untuk menambah pengguna.</p>'
+          : '<p>Aplikasi ini punya kelola pengguna sendiri (nama, peran, kata sandi).</p>' +
+            '<button class="kiki-btn" type="button" id="kiki-buka-user">Buka Kelola Pengguna</button>');
+      var b = document.getElementById('kiki-buka-user');
+      if (b) b.addEventListener('click', function () {
+        closePanel();
+        if (tabBtn) tabBtn.click();
+      });
+      return;
+    }
+    if (sys === 'login') {
+      body.innerHTML = '<p>Aplikasi ini punya layar login sendiri — pengguna dikelola lewat login aplikasi.</p>';
+      return;
+    }
+    var label = KIKI_MODE === 'game' ? 'Profil pemain — pilih siapa yang sedang bermain.' : 'Daftar pengguna aplikasi ini. Pengguna aktif tampil di tombol Pengaturan.';
+    var html = '<p>' + label + '</p>';
+    if (!S.users.length) html += '<p>Belum ada pengguna — tambahkan di bawah.</p>';
+    S.users.forEach(function (u, i) {
+      html += '<div class="kiki-user"><span><b>' + esc(u) + '</b>' +
+        (S.aktif === u ? ' <span class="tag">• aktif</span>' : '') + '</span><span class="kiki-row">' +
+        (S.aktif !== u ? '<button class="kiki-btn sec" type="button" data-kiki-aktif="' + i + '">Pilih</button>' : '') +
+        '<button class="kiki-btn danger" type="button" data-kiki-hapus-user="' + i + '">Hapus</button></span></div>';
+    });
+    html += '<label for="kiki-user-baru">Tambah pengguna</label>' +
+      '<div class="kiki-row"><input type="text" id="kiki-user-baru" autocomplete="off" placeholder="Nama pengguna" style="flex:1;min-width:140px">' +
+      '<button class="kiki-btn" type="button" id="kiki-tambah-user">Tambah</button></div>';
+    body.innerHTML = html;
+    Array.prototype.forEach.call(body.querySelectorAll('[data-kiki-aktif]'), function (btn) {
+      btn.addEventListener('click', function () {
+        S.aktif = S.users[+btn.getAttribute('data-kiki-aktif')] || '';
+        save(); renderUsers(); updateBtnTitle(); toast('Pengguna aktif: ' + S.aktif);
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-kiki-hapus-user]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var i = +btn.getAttribute('data-kiki-hapus-user');
+        if (S.aktif === S.users[i]) S.aktif = '';
+        S.users.splice(i, 1);
+        save(); renderUsers(); updateBtnTitle(); toast('Pengguna dihapus');
+      });
+    });
+    document.getElementById('kiki-tambah-user').addEventListener('click', function () {
+      var inp = document.getElementById('kiki-user-baru');
+      var v = inp.value.trim();
+      if (!v) { toast('Isi nama pengguna dulu'); return; }
+      if (S.users.indexOf(v) < 0) S.users.push(v);
+      S.aktif = v;
+      save(); renderUsers(); updateBtnTitle(); toast('Pengguna ditambahkan: ' + v);
+    });
+  }
+
+  function updateBtnTitle() {
+    var t = 'Pengaturan';
+    if (effName()) t += ' — ' + effName();
+    if (S.aktif) t += ' (pengguna: ' + S.aktif + ')';
+    fab.title = t;
+  }
+
+  /* ---------- isi panel ---------- */
+  var PRESETS = ['#14263d', '#2f639e', '#2e7d4f', '#0f766e', '#5b4a8a', '#8c2f2f', '#96690f', '#9d2c5a'];
+  var swWrap = document.getElementById('kiki-swatches');
+  PRESETS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kiki-sw' + (S.warna === c ? ' on' : '');
+    b.style.background = c;
+    b.title = c;
+    b.addEventListener('click', function () {
+      S.warna = c;
+      save(); applyColor(); syncSwatches();
+      document.getElementById('kiki-warna').value = c;
+      toast('Warna tema diubah');
+    });
+    swWrap.appendChild(b);
+  });
+  function syncSwatches() {
+    Array.prototype.forEach.call(swWrap.children, function (b, i) {
+      b.classList.toggle('on', PRESETS[i] === S.warna);
+    });
+  }
+
+  var namaInput = document.getElementById('kiki-nama');
+  var warnaInput = document.getElementById('kiki-warna');
+  var logoInput = document.getElementById('kiki-logo');
+  var logoPrev = document.getElementById('kiki-logo-preview');
+
+  function syncPanel() {
+    namaInput.value = S.nama || '';
+    warnaInput.value = S.warna || '#14263d';
+    syncSwatches();
+    if (S.logo) { logoPrev.src = S.logo; logoPrev.hidden = false; }
+    else { logoPrev.removeAttribute('src'); logoPrev.hidden = true; }
+    renderUsers();
+  }
+
+  namaInput.addEventListener('input', function () {
+    S.nama = namaInput.value;
+    save(); applyName();
+  });
+  warnaInput.addEventListener('input', function () {
+    S.warna = warnaInput.value;
+    save(); applyColor(); syncSwatches();
+  });
+  document.getElementById('kiki-reset-warna').addEventListener('click', function () {
+    S.warna = '';
+    save(); applyColor(); syncPanel(); toast('Warna kembali ke awal');
+  });
+  logoInput.addEventListener('change', function () {
+    var f = logoInput.files && logoInput.files[0];
+    if (!f) return;
+    if (f.size > 1500000) { toast('Logo terlalu besar (maks 1,5 MB)'); logoInput.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+      S.logo = r.result;
+      save(); applyLogo(); syncPanel(); toast('Logo dipasang');
+    };
+    r.onerror = function () { toast('Gagal membaca file logo'); };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('kiki-hapus-logo').addEventListener('click', function () {
+    S.logo = '';
+    save(); applyLogo(); syncPanel(); logoInput.value = ''; toast('Logo dihapus');
+  });
+  document.getElementById('kiki-reset-semua').addEventListener('click', function () {
+    if (!window.confirm('Hapus semua pengaturan aplikasi ini dan kembali ke awal?')) return;
+    S = merge(DEF, {});
+    save(); applyAll(); syncPanel(); toast('Pengaturan direset');
+  });
+
+  /* ---------- buka/tutup ---------- */
+  function openPanel() { syncPanel(); overlay.hidden = false; }
+  function closePanel() { overlay.hidden = true; }
+  fab.addEventListener('click', openPanel);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closePanel();
+    var c = e.target.closest ? e.target.closest('[data-kiki-close]') : null;
+    if (c) closePanel();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePanel();
+  });
+
+  applyAll();
+  updateBtnTitle();
+})();
+
+</script>
 </body>
 </html>
