@@ -648,6 +648,16 @@
       .oyen-widget {
         position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 70;
         display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+        transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+      }
+      /* Sembunyi otomatis saat bagian chat #tanya-oyen terlihat / iframe difokuskan,
+         supaya widget tidak menutupi kolom ketik & tombol Kirim di HP. */
+      .oyen-widget.oyen-hidden {
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transform: translateY(12px);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .oyen-widget { transition: none; }
       }
       .oyen-bubble {
         position: relative;
@@ -1518,7 +1528,7 @@
       </div>
     </footer>
 
-    <div class="oyen-widget">
+    <div class="oyen-widget" id="oyenWidget">
       <div class="oyen-bubble" id="oyenBubble">
         <a href="#tanya-oyen">Halo! Saya Oyen, mau cari apa?</a>
         <button class="oyen-bubble-close" id="oyenBubbleClose" type="button" aria-label="Tutup sapaan Oyen">&times;</button>
@@ -4418,6 +4428,39 @@
         var bubble = document.getElementById("oyenBubble");
         if (closeBtn && bubble) {
           closeBtn.addEventListener("click", function () { bubble.style.display = "none"; });
+        }
+
+        /* Sembunyikan widget mengambang Oyen saat bagian chat #tanya-oyen
+           sedang terlihat di layar, supaya tidak menutupi kolom ketik dan
+           tombol Kirim di dalam iframe Dify (terutama di HP). Widget juga
+           disembunyikan selama iframe chat sedang difokuskan/diketik. */
+        var widget = document.getElementById("oyenWidget");
+        var chatSection = document.getElementById("tanya-oyen");
+        var chatFrame = document.querySelector(".oy-frame");
+        if (!widget) return;
+        var sectionVisible = false;
+        var frameFocused = false;
+        function syncWidget() {
+          widget.classList.toggle("oyen-hidden", sectionVisible || frameFocused);
+        }
+        if (chatSection && "IntersectionObserver" in window) {
+          var observer = new IntersectionObserver(function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+              if (entries[i].target === chatSection) sectionVisible = entries[i].isIntersecting;
+            }
+            syncWidget();
+          }, { threshold: 0.05 });
+          observer.observe(chatSection);
+        }
+        if (chatFrame) {
+          chatFrame.addEventListener("focus", function () { frameFocused = true; syncWidget(); });
+          chatFrame.addEventListener("blur", function () { frameFocused = false; syncWidget(); });
+          /* Klik ke dalam iframe lintas-asal memindahkan fokus dari jendela
+             induk ke iframe — tangkap lewat peristiwa blur jendela. */
+          window.addEventListener("blur", function () {
+            if (document.activeElement === chatFrame) { frameFocused = true; syncWidget(); }
+          });
+          window.addEventListener("focus", function () { frameFocused = false; syncWidget(); });
         }
       })();
     </script>
