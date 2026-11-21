@@ -1,0 +1,1284 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Purchase Order Management — Distributor &amp; Toko</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 24px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-draf { background: var(--surface-2); color: var(--muted); }
+  .st-terkirim { background: var(--blue-soft); color: var(--blue); }
+  .st-diterima-sebagian { background: var(--amber-soft); color: var(--amber); }
+  .st-selesai, .st-aktif { background: var(--green-soft); color: var(--green); }
+  .st-batal, .st-nonaktif { background: var(--red-soft); color: var(--red); }
+
+  .item-menu {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .item-menu .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .item-menu .nama { font-weight: 800; font-size: 15.5px; }
+  .item-menu .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .item-menu .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .item-menu .harga {
+    font-weight: 800; color: var(--blue); background: var(--blue-soft);
+    border-radius: 8px; padding: 3px 10px; font-size: 13.5px; white-space: nowrap;
+  }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progress { background: var(--surface-2); border-radius: 999px; height: 10px; overflow: hidden; margin-top: 6px; }
+  .progress > div { background: var(--blue); height: 100%; border-radius: 999px; }
+  .progress > div.penuh { background: var(--green); }
+
+  .item-baris {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 8px;
+  }
+  @media (max-width: 640px) { .item-baris { grid-template-columns: 1fr 1fr; } }
+  .item-baris .field { margin-bottom: 0; }
+  .detail-po { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+  @media print {
+    .tabbar, .hero .tanggal, footer .btn, .aksi, .btn { display: none !important; }
+    .panel { display: none !important; }
+    .panel.active { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Purchase Order Management</h1>
+    <p>Buat purchase order (PO) ke supplier, kirim PO, lacak statusnya, catat penerimaan barang, dan lihat laporan pembelian — untuk perusahaan distributor dan toko yang rutin memesan barang.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="po">Purchase Order <span class="badge" id="badgePO">0</span></button>
+    <button class="tab-btn" data-tab="supplier">Supplier</button>
+    <button class="tab-btn" data-tab="status">Status</button>
+    <button class="tab-btn" data-tab="penerimaan">Penerimaan</button>
+    <button class="tab-btn" data-tab="riwayat">Riwayat</button>
+    <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <!-- ============ PURCHASE ORDER ============ -->
+  <section class="panel active" id="panel-po">
+    <div class="page-head">
+      <h2>Purchase Order</h2>
+      <p>Buat PO baru, kirim ke supplier, dan pantau semua PO yang sedang berjalan.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total PO</div><div class="angka" id="statTotalPO">0</div></div>
+      <div class="stat"><div class="label">Nilai PO Aktif</div><div class="angka" id="statNilaiAktif">Rp0</div></div>
+      <div class="stat"><div class="label">Menunggu Dikirim (Draf)</div><div class="angka" id="statDraf">0</div></div>
+      <div class="stat accent"><div class="label">PO Selesai</div><div class="angka" id="statSelesai">0</div></div>
+    </div>
+    <div class="card">
+      <h3 id="judulFormPO">Buat Purchase Order Baru</h3>
+      <p class="sub">Nomor PO dibuat otomatis. PO baru berstatus Draf — kirim setelah semua barang dan harga sudah benar. PO yang masih Draf bisa diubah; PO yang sudah Terkirim hanya bisa diterima barangnya atau dibatalkan.</p>
+      <form id="formPO">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fPOSupplier">Supplier *</label>
+            <select id="fPOSupplier" required></select>
+          </div>
+          <div class="field">
+            <label for="fPOTanggal">Tanggal PO *</label>
+            <input type="date" id="fPOTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fPOJatuhTempo">Perkiraan barang datang</label>
+            <input type="date" id="fPOJatuhTempo">
+          </div>
+          <div class="field">
+            <label for="fPOCatatan">Catatan untuk supplier</label>
+            <input type="text" id="fPOCatatan" placeholder="Contoh: Mohon dikirim sebelum tanggal 25, kemasan rapi.">
+          </div>
+        </div>
+        <h3 style="margin: 6px 0 10px">Barang yang dipesan</h3>
+        <div id="daftarItemPO"></div>
+        <div class="row" style="margin-bottom:12px">
+          <button type="button" class="btn ghost kecil" id="btnTambahItem">+ Tambah Barang</button>
+        </div>
+        <div class="catatan" id="infoTotalPO">Total PO: <b>Rp0</b> (jumlah × harga satuan, dijumlahkan per barang).</div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanPO">Simpan PO (Draf)</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahPO" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Purchase Order</h3>
+      <p class="sub">PO terbaru tampil paling atas. Tekan "Detail" untuk melihat barang dan riwayat penerimaannya.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterSupplierPO">Filter supplier</label>
+          <select id="filterSupplierPO"><option value="">Semua supplier</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterStatusPO">Filter status</label>
+          <select id="filterStatusPO">
+            <option value="">Semua status</option>
+            <option value="Draf">Draf</option>
+            <option value="Terkirim">Terkirim</option>
+            <option value="Diterima Sebagian">Diterima Sebagian</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Batal">Batal</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarPO"></div>
+    </div>
+  </section>
+
+  <!-- ============ SUPPLIER ============ -->
+  <section class="panel" id="panel-supplier">
+    <div class="page-head">
+      <h2>Supplier</h2>
+      <p>Data supplier tempat perusahaan memesan barang: kontak, alamat, dan kategori barangnya.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Supplier</div><div class="angka" id="statSupplier">0</div></div>
+      <div class="stat"><div class="label">Supplier Aktif</div><div class="angka" id="statSupplierAktif">0</div></div>
+      <div class="stat"><div class="label">PO dari Supplier Teratas</div><div class="angka" id="statSupplierTop">—</div></div>
+      <div class="stat accent"><div class="label">Nilai Pembelian Terbesar</div><div class="angka" id="statSupplierNilai">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3 id="judulFormSupplier">Tambah Supplier</h3>
+      <p class="sub">Satu supplier: nama perusahaan/toko, nama kontak, nomor HP, dan kategori barang yang dipasok.</p>
+      <form id="formSupplier">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fSupNama">Nama supplier *</label>
+            <input type="text" id="fSupNama" placeholder="Contoh: PT Sumber Pangan Sejahtera" required>
+          </div>
+          <div class="field">
+            <label for="fSupKategori">Kategori barang *</label>
+            <input type="text" id="fSupKategori" placeholder="Contoh: Sembako" required>
+          </div>
+          <div class="field">
+            <label for="fSupKontak">Nama kontak (PIC) *</label>
+            <input type="text" id="fSupKontak" placeholder="Contoh: Bpk. Hendra" required>
+          </div>
+          <div class="field">
+            <label for="fSupHp">No. HP / WhatsApp *</label>
+            <input type="tel" id="fSupHp" placeholder="Contoh: 081234567890" required>
+          </div>
+          <div class="field">
+            <label for="fSupEmail">Email</label>
+            <input type="email" id="fSupEmail" placeholder="Contoh: sales@supplier.co.id">
+          </div>
+          <div class="field">
+            <label for="fSupStatus">Status</label>
+            <select id="fSupStatus">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fSupAlamat">Alamat supplier</label>
+          <textarea id="fSupAlamat" rows="2" placeholder="Contoh: Jl. Raya Bekasi KM 21, Cikarang, Bekasi"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanSupplier">Simpan Supplier</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahSupplier" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Supplier</h3>
+      <p class="sub">Menghapus supplier tidak menghapus PO yang pernah dibuat ke supplier tersebut — PO lama tetap tampil dengan nama suppliernya.</p>
+      <div id="daftarSupplier"></div>
+    </div>
+  </section>
+
+  <!-- ============ STATUS ============ -->
+  <section class="panel" id="panel-status">
+    <div class="page-head">
+      <h2>Lacak Status PO</h2>
+      <p>Lihat posisi setiap PO: masih Draf, sudah Terkirim, sebagian diterima, Selesai, atau Batal — lengkap dengan progres penerimaan barangnya.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Draf</div><div class="angka" id="stJmlDraf">0</div></div>
+      <div class="stat"><div class="label">Terkirim</div><div class="angka" id="stJmlTerkirim">0</div></div>
+      <div class="stat"><div class="label">Diterima Sebagian</div><div class="angka" id="stJmlSebagian">0</div></div>
+      <div class="stat accent"><div class="label">Selesai</div><div class="angka" id="stJmlSelesai">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Alur status PO</h3>
+      <p class="sub">Draf → Terkirim → Diterima Sebagian → Selesai. Status berubah otomatis saat barang dicatat di tab Penerimaan: bila semua barang sudah diterima, PO menjadi Selesai. PO Draf atau Terkirim bisa dibatalkan.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterStatusLacak">Tampilkan status</label>
+          <select id="filterStatusLacak">
+            <option value="">Semua status</option>
+            <option value="Draf">Draf</option>
+            <option value="Terkirim">Terkirim</option>
+            <option value="Diterima Sebagian">Diterima Sebagian</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Batal">Batal</option>
+          </select>
+        </div>
+        <div class="grow">
+          <label for="filterSupplierLacak">Filter supplier</label>
+          <select id="filterSupplierLacak"><option value="">Semua supplier</option></select>
+        </div>
+      </div>
+      <div id="daftarStatus"></div>
+    </div>
+  </section>
+
+  <!-- ============ PENERIMAAN ============ -->
+  <section class="panel" id="panel-penerimaan">
+    <div class="page-head">
+      <h2>Penerimaan Barang</h2>
+      <p>Catat barang yang datang dari supplier berdasarkan PO yang sudah Terkirim. Bisa diterima sebagian dulu, sisanya menyusul.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Penerimaan</div><div class="angka" id="statTerimaJml">0</div></div>
+      <div class="stat"><div class="label">Nilai Barang Diterima</div><div class="angka" id="statTerimaNilai">Rp0</div></div>
+      <div class="stat"><div class="label">PO Menunggu Barang</div><div class="angka" id="statTerimaMenunggu">0</div></div>
+      <div class="stat accent"><div class="label">PO Sudah Lengkap</div><div class="angka" id="statTerimaLengkap">0</div></div>
+    </div>
+    <div class="card">
+      <h3 id="judulFormTerima">Catat Penerimaan Barang</h3>
+      <p class="sub">Pilih PO yang sudah Terkirim atau Diterima Sebagian, lalu isi jumlah barang yang benar-benar datang. Jumlah yang diisi tidak boleh melebihi sisa yang belum diterima.</p>
+      <form id="formTerima">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fTerimaPO">Purchase Order *</label>
+            <select id="fTerimaPO" required></select>
+          </div>
+          <div class="field">
+            <label for="fTerimaTanggal">Tanggal penerimaan *</label>
+            <input type="date" id="fTerimaTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fTerimaOleh">Diterima oleh *</label>
+            <input type="text" id="fTerimaOleh" placeholder="Contoh: Gudang — Sari" required>
+          </div>
+          <div class="field">
+            <label for="fTerimaSuratJalan">No. surat jalan supplier (opsional)</label>
+            <input type="text" id="fTerimaSuratJalan" placeholder="Contoh: SJ-2026-118">
+          </div>
+        </div>
+        <h3 style="margin: 6px 0 10px">Barang yang datang</h3>
+        <div id="daftarItemTerima"></div>
+        <div class="field">
+          <label for="fTerimaCatatan">Catatan penerimaan (opsional)</label>
+          <textarea id="fTerimaCatatan" rows="2" placeholder="Contoh: 2 karton kemasan rusak, sudah difoto dan dilaporkan ke supplier."></textarea>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn hijau" id="btnSimpanTerima">Simpan Penerimaan</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Riwayat Penerimaan</h3>
+      <p class="sub">Penerimaan terbaru tampil paling atas. Menghapus penerimaan akan menghitung ulang progres dan status PO-nya.</p>
+      <div id="daftarTerima"></div>
+    </div>
+  </section>
+
+  <!-- ============ RIWAYAT ============ -->
+  <section class="panel" id="panel-riwayat">
+    <div class="page-head">
+      <h2>Riwayat PO</h2>
+      <p>Semua purchase order yang pernah dibuat, dari yang terbaru sampai yang terlama — lengkap dengan status akhirnya.</p>
+    </div>
+    <div class="card">
+      <h3>Semua Purchase Order</h3>
+      <p class="sub">Cari berdasarkan nomor PO atau nama supplier, atau saring berdasarkan status dan supplier.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="cariRiwayat">Cari nomor PO / supplier</label>
+          <input type="text" id="cariRiwayat" placeholder="Contoh: PO-2026-003 atau Sumber Pangan">
+        </div>
+        <div class="grow">
+          <label for="filterSupplierRiwayat">Filter supplier</label>
+          <select id="filterSupplierRiwayat"><option value="">Semua supplier</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterStatusRiwayat">Filter status</label>
+          <select id="filterStatusRiwayat">
+            <option value="">Semua status</option>
+            <option value="Draf">Draf</option>
+            <option value="Terkirim">Terkirim</option>
+            <option value="Diterima Sebagian">Diterima Sebagian</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Batal">Batal</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarRiwayat"></div>
+    </div>
+  </section>
+
+  <!-- ============ LAPORAN ============ -->
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Pembelian</h2>
+      <p>Rekap pembelian per bulan: total nilai PO, nilai barang yang sudah diterima, dan pembelian per supplier.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Nilai PO Bulan Ini</div><div class="angka" id="lapNilaiPO">Rp0</div></div>
+      <div class="stat"><div class="label">Nilai Barang Diterima</div><div class="angka" id="lapNilaiTerima">Rp0</div></div>
+      <div class="stat"><div class="label">Jumlah PO</div><div class="angka" id="lapJmlPO">0</div></div>
+      <div class="stat accent"><div class="label">PO Selesai</div><div class="angka" id="lapJmlSelesai">0</div></div>
+    </div>
+    <div class="card">
+      <h3>Laporan Bulanan</h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulanLaporan">Bulan laporan</label>
+          <select id="filterBulanLaporan"></select>
+        </div>
+        <button type="button" class="btn kecil biru" id="btnCetakLaporan">Cetak / Simpan PDF</button>
+      </div>
+      <div class="tabel-wrap"><div id="tabelLaporanSupplier"></div></div>
+    </div>
+    <div class="card">
+      <h3>PO per Status</h3>
+      <p class="sub">Jumlah dan nilai PO pada bulan laporan, dikelompokkan berdasarkan status.</p>
+      <div class="tabel-wrap"><div id="tabelLaporanStatus"></div></div>
+    </div>
+    <div class="card">
+      <h3>Barang Paling Banyak Dibeli</h3>
+      <p class="sub">Lima barang dengan nilai pembelian terbesar pada bulan laporan.</p>
+      <div class="tabel-wrap"><div id="tabelLaporanBarang"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ PANDUAN ============ -->
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan Penggunaan</h2>
+      <p>Cara memakai Purchase Order Management, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Tambahkan <b>Supplier</b> di tab <b>Supplier</b>: nama perusahaan, kontak, nomor HP, dan kategori barangnya.</li>
+        <li>Di tab <b>Purchase Order</b>, buat PO baru: pilih supplier, isi tanggal, lalu tambahkan barang yang dipesan beserta jumlah dan harga satuannya — total dihitung otomatis. PO baru berstatus <b>Draf</b>.</li>
+        <li>Periksa kembali PO Draf. Bila sudah benar, tekan <b>Kirim ke Supplier</b> — status berubah menjadi <b>Terkirim</b>.</li>
+        <li>Saat barang datang, buka tab <b>Penerimaan</b>, pilih PO-nya, dan isi jumlah barang yang benar-benar diterima. Barang boleh diterima sebagian dulu; status PO otomatis menjadi <b>Diterima Sebagian</b>, dan menjadi <b>Selesai</b> bila semua barang sudah diterima.</li>
+        <li>Lacak posisi semua PO di tab <b>Status</b>, lengkap dengan progres penerimaan barangnya.</li>
+        <li>Lihat semua PO yang pernah dibuat di tab <b>Riwayat</b>, dan rekap pembelian per bulan di tab <b>Laporan</b> — laporan bisa dicetak atau disimpan sebagai PDF.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
+    </div>
+    <div class="card">
+      <h3>Garansi</h3>
+      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+    </div>
+    <div class="card">
+      <h3>Request khusus (penyesuaian)</h3>
+      <p style="font-size:14px">Butuh penyesuaian di luar paket standar? Biaya tambahan per permintaan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> per permintaan. Besar biaya diputuskan per permintaan dan disepakati dulu lewat WhatsApp sebelum pengerjaan; konsultasi gratis.</p>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data supplier, purchase order, dan penerimaan barang <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP.</p>
+      <p style="font-size:14px; margin-top:8px">Tombol <b>"Kirim ke Supplier"</b> dalam demo ini <b>hanya mengubah status PO dari Draf menjadi Terkirim</b> di dalam aplikasi — <b>bukan mengirim email atau surat sungguhan</b> ke supplier. Untuk benar-benar menyampaikan PO ke supplier, salin atau cetak rincian PO dari aplikasi ini lalu kirimkan sendiri lewat WhatsApp atau email.</p>
+      <p style="font-size:14px; margin-top:8px">Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) serta penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <div style="margin-top:14px">
+        <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Purchase Order Management v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat. Tombol "Kirim ke Supplier" hanya mengubah status PO — bukan pengiriman email sungguhan. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Purchase%20Order%20Management." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+var KEY = 'po-management.v1';
+var BULAN_INDO = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var STATUS_PO = ['Draf','Terkirim','Diterima Sebagian','Selesai','Batal'];
+
+function uid() { return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function fmtRp(n) { return 'Rp' + Number(n || 0).toLocaleString('id-ID'); }
+function bulanDariTanggal(tgl) { return String(tgl || '').slice(0, 7); }
+function labelBulan(b) {
+  if (!b) return '-';
+  var p = b.split('-');
+  return (BULAN_INDO[Number(p[1]) - 1] || '') + ' ' + p[0];
+}
+function bulanSekarang() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function tglIndo(tgl) {
+  if (!tgl) return '-';
+  var p = tgl.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function hariIniIndo() {
+  var d = new Date();
+  var namaHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][d.getDay()];
+  return namaHari + ', ' + d.getDate() + ' ' + BULAN_INDO[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function dataContoh() {
+  return {
+    nomorUrut: 7,
+    supplier: [
+      { id: 'sup1', nama: 'PT Sumber Pangan Sejahtera', kategori: 'Sembako', kontak: 'Bpk. Hendra Gunawan', hp: '081234567801', email: 'sales@sumberpangan.co.id', alamat: 'Jl. Raya Bekasi KM 21, Cikarang, Bekasi', status: 'Aktif' },
+      { id: 'sup2', nama: 'CV Berkah Plastik Jaya', kategori: 'Kemasan Plastik', kontak: 'Ibu Ratna Dewi', hp: '081234567802', email: 'order@berkahplastik.co.id', alamat: 'Jl. Industri Raya No. 45, Tangerang', status: 'Aktif' },
+      { id: 'sup3', nama: 'PT Aneka Minuman Nusantara', kategori: 'Minuman', kontak: 'Bpk. Andi Wijaya', hp: '081234567803', email: 'sales@anekaminuman.co.id', alamat: 'Jl. Merdeka No. 120, Bandung', status: 'Aktif' },
+      { id: 'sup4', nama: 'Toko Grosir Makmur Abadi', kategori: 'Kebutuhan Rumah Tangga', kontak: 'Ibu Siti Aminah', hp: '081234567804', email: '', alamat: 'Jl. Pasar Minggu No. 88, Jakarta Selatan', status: 'Aktif' },
+      { id: 'sup5', nama: 'PT Sinar Elektronik Distribusi', kategori: 'Elektronik', kontak: 'Bpk. Budi Prasetyo', hp: '081234567805', email: 'b2b@sinarelektronik.co.id', alamat: 'Jl. Mangga Dua Raya No. 30, Jakarta Utara', status: 'Nonaktif' }
+    ],
+    po: [
+      { id: 'po1', nomor: 'PO-2026-001', supplierId: 'sup1', tanggal: '2026-11-02', jatuhTempo: '2026-11-09', catatan: 'Mohon dikirim sebelum tanggal 9, kemasan rapi.', status: 'Selesai',
+        items: [
+          { nama: 'Minyak Goreng 5 Liter', jumlah: 40, satuan: 'karton', hargaSatuan: 95000 },
+          { nama: 'Gula Pasir 50 Kg', jumlah: 10, satuan: 'karung', hargaSatuan: 650000 },
+          { nama: 'Beras Premium 25 Kg', jumlah: 20, satuan: 'karung', hargaSatuan: 325000 }
+        ] },
+      { id: 'po2', nomor: 'PO-2026-002', supplierId: 'sup3', tanggal: '2026-11-04', jatuhTempo: '2026-11-11', catatan: '', status: 'Diterima Sebagian',
+        items: [
+          { nama: 'Air Mineral 600 ml (dus isi 24)', jumlah: 100, satuan: 'dus', hargaSatuan: 42000 },
+          { nama: 'Teh Botol 450 ml (dus isi 24)', jumlah: 60, satuan: 'dus', hargaSatuan: 68000 }
+        ] },
+      { id: 'po3', nomor: 'PO-2026-003', supplierId: 'sup2', tanggal: '2026-11-06', jatuhTempo: '2026-11-13', catatan: 'Plastik ukuran 40x60, tebal 0,08 mm.', status: 'Terkirim',
+        items: [
+          { nama: 'Kantong Plastik HD 40x60', jumlah: 50, satuan: 'pak', hargaSatuan: 38000 },
+          { nama: 'Plastik Kresek Putih 28x50', jumlah: 80, satuan: 'pak', hargaSatuan: 22000 }
+        ] },
+      { id: 'po4', nomor: 'PO-2026-004', supplierId: 'sup1', tanggal: '2026-11-10', jatuhTempo: '2026-11-17', catatan: '', status: 'Draf',
+        items: [
+          { nama: 'Mie Instan (dus isi 40)', jumlah: 50, satuan: 'dus', hargaSatuan: 110000 },
+          { nama: 'Kopi Sachet (dus isi 120)', jumlah: 20, satuan: 'dus', hargaSatuan: 145000 }
+        ] },
+      { id: 'po5', nomor: 'PO-2026-005', supplierId: 'sup4', tanggal: '2026-11-12', jatuhTempo: '2026-11-19', catatan: 'Sabun varian lemon saja.', status: 'Draf',
+        items: [
+          { nama: 'Sabun Cuci Cair 5 Liter', jumlah: 24, satuan: 'jeriken', hargaSatuan: 78000 },
+          { nama: 'Deterjen Bubuk 800 gr', jumlah: 60, satuan: 'pak', hargaSatuan: 16500 }
+        ] },
+      { id: 'po6', nomor: 'PO-2026-006', supplierId: 'sup3', tanggal: '2026-11-08', jatuhTempo: '2026-11-15', catatan: 'Harga naik dari penawaran terakhir, sudah disetujui.', status: 'Batal',
+        items: [
+          { nama: 'Susu UHT 1 Liter (karton isi 12)', jumlah: 30, satuan: 'karton', hargaSatuan: 185000 }
+        ] }
+    ],
+    penerimaan: [
+      { id: 'pn1', poId: 'po1', tanggal: '2026-11-07', diterimaOleh: 'Gudang — Sari', suratJalan: 'SJ-2026-101', catatan: 'Semua barang lengkap dan kondisi baik.',
+        items: [ { nama: 'Minyak Goreng 5 Liter', jumlah: 40 }, { nama: 'Gula Pasir 50 Kg', jumlah: 10 }, { nama: 'Beras Premium 25 Kg', jumlah: 20 } ] },
+      { id: 'pn2', poId: 'po2', tanggal: '2026-11-09', diterimaOleh: 'Gudang — Sari', suratJalan: 'SJ-2026-118', catatan: 'Teh botol belum datang, menyusul minggu depan.',
+        items: [ { nama: 'Air Mineral 600 ml (dus isi 24)', jumlah: 100 }, { nama: 'Teh Botol 450 ml (dus isi 24)', jumlah: 0 } ] },
+      { id: 'pn3', poId: 'po2', tanggal: '2026-11-14', diterimaOleh: 'Gudang — Rudi', suratJalan: 'SJ-2026-131', catatan: 'Teh botol datang sebagian.',
+        items: [ { nama: 'Air Mineral 600 ml (dus isi 24)', jumlah: 0 }, { nama: 'Teh Botol 450 ml (dus isi 24)', jumlah: 25 } ] }
+    ]
+  };
+}
+
+var db = null;
+function load() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { db = JSON.parse(raw); return; }
+  } catch (e) { db = null; }
+  db = dataContoh();
+  save();
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+var toastTimer = null;
+function toast(pesan) {
+  var t = document.getElementById('toast');
+  t.textContent = pesan;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+}
+
+/* ---------- HITUNG ---------- */
+function namaSupplier(id) {
+  var s = db.supplier.find(function (x) { return x.id === id; });
+  return s ? s.nama : '(supplier dihapus)';
+}
+function cariPO(id) { return db.po.find(function (x) { return x.id === id; }); }
+function totalPO(po) {
+  return po.items.reduce(function (a, it) { return a + it.jumlah * it.hargaSatuan; }, 0);
+}
+function diterimaPerItem(poId, namaItem) {
+  return db.penerimaan
+    .filter(function (pn) { return pn.poId === poId; })
+    .reduce(function (a, pn) {
+      var it = pn.items.find(function (x) { return x.nama === namaItem; });
+      return a + (it ? it.jumlah : 0);
+    }, 0);
+}
+function nilaiDiterimaPO(po) {
+  return po.items.reduce(function (a, it) {
+    return a + Math.min(diterimaPerItem(po.id, it.nama), it.jumlah) * it.hargaSatuan;
+  }, 0);
+}
+function persenDiterima(po) {
+  var totalQty = po.items.reduce(function (a, it) { return a + it.jumlah; }, 0);
+  if (!totalQty) return 0;
+  var terimaQty = po.items.reduce(function (a, it) { return a + Math.min(diterimaPerItem(po.id, it.nama), it.jumlah); }, 0);
+  return Math.round(terimaQty / totalQty * 100);
+}
+function hitungUlangStatus(po) {
+  if (po.status === 'Draf' || po.status === 'Batal') return;
+  var p = persenDiterima(po);
+  po.status = p >= 100 ? 'Selesai' : (p > 0 ? 'Diterima Sebagian' : 'Terkirim');
+}
+function kelasStatus(status) {
+  return 'st-' + String(status).toLowerCase().replace(/[^a-z]/g, '');
+}
+function semuaBulan() {
+  var set = {};
+  db.po.forEach(function (p) { set[bulanDariTanggal(p.tanggal)] = true; });
+  db.penerimaan.forEach(function (pn) { set[bulanDariTanggal(pn.tanggal)] = true; });
+  var arr = Object.keys(set).sort();
+  if (arr.indexOf(bulanSekarang()) === -1) arr.push(bulanSekarang());
+  return arr.sort();
+}
+function isiSelectBulan(el, nilai) {
+  var bulan = semuaBulan();
+  el.innerHTML = bulan.map(function (b) {
+    return '<option value="' + b + '"' + (b === nilai ? ' selected' : '') + '>' + labelBulan(b) + '</option>';
+  }).join('');
+}
+function isiSelectSupplier(el, nilai, denganSemua) {
+  var opt = denganSemua ? '<option value="">Semua supplier</option>' : '';
+  opt += db.supplier.map(function (s) {
+    return '<option value="' + s.id + '"' + (s.id === nilai ? ' selected' : '') + '>' + esc(s.nama) + ' — ' + esc(s.kategori) + '</option>';
+  }).join('');
+  el.innerHTML = opt;
+}
+function nomorPOBaru() {
+  var n = db.nomorUrut || (db.po.length + 1);
+  db.nomorUrut = n + 1;
+  return 'PO-' + new Date().getFullYear() + '-' + String(n).padStart(3, '0');
+}
+
+/* ---------- TAB ---------- */
+document.querySelectorAll('.tab-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    renderAll();
+  });
+});
+function pindahTab(nama) {
+  var btn = document.querySelector('.tab-btn[data-tab="' + nama + '"]');
+  if (btn) btn.click();
+}
+
+/* ---------- RENDER: PURCHASE ORDER ---------- */
+var editPOId = null;
+var itemPOForm = [];
+
+function renderItemPOForm() {
+  var wadah = document.getElementById('daftarItemPO');
+  wadah.innerHTML = itemPOForm.map(function (it, i) {
+    return '<div class="item-baris">' +
+      '<div class="field"><label>Nama barang *</label><input type="text" data-item-nama="' + i + '" value="' + esc(it.nama) + '" placeholder="Contoh: Minyak Goreng 5 Liter" required></div>' +
+      '<div class="field"><label>Jumlah *</label><input type="number" data-item-jumlah="' + i + '" value="' + it.jumlah + '" min="1" step="1" required></div>' +
+      '<div class="field"><label>Satuan</label><input type="text" data-item-satuan="' + i + '" value="' + esc(it.satuan) + '" placeholder="karton / dus"></div>' +
+      '<div class="field"><label>Harga satuan (Rp) *</label><input type="number" data-item-harga="' + i + '" value="' + it.hargaSatuan + '" min="0" step="500" required></div>' +
+      '<button type="button" class="btn merah kecil" data-hapus-item="' + i + '">Hapus</button></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-item-nama]').forEach(function (el) {
+    el.addEventListener('input', function () { itemPOForm[Number(el.dataset.itemNama)].nama = el.value; });
+  });
+  wadah.querySelectorAll('[data-item-jumlah]').forEach(function (el) {
+    el.addEventListener('input', function () { itemPOForm[Number(el.dataset.itemJumlah)].jumlah = Number(el.value) || 0; hitungTotalPOForm(); });
+  });
+  wadah.querySelectorAll('[data-item-satuan]').forEach(function (el) {
+    el.addEventListener('input', function () { itemPOForm[Number(el.dataset.itemSatuan)].satuan = el.value; });
+  });
+  wadah.querySelectorAll('[data-item-harga]').forEach(function (el) {
+    el.addEventListener('input', function () { itemPOForm[Number(el.dataset.itemHarga)].hargaSatuan = Number(el.value) || 0; hitungTotalPOForm(); });
+  });
+  wadah.querySelectorAll('[data-hapus-item]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (itemPOForm.length <= 1) { toast('PO harus berisi minimal 1 barang.'); return; }
+      itemPOForm.splice(Number(b.dataset.hapusItem), 1);
+      renderItemPOForm(); hitungTotalPOForm();
+    });
+  });
+  hitungTotalPOForm();
+}
+function hitungTotalPOForm() {
+  var total = itemPOForm.reduce(function (a, it) { return a + (Number(it.jumlah) || 0) * (Number(it.hargaSatuan) || 0); }, 0);
+  document.getElementById('infoTotalPO').innerHTML = 'Total PO: <b>' + fmtRp(total) + '</b> (jumlah × harga satuan, dijumlahkan per barang).';
+}
+document.getElementById('btnTambahItem').addEventListener('click', function () {
+  itemPOForm.push({ nama: '', jumlah: 1, satuan: '', hargaSatuan: 0 });
+  renderItemPOForm();
+});
+
+function kartuPO(po, denganAksi) {
+  var persen = persenDiterima(po);
+  var html = '<div class="item-menu"><div class="atas"><div style="flex:1 1 260px">' +
+    '<div class="nama">' + esc(po.nomor) + ' <span class="lencana ' + kelasStatus(po.status) + '">' + esc(po.status) + '</span></div>' +
+    '<div class="detail">' + esc(namaSupplier(po.supplierId)) + ' · ' + tglIndo(po.tanggal) +
+    (po.jatuhTempo ? ' · Perkiraan datang ' + tglIndo(po.jatuhTempo) : '') + '</div>' +
+    '<div class="detail">' + po.items.length + ' jenis barang · ' +
+    po.items.map(function (it) { return esc(it.nama) + ' (' + it.jumlah + ' ' + esc(it.satuan || 'pcs') + ')'; }).join(', ') + '</div>' +
+    (po.status !== 'Draf' && po.status !== 'Batal' ?
+      '<div class="detail" style="margin-top:6px">Penerimaan: ' + persen + '% · ' + fmtRp(nilaiDiterimaPO(po)) + ' dari ' + fmtRp(totalPO(po)) + '</div>' +
+      '<div class="progress"><div class="' + (persen >= 100 ? 'penuh' : '') + '" style="width:' + persen + '%"></div></div>' : '') +
+    (po.catatan ? '<div class="detail">Catatan: ' + esc(po.catatan) + '</div>' : '') +
+    '<div class="detail-po" style="display:none">' +
+      '<table class="tabel-harga"><tr><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Diterima</th><th>Subtotal</th></tr>' +
+      po.items.map(function (it) {
+        return '<tr><td>' + esc(it.nama) + '</td><td>' + it.jumlah + ' ' + esc(it.satuan || 'pcs') + '</td><td>' + fmtRp(it.hargaSatuan) + '</td><td>' + Math.min(diterimaPerItem(po.id, it.nama), it.jumlah) + ' ' + esc(it.satuan || 'pcs') + '</td><td>' + fmtRp(it.jumlah * it.hargaSatuan) + '</td></tr>';
+      }).join('') + '</table>' +
+      (db.penerimaan.filter(function (pn) { return pn.poId === po.id; }).map(function (pn) {
+        return '<div class="detail">' + tglIndo(pn.tanggal) + ' — diterima oleh ' + esc(pn.diterimaOleh) +
+          (pn.suratJalan ? ' · Surat jalan ' + esc(pn.suratJalan) : '') + ': ' +
+          pn.items.filter(function (x) { return x.jumlah > 0; }).map(function (x) { return esc(x.nama) + ' ' + x.jumlah; }).join(', ') +
+          (pn.catatan ? ' · ' + esc(pn.catatan) : '') + '</div>';
+      }).join('') || '<div class="detail">Belum ada penerimaan barang untuk PO ini.</div>') +
+    '</div>' +
+    '</div><span class="harga">' + fmtRp(totalPO(po)) + '</span></div>';
+  if (denganAksi) {
+    html += '<div class="aksi">' +
+      '<button class="btn kecil ghost" data-detail-po="' + po.id + '">Detail</button>';
+    if (po.status === 'Draf') {
+      html += '<button class="btn kecil biru" data-kirim-po="' + po.id + '">Kirim ke Supplier</button>' +
+        '<button class="btn kecil biru" data-ubah-po="' + po.id + '">Ubah</button>';
+    }
+    if (po.status === 'Terkirim' || po.status === 'Diterima Sebagian') {
+      html += '<button class="btn kecil hijau" data-terima-po="' + po.id + '">Terima Barang</button>';
+    }
+    if (po.status === 'Draf' || po.status === 'Terkirim') {
+      html += '<button class="btn kecil merah" data-batal-po="' + po.id + '">Batalkan PO</button>';
+    }
+    html += '<button class="btn kecil merah" data-hapus-po="' + po.id + '">Hapus</button></div>';
+  }
+  html += '</div>';
+  return html;
+}
+function ikatAksiPO(wadah) {
+  wadah.querySelectorAll('[data-detail-po]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = b.closest('.item-menu').querySelector('.detail-po');
+      if (!d) return;
+      var terbuka = d.style.display !== 'none';
+      d.style.display = terbuka ? 'none' : '';
+      b.textContent = terbuka ? 'Detail' : 'Tutup Detail';
+    });
+  });
+  wadah.querySelectorAll('[data-kirim-po]').forEach(function (b) {
+    b.addEventListener('click', function () { kirimPO(b.dataset.kirimPo); });
+  });
+  wadah.querySelectorAll('[data-ubah-po]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahPO(b.dataset.ubahPo); });
+  });
+  wadah.querySelectorAll('[data-terima-po]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.getElementById('fTerimaPO').value = b.dataset.terimaPo;
+      renderItemTerimaForm();
+      pindahTab('penerimaan');
+      document.getElementById('formTerima').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+  wadah.querySelectorAll('[data-batal-po]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var po = cariPO(b.dataset.batalPo);
+      if (!po) return;
+      if (!confirm('Batalkan ' + po.nomor + ' ke ' + namaSupplier(po.supplierId) + '? PO yang dibatalkan tidak dihitung dalam laporan.')) return;
+      po.status = 'Batal';
+      save(); renderAll(); toast(po.nomor + ' dibatalkan.');
+    });
+  });
+  wadah.querySelectorAll('[data-hapus-po]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var po = cariPO(b.dataset.hapusPo);
+      if (!po) return;
+      if (!confirm('Hapus ' + po.nomor + ' beserta riwayat penerimaannya? Tindakan ini tidak bisa dibatalkan.')) return;
+      db.po = db.po.filter(function (x) { return x.id !== po.id; });
+      db.penerimaan = db.penerimaan.filter(function (x) { return x.poId !== po.id; });
+      save(); renderAll(); toast(po.nomor + ' dihapus.');
+    });
+  });
+}
+function kirimPO(id) {
+  var po = cariPO(id);
+  if (!po || po.status !== 'Draf') return;
+  po.status = 'Terkirim';
+  save(); renderAll();
+  toast(po.nomor + ' ditandai Terkirim. (Demo: status berubah di aplikasi; PO belum benar-benar terkirim ke supplier — kirimkan salinannya lewat WhatsApp/email.)');
+}
+
+function renderPO() {
+  var aktif = db.po.filter(function (p) { return p.status !== 'Batal'; });
+  document.getElementById('badgePO').textContent = db.po.filter(function (p) { return p.status === 'Draf' || p.status === 'Terkirim' || p.status === 'Diterima Sebagian'; }).length;
+  document.getElementById('statTotalPO').textContent = db.po.length;
+  document.getElementById('statNilaiAktif').textContent = fmtRp(aktif.reduce(function (a, p) { return a + totalPO(p); }, 0));
+  document.getElementById('statDraf').textContent = db.po.filter(function (p) { return p.status === 'Draf'; }).length;
+  document.getElementById('statSelesai').textContent = db.po.filter(function (p) { return p.status === 'Selesai'; }).length;
+
+  isiSelectSupplier(document.getElementById('fPOSupplier'), null, false);
+  isiSelectSupplier(document.getElementById('filterSupplierPO'), document.getElementById('filterSupplierPO').value, true);
+  var fS = document.getElementById('filterSupplierPO').value;
+  var fT = document.getElementById('filterStatusPO').value;
+  var list = db.po.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.nomor.localeCompare(a.nomor); })
+    .filter(function (p) { return (!fS || p.supplierId === fS) && (!fT || p.status === fT); });
+  var wadah = document.getElementById('daftarPO');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada PO yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (po) { return kartuPO(po, true); }).join('');
+  ikatAksiPO(wadah);
+}
+
+function mulaiUbahPO(id) {
+  var po = cariPO(id);
+  if (!po || po.status !== 'Draf') { toast('Hanya PO berstatus Draf yang bisa diubah.'); return; }
+  editPOId = id;
+  itemPOForm = po.items.map(function (it) { return { nama: it.nama, jumlah: it.jumlah, satuan: it.satuan || '', hargaSatuan: it.hargaSatuan }; });
+  document.getElementById('fPOSupplier').value = po.supplierId;
+  document.getElementById('fPOTanggal').value = po.tanggal;
+  document.getElementById('fPOJatuhTempo').value = po.jatuhTempo || '';
+  document.getElementById('fPOCatatan').value = po.catatan || '';
+  renderItemPOForm();
+  document.getElementById('judulFormPO').textContent = 'Ubah Purchase Order ' + po.nomor;
+  document.getElementById('btnSimpanPO').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahPO').style.display = '';
+  document.getElementById('formPO').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahPO() {
+  editPOId = null;
+  itemPOForm = [{ nama: '', jumlah: 1, satuan: '', hargaSatuan: 0 }];
+  document.getElementById('formPO').reset();
+  document.getElementById('fPOTanggal').value = new Date().toISOString().slice(0, 10);
+  renderItemPOForm();
+  document.getElementById('judulFormPO').textContent = 'Buat Purchase Order Baru';
+  document.getElementById('btnSimpanPO').textContent = 'Simpan PO (Draf)';
+  document.getElementById('btnBatalUbahPO').style.display = 'none';
+}
+document.getElementById('formPO').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var supplierId = document.getElementById('fPOSupplier').value;
+  var tanggal = document.getElementById('fPOTanggal').value;
+  var items = itemPOForm
+    .map(function (it) { return { nama: String(it.nama || '').trim(), jumlah: Number(it.jumlah) || 0, satuan: String(it.satuan || '').trim(), hargaSatuan: Number(it.hargaSatuan) || 0 }; })
+    .filter(function (it) { return it.nama && it.jumlah > 0; });
+  if (!supplierId || !tanggal) { toast('Pilih supplier dan tanggal PO.'); return; }
+  if (!items.length) { toast('Isi minimal 1 barang dengan nama dan jumlah yang benar.'); return; }
+  var data = {
+    supplierId: supplierId,
+    tanggal: tanggal,
+    jatuhTempo: document.getElementById('fPOJatuhTempo').value,
+    catatan: document.getElementById('fPOCatatan').value.trim(),
+    items: items
+  };
+  if (editPOId) {
+    var po = cariPO(editPOId);
+    if (po) Object.assign(po, data);
+    toast('PO diperbarui (masih Draf).');
+  } else {
+    db.po.push(Object.assign({ id: uid(), nomor: nomorPOBaru(), status: 'Draf' }, data));
+    toast('PO baru disimpan sebagai Draf.');
+  }
+  save(); batalUbahPO(); renderAll();
+});
+document.getElementById('btnBatalUbahPO').addEventListener('click', batalUbahPO);
+document.getElementById('filterSupplierPO').addEventListener('change', renderPO);
+document.getElementById('filterStatusPO').addEventListener('change', renderPO);
+
+/* ---------- RENDER: SUPPLIER ---------- */
+var editSupplierId = null;
+function renderSupplier() {
+  document.getElementById('statSupplier').textContent = db.supplier.length;
+  document.getElementById('statSupplierAktif').textContent = db.supplier.filter(function (s) { return s.status === 'Aktif'; }).length;
+  var perSupplier = db.supplier.map(function (s) {
+    var daftar = db.po.filter(function (p) { return p.supplierId === s.id && p.status !== 'Batal'; });
+    return { s: s, jml: daftar.length, nilai: daftar.reduce(function (a, p) { return a + totalPO(p); }, 0) };
+  }).sort(function (a, b) { return b.nilai - a.nilai; });
+  var top = perSupplier[0];
+  document.getElementById('statSupplierTop').textContent = top && top.jml > 0 ? top.s.nama.split(' ').slice(0, 2).join(' ') + ' (' + top.jml + ' PO)' : '—';
+  document.getElementById('statSupplierNilai').textContent = fmtRp(top ? top.nilai : 0);
+
+  var wadah = document.getElementById('daftarSupplier');
+  if (!db.supplier.length) { wadah.innerHTML = '<p class="kosong">Belum ada supplier. Tambahkan lewat formulir di atas.</p>'; return; }
+  wadah.innerHTML = db.supplier.map(function (s) {
+    var daftar = db.po.filter(function (p) { return p.supplierId === s.id; });
+    var aktif = daftar.filter(function (p) { return p.status !== 'Batal'; });
+    var nilai = aktif.reduce(function (a, p) { return a + totalPO(p); }, 0);
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">' + esc(s.nama) + ' <span class="lencana ' + kelasStatus(s.status) + '">' + esc(s.status) + '</span></div>' +
+      '<div class="detail">Kategori: ' + esc(s.kategori) + ' · Kontak: ' + esc(s.kontak) + ' · HP: ' + esc(s.hp) + (s.email ? ' · ' + esc(s.email) : '') + '</div>' +
+      (s.alamat ? '<div class="detail">Alamat: ' + esc(s.alamat) + '</div>' : '') +
+      '<div class="detail">' + aktif.length + ' PO aktif · Total pembelian ' + fmtRp(nilai) + '</div>' +
+      '</div></div>' +
+      '<div class="aksi"><button class="btn kecil biru" data-ubah-supplier="' + s.id + '">Ubah</button>' +
+      '<button class="btn kecil merah" data-hapus-supplier="' + s.id + '">Hapus</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-ubah-supplier]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahSupplier(b.dataset.ubahSupplier); });
+  });
+  wadah.querySelectorAll('[data-hapus-supplier]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var s = db.supplier.find(function (x) { return x.id === b.dataset.hapusSupplier; });
+      if (!s) return;
+      if (!confirm('Hapus supplier "' + s.nama + '"? PO yang pernah dibuat ke supplier ini tetap tersimpan.')) return;
+      db.supplier = db.supplier.filter(function (x) { return x.id !== s.id; });
+      save(); renderAll(); toast('Supplier dihapus.');
+    });
+  });
+}
+function mulaiUbahSupplier(id) {
+  var s = db.supplier.find(function (x) { return x.id === id; });
+  if (!s) return;
+  editSupplierId = id;
+  document.getElementById('fSupNama').value = s.nama;
+  document.getElementById('fSupKategori').value = s.kategori;
+  document.getElementById('fSupKontak').value = s.kontak;
+  document.getElementById('fSupHp').value = s.hp;
+  document.getElementById('fSupEmail').value = s.email || '';
+  document.getElementById('fSupStatus').value = s.status;
+  document.getElementById('fSupAlamat').value = s.alamat || '';
+  document.getElementById('judulFormSupplier').textContent = 'Ubah Supplier';
+  document.getElementById('btnSimpanSupplier').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahSupplier').style.display = '';
+  document.getElementById('formSupplier').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahSupplier() {
+  editSupplierId = null;
+  document.getElementById('formSupplier').reset();
+  document.getElementById('judulFormSupplier').textContent = 'Tambah Supplier';
+  document.getElementById('btnSimpanSupplier').textContent = 'Simpan Supplier';
+  document.getElementById('btnBatalUbahSupplier').style.display = 'none';
+}
+document.getElementById('formSupplier').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var data = {
+    nama: document.getElementById('fSupNama').value.trim(),
+    kategori: document.getElementById('fSupKategori').value.trim(),
+    kontak: document.getElementById('fSupKontak').value.trim(),
+    hp: document.getElementById('fSupHp').value.trim(),
+    email: document.getElementById('fSupEmail').value.trim(),
+    status: document.getElementById('fSupStatus').value,
+    alamat: document.getElementById('fSupAlamat').value.trim()
+  };
+  if (!data.nama || !data.kategori || !data.kontak || !data.hp) { toast('Lengkapi semua kolom wajib.'); return; }
+  if (editSupplierId) {
+    var s = db.supplier.find(function (x) { return x.id === editSupplierId; });
+    if (s) Object.assign(s, data);
+    toast('Data supplier diperbarui.');
+  } else {
+    db.supplier.push(Object.assign({ id: uid() }, data));
+    toast('Supplier ditambahkan.');
+  }
+  save(); batalUbahSupplier(); renderAll();
+});
+document.getElementById('btnBatalUbahSupplier').addEventListener('click', batalUbahSupplier);
+
+/* ---------- RENDER: STATUS ---------- */
+function renderStatus() {
+  document.getElementById('stJmlDraf').textContent = db.po.filter(function (p) { return p.status === 'Draf'; }).length;
+  document.getElementById('stJmlTerkirim').textContent = db.po.filter(function (p) { return p.status === 'Terkirim'; }).length;
+  document.getElementById('stJmlSebagian').textContent = db.po.filter(function (p) { return p.status === 'Diterima Sebagian'; }).length;
+  document.getElementById('stJmlSelesai').textContent = db.po.filter(function (p) { return p.status === 'Selesai'; }).length;
+
+  isiSelectSupplier(document.getElementById('filterSupplierLacak'), document.getElementById('filterSupplierLacak').value, true);
+  var fT = document.getElementById('filterStatusLacak').value;
+  var fS = document.getElementById('filterSupplierLacak').value;
+  var list = db.po.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.nomor.localeCompare(a.nomor); })
+    .filter(function (p) { return (!fT || p.status === fT) && (!fS || p.supplierId === fS); });
+  var wadah = document.getElementById('daftarStatus');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada PO yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (po) { return kartuPO(po, true); }).join('');
+  ikatAksiPO(wadah);
+}
+document.getElementById('filterStatusLacak').addEventListener('change', renderStatus);
+document.getElementById('filterSupplierLacak').addEventListener('change', renderStatus);
+
+/* ---------- RENDER: PENERIMAAN ---------- */
+var terimaQty = {};
+function poBisaDiterima() {
+  return db.po.filter(function (p) { return p.status === 'Terkirim' || p.status === 'Diterima Sebagian'; })
+    .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+}
+function renderItemTerimaForm() {
+  var poId = document.getElementById('fTerimaPO').value;
+  var po = cariPO(poId);
+  var wadah = document.getElementById('daftarItemTerima');
+  if (!po) { wadah.innerHTML = '<p class="kosong">Tidak ada PO yang bisa diterima barangnya. Kirim dulu PO berstatus Draf.</p>'; return; }
+  wadah.innerHTML = '<div class="catatan"><b>' + esc(po.nomor) + '</b> — ' + esc(namaSupplier(po.supplierId)) + ' · Total PO ' + fmtRp(totalPO(po)) + '. Isi jumlah yang datang kali ini (0 bila belum datang).</div>' +
+    po.items.map(function (it, i) {
+      var sudah = Math.min(diterimaPerItem(po.id, it.nama), it.jumlah);
+      var sisa = it.jumlah - sudah;
+      return '<div class="item-baris" style="grid-template-columns: 2fr 1fr 1fr;">' +
+        '<div class="field"><label>' + esc(it.nama) + '</label><input type="text" value="Dipesan ' + it.jumlah + ' ' + esc(it.satuan || 'pcs') + ' · sudah diterima ' + sudah + ' · sisa ' + sisa + '" disabled></div>' +
+        '<div class="field"><label>Jumlah datang *</label><input type="number" data-terima-jumlah="' + i + '" value="' + (terimaQty[i] || 0) + '" min="0" max="' + sisa + '" step="1"></div>' +
+        '<div class="field"><label>Nilai barang datang</label><input type="text" id="terima-nilai-' + i + '" value="' + fmtRp((terimaQty[i] || 0) * it.hargaSatuan) + '" disabled></div>' +
+        '</div>';
+    }).join('');
+  wadah.querySelectorAll('[data-terima-jumlah]').forEach(function (el) {
+    el.addEventListener('input', function () {
+      var i = Number(el.dataset.terimaJumlah);
+      var po2 = cariPO(document.getElementById('fTerimaPO').value);
+      var sisa = po2.items[i].jumlah - Math.min(diterimaPerItem(po2.id, po2.items[i].nama), po2.items[i].jumlah);
+      var v = Math.max(0, Math.min(Number(el.value) || 0, sisa));
+      el.value = v;
+      terimaQty[i] = v;
+      document.getElementById('terima-nilai-' + i).value = fmtRp(v * po2.items[i].hargaSatuan);
+    });
+  });
+}
+function renderPenerimaan() {
+  document.getElementById('statTerimaJml').textContent = db.penerimaan.length;
+  var nilaiTerima = db.po.reduce(function (a, p) { return a + nilaiDiterimaPO(p); }, 0);
+  document.getElementById('statTerimaNilai').textContent = fmtRp(nilaiTerima);
+  document.getElementById('statTerimaMenunggu').textContent = db.po.filter(function (p) { return p.status === 'Terkirim' || p.status === 'Diterima Sebagian'; }).length;
+  document.getElementById('statTerimaLengkap').textContent = db.po.filter(function (p) { return p.status === 'Selesai'; }).length;
+
+  var sel = document.getElementById('fTerimaPO');
+  var nilaiTerpilih = sel.value;
+  var daftar = poBisaDiterima();
+  if (!daftar.length) {
+    sel.innerHTML = '<option value="">— Tidak ada PO yang bisa diterima —</option>';
+  } else {
+    if (!daftar.find(function (p) { return p.id === nilaiTerpilih; })) nilaiTerpilih = daftar[0].id;
+    sel.innerHTML = daftar.map(function (p) {
+      return '<option value="' + p.id + '"' + (p.id === nilaiTerpilih ? ' selected' : '') + '>' + esc(p.nomor) + ' — ' + esc(namaSupplier(p.supplierId)) + ' (' + esc(p.status) + ', ' + persenDiterima(p) + '% diterima)</option>';
+    }).join('');
+  }
+  renderItemTerimaForm();
+
+  var wadah = document.getElementById('daftarTerima');
+  var list = db.penerimaan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada penerimaan barang yang dicatat.</p>'; return; }
+  wadah.innerHTML = list.map(function (pn) {
+    var po = cariPO(pn.poId);
+    var barang = pn.items.filter(function (x) { return x.jumlah > 0; });
+    var nilai = 0;
+    if (po) {
+      nilai = barang.reduce(function (a, x) {
+        var it = po.items.find(function (y) { return y.nama === x.nama; });
+        return a + (it ? x.jumlah * it.hargaSatuan : 0);
+      }, 0);
+    }
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">Penerimaan ' + (po ? esc(po.nomor) : '(PO dihapus)') + ' <span class="lencana st-diterima-sebagian">Diterima</span></div>' +
+      '<div class="detail">' + tglIndo(pn.tanggal) + ' · Diterima oleh ' + esc(pn.diterimaOleh) + (pn.suratJalan ? ' · Surat jalan ' + esc(pn.suratJalan) : '') + (po ? ' · ' + esc(namaSupplier(po.supplierId)) : '') + '</div>' +
+      '<div class="detail">' + (barang.length ? barang.map(function (x) { return esc(x.nama) + ' ' + x.jumlah; }).join(', ') : 'Tidak ada barang dicatat') + '</div>' +
+      (pn.catatan ? '<div class="detail">Catatan: ' + esc(pn.catatan) + '</div>' : '') +
+      '</div><span class="harga">' + fmtRp(nilai) + '</span></div>' +
+      '<div class="aksi"><button class="btn kecil merah" data-hapus-terima="' + pn.id + '">Hapus Penerimaan</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-hapus-terima]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var pn = db.penerimaan.find(function (x) { return x.id === b.dataset.hapusTerima; });
+      if (!pn) return;
+      var po = cariPO(pn.poId);
+      if (!confirm('Hapus penerimaan tanggal ' + tglIndo(pn.tanggal) + ' untuk ' + (po ? po.nomor : 'PO ini') + '? Status PO akan dihitung ulang.')) return;
+      db.penerimaan = db.penerimaan.filter(function (x) { return x.id !== pn.id; });
+      if (po) hitungUlangStatus(po);
+      save(); renderAll(); toast('Penerimaan dihapus, status PO dihitung ulang.');
+    });
+  });
+}
+document.getElementById('fTerimaPO').addEventListener('change', function () {
+  terimaQty = {};
+  renderItemTerimaForm();
+});
+document.getElementById('formTerima').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var poId = document.getElementById('fTerimaPO').value;
+  var po = cariPO(poId);
+  if (!po) { toast('Pilih PO yang akan diterima barangnya.'); return; }
+  var tanggal = document.getElementById('fTerimaTanggal').value;
+  var oleh = document.getElementById('fTerimaOleh').value.trim();
+  if (!tanggal || !oleh) { toast('Isi tanggal penerimaan dan nama penerima.'); return; }
+  var items = po.items.map(function (it, i) {
+    return { nama: it.nama, jumlah: Math.max(0, Number(terimaQty[i]) || 0) };
+  });
+  if (!items.some(function (x) { return x.jumlah > 0; })) { toast('Isi jumlah barang yang datang — minimal 1 barang lebih dari 0.'); return; }
+  db.penerimaan.push({
+    id: uid(), poId: po.id, tanggal: tanggal, diterimaOleh: oleh,
+    suratJalan: document.getElementById('fTerimaSuratJalan').value.trim(),
+    catatan: document.getElementById('fTerimaCatatan').value.trim(),
+    items: items
+  });
+  hitungUlangStatus(po);
+  save();
+  terimaQty = {};
+  document.getElementById('formTerima').reset();
+  document.getElementById('fTerimaTanggal').value = new Date().toISOString().slice(0, 10);
+  renderAll();
+  toast('Penerimaan disimpan. Status ' + po.nomor + ' kini: ' + po.status + '.');
+});
+
+/* ---------- RENDER: RIWAYAT ---------- */
+function renderRiwayat() {
+  isiSelectSupplier(document.getElementById('filterSupplierRiwayat'), document.getElementById('filterSupplierRiwayat').value, true);
+  var cari = document.getElementById('cariRiwayat').value.trim().toLowerCase();
+  var fS = document.getElementById('filterSupplierRiwayat').value;
+  var fT = document.getElementById('filterStatusRiwayat').value;
+  var list = db.po.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal) || b.nomor.localeCompare(a.nomor); })
+    .filter(function (p) {
+      var cocokCari = !cari || p.nomor.toLowerCase().indexOf(cari) !== -1 || namaSupplier(p.supplierId).toLowerCase().indexOf(cari) !== -1;
+      return cocokCari && (!fS || p.supplierId === fS) && (!fT || p.status === fT);
+    });
+  var wadah = document.getElementById('daftarRiwayat');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada PO yang cocok dengan pencarian atau filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (po) { return kartuPO(po, true); }).join('');
+  ikatAksiPO(wadah);
+}
+document.getElementById('cariRiwayat').addEventListener('input', renderRiwayat);
+document.getElementById('filterSupplierRiwayat').addEventListener('change', renderRiwayat);
+document.getElementById('filterStatusRiwayat').addEventListener('change', renderRiwayat);
+
+/* ---------- RENDER: LAPORAN ---------- */
+function renderLaporan() {
+  var bulanFilter = document.getElementById('filterBulanLaporan').value || bulanSekarang();
+  isiSelectBulan(document.getElementById('filterBulanLaporan'), bulanFilter);
+  bulanFilter = document.getElementById('filterBulanLaporan').value;
+  var list = db.po.filter(function (p) { return bulanDariTanggal(p.tanggal) === bulanFilter; });
+  var nilaiPO = list.filter(function (p) { return p.status !== 'Batal'; }).reduce(function (a, p) { return a + totalPO(p); }, 0);
+  var nilaiTerima = list.reduce(function (a, p) { return a + nilaiDiterimaPO(p); }, 0);
+  document.getElementById('lapNilaiPO').textContent = fmtRp(nilaiPO);
+  document.getElementById('lapNilaiTerima').textContent = fmtRp(nilaiTerima);
+  document.getElementById('lapJmlPO').textContent = list.length;
+  document.getElementById('lapJmlSelesai').textContent = list.filter(function (p) { return p.status === 'Selesai'; }).length;
+
+  var perSupplier = {};
+  list.forEach(function (p) {
+    if (p.status === 'Batal') return;
+    var k = p.supplierId;
+    if (!perSupplier[k]) perSupplier[k] = { jml: 0, nilai: 0, terima: 0, selesai: 0 };
+    perSupplier[k].jml += 1;
+    perSupplier[k].nilai += totalPO(p);
+    perSupplier[k].terima += nilaiDiterimaPO(p);
+    if (p.status === 'Selesai') perSupplier[k].selesai += 1;
+  });
+  var rowsSup = Object.keys(perSupplier).map(function (k) {
+    var v = perSupplier[k];
+    return '<tr><td><b>' + esc(namaSupplier(k)) + '</b></td><td>' + v.jml + '</td><td>' + fmtRp(v.nilai) + '</td><td>' + fmtRp(v.terima) + '</td><td>' + v.selesai + '</td></tr>';
+  }).join('');
+  document.getElementById('tabelLaporanSupplier').innerHTML = rowsSup ?
+    '<table class="tabel-harga"><tr><th>Supplier</th><th>Jumlah PO</th><th>Nilai PO</th><th>Nilai Diterima</th><th>PO Selesai</th></tr>' + rowsSup +
+    '<tr><td><b>TOTAL</b></td><td><b>' + list.filter(function (p) { return p.status !== 'Batal'; }).length + '</b></td><td><b>' + fmtRp(nilaiPO) + '</b></td><td><b>' + fmtRp(nilaiTerima) + '</b></td><td><b>' + list.filter(function (p) { return p.status === 'Selesai'; }).length + '</b></td></tr></table>' :
+    '<p class="kosong">Belum ada PO (selain yang Batal) pada ' + labelBulan(bulanFilter) + '.</p>';
+
+  var rowsStatus = STATUS_PO.map(function (st) {
+    var daftar = list.filter(function (p) { return p.status === st; });
+    var nilai = daftar.reduce(function (a, p) { return a + totalPO(p); }, 0);
+    return '<tr><td><span class="lencana ' + kelasStatus(st) + '">' + esc(st) + '</span></td><td>' + daftar.length + '</td><td>' + fmtRp(nilai) + '</td></tr>';
+  }).join('');
+  document.getElementById('tabelLaporanStatus').innerHTML =
+    '<table class="tabel-harga"><tr><th>Status</th><th>Jumlah PO</th><th>Nilai PO</th></tr>' + rowsStatus + '</table>';
+
+  var perBarang = {};
+  list.forEach(function (p) {
+    if (p.status === 'Batal') return;
+    p.items.forEach(function (it) {
+      if (!perBarang[it.nama]) perBarang[it.nama] = { qty: 0, nilai: 0 };
+      perBarang[it.nama].qty += it.jumlah;
+      perBarang[it.nama].nilai += it.jumlah * it.hargaSatuan;
+    });
+  });
+  var topBarang = Object.keys(perBarang).map(function (k) { return { nama: k, qty: perBarang[k].qty, nilai: perBarang[k].nilai }; })
+    .sort(function (a, b) { return b.nilai - a.nilai; }).slice(0, 5);
+  document.getElementById('tabelLaporanBarang').innerHTML = topBarang.length ?
+    '<table class="tabel-harga"><tr><th>Barang</th><th>Jumlah Dipesan</th><th>Nilai Pembelian</th></tr>' +
+    topBarang.map(function (b) { return '<tr><td><b>' + esc(b.nama) + '</b></td><td>' + b.qty + '</td><td>' + fmtRp(b.nilai) + '</td></tr>'; }).join('') + '</table>' :
+    '<p class="kosong">Belum ada barang yang dibeli pada ' + labelBulan(bulanFilter) + '.</p>';
+}
+document.getElementById('filterBulanLaporan').addEventListener('change', renderLaporan);
+document.getElementById('btnCetakLaporan').addEventListener('click', function () { window.print(); });
+
+/* ---------- PANDUAN / RESET ---------- */
+document.getElementById('btnResetData').addEventListener('click', function () {
+  if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
+  db = dataContoh();
+  save();
+  batalUbahPO(); batalUbahSupplier();
+  terimaQty = {};
+  renderAll();
+  toast('Data contoh dikembalikan.');
+});
+
+/* ---------- INIT ---------- */
+function renderAll() {
+  renderPO();
+  renderSupplier();
+  renderStatus();
+  renderPenerimaan();
+  renderRiwayat();
+  renderLaporan();
+}
+document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+document.getElementById('fPOTanggal').value = new Date().toISOString().slice(0, 10);
+document.getElementById('fTerimaTanggal').value = new Date().toISOString().slice(0, 10);
+itemPOForm = [{ nama: '', jumlah: 1, satuan: '', hargaSatuan: 0 }];
+load();
+renderItemPOForm();
+renderAll();
+</script>
+</body>
+</html>

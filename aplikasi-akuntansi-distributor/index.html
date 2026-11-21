@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Aplikasi Akuntansi Distributor</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef3f9;
+    --ink: #14263d;
+    --muted: #5b6b80;
+    --line: #dbe4ef;
+    --navy: #14263d;
+    --blue: #2f639e;
+    --blue-soft: #e3edf7;
+    --soft: #8fb4d9;
+    --green: #2e7d4f;
+    --green-soft: #e2f2e8;
+    --amber: #96690f;
+    --amber-soft: #f8eed3;
+    --red: #b3372f;
+    --red-soft: #f9e6e3;
+    --wa: #1da851;
+    --shadow: 0 1px 2px rgba(20, 38, 61, .05), 0 8px 24px rgba(20, 38, 61, .06);
+    --shadow-lg: 0 12px 40px rgba(20, 38, 61, .16);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
+  button { cursor: pointer; }
+  button, input:not([type="checkbox"]), select, textarea { min-height: 2.25rem; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .hero {
+    background: linear-gradient(135deg, #14263d 0%, #2f639e 100%);
+    color: #fff; border-radius: var(--radius); padding: 26px 24px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -.01em; }
+  .hero p { opacity: .88; margin-top: 5px; font-size: 14px; }
+  .hero .tanggal { margin-top: 12px; font-size: 13px; opacity: .75; }
+
+  .tabbar {
+    position: sticky; top: 10px; z-index: 40;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px; box-shadow: var(--shadow); margin-bottom: 22px;
+  }
+  .tab-btn {
+    flex: 1 1 auto; border: 0; background: transparent; color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { background: var(--navy); color: #fff; }
+  .tab-btn .badge {
+    background: var(--blue-soft); color: var(--blue); border-radius: 999px;
+    font-size: 11px; font-weight: 800; padding: 1px 7px; line-height: 1.5;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,.25); color: #fff; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-head { margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; }
+  .page-head p { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+  .grid-stat {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 820px) { .grid-stat { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px;
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .stat .angka { font-size: 24px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+  .stat.accent { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.accent .label { color: #b9c9dc; }
+  .stat.hijau { background: var(--green-soft); border-color: var(--green-soft); }
+  .stat.hijau .label { color: var(--green); }
+  .stat.merah { background: var(--red-soft); border-color: var(--red-soft); }
+  .stat.merah .label { color: var(--red); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row .grow { flex: 1 1 180px; }
+  label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--soft); box-shadow: 0 0 0 3px var(--blue-soft); }
+  .field { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px;
+    background: var(--navy); color: #fff;
+  }
+  .btn:hover { opacity: .92; }
+  .btn.ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.kecil { padding: 6px 13px; font-size: 13px; min-height: 2rem; }
+  .btn.biru { background: var(--blue); }
+  .btn.hijau { background: var(--green); }
+  .btn.merah { background: var(--red); }
+  .btn.wa { background: var(--wa); }
+  a.btn { display: inline-block; text-decoration: none; }
+
+  .lencana {
+    display: inline-block; border-radius: 999px; padding: 2px 10px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .st-masuk, .st-lunas, .st-dibayar { background: var(--green-soft); color: var(--green); }
+  .st-keluar, .st-belum-lunas, .st-jatuh-tempo { background: var(--red-soft); color: var(--red); }
+  .st-sebagian { background: var(--amber-soft); color: var(--amber); }
+  .st-penjualan, .st-pembelian-barang { background: var(--blue-soft); color: var(--blue); }
+
+  .item-menu {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .item-menu .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .item-menu .nama { font-weight: 800; font-size: 15.5px; }
+  .item-menu .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .item-menu .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .item-menu .harga {
+    font-weight: 800; color: var(--blue); background: var(--blue-soft);
+    border-radius: 8px; padding: 3px 10px; font-size: 13.5px; white-space: nowrap;
+  }
+  .item-menu .harga.merah { color: var(--red); background: var(--red-soft); }
+  .item-menu .harga.hijau { color: var(--green); background: var(--green-soft); }
+
+  .kosong { color: var(--muted); text-align: center; padding: 26px 10px; font-size: 14px; }
+  .catatan {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 12px;
+  }
+  .catatan b { color: var(--ink); }
+  .panduan ol, .panduan ul { margin: 6px 0 12px; padding-left: 20px; }
+  .panduan li { margin-bottom: 5px; }
+  .tabel-harga { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+  .tabel-harga th, .tabel-harga td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  .tabel-harga th { background: var(--surface-2); }
+  .tabel-harga tr.total td { font-weight: 800; background: var(--surface-2); }
+  .tabel-wrap { overflow-x: auto; }
+
+  .progress { background: var(--surface-2); border-radius: 999px; height: 10px; overflow: hidden; margin-top: 6px; }
+  .progress > div { background: var(--blue); height: 100%; border-radius: 999px; }
+  .progress > div.penuh { background: var(--green); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 100; max-width: 92vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer {
+    margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  footer .btn { margin-top: 10px; }
+  @media print {
+    .tabbar, .hero .tanggal, footer .btn, .aksi, .btn { display: none !important; }
+    .panel { display: none !important; }
+    .panel.active { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Aplikasi Akuntansi Distributor</h1>
+    <p>Pembukuan khusus perusahaan distributor: kas masuk &amp; keluar, biaya operasional, hutang supplier, piutang pelanggan, laporan laba rugi, dan laporan keuntungan — semua dalam satu file.</p>
+    <div class="tanggal" id="tanggalHariIni"></div>
+  </header>
+
+  <nav class="tabbar" aria-label="Menu utama">
+    <button class="tab-btn active" data-tab="kas">Kas</button>
+    <button class="tab-btn" data-tab="biaya">Biaya</button>
+    <button class="tab-btn" data-tab="hutang">Hutang</button>
+    <button class="tab-btn" data-tab="piutang">Piutang</button>
+    <button class="tab-btn" data-tab="labarugi">Laba Rugi</button>
+    <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="panduan">Panduan</button>
+  </nav>
+
+  <!-- ============ KAS ============ -->
+  <section class="panel active" id="panel-kas">
+    <div class="page-head">
+      <h2>Kas Masuk &amp; Keluar</h2>
+      <p>Semua uang yang masuk dan keluar perusahaan. Kas masuk Penjualan dan kas keluar Pembelian Barang ikut dihitung ke laporan laba rugi; Pelunasan Piutang dan Bayar Hutang adalah pelunasan, bukan pendapatan/biaya.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat hijau"><div class="label">Kas Masuk — <span class="label-bulan-kas"></span></div><div class="angka" id="statKasMasuk">Rp0</div></div>
+      <div class="stat merah"><div class="label">Kas Keluar — <span class="label-bulan-kas"></span></div><div class="angka" id="statKasKeluar">Rp0</div></div>
+      <div class="stat accent"><div class="label">Selisih Kas (Masuk − Keluar)</div><div class="angka" id="statSelisihKas">Rp0</div></div>
+      <div class="stat"><div class="label">Jumlah Transaksi Kas</div><div class="angka" id="statJmlKas">0</div></div>
+    </div>
+    <div class="card">
+      <h3 id="judulFormKas">Tambah Transaksi Kas</h3>
+      <p class="sub">Pilih jenis dulu — kategori menyesuaikan. Kategori Penjualan dan Pembelian Barang otomatis masuk laporan laba rugi.</p>
+      <form id="formKas">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fKasJenis">Jenis *</label>
+            <select id="fKasJenis" required>
+              <option value="Masuk">Kas Masuk</option>
+              <option value="Keluar">Kas Keluar</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fKasTanggal">Tanggal *</label>
+            <input type="date" id="fKasTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fKasKategori">Kategori *</label>
+            <select id="fKasKategori" required></select>
+          </div>
+          <div class="field">
+            <label for="fKasCara">Cara bayar *</label>
+            <select id="fKasCara" required>
+              <option value="Tunai">Tunai</option>
+              <option value="Transfer">Transfer Bank</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fKasJumlah">Jumlah (Rp) *</label>
+            <input type="number" id="fKasJumlah" min="1" step="1000" placeholder="Contoh: 2500000" required>
+          </div>
+          <div class="field">
+            <label for="fKasKeterangan">Keterangan *</label>
+            <input type="text" id="fKasKeterangan" placeholder="Contoh: Penjualan tunai — Toko Berkah Jaya" required>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanKas">Simpan Transaksi</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahKas" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Riwayat Kas</h3>
+      <p class="sub">Transaksi terbaru tampil paling atas. Menghapus transaksi kas tidak menghapus hutang/piutang terkait — kas adalah jurnal tersendiri.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulanKas">Bulan</label>
+          <select id="filterBulanKas"></select>
+        </div>
+        <div class="grow">
+          <label for="filterJenisKas">Jenis</label>
+          <select id="filterJenisKas">
+            <option value="">Semua</option>
+            <option value="Masuk">Kas Masuk</option>
+            <option value="Keluar">Kas Keluar</option>
+          </select>
+        </div>
+        <div class="grow">
+          <label for="filterKategoriKas">Kategori</label>
+          <select id="filterKategoriKas">
+            <option value="">Semua kategori</option>
+            <option value="Penjualan">Penjualan</option>
+            <option value="Pelunasan Piutang">Pelunasan Piutang</option>
+            <option value="Modal">Modal</option>
+            <option value="Pembelian Barang">Pembelian Barang</option>
+            <option value="Bayar Hutang">Bayar Hutang</option>
+            <option value="Penarikan/Prive">Penarikan/Prive</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarKas"></div>
+    </div>
+  </section>
+
+  <!-- ============ BIAYA ============ -->
+  <section class="panel" id="panel-biaya">
+    <div class="page-head">
+      <h2>Biaya Operasional</h2>
+      <p>Biaya menjalankan usaha distributor: gaji, sewa gudang, BBM, listrik, pengiriman, dan lain-lain. Semua biaya di sini mengurangi laba pada laporan laba rugi.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat merah"><div class="label">Total Biaya — <span class="label-bulan-biaya"></span></div><div class="angka" id="statTotalBiaya">Rp0</div></div>
+      <div class="stat"><div class="label">Biaya Terbesar</div><div class="angka" id="statBiayaTerbesar" style="font-size:19px">—</div></div>
+      <div class="stat"><div class="label">Jumlah Biaya</div><div class="angka" id="statJmlBiaya">0</div></div>
+      <div class="stat accent"><div class="label">Rata-rata per Biaya</div><div class="angka" id="statRataBiaya">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3 id="judulFormBiaya">Tambah Biaya Operasional</h3>
+      <p class="sub">Catat biaya segera setelah terjadi agar laporan laba rugi akurat.</p>
+      <form id="formBiaya">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fBiayaTanggal">Tanggal *</label>
+            <input type="date" id="fBiayaTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fBiayaKategori">Kategori *</label>
+            <select id="fBiayaKategori" required>
+              <option value="Gaji">Gaji</option>
+              <option value="Sewa">Sewa Gudang / Toko</option>
+              <option value="BBM & Kendaraan">BBM &amp; Kendaraan</option>
+              <option value="Listrik & Air">Listrik &amp; Air</option>
+              <option value="Pengiriman">Pengiriman</option>
+              <option value="ATK">ATK &amp; Perlengkapan</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fBiayaJumlah">Jumlah (Rp) *</label>
+            <input type="number" id="fBiayaJumlah" min="1" step="1000" placeholder="Contoh: 4500000" required>
+          </div>
+          <div class="field">
+            <label for="fBiayaKeterangan">Keterangan *</label>
+            <input type="text" id="fBiayaKeterangan" placeholder="Contoh: Gaji karyawan gudang" required>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanBiaya">Simpan Biaya</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahBiaya" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Rincian per Kategori — <span class="label-bulan-biaya"></span></h3>
+      <p class="sub">Total biaya per kategori pada bulan yang dipilih.</p>
+      <div class="tabel-wrap"><div id="rincianKategoriBiaya"></div></div>
+    </div>
+    <div class="card">
+      <h3>Daftar Biaya</h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulanBiaya">Bulan</label>
+          <select id="filterBulanBiaya"></select>
+        </div>
+        <div class="grow">
+          <label for="filterKategoriBiaya">Kategori</label>
+          <select id="filterKategoriBiaya">
+            <option value="">Semua kategori</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Sewa">Sewa Gudang / Toko</option>
+            <option value="BBM & Kendaraan">BBM &amp; Kendaraan</option>
+            <option value="Listrik & Air">Listrik &amp; Air</option>
+            <option value="Pengiriman">Pengiriman</option>
+            <option value="ATK">ATK &amp; Perlengkapan</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarBiaya"></div>
+    </div>
+  </section>
+
+  <!-- ============ HUTANG ============ -->
+  <section class="panel" id="panel-hutang">
+    <div class="page-head">
+      <h2>Hutang Supplier</h2>
+      <p>Pembelian barang secara kredit dari supplier. Catat pembayaran lewat tombol <b>Catat Pembayaran</b> — pembayaran otomatis tercatat juga sebagai kas keluar (Bayar Hutang).</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Hutang</div><div class="angka" id="statTotalHutang">Rp0</div></div>
+      <div class="stat hijau"><div class="label">Sudah Dibayar</div><div class="angka" id="statHutangDibayar">Rp0</div></div>
+      <div class="stat merah"><div class="label">Sisa Hutang</div><div class="angka" id="statSisaHutang">Rp0</div></div>
+      <div class="stat accent"><div class="label">Hutang Jatuh Tempo</div><div class="angka" id="statHutangTempo">0</div></div>
+    </div>
+    <div class="card" id="cardBayarHutang" style="display:none">
+      <h3>Catat Pembayaran Hutang — <span id="labelBayarHutang"></span></h3>
+      <p class="sub">Pembayaran ini menambah kolom "Sudah Dibayar" hutang dan tercatat otomatis sebagai kas keluar kategori Bayar Hutang.</p>
+      <form id="formBayarHutang">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fBayarHutangTanggal">Tanggal bayar *</label>
+            <input type="date" id="fBayarHutangTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fBayarHutangJumlah">Jumlah bayar (Rp) *</label>
+            <input type="number" id="fBayarHutangJumlah" min="1" step="1000" placeholder="Contoh: 2500000" required>
+          </div>
+          <div class="field">
+            <label for="fBayarHutangCara">Cara bayar *</label>
+            <select id="fBayarHutangCara" required>
+              <option value="Transfer">Transfer Bank</option>
+              <option value="Tunai">Tunai</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </div>
+        </div>
+        <div class="catatan" id="infoBayarHutang"></div>
+        <div class="row">
+          <button type="submit" class="btn hijau">Simpan Pembayaran</button>
+          <button type="button" class="btn ghost" id="btnBatalBayarHutang">Batal</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3 id="judulFormHutang">Tambah Hutang Supplier</h3>
+      <p class="sub">Hutang baru = pembelian barang secara kredit. Jumlah hutang otomatis masuk hitungan pembelian (laba rugi) pada bulan terjadinya.</p>
+      <form id="formHutang">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fHutangSupplier">Nama supplier *</label>
+            <input type="text" id="fHutangSupplier" placeholder="Contoh: PT Sinar Makmur" required>
+          </div>
+          <div class="field">
+            <label for="fHutangTanggal">Tanggal hutang *</label>
+            <input type="date" id="fHutangTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fHutangTempo">Jatuh tempo *</label>
+            <input type="date" id="fHutangTempo" required>
+          </div>
+          <div class="field">
+            <label for="fHutangJumlah">Jumlah hutang (Rp) *</label>
+            <input type="number" id="fHutangJumlah" min="1" step="1000" placeholder="Contoh: 6000000" required>
+          </div>
+          <div class="field">
+            <label for="fHutangKeterangan">Keterangan</label>
+            <input type="text" id="fHutangKeterangan" placeholder="Contoh: Pembelian minyak goreng &amp; gula">
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanHutang">Simpan Hutang</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahHutang" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Hutang Supplier</h3>
+      <p class="sub">Hutang dengan jatuh tempo terdekat tampil paling atas. Lencana merah "Jatuh Tempo" berarti tanggal jatuh tempo sudah lewat dan hutang belum lunas.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterStatusHutang">Filter status</label>
+          <select id="filterStatusHutang">
+            <option value="">Semua status</option>
+            <option value="Belum Lunas">Belum Lunas</option>
+            <option value="Sebagian">Sebagian</option>
+            <option value="Lunas">Lunas</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarHutang"></div>
+    </div>
+  </section>
+
+  <!-- ============ PIUTANG ============ -->
+  <section class="panel" id="panel-piutang">
+    <div class="page-head">
+      <h2>Piutang Pelanggan</h2>
+      <p>Penjualan barang secara kredit ke toko/pelanggan. Catat pelunasan lewat tombol <b>Catat Pelunasan</b> — pelunasan otomatis tercatat juga sebagai kas masuk (Pelunasan Piutang).</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat"><div class="label">Total Piutang</div><div class="angka" id="statTotalPiutang">Rp0</div></div>
+      <div class="stat hijau"><div class="label">Sudah Diterima</div><div class="angka" id="statPiutangDiterima">Rp0</div></div>
+      <div class="stat merah"><div class="label">Sisa Piutang</div><div class="angka" id="statSisaPiutang">Rp0</div></div>
+      <div class="stat accent"><div class="label">Piutang Jatuh Tempo</div><div class="angka" id="statPiutangTempo">0</div></div>
+    </div>
+    <div class="card" id="cardBayarPiutang" style="display:none">
+      <h3>Catat Pelunasan Piutang — <span id="labelBayarPiutang"></span></h3>
+      <p class="sub">Pelunasan ini menambah kolom "Sudah Diterima" piutang dan tercatat otomatis sebagai kas masuk kategori Pelunasan Piutang.</p>
+      <form id="formBayarPiutang">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fBayarPiutangTanggal">Tanggal terima *</label>
+            <input type="date" id="fBayarPiutangTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fBayarPiutangJumlah">Jumlah terima (Rp) *</label>
+            <input type="number" id="fBayarPiutangJumlah" min="1" step="1000" placeholder="Contoh: 1500000" required>
+          </div>
+          <div class="field">
+            <label for="fBayarPiutangCara">Cara terima *</label>
+            <select id="fBayarPiutangCara" required>
+              <option value="Transfer">Transfer Bank</option>
+              <option value="Tunai">Tunai</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </div>
+        </div>
+        <div class="catatan" id="infoBayarPiutang"></div>
+        <div class="row">
+          <button type="submit" class="btn hijau">Simpan Pelunasan</button>
+          <button type="button" class="btn ghost" id="btnBatalBayarPiutang">Batal</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3 id="judulFormPiutang">Tambah Piutang Pelanggan</h3>
+      <p class="sub">Piutang baru = penjualan barang secara kredit. Jumlah piutang otomatis masuk hitungan pendapatan (laba rugi) pada bulan terjadinya.</p>
+      <form id="formPiutang">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fPiutangPelanggan">Nama pelanggan / toko *</label>
+            <input type="text" id="fPiutangPelanggan" placeholder="Contoh: Toko Murah Meriah" required>
+          </div>
+          <div class="field">
+            <label for="fPiutangTanggal">Tanggal piutang *</label>
+            <input type="date" id="fPiutangTanggal" required>
+          </div>
+          <div class="field">
+            <label for="fPiutangTempo">Jatuh tempo *</label>
+            <input type="date" id="fPiutangTempo" required>
+          </div>
+          <div class="field">
+            <label for="fPiutangJumlah">Jumlah piutang (Rp) *</label>
+            <input type="number" id="fPiutangJumlah" min="1" step="1000" placeholder="Contoh: 5500000" required>
+          </div>
+          <div class="field">
+            <label for="fPiutangKeterangan">Keterangan</label>
+            <input type="text" id="fPiutangKeterangan" placeholder="Contoh: Penjualan mie instan &amp; beras">
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanPiutang">Simpan Piutang</button>
+          <button type="button" class="btn ghost" id="btnBatalUbahPiutang" style="display:none">Batalkan Ubah</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Daftar Piutang Pelanggan</h3>
+      <p class="sub">Piutang dengan jatuh tempo terdekat tampil paling atas. Lencana merah "Jatuh Tempo" berarti tanggal jatuh tempo sudah lewat dan piutang belum lunas.</p>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterStatusPiutang">Filter status</label>
+          <select id="filterStatusPiutang">
+            <option value="">Semua status</option>
+            <option value="Belum Lunas">Belum Lunas</option>
+            <option value="Sebagian">Sebagian</option>
+            <option value="Lunas">Lunas</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarPiutang"></div>
+    </div>
+  </section>
+
+  <!-- ============ LABA RUGI ============ -->
+  <section class="panel" id="panel-labarugi">
+    <div class="page-head">
+      <h2>Laporan Laba Rugi</h2>
+      <p>Laba bersih = pendapatan − pembelian barang − biaya operasional. Pendapatan dihitung saat penjualan terjadi (tunai maupun kredit); pembelian dihitung saat barang dibeli (tunai maupun kredit).</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat hijau"><div class="label">Total Pendapatan — <span class="label-bulan-lr"></span></div><div class="angka" id="lrPendapatan">Rp0</div></div>
+      <div class="stat merah"><div class="label">Total Biaya (Pembelian + Operasional)</div><div class="angka" id="lrBiaya">Rp0</div></div>
+      <div class="stat accent"><div class="label">Laba Bersih</div><div class="angka" id="lrLaba">Rp0</div></div>
+      <div class="stat"><div class="label">Margin Laba</div><div class="angka" id="lrMargin">0%</div></div>
+    </div>
+    <div class="card">
+      <h3>Laporan Laba Rugi — <span class="label-bulan-lr"></span></h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulanLabaRugi">Bulan laporan</label>
+          <select id="filterBulanLabaRugi"></select>
+        </div>
+        <button type="button" class="btn kecil biru" id="btnCetakLabaRugi">Cetak / Simpan PDF</button>
+      </div>
+      <div class="tabel-wrap"><div id="tabelLabaRugi"></div></div>
+      <div class="catatan" id="catatanLabaRugi"></div>
+    </div>
+    <div class="card">
+      <h3>Yang dihitung — dan yang tidak</h3>
+      <p style="font-size:14px"><b>Dihitung sebagai pendapatan:</b> kas masuk kategori Penjualan (penjualan tunai) + piutang baru (penjualan kredit). <b>Dihitung sebagai biaya:</b> kas keluar kategori Pembelian Barang (pembelian tunai) + hutang baru (pembelian kredit) + semua biaya operasional. <b>Tidak dihitung:</b> Pelunasan Piutang dan Bayar Hutang (itu pelunasan, bukan pendapatan/biaya), Modal, dan Penarikan/Prive.</p>
+    </div>
+  </section>
+
+  <!-- ============ LAPORAN ============ -->
+  <section class="panel" id="panel-laporan">
+    <div class="page-head">
+      <h2>Laporan Keuntungan</h2>
+      <p>Rekap bulanan: pendapatan, biaya, laba bersih, arus kas, sisa hutang, dan sisa piutang dalam satu halaman.</p>
+    </div>
+    <div class="grid-stat">
+      <div class="stat hijau"><div class="label">Laba Bersih — <span class="label-bulan-laporan"></span></div><div class="angka" id="lapLaba">Rp0</div></div>
+      <div class="stat"><div class="label">Pendapatan</div><div class="angka" id="lapPendapatan">Rp0</div></div>
+      <div class="stat"><div class="label">Selisih Kas</div><div class="angka" id="lapSelisihKas">Rp0</div></div>
+      <div class="stat accent"><div class="label">Sisa Piutang − Sisa Hutang</div><div class="angka" id="lapSelisihUtang">Rp0</div></div>
+    </div>
+    <div class="card">
+      <h3>Laporan Bulanan — <span class="label-bulan-laporan"></span></h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterBulanLaporan">Bulan laporan</label>
+          <select id="filterBulanLaporan"></select>
+        </div>
+        <button type="button" class="btn kecil biru" id="btnCetakLaporan">Cetak / Simpan PDF</button>
+      </div>
+      <div class="tabel-wrap"><div id="tabelLaporan"></div></div>
+    </div>
+    <div class="card">
+      <h3>Sisa Hutang per Supplier</h3>
+      <p class="sub">Total sisa hutang yang masih harus dibayar ke setiap supplier (semua bulan).</p>
+      <div class="tabel-wrap"><div id="tabelLaporanHutang"></div></div>
+    </div>
+    <div class="card">
+      <h3>Sisa Piutang per Pelanggan</h3>
+      <p class="sub">Total sisa piutang yang masih harus ditagih dari setiap pelanggan (semua bulan).</p>
+      <div class="tabel-wrap"><div id="tabelLaporanPiutang"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ PANDUAN ============ -->
+  <section class="panel panduan" id="panel-panduan">
+    <div class="page-head">
+      <h2>Panduan Penggunaan</h2>
+      <p>Cara memakai Aplikasi Akuntansi Distributor, harga, dan garansi.</p>
+    </div>
+    <div class="card">
+      <h3>Cara memakai</h3>
+      <ol>
+        <li>Di tab <b>Kas</b>, catat setiap uang masuk dan keluar: penjualan tunai, pembelian barang tunai, pelunasan piutang, dan bayar hutang.</li>
+        <li>Di tab <b>Biaya</b>, catat biaya operasional: gaji, sewa gudang, BBM, listrik, pengiriman, dan ATK.</li>
+        <li>Bila membeli barang secara kredit, catat di tab <b>Hutang</b>: supplier, jumlah, dan jatuh tempo. Bayar lewat tombol <b>Catat Pembayaran</b> — kas keluar tercatat otomatis.</li>
+        <li>Bila menjual barang secara kredit, catat di tab <b>Piutang</b>: pelanggan, jumlah, dan jatuh tempo. Terima pelunasan lewat tombol <b>Catat Pelunasan</b> — kas masuk tercatat otomatis.</li>
+        <li>Di tab <b>Laba Rugi</b>, pilih bulan dan lihat laba bersih: pendapatan − pembelian barang − biaya operasional.</li>
+        <li>Di tab <b>Laporan</b>, lihat rekap bulanan lengkap beserta sisa hutang per supplier dan sisa piutang per pelanggan — bisa dicetak atau disimpan sebagai PDF.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Cara baca angka (supaya konsisten)</h3>
+      <ul>
+        <li><b>Pendapatan</b> = penjualan tunai (Kas masuk kategori Penjualan) + penjualan kredit (piutang baru pada bulan itu).</li>
+        <li><b>Pembelian barang</b> = pembelian tunai (Kas keluar kategori Pembelian Barang) + pembelian kredit (hutang baru pada bulan itu).</li>
+        <li><b>Laba kotor</b> = pendapatan − pembelian barang. <b>Laba bersih</b> = laba kotor − biaya operasional.</li>
+        <li><b>Pelunasan piutang</b> dan <b>bayar hutang</b> tidak masuk laba rugi — itu pelunasan, bukan pendapatan atau biaya — tetapi keduanya mengubah saldo kas dan sisa hutang/piutang.</li>
+        <li><b>Selisih kas</b> (kas masuk − kas keluar) dihitung dari transaksi kas pada bulan itu saja, tanpa saldo awal — bukan saldo rekening bank.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Harga aplikasi</h3>
+      <table class="tabel-harga">
+        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
+        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
+        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
+        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
+      </table>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
+    </div>
+    <div class="card">
+      <h3>Garansi</h3>
+      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+    </div>
+    <div class="card">
+      <h3>Request khusus (penyesuaian)</h3>
+      <p style="font-size:14px">Butuh penyesuaian di luar paket standar? Biaya tambahan per permintaan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> per permintaan. Besar biaya diputuskan per permintaan dan disepakati dulu lewat WhatsApp sebelum pengerjaan; konsultasi gratis.</p>
+    </div>
+    <div class="card">
+      <h3>Catatan penting (jujur)</h3>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data kas, biaya, hutang, piutang, dan laporan <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini <b>tidak terhubung ke bank sungguhan</b> dan <b>tidak punya multi-user</b>: semua transaksi diinput manual dan semua pengguna perangkat ini melihat data yang sama. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dan penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <div style="margin-top:14px">
+        <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Aplikasi Akuntansi Distributor v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat dan tanpa integrasi bank. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Akuntansi%20Distributor." target="_blank" rel="noopener">Pesan via WhatsApp</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+var KEY = 'akuntansiDistributor.v1';
+var BULAN_INDO = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+function uid() { return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function fmtRp(n) { return 'Rp' + Number(n || 0).toLocaleString('id-ID'); }
+function bulanDariTanggal(tgl) { return String(tgl || '').slice(0, 7); }
+function labelBulan(b) {
+  if (!b) return '-';
+  var p = b.split('-');
+  return (BULAN_INDO[Number(p[1]) - 1] || '') + ' ' + p[0];
+}
+function bulanSekarang() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function tanggalHariIni() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function tglIndo(tgl) {
+  if (!tgl) return '-';
+  var p = tgl.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function hariIniIndo() {
+  var d = new Date();
+  var namaHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][d.getDay()];
+  return namaHari + ', ' + d.getDate() + ' ' + BULAN_INDO[d.getMonth()] + ' ' + d.getFullYear();
+}
+function kelasStatus(status) {
+  return 'st-' + String(status).toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function dataContoh() {
+  return {
+    kas: [
+      { id: 'k1', tanggal: '2026-11-02', jenis: 'Masuk', kategori: 'Penjualan', keterangan: 'Penjualan tunai — Toko Berkah Jaya', jumlah: 7500000, cara: 'Tunai' },
+      { id: 'k2', tanggal: '2026-11-03', jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — PT Sinar Makmur', jumlah: 5000000, cara: 'Transfer' },
+      { id: 'k3', tanggal: '2026-11-05', jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — Toko Murah Meriah', jumlah: 3300000, cara: 'Transfer' },
+      { id: 'k4', tanggal: '2026-11-06', jenis: 'Keluar', kategori: 'Pembelian Barang', keterangan: 'Pembelian barang dagang — CV Berkah Supply', jumlah: 3500000, cara: 'Transfer' },
+      { id: 'k5', tanggal: '2026-11-09', jenis: 'Masuk', kategori: 'Penjualan', keterangan: 'Penjualan tunai — Toko Sinar Abadi', jumlah: 4600000, cara: 'Tunai' },
+      { id: 'k6', tanggal: '2026-11-10', jenis: 'Keluar', kategori: 'Penarikan/Prive', keterangan: 'Penarikan modal pemilik', jumlah: 1000000, cara: 'Tunai' },
+      { id: 'k7', tanggal: '2026-11-13', jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — Toko Keluarga', jumlah: 2400000, cara: 'Transfer' },
+      { id: 'k8', tanggal: '2026-11-14', jenis: 'Masuk', kategori: 'Penjualan', keterangan: 'Penjualan tunai — Toko Jaya Makmur', jumlah: 8400000, cara: 'Tunai' },
+      { id: 'k9', tanggal: '2026-11-15', jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — PT Indo Niaga', jumlah: 2500000, cara: 'Transfer' },
+      { id: 'k10', tanggal: '2026-11-17', jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — PT Sinar Makmur (pelunasan)', jumlah: 2750000, cara: 'Transfer' },
+      { id: 'k11', tanggal: '2026-11-18', jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — Toko Sumber Rezeki', jumlah: 1450000, cara: 'Transfer' },
+      { id: 'k12', tanggal: '2026-11-19', jenis: 'Keluar', kategori: 'Pembelian Barang', keterangan: 'Pembelian barang dagang — PT Sinar Makmur', jumlah: 2250000, cara: 'Transfer' },
+      { id: 'k13', tanggal: '2026-11-20', jenis: 'Masuk', kategori: 'Penjualan', keterangan: 'Penjualan tunai — Toko Amanah', jumlah: 3200000, cara: 'Tunai' }
+    ],
+    biaya: [
+      { id: 'b1', tanggal: '2026-11-01', kategori: 'Gaji', keterangan: 'Gaji karyawan gudang', jumlah: 4500000 },
+      { id: 'b2', tanggal: '2026-11-01', kategori: 'Sewa', keterangan: 'Sewa gudang bulan November', jumlah: 3000000 },
+      { id: 'b3', tanggal: '2026-11-07', kategori: 'BBM & Kendaraan', keterangan: 'BBM & operasional kendaraan antar barang', jumlah: 850000 },
+      { id: 'b4', tanggal: '2026-11-08', kategori: 'Listrik & Air', keterangan: 'Listrik & air gudang', jumlah: 620000 },
+      { id: 'b5', tanggal: '2026-11-12', kategori: 'Gaji', keterangan: 'Gaji sopir pengiriman', jumlah: 2800000 },
+      { id: 'b6', tanggal: '2026-11-15', kategori: 'ATK', keterangan: 'ATK & perlengkapan kantor', jumlah: 375000 },
+      { id: 'b7', tanggal: '2026-11-18', kategori: 'Pengiriman', keterangan: 'Biaya pengiriman ke pelanggan luar kota', jumlah: 940000 }
+    ],
+    hutang: [
+      { id: 'h1', supplier: 'PT Sinar Makmur', tanggal: '2026-11-02', jatuhTempo: '2026-12-02', jumlah: 6000000, dibayar: 5000000, keterangan: 'Pembelian minyak goreng & gula' },
+      { id: 'h2', supplier: 'PT Indo Niaga', tanggal: '2026-11-04', jatuhTempo: '2026-11-20', jumlah: 4500000, dibayar: 2500000, keterangan: 'Pembelian beras & mie instan' },
+      { id: 'h3', supplier: 'CV Berkah Supply', tanggal: '2026-11-10', jatuhTempo: '2026-12-10', jumlah: 3200000, dibayar: 0, keterangan: 'Pembelian kopi & teh' },
+      { id: 'h4', supplier: 'PT Sinar Makmur', tanggal: '2026-11-16', jatuhTempo: '2026-12-16', jumlah: 2750000, dibayar: 2750000, keterangan: 'Pembelian susu UHT' }
+    ],
+    piutang: [
+      { id: 'p1', pelanggan: 'Toko Murah Meriah', tanggal: '2026-11-02', jatuhTempo: '2026-12-02', jumlah: 5500000, dibayar: 3300000, keterangan: 'Penjualan mie instan & beras' },
+      { id: 'p2', pelanggan: 'Toko Sumber Rezeki', tanggal: '2026-11-05', jatuhTempo: '2026-12-05', jumlah: 2900000, dibayar: 1450000, keterangan: 'Penjualan kopi & teh' },
+      { id: 'p3', pelanggan: 'Toko Melati', tanggal: '2026-11-08', jatuhTempo: '2026-11-18', jumlah: 3800000, dibayar: 0, keterangan: 'Penjualan minyak goreng & gula' },
+      { id: 'p4', pelanggan: 'Toko Keluarga', tanggal: '2026-11-12', jatuhTempo: '2026-12-12', jumlah: 2400000, dibayar: 2400000, keterangan: 'Penjualan susu UHT & sabun' }
+    ]
+  };
+}
+
+var db = null;
+function load() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { db = JSON.parse(raw); return; }
+  } catch (e) { db = null; }
+  db = dataContoh();
+  save();
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+var toastTimer = null;
+function toast(pesan) {
+  var t = document.getElementById('toast');
+  t.textContent = pesan;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+}
+
+/* ---------- HITUNGAN ---------- */
+function kasBulan(bulan, jenis, kategori) {
+  return db.kas
+    .filter(function (k) { return bulanDariTanggal(k.tanggal) === bulan && (!jenis || k.jenis === jenis) && (!kategori || k.kategori === kategori); })
+    .reduce(function (a, k) { return a + k.jumlah; }, 0);
+}
+function biayaBulan(bulan) {
+  return db.biaya
+    .filter(function (b) { return bulanDariTanggal(b.tanggal) === bulan; })
+    .reduce(function (a, b) { return a + b.jumlah; }, 0);
+}
+function penjualanKreditBulan(bulan) {
+  return db.piutang
+    .filter(function (p) { return bulanDariTanggal(p.tanggal) === bulan; })
+    .reduce(function (a, p) { return a + p.jumlah; }, 0);
+}
+function pembelianKreditBulan(bulan) {
+  return db.hutang
+    .filter(function (h) { return bulanDariTanggal(h.tanggal) === bulan; })
+    .reduce(function (a, h) { return a + h.jumlah; }, 0);
+}
+function hitungLabaRugi(bulan) {
+  var penjualanTunai = kasBulan(bulan, 'Masuk', 'Penjualan');
+  var penjualanKredit = penjualanKreditBulan(bulan);
+  var pendapatan = penjualanTunai + penjualanKredit;
+  var pembelianTunai = kasBulan(bulan, 'Keluar', 'Pembelian Barang');
+  var pembelianKredit = pembelianKreditBulan(bulan);
+  var pembelian = pembelianTunai + pembelianKredit;
+  var biayaOp = biayaBulan(bulan);
+  var labaKotor = pendapatan - pembelian;
+  var labaBersih = labaKotor - biayaOp;
+  return {
+    penjualanTunai: penjualanTunai, penjualanKredit: penjualanKredit, pendapatan: pendapatan,
+    pembelianTunai: pembelianTunai, pembelianKredit: pembelianKredit, pembelian: pembelian,
+    biayaOp: biayaOp, labaKotor: labaKotor, labaBersih: labaBersih
+  };
+}
+function statusLunas(item) {
+  if (item.dibayar >= item.jumlah) return 'Lunas';
+  if (item.dibayar > 0) return 'Sebagian';
+  return 'Belum Lunas';
+}
+function lewatTempo(item) {
+  return statusLunas(item) !== 'Lunas' && item.jatuhTempo < tanggalHariIni();
+}
+function semuaBulan() {
+  var set = {};
+  db.kas.forEach(function (k) { set[bulanDariTanggal(k.tanggal)] = true; });
+  db.biaya.forEach(function (b) { set[bulanDariTanggal(b.tanggal)] = true; });
+  db.hutang.forEach(function (h) { set[bulanDariTanggal(h.tanggal)] = true; });
+  db.piutang.forEach(function (p) { set[bulanDariTanggal(p.tanggal)] = true; });
+  var arr = Object.keys(set).sort();
+  if (arr.indexOf(bulanSekarang()) === -1) arr.push(bulanSekarang());
+  return arr.sort();
+}
+function isiSelectBulan(el, nilai) {
+  var bulan = semuaBulan();
+  el.innerHTML = bulan.map(function (b) {
+    return '<option value="' + b + '"' + (b === nilai ? ' selected' : '') + '>' + labelBulan(b) + '</option>';
+  }).join('');
+}
+function setLabelBulan(cls, bulan) {
+  document.querySelectorAll('.' + cls).forEach(function (el) { el.textContent = labelBulan(bulan); });
+}
+
+/* ---------- TAB ---------- */
+document.querySelectorAll('.tab-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    renderAll();
+  });
+});
+
+/* ---------- RENDER: KAS ---------- */
+var editKasId = null;
+var KATEGORI_MASUK = ['Penjualan', 'Pelunasan Piutang', 'Modal', 'Lainnya'];
+var KATEGORI_KELUAR = ['Pembelian Barang', 'Bayar Hutang', 'Penarikan/Prive', 'Lainnya'];
+function isiKategoriKas() {
+  var jenis = document.getElementById('fKasJenis').value;
+  var list = jenis === 'Masuk' ? KATEGORI_MASUK : KATEGORI_KELUAR;
+  var sel = document.getElementById('fKasKategori');
+  var lama = sel.value;
+  sel.innerHTML = list.map(function (k) {
+    return '<option value="' + k + '"' + (k === lama ? ' selected' : '') + '>' + k + '</option>';
+  }).join('');
+}
+function renderKas() {
+  var bulanFilter = document.getElementById('filterBulanKas').value || bulanSekarang();
+  isiSelectBulan(document.getElementById('filterBulanKas'), bulanFilter);
+  bulanFilter = document.getElementById('filterBulanKas').value;
+  setLabelBulan('label-bulan-kas', bulanFilter);
+  var masuk = kasBulan(bulanFilter, 'Masuk');
+  var keluar = kasBulan(bulanFilter, 'Keluar');
+  document.getElementById('statKasMasuk').textContent = fmtRp(masuk);
+  document.getElementById('statKasKeluar').textContent = fmtRp(keluar);
+  document.getElementById('statSelisihKas').textContent = fmtRp(masuk - keluar);
+  document.getElementById('statJmlKas').textContent = db.kas.filter(function (k) { return bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
+
+  var fJ = document.getElementById('filterJenisKas').value;
+  var fK = document.getElementById('filterKategoriKas').value;
+  var list = db.kas.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
+    .filter(function (k) { return bulanDariTanggal(k.tanggal) === bulanFilter && (!fJ || k.jenis === fJ) && (!fK || k.kategori === fK); });
+  var wadah = document.getElementById('daftarKas');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada transaksi kas pada ' + labelBulan(bulanFilter) + ' yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (k) {
+    var tanda = k.jenis === 'Masuk' ? '+' : '−';
+    var kelasHarga = k.jenis === 'Masuk' ? 'hijau' : 'merah';
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">' + esc(k.keterangan) + ' <span class="lencana ' + kelasStatus(k.jenis) + '">' + esc(k.jenis) + '</span> <span class="lencana ' + kelasStatus(k.kategori) + '">' + esc(k.kategori) + '</span></div>' +
+      '<div class="detail">' + tglIndo(k.tanggal) + ' · ' + esc(k.cara) + '</div>' +
+      '</div><span class="harga ' + kelasHarga + '">' + tanda + ' ' + fmtRp(k.jumlah) + '</span></div>' +
+      '<div class="aksi"><button class="btn kecil biru" data-ubah-kas="' + k.id + '">Ubah</button>' +
+      '<button class="btn kecil merah" data-hapus-kas="' + k.id + '">Hapus</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-ubah-kas]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahKas(b.dataset.ubahKas); });
+  });
+  wadah.querySelectorAll('[data-hapus-kas]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = db.kas.find(function (x) { return x.id === b.dataset.hapusKas; });
+      if (!k) return;
+      if (!confirm('Hapus transaksi kas "' + k.keterangan + '" (' + fmtRp(k.jumlah) + ')?')) return;
+      db.kas = db.kas.filter(function (x) { return x.id !== k.id; });
+      save(); renderAll(); toast('Transaksi kas dihapus.');
+    });
+  });
+}
+function mulaiUbahKas(id) {
+  var k = db.kas.find(function (x) { return x.id === id; });
+  if (!k) return;
+  editKasId = id;
+  document.getElementById('fKasJenis').value = k.jenis;
+  isiKategoriKas();
+  document.getElementById('fKasTanggal').value = k.tanggal;
+  document.getElementById('fKasKategori').value = k.kategori;
+  document.getElementById('fKasCara').value = k.cara;
+  document.getElementById('fKasJumlah').value = k.jumlah;
+  document.getElementById('fKasKeterangan').value = k.keterangan;
+  document.getElementById('judulFormKas').textContent = 'Ubah Transaksi Kas';
+  document.getElementById('btnSimpanKas').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahKas').style.display = '';
+  document.getElementById('formKas').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahKas() {
+  editKasId = null;
+  document.getElementById('formKas').reset();
+  isiKategoriKas();
+  document.getElementById('judulFormKas').textContent = 'Tambah Transaksi Kas';
+  document.getElementById('btnSimpanKas').textContent = 'Simpan Transaksi';
+  document.getElementById('btnBatalUbahKas').style.display = 'none';
+}
+document.getElementById('fKasJenis').addEventListener('change', isiKategoriKas);
+document.getElementById('formKas').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var data = {
+    jenis: document.getElementById('fKasJenis').value,
+    tanggal: document.getElementById('fKasTanggal').value,
+    kategori: document.getElementById('fKasKategori').value,
+    cara: document.getElementById('fKasCara').value,
+    jumlah: Number(document.getElementById('fKasJumlah').value),
+    keterangan: document.getElementById('fKasKeterangan').value.trim()
+  };
+  if (!data.tanggal || !data.keterangan || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  if (editKasId) {
+    var k = db.kas.find(function (x) { return x.id === editKasId; });
+    if (k) Object.assign(k, data);
+    toast('Transaksi kas diperbarui.');
+  } else {
+    db.kas.push(Object.assign({ id: uid() }, data));
+    toast('Transaksi kas ditambahkan.');
+  }
+  save(); batalUbahKas(); renderAll();
+});
+document.getElementById('btnBatalUbahKas').addEventListener('click', batalUbahKas);
+document.getElementById('filterBulanKas').addEventListener('change', renderKas);
+document.getElementById('filterJenisKas').addEventListener('change', renderKas);
+document.getElementById('filterKategoriKas').addEventListener('change', renderKas);
+
+/* ---------- RENDER: BIAYA ---------- */
+var editBiayaId = null;
+function renderBiaya() {
+  var bulanFilter = document.getElementById('filterBulanBiaya').value || bulanSekarang();
+  isiSelectBulan(document.getElementById('filterBulanBiaya'), bulanFilter);
+  bulanFilter = document.getElementById('filterBulanBiaya').value;
+  setLabelBulan('label-bulan-biaya', bulanFilter);
+  var listBulan = db.biaya.filter(function (b) { return bulanDariTanggal(b.tanggal) === bulanFilter; });
+  var total = listBulan.reduce(function (a, b) { return a + b.jumlah; }, 0);
+  document.getElementById('statTotalBiaya').textContent = fmtRp(total);
+  document.getElementById('statJmlBiaya').textContent = listBulan.length;
+  document.getElementById('statRataBiaya').textContent = listBulan.length ? fmtRp(Math.round(total / listBulan.length)) : 'Rp0';
+  var terbesar = listBulan.slice().sort(function (a, b) { return b.jumlah - a.jumlah; })[0];
+  document.getElementById('statBiayaTerbesar').textContent = terbesar ? terbesar.kategori + ' ' + fmtRp(terbesar.jumlah) : '—';
+
+  var perKategori = {};
+  listBulan.forEach(function (b) { perKategori[b.kategori] = (perKategori[b.kategori] || 0) + b.jumlah; });
+  var kat = Object.keys(perKategori).sort(function (a, b) { return perKategori[b] - perKategori[a]; });
+  document.getElementById('rincianKategoriBiaya').innerHTML = kat.length
+    ? '<table class="tabel-harga"><tr><th>Kategori</th><th>Total</th><th>Bagian</th></tr>' +
+      kat.map(function (k) {
+        return '<tr><td>' + esc(k) + '</td><td>' + fmtRp(perKategori[k]) + '</td><td>' + (total > 0 ? Math.round(perKategori[k] / total * 100) : 0) + '%</td></tr>';
+      }).join('') +
+      '<tr class="total"><td>TOTAL</td><td>' + fmtRp(total) + '</td><td>100%</td></tr></table>'
+    : '<p class="kosong">Belum ada biaya pada ' + labelBulan(bulanFilter) + '.</p>';
+
+  var fK = document.getElementById('filterKategoriBiaya').value;
+  var list = listBulan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
+    .filter(function (b) { return !fK || b.kategori === fK; });
+  var wadah = document.getElementById('daftarBiaya');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada biaya pada ' + labelBulan(bulanFilter) + ' yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (b) {
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">' + esc(b.keterangan) + ' <span class="lencana st-penjualan">' + esc(b.kategori) + '</span></div>' +
+      '<div class="detail">' + tglIndo(b.tanggal) + '</div>' +
+      '</div><span class="harga merah">' + fmtRp(b.jumlah) + '</span></div>' +
+      '<div class="aksi"><button class="btn kecil biru" data-ubah-biaya="' + b.id + '">Ubah</button>' +
+      '<button class="btn kecil merah" data-hapus-biaya="' + b.id + '">Hapus</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-ubah-biaya]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahBiaya(b.dataset.ubahBiaya); });
+  });
+  wadah.querySelectorAll('[data-hapus-biaya]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var x = db.biaya.find(function (y) { return y.id === b.dataset.hapusBiaya; });
+      if (!x) return;
+      if (!confirm('Hapus biaya "' + x.keterangan + '" (' + fmtRp(x.jumlah) + ')?')) return;
+      db.biaya = db.biaya.filter(function (y) { return y.id !== x.id; });
+      save(); renderAll(); toast('Biaya dihapus.');
+    });
+  });
+}
+function mulaiUbahBiaya(id) {
+  var b = db.biaya.find(function (x) { return x.id === id; });
+  if (!b) return;
+  editBiayaId = id;
+  document.getElementById('fBiayaTanggal').value = b.tanggal;
+  document.getElementById('fBiayaKategori').value = b.kategori;
+  document.getElementById('fBiayaJumlah').value = b.jumlah;
+  document.getElementById('fBiayaKeterangan').value = b.keterangan;
+  document.getElementById('judulFormBiaya').textContent = 'Ubah Biaya Operasional';
+  document.getElementById('btnSimpanBiaya').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahBiaya').style.display = '';
+  document.getElementById('formBiaya').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahBiaya() {
+  editBiayaId = null;
+  document.getElementById('formBiaya').reset();
+  document.getElementById('judulFormBiaya').textContent = 'Tambah Biaya Operasional';
+  document.getElementById('btnSimpanBiaya').textContent = 'Simpan Biaya';
+  document.getElementById('btnBatalUbahBiaya').style.display = 'none';
+}
+document.getElementById('formBiaya').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var data = {
+    tanggal: document.getElementById('fBiayaTanggal').value,
+    kategori: document.getElementById('fBiayaKategori').value,
+    jumlah: Number(document.getElementById('fBiayaJumlah').value),
+    keterangan: document.getElementById('fBiayaKeterangan').value.trim()
+  };
+  if (!data.tanggal || !data.keterangan || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  if (editBiayaId) {
+    var b = db.biaya.find(function (x) { return x.id === editBiayaId; });
+    if (b) Object.assign(b, data);
+    toast('Biaya diperbarui.');
+  } else {
+    db.biaya.push(Object.assign({ id: uid() }, data));
+    toast('Biaya ditambahkan.');
+  }
+  save(); batalUbahBiaya(); renderAll();
+});
+document.getElementById('btnBatalUbahBiaya').addEventListener('click', batalUbahBiaya);
+document.getElementById('filterBulanBiaya').addEventListener('change', renderBiaya);
+document.getElementById('filterKategoriBiaya').addEventListener('change', renderBiaya);
+
+/* ---------- RENDER: HUTANG ---------- */
+var editHutangId = null;
+var bayarHutangId = null;
+function renderHutang() {
+  var total = db.hutang.reduce(function (a, h) { return a + h.jumlah; }, 0);
+  var dibayar = db.hutang.reduce(function (a, h) { return a + h.dibayar; }, 0);
+  document.getElementById('statTotalHutang').textContent = fmtRp(total);
+  document.getElementById('statHutangDibayar').textContent = fmtRp(dibayar);
+  document.getElementById('statSisaHutang').textContent = fmtRp(total - dibayar);
+  document.getElementById('statHutangTempo').textContent = db.hutang.filter(lewatTempo).length;
+
+  var fS = document.getElementById('filterStatusHutang').value;
+  var list = db.hutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
+    .filter(function (h) { return !fS || statusLunas(h) === fS; });
+  var wadah = document.getElementById('daftarHutang');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada hutang yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (h) {
+    var st = statusLunas(h);
+    var persen = h.jumlah > 0 ? Math.min(100, Math.round(h.dibayar / h.jumlah * 100)) : 0;
+    var tempo = lewatTempo(h) ? ' <span class="lencana st-jatuh-tempo">Jatuh Tempo</span>' : '';
+    return '<div class="item-menu"><div class="atas"><div style="flex:1 1 260px">' +
+      '<div class="nama">' + esc(h.supplier) + ' <span class="lencana ' + kelasStatus(st) + '">' + st + '</span>' + tempo + '</div>' +
+      '<div class="detail">Hutang: ' + tglIndo(h.tanggal) + ' · Jatuh tempo: ' + tglIndo(h.jatuhTempo) + (h.keterangan ? ' · ' + esc(h.keterangan) : '') + '</div>' +
+      '<div class="detail">Total ' + fmtRp(h.jumlah) + ' · Sudah dibayar ' + fmtRp(h.dibayar) + ' · <b>Sisa ' + fmtRp(h.jumlah - h.dibayar) + '</b> (' + persen + '%)</div>' +
+      '<div class="progress"><div class="' + (persen >= 100 ? 'penuh' : '') + '" style="width:' + persen + '%"></div></div>' +
+      '</div></div>' +
+      '<div class="aksi">' +
+      (st !== 'Lunas' ? '<button class="btn kecil hijau" data-bayar-hutang="' + h.id + '">Catat Pembayaran</button>' : '') +
+      '<button class="btn kecil biru" data-ubah-hutang="' + h.id + '">Ubah</button>' +
+      '<button class="btn kecil merah" data-hapus-hutang="' + h.id + '">Hapus</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-bayar-hutang]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiBayarHutang(b.dataset.bayarHutang); });
+  });
+  wadah.querySelectorAll('[data-ubah-hutang]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahHutang(b.dataset.ubahHutang); });
+  });
+  wadah.querySelectorAll('[data-hapus-hutang]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var h = db.hutang.find(function (x) { return x.id === b.dataset.hapusHutang; });
+      if (!h) return;
+      if (!confirm('Hapus hutang ke "' + h.supplier + '" (' + fmtRp(h.jumlah) + ')? Riwayat kas terkait tetap tersimpan.')) return;
+      db.hutang = db.hutang.filter(function (x) { return x.id !== h.id; });
+      save(); renderAll(); toast('Hutang dihapus.');
+    });
+  });
+}
+function mulaiBayarHutang(id) {
+  var h = db.hutang.find(function (x) { return x.id === id; });
+  if (!h) return;
+  bayarHutangId = id;
+  document.getElementById('labelBayarHutang').textContent = h.supplier + ' — sisa ' + fmtRp(h.jumlah - h.dibayar);
+  document.getElementById('fBayarHutangTanggal').value = tanggalHariIni();
+  document.getElementById('fBayarHutangJumlah').value = h.jumlah - h.dibayar;
+  document.getElementById('infoBayarHutang').innerHTML = 'Sisa hutang: <b>' + fmtRp(h.jumlah - h.dibayar) + '</b>. Bila jumlah bayar melebihi sisa, hanya sisa yang dicatat sebagai pelunasan.';
+  document.getElementById('cardBayarHutang').style.display = '';
+  document.getElementById('cardBayarHutang').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalBayarHutang() {
+  bayarHutangId = null;
+  document.getElementById('formBayarHutang').reset();
+  document.getElementById('cardBayarHutang').style.display = 'none';
+}
+document.getElementById('formBayarHutang').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var h = db.hutang.find(function (x) { return x.id === bayarHutangId; });
+  if (!h) { toast('Pilih hutang dulu lewat tombol Catat Pembayaran.'); return; }
+  var jml = Number(document.getElementById('fBayarHutangJumlah').value);
+  var tgl = document.getElementById('fBayarHutangTanggal').value;
+  var cara = document.getElementById('fBayarHutangCara').value;
+  if (!tgl || !jml || jml <= 0) { toast('Isi tanggal dan jumlah bayar lebih dari 0.'); return; }
+  var sisa = h.jumlah - h.dibayar;
+  if (jml > sisa) { jml = sisa; toast('Jumlah bayar melebihi sisa — dicatat sebesar sisa hutang.'); }
+  h.dibayar += jml;
+  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — ' + h.supplier, jumlah: jml, cara: cara });
+  save(); batalBayarHutang(); renderAll();
+  toast('Pembayaran hutang ' + fmtRp(jml) + ' tercatat (kas keluar otomatis).');
+});
+document.getElementById('btnBatalBayarHutang').addEventListener('click', batalBayarHutang);
+function mulaiUbahHutang(id) {
+  var h = db.hutang.find(function (x) { return x.id === id; });
+  if (!h) return;
+  editHutangId = id;
+  document.getElementById('fHutangSupplier').value = h.supplier;
+  document.getElementById('fHutangTanggal').value = h.tanggal;
+  document.getElementById('fHutangTempo').value = h.jatuhTempo;
+  document.getElementById('fHutangJumlah').value = h.jumlah;
+  document.getElementById('fHutangKeterangan').value = h.keterangan || '';
+  document.getElementById('judulFormHutang').textContent = 'Ubah Hutang Supplier';
+  document.getElementById('btnSimpanHutang').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahHutang').style.display = '';
+  document.getElementById('formHutang').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahHutang() {
+  editHutangId = null;
+  document.getElementById('formHutang').reset();
+  document.getElementById('judulFormHutang').textContent = 'Tambah Hutang Supplier';
+  document.getElementById('btnSimpanHutang').textContent = 'Simpan Hutang';
+  document.getElementById('btnBatalUbahHutang').style.display = 'none';
+}
+document.getElementById('formHutang').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var data = {
+    supplier: document.getElementById('fHutangSupplier').value.trim(),
+    tanggal: document.getElementById('fHutangTanggal').value,
+    jatuhTempo: document.getElementById('fHutangTempo').value,
+    jumlah: Number(document.getElementById('fHutangJumlah').value),
+    keterangan: document.getElementById('fHutangKeterangan').value.trim()
+  };
+  if (!data.supplier || !data.tanggal || !data.jatuhTempo || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  if (editHutangId) {
+    var h = db.hutang.find(function (x) { return x.id === editHutangId; });
+    if (h) {
+      if (data.jumlah < h.dibayar) { toast('Jumlah hutang tidak boleh lebih kecil dari yang sudah dibayar (' + fmtRp(h.dibayar) + ').'); return; }
+      Object.assign(h, data);
+    }
+    toast('Hutang diperbarui.');
+  } else {
+    db.hutang.push(Object.assign({ id: uid(), dibayar: 0 }, data));
+    toast('Hutang ditambahkan.');
+  }
+  save(); batalUbahHutang(); renderAll();
+});
+document.getElementById('btnBatalUbahHutang').addEventListener('click', batalUbahHutang);
+document.getElementById('filterStatusHutang').addEventListener('change', renderHutang);
+
+/* ---------- RENDER: PIUTANG ---------- */
+var editPiutangId = null;
+var bayarPiutangId = null;
+function renderPiutang() {
+  var total = db.piutang.reduce(function (a, p) { return a + p.jumlah; }, 0);
+  var dibayar = db.piutang.reduce(function (a, p) { return a + p.dibayar; }, 0);
+  document.getElementById('statTotalPiutang').textContent = fmtRp(total);
+  document.getElementById('statPiutangDiterima').textContent = fmtRp(dibayar);
+  document.getElementById('statSisaPiutang').textContent = fmtRp(total - dibayar);
+  document.getElementById('statPiutangTempo').textContent = db.piutang.filter(lewatTempo).length;
+
+  var fS = document.getElementById('filterStatusPiutang').value;
+  var list = db.piutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
+    .filter(function (p) { return !fS || statusLunas(p) === fS; });
+  var wadah = document.getElementById('daftarPiutang');
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada piutang yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = list.map(function (p) {
+    var st = statusLunas(p);
+    var persen = p.jumlah > 0 ? Math.min(100, Math.round(p.dibayar / p.jumlah * 100)) : 0;
+    var tempo = lewatTempo(p) ? ' <span class="lencana st-jatuh-tempo">Jatuh Tempo</span>' : '';
+    return '<div class="item-menu"><div class="atas"><div style="flex:1 1 260px">' +
+      '<div class="nama">' + esc(p.pelanggan) + ' <span class="lencana ' + kelasStatus(st) + '">' + st + '</span>' + tempo + '</div>' +
+      '<div class="detail">Piutang: ' + tglIndo(p.tanggal) + ' · Jatuh tempo: ' + tglIndo(p.jatuhTempo) + (p.keterangan ? ' · ' + esc(p.keterangan) : '') + '</div>' +
+      '<div class="detail">Total ' + fmtRp(p.jumlah) + ' · Sudah diterima ' + fmtRp(p.dibayar) + ' · <b>Sisa ' + fmtRp(p.jumlah - p.dibayar) + '</b> (' + persen + '%)</div>' +
+      '<div class="progress"><div class="' + (persen >= 100 ? 'penuh' : '') + '" style="width:' + persen + '%"></div></div>' +
+      '</div></div>' +
+      '<div class="aksi">' +
+      (st !== 'Lunas' ? '<button class="btn kecil hijau" data-bayar-piutang="' + p.id + '">Catat Pelunasan</button>' : '') +
+      '<button class="btn kecil biru" data-ubah-piutang="' + p.id + '">Ubah</button>' +
+      '<button class="btn kecil merah" data-hapus-piutang="' + p.id + '">Hapus</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-bayar-piutang]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiBayarPiutang(b.dataset.bayarPiutang); });
+  });
+  wadah.querySelectorAll('[data-ubah-piutang]').forEach(function (b) {
+    b.addEventListener('click', function () { mulaiUbahPiutang(b.dataset.ubahPiutang); });
+  });
+  wadah.querySelectorAll('[data-hapus-piutang]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = db.piutang.find(function (x) { return x.id === b.dataset.hapusPiutang; });
+      if (!p) return;
+      if (!confirm('Hapus piutang dari "' + p.pelanggan + '" (' + fmtRp(p.jumlah) + ')? Riwayat kas terkait tetap tersimpan.')) return;
+      db.piutang = db.piutang.filter(function (x) { return x.id !== p.id; });
+      save(); renderAll(); toast('Piutang dihapus.');
+    });
+  });
+}
+function mulaiBayarPiutang(id) {
+  var p = db.piutang.find(function (x) { return x.id === id; });
+  if (!p) return;
+  bayarPiutangId = id;
+  document.getElementById('labelBayarPiutang').textContent = p.pelanggan + ' — sisa ' + fmtRp(p.jumlah - p.dibayar);
+  document.getElementById('fBayarPiutangTanggal').value = tanggalHariIni();
+  document.getElementById('fBayarPiutangJumlah').value = p.jumlah - p.dibayar;
+  document.getElementById('infoBayarPiutang').innerHTML = 'Sisa piutang: <b>' + fmtRp(p.jumlah - p.dibayar) + '</b>. Bila jumlah terima melebihi sisa, hanya sisa yang dicatat sebagai pelunasan.';
+  document.getElementById('cardBayarPiutang').style.display = '';
+  document.getElementById('cardBayarPiutang').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalBayarPiutang() {
+  bayarPiutangId = null;
+  document.getElementById('formBayarPiutang').reset();
+  document.getElementById('cardBayarPiutang').style.display = 'none';
+}
+document.getElementById('formBayarPiutang').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var p = db.piutang.find(function (x) { return x.id === bayarPiutangId; });
+  if (!p) { toast('Pilih piutang dulu lewat tombol Catat Pelunasan.'); return; }
+  var jml = Number(document.getElementById('fBayarPiutangJumlah').value);
+  var tgl = document.getElementById('fBayarPiutangTanggal').value;
+  var cara = document.getElementById('fBayarPiutangCara').value;
+  if (!tgl || !jml || jml <= 0) { toast('Isi tanggal dan jumlah terima lebih dari 0.'); return; }
+  var sisa = p.jumlah - p.dibayar;
+  if (jml > sisa) { jml = sisa; toast('Jumlah terima melebihi sisa — dicatat sebesar sisa piutang.'); }
+  p.dibayar += jml;
+  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — ' + p.pelanggan, jumlah: jml, cara: cara });
+  save(); batalBayarPiutang(); renderAll();
+  toast('Pelunasan piutang ' + fmtRp(jml) + ' tercatat (kas masuk otomatis).');
+});
+document.getElementById('btnBatalBayarPiutang').addEventListener('click', batalBayarPiutang);
+function mulaiUbahPiutang(id) {
+  var p = db.piutang.find(function (x) { return x.id === id; });
+  if (!p) return;
+  editPiutangId = id;
+  document.getElementById('fPiutangPelanggan').value = p.pelanggan;
+  document.getElementById('fPiutangTanggal').value = p.tanggal;
+  document.getElementById('fPiutangTempo').value = p.jatuhTempo;
+  document.getElementById('fPiutangJumlah').value = p.jumlah;
+  document.getElementById('fPiutangKeterangan').value = p.keterangan || '';
+  document.getElementById('judulFormPiutang').textContent = 'Ubah Piutang Pelanggan';
+  document.getElementById('btnSimpanPiutang').textContent = 'Simpan Perubahan';
+  document.getElementById('btnBatalUbahPiutang').style.display = '';
+  document.getElementById('formPiutang').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function batalUbahPiutang() {
+  editPiutangId = null;
+  document.getElementById('formPiutang').reset();
+  document.getElementById('judulFormPiutang').textContent = 'Tambah Piutang Pelanggan';
+  document.getElementById('btnSimpanPiutang').textContent = 'Simpan Piutang';
+  document.getElementById('btnBatalUbahPiutang').style.display = 'none';
+}
+document.getElementById('formPiutang').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var data = {
+    pelanggan: document.getElementById('fPiutangPelanggan').value.trim(),
+    tanggal: document.getElementById('fPiutangTanggal').value,
+    jatuhTempo: document.getElementById('fPiutangTempo').value,
+    jumlah: Number(document.getElementById('fPiutangJumlah').value),
+    keterangan: document.getElementById('fPiutangKeterangan').value.trim()
+  };
+  if (!data.pelanggan || !data.tanggal || !data.jatuhTempo || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  if (editPiutangId) {
+    var p = db.piutang.find(function (x) { return x.id === editPiutangId; });
+    if (p) {
+      if (data.jumlah < p.dibayar) { toast('Jumlah piutang tidak boleh lebih kecil dari yang sudah diterima (' + fmtRp(p.dibayar) + ').'); return; }
+      Object.assign(p, data);
+    }
+    toast('Piutang diperbarui.');
+  } else {
+    db.piutang.push(Object.assign({ id: uid(), dibayar: 0 }, data));
+    toast('Piutang ditambahkan.');
+  }
+  save(); batalUbahPiutang(); renderAll();
+});
+document.getElementById('btnBatalUbahPiutang').addEventListener('click', batalUbahPiutang);
+document.getElementById('filterStatusPiutang').addEventListener('change', renderPiutang);
+
+/* ---------- RENDER: LABA RUGI ---------- */
+function renderLabaRugi() {
+  var bulanFilter = document.getElementById('filterBulanLabaRugi').value || bulanSekarang();
+  isiSelectBulan(document.getElementById('filterBulanLabaRugi'), bulanFilter);
+  bulanFilter = document.getElementById('filterBulanLabaRugi').value;
+  setLabelBulan('label-bulan-lr', bulanFilter);
+  var r = hitungLabaRugi(bulanFilter);
+  document.getElementById('lrPendapatan').textContent = fmtRp(r.pendapatan);
+  document.getElementById('lrBiaya').textContent = fmtRp(r.pembelian + r.biayaOp);
+  document.getElementById('lrLaba').textContent = fmtRp(r.labaBersih);
+  document.getElementById('lrMargin').textContent = r.pendapatan > 0 ? (Math.round(r.labaBersih / r.pendapatan * 1000) / 10) + '%' : '0%';
+  document.getElementById('tabelLabaRugi').innerHTML =
+    '<table class="tabel-harga">' +
+    '<tr><th colspan="2">PENDAPATAN</th></tr>' +
+    '<tr><td>Penjualan tunai</td><td>' + fmtRp(r.penjualanTunai) + '</td></tr>' +
+    '<tr><td>Penjualan kredit (piutang baru)</td><td>' + fmtRp(r.penjualanKredit) + '</td></tr>' +
+    '<tr class="total"><td>Total Pendapatan</td><td>' + fmtRp(r.pendapatan) + '</td></tr>' +
+    '<tr><th colspan="2">PEMBELIAN BARANG (HPP)</th></tr>' +
+    '<tr><td>Pembelian tunai</td><td>' + fmtRp(r.pembelianTunai) + '</td></tr>' +
+    '<tr><td>Pembelian kredit (hutang baru)</td><td>' + fmtRp(r.pembelianKredit) + '</td></tr>' +
+    '<tr class="total"><td>Total Pembelian Barang</td><td>' + fmtRp(r.pembelian) + '</td></tr>' +
+    '<tr class="total"><td>Laba Kotor (Pendapatan − Pembelian)</td><td>' + fmtRp(r.labaKotor) + '</td></tr>' +
+    '<tr><th colspan="2">BIAYA OPERASIONAL</th></tr>' +
+    '<tr><td>Total biaya operasional</td><td>' + fmtRp(r.biayaOp) + '</td></tr>' +
+    '<tr class="total"><td>LABA BERSIH (Laba Kotor − Biaya Operasional)</td><td>' + fmtRp(r.labaBersih) + '</td></tr>' +
+    '</table>';
+  document.getElementById('catatanLabaRugi').innerHTML = r.labaBersih >= 0
+    ? 'Pada ' + labelBulan(bulanFilter) + ' usaha <b>untung ' + fmtRp(r.labaBersih) + '</b> (margin ' + (r.pendapatan > 0 ? (Math.round(r.labaBersih / r.pendapatan * 1000) / 10) : 0) + '% dari pendapatan).'
+    : 'Pada ' + labelBulan(bulanFilter) + ' usaha <b>rugi ' + fmtRp(-r.labaBersih) + '</b> — biaya lebih besar dari pendapatan. Periksa pembelian barang dan biaya operasional bulan ini.';
+}
+document.getElementById('filterBulanLabaRugi').addEventListener('change', renderLabaRugi);
+document.getElementById('btnCetakLabaRugi').addEventListener('click', function () { window.print(); });
+
+/* ---------- RENDER: LAPORAN ---------- */
+function renderLaporan() {
+  var bulanFilter = document.getElementById('filterBulanLaporan').value || bulanSekarang();
+  isiSelectBulan(document.getElementById('filterBulanLaporan'), bulanFilter);
+  bulanFilter = document.getElementById('filterBulanLaporan').value;
+  setLabelBulan('label-bulan-laporan', bulanFilter);
+  var r = hitungLabaRugi(bulanFilter);
+  var masuk = kasBulan(bulanFilter, 'Masuk');
+  var keluar = kasBulan(bulanFilter, 'Keluar');
+  var totalHutang = db.hutang.reduce(function (a, h) { return a + h.jumlah; }, 0);
+  var dibayarHutang = db.hutang.reduce(function (a, h) { return a + h.dibayar; }, 0);
+  var sisaHutang = totalHutang - dibayarHutang;
+  var totalPiutang = db.piutang.reduce(function (a, p) { return a + p.jumlah; }, 0);
+  var dibayarPiutang = db.piutang.reduce(function (a, p) { return a + p.dibayar; }, 0);
+  var sisaPiutang = totalPiutang - dibayarPiutang;
+  document.getElementById('lapLaba').textContent = fmtRp(r.labaBersih);
+  document.getElementById('lapPendapatan').textContent = fmtRp(r.pendapatan);
+  document.getElementById('lapSelisihKas').textContent = fmtRp(masuk - keluar);
+  document.getElementById('lapSelisihUtang').textContent = fmtRp(sisaPiutang - sisaHutang);
+  document.getElementById('tabelLaporan').innerHTML =
+    '<table class="tabel-harga">' +
+    '<tr><th>Uraian</th><th>Jumlah</th></tr>' +
+    '<tr><td>Pendapatan penjualan tunai</td><td>' + fmtRp(r.penjualanTunai) + '</td></tr>' +
+    '<tr><td>Pendapatan penjualan kredit</td><td>' + fmtRp(r.penjualanKredit) + '</td></tr>' +
+    '<tr class="total"><td>Total Pendapatan</td><td>' + fmtRp(r.pendapatan) + '</td></tr>' +
+    '<tr><td>Pembelian barang tunai</td><td>' + fmtRp(r.pembelianTunai) + '</td></tr>' +
+    '<tr><td>Pembelian barang kredit</td><td>' + fmtRp(r.pembelianKredit) + '</td></tr>' +
+    '<tr><td>Biaya operasional</td><td>' + fmtRp(r.biayaOp) + '</td></tr>' +
+    '<tr class="total"><td>LABA BERSIH</td><td>' + fmtRp(r.labaBersih) + '</td></tr>' +
+    '<tr><td>Kas masuk bulan ini</td><td>' + fmtRp(masuk) + '</td></tr>' +
+    '<tr><td>Kas keluar bulan ini</td><td>' + fmtRp(keluar) + '</td></tr>' +
+    '<tr><td>Selisih kas (masuk − keluar)</td><td>' + fmtRp(masuk - keluar) + '</td></tr>' +
+    '<tr><td>Sisa hutang supplier (semua bulan)</td><td>' + fmtRp(sisaHutang) + '</td></tr>' +
+    '<tr><td>Sisa piutang pelanggan (semua bulan)</td><td>' + fmtRp(sisaPiutang) + '</td></tr>' +
+    '</table>';
+
+  var perSupplier = {};
+  db.hutang.forEach(function (h) { perSupplier[h.supplier] = (perSupplier[h.supplier] || 0) + (h.jumlah - h.dibayar); });
+  var sup = Object.keys(perSupplier).sort(function (a, b) { return perSupplier[b] - perSupplier[a]; });
+  document.getElementById('tabelLaporanHutang').innerHTML = sup.length
+    ? '<table class="tabel-harga"><tr><th>Supplier</th><th>Sisa Hutang</th></tr>' +
+      sup.map(function (s) { return '<tr><td>' + esc(s) + '</td><td>' + fmtRp(perSupplier[s]) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>TOTAL</td><td>' + fmtRp(sisaHutang) + '</td></tr></table>'
+    : '<p class="kosong">Belum ada hutang.</p>';
+
+  var perPelanggan = {};
+  db.piutang.forEach(function (p) { perPelanggan[p.pelanggan] = (perPelanggan[p.pelanggan] || 0) + (p.jumlah - p.dibayar); });
+  var pel = Object.keys(perPelanggan).sort(function (a, b) { return perPelanggan[b] - perPelanggan[a]; });
+  document.getElementById('tabelLaporanPiutang').innerHTML = pel.length
+    ? '<table class="tabel-harga"><tr><th>Pelanggan</th><th>Sisa Piutang</th></tr>' +
+      pel.map(function (s) { return '<tr><td>' + esc(s) + '</td><td>' + fmtRp(perPelanggan[s]) + '</td></tr>'; }).join('') +
+      '<tr class="total"><td>TOTAL</td><td>' + fmtRp(sisaPiutang) + '</td></tr></table>'
+    : '<p class="kosong">Belum ada piutang.</p>';
+}
+document.getElementById('filterBulanLaporan').addEventListener('change', renderLaporan);
+document.getElementById('btnCetakLaporan').addEventListener('click', function () { window.print(); });
+
+/* ---------- PANDUAN / RESET ---------- */
+document.getElementById('btnResetData').addEventListener('click', function () {
+  if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
+  db = dataContoh();
+  save();
+  batalUbahKas(); batalUbahBiaya(); batalUbahHutang(); batalUbahPiutang();
+  batalBayarHutang(); batalBayarPiutang();
+  renderAll();
+  toast('Data contoh dikembalikan.');
+});
+
+/* ---------- INIT ---------- */
+function renderAll() {
+  renderKas();
+  renderBiaya();
+  renderHutang();
+  renderPiutang();
+  renderLabaRugi();
+  renderLaporan();
+}
+document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+isiKategoriKas();
+load();
+renderAll();
+</script>
+</body>
+</html>
