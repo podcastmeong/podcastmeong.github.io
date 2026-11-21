@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Oyen Lari — Endless Runner | Podcast Meong</title>
+<meta name="description" content="Oyen Lari — endless runner bersama Oyen si kucing oranye. Lompat rintangan, kumpulkan koin ikan, kejar skor tertinggi. Main gratis di browser.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: #f7f9fc; color: #14263d; line-height: 1.6; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px 14px 48px; }
+  .banner { background: #fff3cd; color: #7a5b00; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+  header { text-align: center; background: #14263d; color: #fff; border-radius: 16px; padding: 22px 16px 18px; margin-bottom: 16px; }
+  header h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 6vw, 36px); line-height: 1.1; color: #fff; }
+  header p { color: #c9d8ea; margin-top: 6px; font-size: 14px; }
+  .oyen { width: 84px; height: 84px; margin: 0 auto 8px; display: block; }
+  .oyen.bounce { animation: lompat .5s ease; }
+  @keyframes lompat { 0% { transform: translateY(0); } 40% { transform: translateY(-14px) rotate(-4deg); } 100% { transform: translateY(0); } }
+  .hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(20,38,61,.08); padding: 8px 4px; text-align: center; }
+  .stat .label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #4a6b8a; }
+  .stat .value { font-size: 20px; font-weight: 800; color: #14263d; }
+  .nyawa { color: #e2607a; letter-spacing: 2px; }
+  .stage-wrap { position: relative; }
+  #papan { display: block; width: 100%; height: auto; background: #dcebf7; border-radius: 12px; border: 4px solid #14263d; touch-action: none; cursor: pointer; }
+  .overlay { position: absolute; inset: 0; background: rgba(15, 28, 46, .88); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center; z-index: 4; }
+  .overlay.hidden { display: none; }
+  .overlay h2 { color: #fff; font-family: Georgia, serif; font-size: 26px; }
+  .overlay p { color: #c9d8ea; font-size: 14px; max-width: 300px; }
+  .overlay .skor-besar { color: #f4ce82; font-size: 34px; font-weight: 800; }
+  .btn { display: block; width: 100%; padding: 10px 12px; border-radius: 999px; border: none; background: #14263d; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #0f1c2e; }
+  .btn.orange { background: #f5820b; }
+  .btn.orange:hover { background: #d96f06; }
+  .btn.ghost { background: #fff; color: #14263d; border: 1px solid #8fb4d9; }
+  .btn.ghost:hover { border-color: #14263d; }
+  .btn:disabled { background: #e8eef4; color: #7a8a9c; cursor: default; }
+  .btn-inline { display: inline-block; width: auto; padding: 10px 22px; }
+  .baris-tombol { display: flex; gap: 8px; margin-top: 12px; }
+  .baris-tombol .btn { flex: 1; }
+  .pilihan { display: flex; gap: 8px; justify-content: center; margin: 4px 0 12px; flex-wrap: wrap; }
+  .pilihan button { padding: 8px 16px; border-radius: 999px; border: 1px solid #8fb4d9; background: #fff; color: #14263d; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .pilihan button.pilih { background: #14263d; color: #fff; border-color: #14263d; }
+  .pilihan-label { text-align: center; font-size: 13px; font-weight: 700; color: #4a6b8a; margin-top: 12px; }
+  .cara { background: #fff; border-radius: 16px; box-shadow: 0 4px 16px rgba(20,38,61,.08); padding: 20px; margin-top: 16px; }
+  .cara h2 { font-family: Georgia, serif; font-size: 20px; margin-bottom: 8px; }
+  .cara ul { margin-left: 18px; color: #33475e; font-size: 15px; }
+  .cara li { margin-bottom: 4px; }
+  .cara kbd { background: #e8f0f8; border: 1px solid #8fb4d9; border-radius: 6px; padding: 1px 7px; font-family: inherit; font-weight: 700; }
+  .info-harga { background: #fff8e1; color: #7a5b00; border-radius: 12px; padding: 12px 16px; margin-top: 16px; font-size: 14px; text-align: center; }
+  .nav-bawah { margin-top: 16px; text-align: center; font-size: 14px; }
+  .nav-bawah a { color: #14263d; font-weight: 700; text-decoration: none; }
+  .nav-bawah a:hover { text-decoration: underline; }
+  footer { margin-top: 24px; text-align: center; color: #4a6b8a; font-size: 13px; }
+  @media (max-width: 420px) { .hud { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">DEMO GRATIS &mdash; main sepuasnya di browser, tanpa install</div>
+
+  <header>
+    <svg class="oyen" id="oyenSvg" viewBox="0 0 100 100" role="img" aria-label="Oyen si kucing oranye">
+      <polygon points="18,38 8,10 42,24" fill="#f5820b"/>
+      <polygon points="82,38 92,10 58,24" fill="#f5820b"/>
+      <polygon points="20,34 14,18 34,26" fill="#f8b4c4"/>
+      <polygon points="80,34 86,18 66,26" fill="#f8b4c4"/>
+      <circle cx="50" cy="55" r="36" fill="#f5820b"/>
+      <circle cx="50" cy="55" r="36" fill="none" stroke="#d96f06" stroke-width="2"/>
+      <ellipse cx="36" cy="50" rx="5" ry="7" fill="#14263d"/>
+      <ellipse cx="64" cy="50" rx="5" ry="7" fill="#14263d"/>
+      <circle cx="38" cy="47" r="1.8" fill="#fff"/>
+      <circle cx="66" cy="47" r="1.8" fill="#fff"/>
+      <path d="M46 62 L54 62 L50 68 Z" fill="#e2607a"/>
+      <path d="M50 68 Q50 74 44 74 M50 68 Q50 74 56 74" fill="none" stroke="#14263d" stroke-width="2" stroke-linecap="round"/>
+      <g stroke="#f4ce82" stroke-width="2" stroke-linecap="round">
+        <line x1="14" y1="58" x2="30" y2="62"/><line x1="14" y1="66" x2="30" y2="64"/>
+        <line x1="86" y1="58" x2="70" y2="62"/><line x1="86" y1="66" x2="70" y2="64"/>
+      </g>
+      <path d="M30 30 Q38 24 46 28" fill="none" stroke="#d96f06" stroke-width="3" stroke-linecap="round"/>
+      <path d="M54 28 Q62 24 70 30" fill="none" stroke="#d96f06" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1>Oyen Lari</h1>
+    <p>Endless runner bersama Oyen &mdash; lari sejauh mungkin, lompat rintangan, kumpulkan ikan!</p>
+  </header>
+
+  <div class="hud">
+    <div class="stat"><div class="label">Skor</div><div class="value" id="skor">0</div></div>
+    <div class="stat"><div class="label">Jarak</div><div class="value" id="jarak">0 m</div></div>
+    <div class="stat"><div class="label">Level</div><div class="value" id="level">1</div></div>
+    <div class="stat"><div class="label">Nyawa</div><div class="value nyawa" id="nyawa">&hearts;&hearts;&hearts;</div></div>
+  </div>
+  <div class="hud" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="stat"><div class="label">Ikan</div><div class="value" id="ikan">0</div></div>
+    <div class="stat"><div class="label">Rekor</div><div class="value" id="rekor">0</div></div>
+  </div>
+
+  <div class="stage-wrap">
+    <canvas id="papan" width="520" height="300"></canvas>
+    <div class="overlay" id="overlayAwal">
+      <h2>Siap lari?</h2>
+      <p>Oyen berlari sendiri. Tekan <b>Spasi</b> atau ketuk layar untuk melompat. Lompat kaleng dan tikus, ambil ikan sebanyak-banyaknya!</p>
+      <button class="btn orange btn-inline" id="btnMulai" type="button">Mulai Lari</button>
+      <p style="font-size:12px">Spasi / &uarr; / ketuk layar = lompat &middot; P = jeda</p>
+    </div>
+    <div class="overlay hidden" id="overlayAkhir">
+      <h2>Oyen kelelahan!</h2>
+      <p id="teksAkhir">Oyen menabrak rintangan tiga kali.</p>
+      <div class="skor-besar" id="skorAkhir">0</div>
+      <p id="teksRekor"></p>
+      <button class="btn orange btn-inline" id="btnUlang" type="button">Lari Lagi</button>
+    </div>
+    <div class="overlay hidden" id="overlayJeda">
+      <h2>Jeda</h2>
+      <p>Oyen istirahat sebentar. Tarik napas dulu.</p>
+      <button class="btn orange btn-inline" id="btnLanjut" type="button">Lanjutkan</button>
+    </div>
+  </div>
+
+  <p class="pilihan-label">Kecepatan awal</p>
+  <div class="pilihan" id="pilihanSulit">
+    <button type="button" data-sulit="lambat">Lambat</button>
+    <button type="button" data-sulit="normal" class="pilih">Normal</button>
+    <button type="button" data-sulit="cepat">Cepat</button>
+  </div>
+
+  <div class="baris-tombol">
+    <button class="btn" id="btnJeda" type="button" disabled>Jeda</button>
+    <button class="btn ghost" id="btnSuara" type="button">Suara: Nyala</button>
+    <button class="btn ghost" id="btnUlangKecil" type="button">Ulang</button>
+  </div>
+
+  <section class="cara">
+    <h2>Cara main</h2>
+    <ul>
+      <li>Oyen berlari otomatis. Tekan <kbd>Spasi</kbd>, <kbd>&uarr;</kbd>, atau ketuk layar untuk melompat.</li>
+      <li>Lompati <b>kaleng</b> dan <b>tikus</b> &mdash; menabrak mengurangi 1 nyawa. Oyen punya 3 nyawa.</li>
+      <li>Ambil <b>ikan</b> (&plusmn;25 poin tiap ikan). Skor = jarak + bonus ikan.</li>
+      <li>Tiap <b>500 m</b> naik 1 level dan lari makin cepat. Level naik juga menambah kecepatan rintangan.</li>
+      <li>Setelah menabrak, Oyen kebal sebentar (berkedip) &mdash; manfaatkan untuk lewat.</li>
+      <li>Skor tertinggi tersimpan di perangkat ini (localStorage) &mdash; kalahkan rekormu sendiri!</li>
+    </ul>
+  </section>
+
+  <p class="info-harga"><strong>Harga menyusul</strong> &mdash; demo gratis ini bisa dimainkan sepuasnya di browser. Harga final menyusul saat rilis.</p>
+
+  <p class="nav-bawah"><a href="https://podcastmeong.github.io/game/">&larr; Kembali ke Game</a> &nbsp;&middot;&nbsp; <a href="https://podcastmeong.github.io/toko.html#game">Lihat di Toko</a></p>
+
+  <footer>
+    <p>Game HTML5 satu file dari Podcast Meong &mdash; Oyen si kucing oranye. Gambar Oyen digambar (SVG), bukan foto asli. Demo web &mdash; skor tersimpan per perangkat.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var W = 520, H = 300, TANAH = 252;
+  var kanvas = document.getElementById("papan");
+  var ctx = kanvas.getContext("2d");
+
+  var SULIT = { lambat: 3.2, normal: 4.2, cepat: 5.4 };
+  var KUNCI_REKOR = "oyenLari.rekor";
+  var KUNCI_SUARA = "oyenLari.suara";
+  var KUNCI_SULIT = "oyenLari.kesulitan";
+
+  var status = "siap", skor = 0, jarak = 0, level = 1, nyawa = 3, ikan = 0;
+  var rekor = 0, suaraNyala = true, kesulitan = "normal";
+  var oyen = { x: 80, y: TANAH, vy: 0, diTanah: true, kebal: 0 };
+  var rintangan = [], koin = [], awan = [], rumput = [];
+  var kecepatan = SULIT.normal, jarakSpawn = 0, frame = 0, raf = null, terakhir = 0;
+  var elSkor = document.getElementById("skor"), elJarak = document.getElementById("jarak"),
+      elLevel = document.getElementById("level"), elNyawa = document.getElementById("nyawa"),
+      elIkan = document.getElementById("ikan"), elRekor = document.getElementById("rekor"),
+      elAwal = document.getElementById("overlayAwal"), elAkhir = document.getElementById("overlayAkhir"),
+      elJeda = document.getElementById("overlayJeda"), elSkorAkhir = document.getElementById("skorAkhir"),
+      elTeksAkhir = document.getElementById("teksAkhir"), elTeksRekor = document.getElementById("teksRekor"),
+      oyenSvg = document.getElementById("oyenSvg");
+
+  try { rekor = parseInt(localStorage.getItem(KUNCI_REKOR) || "0", 10) || 0; } catch (e) { rekor = 0; }
+  try { suaraNyala = localStorage.getItem(KUNCI_SUARA) !== "mati"; } catch (e) { suaraNyala = true; }
+  try { var s = localStorage.getItem(KUNCI_SULIT); if (SULIT[s]) kesulitan = s; } catch (e) {}
+  elRekor.textContent = rekor;
+
+  var audioCtx = null;
+  function bunyi(freq, dur, tipe, vol) {
+    if (!suaraNyala) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = tipe || "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.08, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch (e) {}
+  }
+  function nadaBerurutan(freqs, dur) {
+    freqs.forEach(function (f, i) { setTimeout(function () { bunyi(f, dur, "triangle", 0.09); }, i * 90); });
+  }
+
+  function kecepatanSekarang() { return SULIT[kesulitan] + (level - 1) * 0.35; }
+  function hitungLevel(dariJarak) { return Math.floor(dariJarak / 500) + 1; }
+  function hitungSkor(dariJarak, jmlIkan) { return Math.floor(dariJarak) + jmlIkan * 25; }
+
+  function acak(min, maks) { return min + Math.random() * (maks - min); }
+  function buatRintangan() {
+    var jenis = Math.random() < 0.6 ? "kaleng" : "tikus";
+    rintangan.push({ jenis: jenis, x: W + 20, y: jenis === "kaleng" ? TANAH - 34 : TANAH - 22, w: jenis === "kaleng" ? 30 : 34, h: jenis === "kaleng" ? 34 : 22, kena: false });
+  }
+  function buatKoin() {
+    var y = Math.random() < 0.5 ? TANAH - 70 : TANAH - 110;
+    koin.push({ x: W + 20, y: y, ambil: false });
+  }
+  function buatAwan() {
+    awan.push({ x: W + 20, y: acak(20, 90), s: acak(0.6, 1.2), v: acak(0.3, 0.8) });
+  }
+  function buatRumput() {
+    rumput.push({ x: W + 10, y: TANAH + 14, h: acak(8, 18) });
+  }
+
+  function lompat() {
+    if (status !== "main") return;
+    if (oyen.diTanah) {
+      oyen.vy = -12.5; oyen.diTanah = false;
+      bunyi(520, 0.12, "sine", 0.07);
+    }
+  }
+  function tabrakan(a, b) {
+    return a.x < b.x + b.w && a.x + 34 > b.x && a.y < b.y + b.h && a.y + 30 > b.y;
+  }
+
+  function langkah(dt) {
+    frame++;
+    kecepatan = kecepatanSekarang();
+    var maju = kecepatan * dt * 60;
+    jarak += maju * 0.12;
+    var levelBaru = hitungLevel(jarak);
+    if (levelBaru > level) {
+      level = levelBaru;
+      nadaBerurutan([523, 659, 784], 0.1);
+      oyenSvg.classList.remove("bounce"); void oyenSvg.offsetWidth; oyenSvg.classList.add("bounce");
+    }
+    skor = hitungSkor(jarak, ikan);
+
+    // Oyen: gravitasi
+    oyen.vy += 0.65;
+    oyen.y += oyen.vy;
+    if (oyen.y >= TANAH) { oyen.y = TANAH; oyen.vy = 0; oyen.diTanah = true; }
+    if (oyen.kebal > 0) oyen.kebal -= dt;
+
+    // spawn
+    jarakSpawn += maju;
+    if (jarakSpawn > acak(260, 420)) { jarakSpawn = 0; buatRintangan(); if (Math.random() < 0.6) buatKoin(); }
+    if (frame % 240 === 0) buatAwan();
+    if (frame % 40 === 0) buatRumput();
+
+    // gerak rintangan
+    for (var i = rintangan.length - 1; i >= 0; i--) {
+      var r = rintangan[i]; r.x -= maju;
+      if (r.x < -60) { rintangan.splice(i, 1); continue; }
+      if (!r.kena && oyen.kebal <= 0 && tabrakan({ x: oyen.x, y: oyen.y - 30, w: 34, h: 30 }, r)) {
+        r.kena = true; nyawa--; oyen.kebal = 1.5;
+        bunyi(160, 0.25, "sawtooth", 0.12);
+        if (nyawa <= 0) { akhiriGame(); return; }
+      }
+    }
+    for (var j = koin.length - 1; j >= 0; j--) {
+      var k = koin[j]; k.x -= maju;
+      if (k.x < -30) { koin.splice(j, 1); continue; }
+      var dx = (oyen.x + 17) - k.x, dy = (oyen.y - 15) - k.y;
+      if (dx * dx + dy * dy < 32 * 32) {
+        koin.splice(j, 1); ikan++; skor = hitungSkor(jarak, ikan);
+        bunyi(880, 0.1, "triangle", 0.09); setTimeout(function () { bunyi(1170, 0.1, "triangle", 0.08); }, 70);
+      }
+    }
+    for (var a = awan.length - 1; a >= 0; a--) { awan[a].x -= awan[a].v + maju * 0.2; if (awan[a].x < -80) awan.splice(a, 1); }
+    for (var g = rumput.length - 1; g >= 0; g--) { rumput[g].x -= maju; if (rumput[g].x < -10) rumput.splice(g, 1); }
+    perbaruiHud();
+  }
+
+  function gambar() {
+    ctx.clearRect(0, 0, W, H);
+    var grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, "#bcd9f2"); grad.addColorStop(0.7, "#dcebf7"); grad.addColorStop(1, "#f7ecd7");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    // matahari
+    ctx.fillStyle = "#ffd94d"; ctx.beginPath(); ctx.arc(460, 44, 26, 0, Math.PI * 2); ctx.fill();
+    // awan
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    awan.forEach(function (c) {
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, 30 * c.s, 12 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(c.x + 22 * c.s, c.y + 3, 20 * c.s, 10 * c.s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    // tanah
+    ctx.fillStyle = "#8fb4d9"; ctx.fillRect(0, TANAH + 30, W, H - TANAH - 30);
+    ctx.fillStyle = "#5b8a3c"; ctx.fillRect(0, TANAH + 30, W, 6);
+    ctx.fillStyle = "#6da344";
+    rumput.forEach(function (r) { ctx.fillRect(r.x, TANAH + 34, 3, r.h); });
+    // koin ikan
+    ctx.font = "26px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    koin.forEach(function (k) { ctx.fillText("\uD83D\uDC1F", k.x, k.y); });
+    // rintangan
+    rintangan.forEach(function (r) {
+      if (r.jenis === "kaleng") {
+        ctx.fillStyle = "#c8d4de"; ctx.fillRect(r.x, r.y, r.w, r.h);
+        ctx.fillStyle = "#8fa3b3"; ctx.fillRect(r.x, r.y, r.w, 5); ctx.fillRect(r.x, r.y + r.h - 5, r.w, 5);
+        ctx.font = "18px sans-serif"; ctx.fillText("\uD83D\uDC1F", r.x + 15, r.y + 17);
+      } else {
+        ctx.font = "26px sans-serif"; ctx.fillText("\uD83D\uDC2D", r.x + 17, r.y + 12);
+      }
+    });
+    // Oyen (berkedip saat kebal)
+    if (!(oyen.kebal > 0 && Math.floor(frame / 4) % 2 === 0)) {
+      ctx.font = "38px sans-serif";
+      ctx.fillText("\uD83D\uDC31", oyen.x + 17, oyen.y - 8 + Math.sin(frame * 0.3) * (oyen.diTanah ? 1.5 : 0));
+    }
+    if (status === "siap") {
+      ctx.fillStyle = "rgba(20,38,61,.55)"; ctx.font = "bold 15px sans-serif";
+      ctx.fillText("Tekan Mulai Lari, lalu lompat dengan Spasi / ketuk layar", W / 2, 130);
+    }
+  }
+
+  function loop(ts) {
+    if (status !== "main") return;
+    var dt = Math.min(0.05, (ts - terakhir) / 1000 || 0.016);
+    terakhir = ts;
+    langkah(dt);
+    gambar();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function perbaruiHud() {
+    elSkor.textContent = skor;
+    elJarak.textContent = Math.floor(jarak) + " m";
+    elLevel.textContent = level;
+    elNyawa.innerHTML = "&hearts;".repeat(Math.max(0, nyawa)) + "<span style='opacity:.25'>" + "&hearts;".repeat(Math.max(0, 3 - nyawa)) + "</span>";
+    elIkan.textContent = ikan;
+    elRekor.textContent = rekor;
+  }
+
+  function mulaiGame() {
+    skor = 0; jarak = 0; level = 1; nyawa = 3; ikan = 0;
+    oyen.y = TANAH; oyen.vy = 0; oyen.diTanah = true; oyen.kebal = 0;
+    rintangan = []; koin = []; awan = []; rumput = []; jarakSpawn = 0; frame = 0;
+    for (var i = 0; i < 3; i++) buatAwan();
+    status = "main";
+    elAwal.classList.add("hidden"); elAkhir.classList.add("hidden"); elJeda.classList.add("hidden");
+    document.getElementById("btnJeda").disabled = false;
+    perbaruiHud();
+    bunyi(440, 0.1, "triangle", 0.08);
+    terakhir = performance.now();
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+  }
+  function akhiriGame() {
+    status = "selesai";
+    cancelAnimationFrame(raf);
+    document.getElementById("btnJeda").disabled = true;
+    var rekorBaru = false;
+    if (skor > rekor) { rekor = skor; rekorBaru = true; try { localStorage.setItem(KUNCI_REKOR, String(rekor)); } catch (e) {} }
+    elSkorAkhir.textContent = skor;
+    elTeksAkhir.textContent = "Oyen berlari " + Math.floor(jarak) + " meter, mengumpulkan " + ikan + " ikan, sampai level " + level + ".";
+    elTeksRekor.textContent = rekorBaru ? "Rekor baru! Skor tertinggi sekarang " + rekor + "." : "Rekor tertinggi: " + rekor + ".";
+    elAkhir.classList.remove("hidden");
+    perbaruiHud();
+    nadaBerurutan([392, 330, 262, 196], 0.16);
+    gambar();
+  }
+  function jedaGame() {
+    if (status !== "main") return;
+    status = "jeda"; cancelAnimationFrame(raf);
+    elJeda.classList.remove("hidden");
+  }
+  function lanjutGame() {
+    if (status !== "jeda") return;
+    status = "main"; elJeda.classList.add("hidden");
+    terakhir = performance.now();
+    raf = requestAnimationFrame(loop);
+  }
+
+  document.getElementById("btnMulai").addEventListener("click", mulaiGame);
+  document.getElementById("btnUlang").addEventListener("click", mulaiGame);
+  document.getElementById("btnUlangKecil").addEventListener("click", mulaiGame);
+  document.getElementById("btnJeda").addEventListener("click", jedaGame);
+  document.getElementById("btnLanjut").addEventListener("click", lanjutGame);
+  var btnSuara = document.getElementById("btnSuara");
+  function perbaruiTombolSuara() { btnSuara.textContent = suaraNyala ? "Suara: Nyala" : "Suara: Mati"; }
+  perbaruiTombolSuara();
+  btnSuara.addEventListener("click", function () {
+    suaraNyala = !suaraNyala;
+    try { localStorage.setItem(KUNCI_SUARA, suaraNyala ? "nyala" : "mati"); } catch (e) {}
+    perbaruiTombolSuara();
+    if (suaraNyala) bunyi(440, 0.08, "sine", 0.06);
+  });
+  document.querySelectorAll("#pilihanSulit button").forEach(function (btn) {
+    if (btn.getAttribute("data-sulit") === kesulitan) btn.classList.add("pilih");
+    else btn.classList.remove("pilih");
+    btn.addEventListener("click", function () {
+      kesulitan = btn.getAttribute("data-sulit");
+      try { localStorage.setItem(KUNCI_SULIT, kesulitan); } catch (e) {}
+      document.querySelectorAll("#pilihanSulit button").forEach(function (b) { b.classList.toggle("pilih", b === btn); });
+      bunyi(440, 0.06, "sine", 0.05);
+    });
+  });
+
+  kanvas.addEventListener("pointerdown", function (e) { e.preventDefault(); lompat(); });
+  document.addEventListener("keydown", function (e) {
+    if (status === "main") {
+      if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); lompat(); }
+      else if (e.key === "p" || e.key === "P") jedaGame();
+    } else if ((e.key === "Enter" || e.key === " ") && (status === "siap" || status === "selesai")) {
+      e.preventDefault(); mulaiGame();
+    }
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && status === "main") jedaGame();
+  });
+
+  perbaruiHud(); gambar();
+
+  window.OYEN_TEST = {
+    status: function () { return { status: status, skor: skor, jarak: Math.floor(jarak), level: level, nyawa: nyawa, ikan: ikan, rekor: rekor, kesulitan: kesulitan, kecepatan: kecepatanSekarang(), oyenY: oyen.y, diTanah: oyen.diTanah }; },
+    mulai: mulaiGame,
+    lompat: lompat,
+    langkah: function (n) { for (var i = 0; i < n; i++) langkah(0.016); },
+    setJarak: function (m) { jarak = m; level = hitungLevel(jarak); skor = hitungSkor(jarak, ikan); perbaruiHud(); },
+    tambahKoin: function () { ikan++; skor = hitungSkor(jarak, ikan); perbaruiHud(); },
+    tabrak: function () { nyawa--; if (nyawa <= 0) akhiriGame(); perbaruiHud(); },
+    hitungLevel: hitungLevel,
+    hitungSkor: hitungSkor,
+    kecepatanSekarang: kecepatanSekarang,
+    akhiri: akhiriGame
+  };
+})();
+</script>
+</body>
+</html>
