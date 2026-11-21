@@ -140,12 +140,14 @@ def parse_ledger(ledger_path):
         m2 = re.findall(r"In review (\d+)", body)
         if m2:
             stats["adobe_in_review"] = int(m2[-1])
-    m3 = re.findall(r"[Pp]ortofolio (\d+)", body)
+    m3 = re.findall(r"[Pp]ort(?:folio|ofolio) (\d+)", body)
     if m3:
         stats["adobe_approved"] = int(m3[-1])
     m4 = re.findall(r"[Dd]reamstime pending[^0-9]*?(\d+)", body)
     if not m4:
         m4 = re.findall(r"pending review kini (\d+)", body)
+    if not m4:
+        m4 = re.findall(r"Pending (\d+)", body)
     if m4:
         stats["dreamstime_pending"] = int(m4[-1])
     return stats if len(stats) > 1 else None
