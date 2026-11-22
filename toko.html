@@ -751,6 +751,8 @@
       footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; align-items: center; }
       footer a { font-weight: 700; text-decoration: none; }
       footer a:hover { text-decoration: underline; }
+      .footer-platforms { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+      .footer-platforms .fp-label { font-weight: 700; color: var(--ink, inherit); }
 
       /* ---------- Penghitung pengunjung otomatis ---------- */
       .visitor-card {
@@ -2252,10 +2254,18 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>
           Hubungi via Email
         </a>
-        <a href="https://payhip.com/SatuKiki" target="_blank" rel="noopener">Beli di Payhip — payhip.com/SatuKiki</a>
-        <a href="https://satukiki.gumroad.com" target="_blank" rel="noopener">Beli di Gumroad — satukiki.gumroad.com</a>
         <span>Pemesanan &amp; pembayaran melalui email.</span>
         <span id="footerVisitor" hidden>Total kunjungan toko: <b data-visitor-total>—</b></span>
+      </div>
+      <div class="wrap footer-platforms">
+        <span class="fp-label">Kami juga ada di:</span>
+        <a href="https://satukiki.gumroad.com" target="_blank" rel="noopener">Gumroad</a>
+        <a href="https://payhip.com/SatuKiki" target="_blank" rel="noopener">Payhip</a>
+        <a href="https://swarms.world/prompt/c8542bab-4ebb-4dc3-85c2-ecdb8f059af4" target="_blank" rel="noopener">Swarms</a>
+        <a href="https://www.zazzle.com/store/podcast_meong" target="_blank" rel="noopener">Zazzle</a>
+        <a href="https://www.fiverr.com/ciptabintangles" target="_blank" rel="noopener">Fiverr</a>
+        <a href="https://karyakarsa.com/podcast-meong" target="_blank" rel="noopener">KaryaKarsa</a>
+        <a href="https://promptbase.com/profile/bintangzilla" target="_blank" rel="noopener">PromptBase</a>
       </div>
     </footer>
 
@@ -2281,6 +2291,8 @@
           <a class="btn btn-mail" id="modalWa" href="#">Pesan via Email</a>
           <span class="btn btn-disabled" id="modalSoon" hidden>Segera Hadir — belum bisa dipesan</span>
           <a class="btn btn-navy" id="modalExtra" href="#" target="_blank" rel="noopener" hidden></a>
+          <a class="btn btn-navy" id="modalExtra2" href="#" target="_blank" rel="noopener" hidden></a>
+          <a class="btn btn-navy" id="modalExtra3" href="#" target="_blank" rel="noopener" hidden></a>
           <button class="btn btn-ghost" id="modalBack">Kembali ke Katalog</button>
         </div>
       </div>
@@ -4446,7 +4458,7 @@
                 '<span class="spacer"></span>' +
                 (p.demo ? '<a class="btn btn-navy btn-sm" href="' + p.demo + '" target="_blank" rel="noopener">Coba Demo</a>' : '') +
                 '<button class="btn btn-ghost btn-sm" data-detail="' + p.id + '">Detail</button>' +
-                (p.orderDisabled ? '<span class="btn btn-disabled btn-sm" aria-disabled="true">Segera Hadir</span>' : '<a class="btn btn-mail btn-sm" href="' + mailLink(p.waText) + '">Pesan</a>') +
+                (p.orderDisabled ? '<span class="btn btn-disabled btn-sm" aria-disabled="true">Segera Hadir</span>' : '<a class="btn btn-mail btn-sm" href="' + mailLink(p.waText) + '">Pesan via Email</a>') +
               '</div>' +
             '</article>';
         };
@@ -4533,17 +4545,37 @@
         if (o.note) { note.textContent = o.note; note.hidden = false; } else { note.hidden = true; }
         var waBtn = document.getElementById("modalWa");
         var soonBtn = document.getElementById("modalSoon");
-        var extraBtn = document.getElementById("modalExtra");
-        if (o.canOrder === false) {
-          waBtn.hidden = true; soonBtn.hidden = false; extraBtn.hidden = true;
+        var extraBtns = [document.getElementById("modalExtra"), document.getElementById("modalExtra2"), document.getElementById("modalExtra3")];
+        /* Tombol platform: kumpulkan tautan produk persis dari data item —
+           buyUrl (Payhip), gumroadUrl (Gumroad), buyLink, extra, lalu action
+           http(s) (mis. "Beli di Zazzle" untuk kaos POD) — tanpa duplikat URL. */
+        var platLinks = [];
+        function addPlat(label, href) {
+          if (!label || !href) return;
+          for (var k = 0; k < platLinks.length; k++) if (platLinks[k].href === href) return;
+          platLinks.push({ label: label, href: href });
+        }
+        if (o.buyUrl) addPlat("Beli di Payhip", o.buyUrl);
+        if (o.gumroadUrl) addPlat("Beli di Gumroad", o.gumroadUrl);
+        if (o.buyLink) addPlat(o.buyLink.label, o.buyLink.href);
+        if (o.extra) addPlat(o.extra.label, o.extra.href);
+        if (o.action && /^https?:\/\//.test(o.action.href)) addPlat(o.action.label, o.action.href);
+        for (var b = 0; b < extraBtns.length; b++) {
+          if (platLinks[b]) {
+            extraBtns[b].hidden = false;
+            extraBtns[b].href = platLinks[b].href;
+            extraBtns[b].textContent = platLinks[b].label;
+          } else { extraBtns[b].hidden = true; }
+        }
+        if (o.canOrder === false && platLinks.length === 0) {
+          waBtn.hidden = true; soonBtn.hidden = false;
+        } else if (o.canOrder === false) {
+          /* Listing platform sudah live (mis. eBook di Payhip/Gumroad):
+             tampilkan tombol belinya seperti pada kartunya. */
+          waBtn.hidden = true; soonBtn.hidden = true;
         } else {
           waBtn.hidden = false; soonBtn.hidden = true;
           waBtn.href = mailLink(o.waText);
-          if (o.extra) {
-            extraBtn.hidden = false;
-            extraBtn.href = o.extra.href;
-            extraBtn.textContent = o.extra.label;
-          } else { extraBtn.hidden = true; }
         }
         lastFocus = document.activeElement;
         backdrop.hidden = false;
@@ -4606,6 +4638,7 @@
           note: "Bisa juga dibeli langsung lewat KaryaKarsa (tombol di bawah) atau Mayar.",
           price: "$4.99", priceNote: "sekali bayar · file PDF",
           waText: "Halo, saya mau beli eBook Si Oyen Penjaga Kolam Ikan ($4.99). Bagaimana cara bayarnya?",
+          buyLink: { label: "Beli di KaryaKarsa", href: "https://karyakarsa.com/podcast-meong/si-oyen-penjaga-kolam-ikan" },
           extra: { label: "Beli di KaryaKarsa", href: "https://karyakarsa.com/podcast-meong/si-oyen-penjaga-kolam-ikan" } },
         { uid: "eb-rindu", icon: "book", group: "cerpen", name: "Rindu di Ujung Senja", status: "ready", badgeClass: "ready", badgeLabel: "Terbit",
           img: "assets/cover-rindu.jpg", imgAlt: "Sampul eBook Rindu di Ujung Senja", imgCls: "book",
@@ -4883,7 +4916,7 @@
         } else if (item.action) {
           actionHtml = '<a class="btn btn-navy btn-sm" href="' + item.action.href + '" target="_blank" rel="noopener">' + item.action.label + '</a>' + buyHtml + gumroadHtml;
         } else {
-          actionHtml = '<a class="btn btn-mail btn-sm" href="' + mailLink(item.waText) + '">Pesan</a>' + buyHtml + gumroadHtml;
+          actionHtml = '<a class="btn btn-mail btn-sm" href="' + mailLink(item.waText) + '">Pesan via Email</a>' + buyHtml + gumroadHtml;
         }
         actionHtml += buyLinkHtml;
         var media = item.img ? '<div class="card-media ' + (item.imgCls || 'r43') + '"><img src="' + item.img + '" alt="' + item.imgAlt + '" loading="lazy" /></div>' : '';
