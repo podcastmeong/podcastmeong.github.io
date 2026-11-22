@@ -182,6 +182,71 @@
     color: var(--muted); font-size: 13px;
   }
   footer .btn { margin-top: 10px; }
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; background: var(--bg); padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow);
+  }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 10px; font: inherit; background: var(--surface-2);
+  }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+
+  .bar-pengguna {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    margin-bottom: 12px; font-size: 13.5px; color: var(--muted);
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; font-weight: 700; color: var(--ink);
+  }
+  body[data-role="manager"] .hanya-owner,
+  body[data-role="staf"] .hanya-owner { display: none !important; }
+  body[data-role="staf"] .hanya-manajer { display: none !important; }
+  .tab-btn.tersembunyi { display: none !important; }
+
+  .branch-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 12px 16px; margin-bottom: 16px;
+  }
+  .branch-bar label { margin: 0; }
+  .branch-bar select { width: auto; min-width: 220px; }
+  .branch-bar .sub { color: var(--muted); font-size: 13px; }
+
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .appr-card {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; background: var(--surface);
+  }
+  .appr-card .atas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .appr-card .nama { font-weight: 800; font-size: 15px; }
+  .appr-card .detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .appr-card .aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+  .audit-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .audit-table th, .audit-table td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  .audit-table th { background: var(--surface-2); }
+  .audit-wrap { overflow-x: auto; }
+  .user-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .user-row .aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+
   @media print {
     .tabbar, .hero .tanggal, footer .btn, .aksi, .btn { display: none !important; }
     .panel { display: none !important; }
@@ -191,6 +256,11 @@
 </head>
 <body>
 <div class="wrap">
+
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
 
   <header class="hero">
     <h1>Aplikasi Piutang</h1>
@@ -203,6 +273,8 @@
     <button class="tab-btn" data-tab="jatuhtempo">Jatuh Tempo <span class="badge" id="badgeJatuhTempo">0</span></button>
     <button class="tab-btn" data-tab="pembayaran">Pembayaran</button>
     <button class="tab-btn" data-tab="pelanggan">Pelanggan</button>
+    <button class="tab-btn" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn hanya-manajer" data-tab="audit">Audit Log</button>
     <button class="tab-btn" data-tab="laporan">Laporan</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
@@ -212,6 +284,11 @@
     <div class="page-head">
       <h2>Piutang Pelanggan</h2>
       <p>Semua tagihan yang belum lunas maupun yang sudah lunas. Sisa dihitung otomatis dari total dikurangi pembayaran yang sudah dicatat.</p>
+    </div>
+    <div class="branch-bar">
+      <label for="pilihCabang"><b>Cabang aktif:</b></label>
+      <select id="pilihCabang"></select>
+      <span class="sub" id="infoCabang"></span>
     </div>
     <div class="grid-stat">
       <div class="stat"><div class="label">Total Piutang Aktif (sisa)</div><div class="angka" id="statSisaAktif">Rp0</div></div>
@@ -238,7 +315,7 @@
           </div>
           <div class="field">
             <label for="fPiutangTotal">Total piutang (Rp) *</label>
-            <input type="number" id="fPiutangTotal" min="1" step="1000" placeholder="Contoh: 1900000" required>
+            <input type="number" id="fPiutangTotal" min="0" step="1000" placeholder="Contoh: 1900000" required>
           </div>
           <div class="field">
             <label for="fPiutangTempo">Tempo pembayaran (hari) *</label>
@@ -334,7 +411,7 @@
           </div>
           <div class="field">
             <label for="fBayarJumlah">Jumlah dibayar (Rp) *</label>
-            <input type="number" id="fBayarJumlah" min="1" step="1000" placeholder="Contoh: 1000000" required>
+            <input type="number" id="fBayarJumlah" min="0" step="1000" placeholder="Contoh: 1000000" required>
           </div>
           <div class="field">
             <label for="fBayarMetode">Metode pembayaran *</label>
@@ -421,7 +498,7 @@
         </div>
         <div class="field">
           <label for="fCatatanPelanggan">Catatan (opsional)</label>
-          <input type="text" id="fCatatanPelanggan" placeholder="Contoh: Langganan sejak 2024, selalu bayar tepat waktu.">
+          <input type="text" id="fCatatanPelanggan" placeholder="Contoh: Pelanggan sejak 2024, selalu bayar tepat waktu.">
         </div>
         <div class="row">
           <button type="submit" class="btn" id="btnSimpanPelanggan">Simpan Pelanggan</button>
@@ -433,6 +510,55 @@
       <h3>Daftar Pelanggan</h3>
       <p class="sub">Total piutang dihitung dari sisa semua piutang pelanggan yang belum lunas.</p>
       <div id="daftarPelanggan"></div>
+    </div>
+  </section>
+
+  <!-- ============ PERSETUJUAN ============ -->
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Penghapusan piutang, pembayaran, dan pelanggan tidak langsung jalan — harus disetujui dulu oleh Manager atau Owner. Keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Keputusan</h3>
+      <p class="sub">Permintaan yang masih menunggu. Hanya Manager dan Owner yang bisa menyetujui atau menolak — dan tidak bisa memutuskan permintaan yang diajukan sendiri.</p>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Keputusan Sebelumnya</h3>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT LOG ============ -->
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Catatan siapa melakukan apa dan kapan — termasuk login, tambah/ubah, pengajuan dan keputusan persetujuan, ekspor, migrasi, dan reset. Hanya Owner dan Manager.</p>
+    </div>
+    <div class="card">
+      <h3>Riwayat Aksi</h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">Login / keluar</option>
+            <option value="tambah">Tambah</option>
+            <option value="ubah">Ubah</option>
+            <option value="persetujuan">Persetujuan</option>
+            <option value="ekspor">Ekspor / pulihkan</option>
+            <option value="pengguna">Pengguna</option>
+            <option value="sistem">Sistem</option>
+          </select>
+        </div>
+        <button type="button" class="btn kecil ghost" id="btnEksporAudit">Ekspor Audit (CSV)</button>
+      </div>
+      <div class="audit-wrap"><div id="daftarAudit"></div></div>
     </div>
   </section>
 
@@ -470,6 +596,21 @@
       <p class="sub">Total piutang, total dibayar, dan sisa per pelanggan (semua periode).</p>
       <div class="tabel-wrap"><div id="tabelPerPelanggan"></div></div>
     </div>
+    <div class="card">
+      <h3>Ringkasan per Cabang</h3>
+      <p class="sub">Gabungan semua cabang (semua periode) — angka di atas mengikuti cabang aktif yang dipilih di tab Piutang.</p>
+      <div class="tabel-wrap"><div id="tabelPerCabang"></div></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; Pulihkan</h3>
+      <p class="sub">Backup JSON berisi seluruh data aplikasi (pelanggan, piutang, pembayaran, cabang, pengguna, persetujuan, audit) — simpan di tempat aman. File backup tidak terenkripsi.</p>
+      <div class="row">
+        <button type="button" class="btn kecil" id="btnBackupJson">Backup JSON</button>
+        <label for="inputPulihkan" class="btn kecil ghost" style="margin:0">Pulihkan dari File JSON</label>
+        <input type="file" id="inputPulihkan" accept="application/json,.json" style="display:none">
+      </div>
+      <p class="sub" style="margin-top:10px">Memulihkan akan mengganti seluruh data saat ini dengan isi file backup. Pengguna aplikasi ikut dipulihkan dari file.</p>
+    </div>
   </section>
 
   <!-- ============ PANDUAN ============ -->
@@ -481,35 +622,80 @@
     <div class="card">
       <h3>Cara memakai</h3>
       <ol>
+        <li>Masuk dulu dengan <b>nama pengguna</b> dan <b>kata sandi</b> Anda (akun demo ada di layar masuk). Sesi berlaku selama tab peramban masih terbuka — memuat ulang tidak meminta masuk lagi, menutup tab meminta masuk kembali.</li>
+        <li>Pilih <b>cabang aktif</b> di tab <b>Piutang</b> — piutang, pembayaran, pelanggan, dan statistik mengikuti cabang itu.</li>
         <li>Tambahkan <b>Pelanggan</b> di tab <b>Pelanggan</b>: nama toko, kontak, nomor HP WhatsApp, dan tempo standar (misalnya 14 hari).</li>
         <li>Setiap ada penjualan tempo, catat di tab <b>Piutang</b>: pilih pelanggan, isi keterangan/faktur dan total — tanggal jatuh tempo dihitung otomatis dari tempo.</li>
         <li>Di tab <b>Jatuh Tempo</b>, lihat piutang yang sudah atau segera jatuh tempo. Kirim pengingat lewat tombol <b>WhatsApp</b> atau <b>Salin Pengingat</b>, lalu tekan <b>Sudah Diingatkan</b>.</li>
         <li>Saat pelanggan membayar, catat di tab <b>Pembayaran</b>: pilih piutang, isi jumlah dan metode (Tunai / Transfer / QRIS). Boleh dicicil — bila jumlah sama dengan sisa, piutang otomatis <b>Lunas</b>.</li>
-        <li>Di tab <b>Laporan</b>, pilih bulan untuk melihat piutang baru, pembayaran diterima, dan <b>umur piutang</b> (berapa hari lewat jatuh tempo) per kelompok. Laporan bisa dicetak atau diunduh sebagai CSV.</li>
-        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+        <li>Di tab <b>Laporan</b>, pilih bulan untuk melihat piutang baru, pembayaran diterima, dan <b>umur piutang</b> (berapa hari lewat jatuh tempo) per kelompok. Laporan bisa dicetak atau diunduh sebagai CSV. Di bawahnya ada <b>Ringkasan per Cabang</b> dan tombol <b>Backup JSON</b> / <b>Pulihkan</b>.</li>
+        <li>Penghapusan piutang, pembayaran, dan pelanggan tidak langsung jalan — masuk ke tab <b>Persetujuan</b> dan menunggu disetujui Manager/Owner. Semua aksi tercatat di tab <b>Audit Log</b>.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan (IndexedDB terenkripsi).</li>
       </ol>
     </div>
     <div class="card">
+      <h3>Masuk (Login), Peran &amp; Pengguna</h3>
+      <p style="font-size:14px">Saat aplikasi dibuka, layar masuk tampil lebih dulu. Ada <b>3 peran</b> (hak akses ditegakkan di logika aplikasi, bukan hanya menyembunyikan tombol):</p>
+      <ul style="font-size:14px; margin:6px 0 6px 20px">
+        <li><b>Owner</b> — semua akses: piutang, pembayaran, pelanggan, persetujuan, audit, kelola pengguna, ekspor/backup, dan reset data.</li>
+        <li><b>Manager</b> — piutang, pembayaran, pelanggan, persetujuan, audit, ekspor. Tidak bisa kelola pengguna. Tidak bisa memutuskan permintaan persetujuan yang diajukan sendiri.</li>
+        <li><b>Staf</b> — catat piutang, pembayaran, dan pelanggan; lihat persetujuan. Tidak bisa menghapus piutang/pembayaran/pelanggan, tidak bisa kelola pengguna, dan tidak bisa melihat Audit Log.</li>
+      </ul>
+      <p style="font-size:14px; margin-top:8px">Sesi masuk tersimpan selama tab peramban masih terbuka — memuat ulang halaman tidak meminta masuk lagi, tetapi menutup tab akan meminta masuk kembali. Klik <b>Keluar</b> di kanan atas untuk keluar. Owner bisa menambah pengguna, mengubah peran, dan menonaktifkan pengguna di kartu <b>Kelola Pengguna</b> di bawah.</p>
+      <p style="font-size:14px; margin-top:8px"><b>Akun demo (untuk mencoba):</b> Owner — <b>owner</b> / <b>owner123</b>; Manager — <b>manager</b> / <b>manager123</b>; Staf — <b>staf</b> / <b>staf123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di kartu Kelola Pengguna. Kata sandi pengguna tersimpan terenkripsi di perangkat ini — jangan pakai kata sandi yang sama dengan akun penting lainnya.</p>
+    </div>
+    <div class="card">
+      <h3>Multi-cabang &amp; Persetujuan</h3>
+      <p style="font-size:14px">Aplikasi ini punya <b>3 cabang contoh</b>: Cabang Pusat, Cabang Jakarta Timur, dan Cabang Bekasi. Pilih cabang aktif di tab <b>Piutang</b> — piutang, pembayaran, pelanggan, dan statistik mengikuti cabang itu; tabel "Ringkasan per Cabang" di tab Laporan menggabungkan ketiganya. Piutang, pembayaran, dan pelanggan baru selalu memakai cabang aktif. Tiga hal butuh persetujuan Manager/Owner dan tercatat di tab <b>Persetujuan</b> + <b>Audit Log</b>: <b>hapus piutang</b> (termasuk yang masih ada sisa), <b>hapus pembayaran</b>, dan <b>hapus pelanggan</b>.</p>
+    </div>
+    <div class="card">
       <h3>Harga aplikasi</h3>
-      <table class="tabel-harga">
-        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
-        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
-        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
-        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
-      </table>
+      <p style="font-size:14px">Harga: <b>Rp999.000</b> (sekali bayar). APK Android <b>+Rp400.000</b>.</p>
       <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Garansi</h3>
-      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+      <p style="font-size:14px">Perbaikan bug/error gratis <b>30 hari</b> sejak pembelian. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
     </div>
     <div class="card">
       <h3>Request khusus (penyesuaian)</h3>
       <p style="font-size:14px">Butuh penyesuaian di luar paket standar? Biaya tambahan per permintaan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> per permintaan. Besar biaya diputuskan per permintaan dan disepakati dulu lewat WhatsApp sebelum pengerjaan; konsultasi gratis.</p>
     </div>
+    <div class="card hanya-owner" id="cardPengguna">
+      <h3>Kelola Pengguna</h3>
+      <p class="sub">Hanya Owner. Pengguna baru langsung bisa masuk dengan nama pengguna dan kata sandi di bawah.</p>
+      <form id="formPengguna">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fUserNama">Nama pengguna (tampil) *</label>
+            <input type="text" id="fUserNama" placeholder="Contoh: Budi" required>
+          </div>
+          <div class="field">
+            <label for="fUserUsername">Nama login (username) *</label>
+            <input type="text" id="fUserUsername" placeholder="Contoh: budi" required>
+          </div>
+          <div class="field">
+            <label for="fUserPeran">Peran *</label>
+            <select id="fUserPeran" required>
+              <option value="staf">Staf</option>
+              <option value="manager">Manager</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fUserSandi">Kata sandi *</label>
+            <input type="text" id="fUserSandi" placeholder="Minimal 6 karakter" required>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn">Tambah Pengguna</button>
+        </div>
+      </form>
+      <div id="daftarPengguna" style="margin-top:14px"></div>
+    </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data pelanggan, piutang, dan pembayaran <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini <b>tidak memproses pembayaran online sungguhan</b> — pembayaran dicatat manual setelah uang diterima (tunai/transfer/QRIS di luar aplikasi). Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) atau penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data pelanggan, piutang, dan pembayaran <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi), sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b> — kapasitas jauh lebih besar dari localStorage 5 MB dan data terenkripsi saat tersimpan. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tidak tersinkron ke perangkat lain</b> dan tidak ada backup cloud otomatis — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini <b>tidak memproses pembayaran online sungguhan</b> — pembayaran dicatat manual setelah uang diterima (tunai/transfer/QRIS di luar aplikasi). Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) atau penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
       <div style="margin-top:14px">
         <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
       </div>
@@ -517,16 +703,32 @@
   </section>
 
   <footer>
-    <p><b>Aplikasi Piutang v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat. Tidak ada pembayaran online sungguhan — pembayaran dicatat manual. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Aplikasi Piutang v3.</b> Multi-cabang, 3 peran, alur persetujuan, IndexedDB + enkripsi, offline. Harga Rp999.000 (sekali bayar). APK Android +Rp400.000. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis 30 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Piutang." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Aplikasi Piutang</h2>
+    <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+    <label for="loginUser">Nama pengguna</label>
+    <input type="text" id="loginUser" autocomplete="username">
+    <label for="loginPass">Kata sandi</label>
+    <input type="password" id="loginPass" autocomplete="current-password">
+    <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+    <button class="btn" id="loginBtn" type="button">Masuk</button>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Owner: <b>owner</b> / <b>owner123</b> (semua akses)<br>Manager: <b>manager</b> / <b>manager123</b> (persetujuan, audit, ekspor)<br>Staf: <b>staf</b> / <b>staf123</b> (catat piutang &amp; pembayaran)</p>
+    <p class="login-note">Akun baru dibuat Owner di tab Panduan (Kelola Pengguna). Setelah masuk pertama kali, segera ganti kata sandi Anda agar hanya Anda yang tahu.</p>
+  </div>
+</div>
+
 <script>
 'use strict';
-var KEY = 'piutang.v1';
+var KEY_LAMA = 'piutang.v1'; /* kunci localStorage versi lama (L3) — hanya untuk migrasi sekali */
+var SESI_KEY = 'piutang.sesi';
 var BULAN_INDO = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
 function uid() { return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -575,9 +777,9 @@ function hpKeWa(hp) {
 }
 
 function dataContoh() {
-  return {
+  var d = {
     pelanggan: [
-      { id: 'pl1', nama: 'Toko Berkah Jaya', kontak: 'Budi Santoso', hp: '081234567801', alamat: 'Jl. Mampang Prapatan No. 45, Jakarta Selatan', tempo: 14, catatan: 'Langganan sejak 2024.' },
+      { id: 'pl1', nama: 'Toko Berkah Jaya', kontak: 'Budi Santoso', hp: '081234567801', alamat: 'Jl. Mampang Prapatan No. 45, Jakarta Selatan', tempo: 14, catatan: 'Pelanggan sejak 2024.' },
       { id: 'pl2', nama: 'Toko Sinar Abadi', kontak: 'Sari Wulandari', hp: '081234567802', alamat: 'Jl. Kemang Raya No. 12, Jakarta Selatan', tempo: 30, catatan: '' },
       { id: 'pl3', nama: 'Toko Murah Meriah', kontak: 'Agus Prasetyo', hp: '081234567803', alamat: 'Jl. Raya Kalimalang No. 88, Jakarta Timur', tempo: 14, catatan: 'Sering ambil mie instan dan beras.' },
       { id: 'pl4', nama: 'Toko Sumber Rezeki', kontak: 'Dewi Lestari', hp: '081234567804', alamat: 'Jl. Ahmad Yani No. 210, Bekasi', tempo: 30, catatan: '' },
@@ -599,20 +801,206 @@ function dataContoh() {
       { id: 'by3', piutangId: 'u3', tanggal: '2026-11-15', jumlah: 3550000, metode: 'Transfer Bank', catatan: 'Pelunasan.' },
       { id: 'by4', piutangId: 'u4', tanggal: '2026-11-14', jumlah: 500000, metode: 'Tunai', catatan: 'Cicilan pertama.' },
       { id: 'by5', piutangId: 'u6', tanggal: '2026-11-11', jumlah: 2000000, metode: 'Transfer Bank', catatan: 'Cicilan pertama.' }
-    ]
+    ],
+    cabang: [
+      { id: 'pusat', nama: 'Cabang Pusat', alamat: 'Jl. Mampang Prapatan No. 45, Jakarta Selatan' },
+      { id: 'jaktim', nama: 'Cabang Jakarta Timur', alamat: 'Jl. Raya Kalimalang No. 88, Jakarta Timur' },
+      { id: 'bekasi', nama: 'Cabang Bekasi', alamat: 'Jl. Ahmad Yani No. 210, Bekasi' }
+    ],
+    cabangAktif: 'pusat',
+    pengguna: [
+      { username: 'owner', nama: 'Owner', peran: 'owner', sandi: 'owner123', aktif: true },
+      { username: 'manager', nama: 'Manager', peran: 'manager', sandi: 'manager123', aktif: true },
+      { username: 'staf', nama: 'Staf', peran: 'staf', sandi: 'staf123', aktif: true }
+    ],
+    persetujuan: [],
+    nextPersetujuan: 1,
+    audit: [{ waktu: new Date().toISOString(), user: 'sistem', peran: '-', cabang: 'pusat', aksi: 'sistem', detail: 'Data contoh dimuat (Aplikasi Piutang).' }]
   };
+  d.pelanggan.forEach(function (p) { p.cabang = 'pusat'; });
+  d.piutang.forEach(function (u) { u.cabang = 'pusat'; });
+  d.pembayaran.forEach(function (b) { b.cabang = 'pusat'; });
+  return d;
 }
 
+/* ---------- Penyimpanan internal "Level 4": IndexedDB + enkripsi WebCrypto ----------
+   Data kerja tetap di memori (db); IndexedDB adalah tempat simpan utamanya
+   (asinkron). localStorage hanya dipakai untuk migrasi sekali dari versi lama
+   dan sebagai cadangan bila IndexedDB tidak ada. save() tetap bisa dipanggil
+   sinkron dari kode lama (fire-and-forget berantre). */
+var DB_NAMA = 'piutangDB';
+var DB_VERSI = 1;
 var db = null;
-function load() {
-  try {
-    var raw = localStorage.getItem(KEY);
-    if (raw) { db = JSON.parse(raw); return; }
-  } catch (e) { db = null; }
-  db = dataContoh();
-  save();
+var dbSiap = null;
+var infoSimpan = { jenis: 'indexeddb', enkripsi: false, termigrasi: false };
+var antreSimpan = Promise.resolve();
+var bootSelesai = null;
+var bootSiap = new Promise(function (r) { bootSelesai = r; });
+
+function idbTersedia() { return typeof indexedDB !== 'undefined'; }
+function bukaDB() {
+  if (dbSiap) { return dbSiap; }
+  dbSiap = new Promise(function (selesai) {
+    if (!idbTersedia()) { infoSimpan.jenis = 'localstorage'; selesai(null); return; }
+    var req;
+    try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = 'localstorage'; selesai(null); return; }
+    req.onupgradeneeded = function () {
+      var d = req.result;
+      if (!d.objectStoreNames.contains('kv')) { d.createObjectStore('kv'); }
+    };
+    req.onsuccess = function () { selesai(req.result); };
+    req.onerror = function () { infoSimpan.jenis = 'localstorage'; selesai(null); };
+    req.onblocked = function () { infoSimpan.jenis = 'localstorage'; selesai(null); };
+  });
+  return dbSiap;
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+function idbGet(kunci) {
+  return bukaDB().then(function (d) {
+    if (!d) { return undefined; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try {
+        tx = d.transaction('kv', 'readonly');
+        req = tx.objectStore('kv').get(kunci);
+      } catch (e) { selesai(undefined); return; }
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { selesai(undefined); };
+    });
+  });
+}
+function idbPut(kunci, nilai) {
+  return bukaDB().then(function (d) {
+    if (!d) { return false; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try {
+        tx = d.transaction('kv', 'readwrite');
+        req = tx.objectStore('kv').put(nilai, kunci);
+      } catch (e) { selesai(false); return; }
+      req.onsuccess = function () { selesai(true); };
+      req.onerror = function () { selesai(false); };
+    });
+  });
+}
+function lsCadanganGet(kunci) { try { var r = localStorage.getItem(KEY_LAMA + '.idb-' + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(KEY_LAMA + '.idb-' + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+function simpanKV(kunci, nilai) {
+  return idbPut(kunci, nilai).then(function (ok) {
+    if (!ok) { lsCadanganPut(kunci, nilai); }
+    return true;
+  });
+}
+function muatKV(kunci) {
+  return idbGet(kunci).then(function (v) {
+    if (v !== undefined) { return v; }
+    return lsCadanganGet(kunci);
+  });
+}
+
+/* ---------- Enkripsi WebCrypto (AES-GCM 256) ----------
+   Kunci acak dibuat sekali per perangkat dan disimpan di IndexedDB yang
+   sama — JUJUR: ini enkripsi demo, bukan keamanan tingkat enterprise,
+   karena kunci dan datanya berada di perangkat yang sama. */
+var kunciKripto = null;
+function b64DariBuffer(buf) { var b = new Uint8Array(buf); var s = ''; for (var i = 0; i < b.length; i++) { s += String.fromCharCode(b[i]); } return btoa(s); }
+function bufferDariB64(s) { var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+function siapkanKripto() {
+  if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+  return muatKV('kunci').then(function (jwk) {
+    var janji = jwk
+      ? crypto.subtle.importKey('jwk', jwk, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+      : crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+          .then(function (k) { return crypto.subtle.exportKey('jwk', k).then(function (j) { return simpanKV('kunci', j).then(function () { return k; }); }); });
+    return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+      .catch(function () { infoSimpan.enkripsi = false; return false; });
+  });
+}
+function enkripData(obj) {
+  if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+    .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+    .catch(function () { return { v: 0, data: obj }; });
+}
+function dekripData(paket) {
+  if (!paket) { return Promise.resolve(null); }
+  if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+    .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+    .catch(function () { return null; });
+}
+
+/* ---------- Simpan / muat state ---------- */
+function saveData() {
+  if (!db) { return; }
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(db).then(function (paket) { return simpanKV('state', paket); });
+  }).catch(function () { /* simpan gagal: data tetap di memori */ });
+}
+function save() { saveData(); } /* tetap sinkron dari sisi pemanggil (fire-and-forget berantre) */
+
+function normalisasiDb(obj) {
+  if (!Array.isArray(obj.pelanggan)) { obj.pelanggan = []; }
+  if (!Array.isArray(obj.piutang)) { obj.piutang = []; }
+  if (!Array.isArray(obj.pembayaran)) { obj.pembayaran = []; }
+  if (!Array.isArray(obj.cabang) || !obj.cabang.length) {
+    obj.cabang = [
+      { id: 'pusat', nama: 'Cabang Pusat', alamat: 'Jl. Mampang Prapatan No. 45, Jakarta Selatan' },
+      { id: 'jaktim', nama: 'Cabang Jakarta Timur', alamat: 'Jl. Raya Kalimalang No. 88, Jakarta Timur' },
+      { id: 'bekasi', nama: 'Cabang Bekasi', alamat: 'Jl. Ahmad Yani No. 210, Bekasi' }
+    ];
+  }
+  if (!obj.cabangAktif || !obj.cabang.some(function (c) { return c.id === obj.cabangAktif; })) { obj.cabangAktif = 'pusat'; }
+  obj.pelanggan.forEach(function (p) { if (!p.cabang) { p.cabang = 'pusat'; } });
+  obj.piutang.forEach(function (u) { if (!u.cabang) { u.cabang = 'pusat'; } });
+  obj.pembayaran.forEach(function (b) { if (!b.cabang) { b.cabang = 'pusat'; } });
+  if (!Array.isArray(obj.pengguna) || !obj.pengguna.length) {
+    obj.pengguna = [
+      { username: 'owner', nama: 'Owner', peran: 'owner', sandi: 'owner123', aktif: true },
+      { username: 'manager', nama: 'Manager', peran: 'manager', sandi: 'manager123', aktif: true },
+      { username: 'staf', nama: 'Staf', peran: 'staf', sandi: 'staf123', aktif: true }
+    ];
+  }
+  if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+  if (typeof obj.nextPersetujuan !== 'number') {
+    obj.nextPersetujuan = (obj.persetujuan.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0)) + 1;
+  }
+  if (!Array.isArray(obj.audit)) { obj.audit = []; }
+  return obj;
+}
+function muatState() {
+  return muatKV('state').then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (obj) {
+        if (obj && Array.isArray(obj.pelanggan) && Array.isArray(obj.piutang) && Array.isArray(obj.pembayaran)) {
+          db = normalisasiDb(obj);
+          return;
+        }
+        db = dataContoh(); saveData();
+      });
+    }
+    /* Migrasi sekali dari localStorage versi lama (kunci 'piutang.v1') */
+    try {
+      var raw = localStorage.getItem(KEY_LAMA);
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (lama && Array.isArray(lama.pelanggan) && Array.isArray(lama.piutang) && Array.isArray(lama.pembayaran)) {
+          db = normalisasiDb(lama);
+          infoSimpan.termigrasi = true;
+          db.audit.unshift({ waktu: new Date().toISOString(), user: 'sistem', peran: '-', cabang: 'pusat', aksi: 'sistem', detail: 'Data dimigrasikan dari localStorage ke IndexedDB terenkripsi.' });
+          try { localStorage.setItem(KEY_LAMA + '.cadangan-l3', raw); localStorage.removeItem(KEY_LAMA); } catch (e) {}
+          saveData();
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke data contoh */ }
+    db = dataContoh();
+    saveData();
+  }).catch(function () {
+    db = dataContoh();
+    saveData();
+  });
+}
 
 var toastTimer = null;
 function toast(pesan) {
@@ -662,8 +1050,8 @@ function teksPengingat(u) {
 }
 function semuaBulan() {
   var set = {};
-  db.piutang.forEach(function (u) { set[bulanDariTanggal(u.tanggal)] = true; });
-  db.pembayaran.forEach(function (b) { set[bulanDariTanggal(b.tanggal)] = true; });
+  piutangCabang().forEach(function (u) { set[bulanDariTanggal(u.tanggal)] = true; });
+  pembayaranCabang().forEach(function (b) { set[bulanDariTanggal(b.tanggal)] = true; });
   var arr = Object.keys(set).sort();
   if (arr.indexOf(bulanSekarang()) === -1) arr.push(bulanSekarang());
   return arr.sort();
@@ -676,7 +1064,7 @@ function isiSelectBulan(el, nilai) {
 }
 function isiSelectPelanggan(el, nilai, denganSemua) {
   var opt = denganSemua ? '<option value="">Semua pelanggan</option>' : '';
-  opt += db.pelanggan.map(function (p) {
+  opt += pelangganCabang().map(function (p) {
     return '<option value="' + p.id + '"' + (p.id === nilai ? ' selected' : '') + '>' + esc(p.nama) + '</option>';
   }).join('');
   el.innerHTML = opt;
@@ -708,10 +1096,12 @@ function hitungJatuhTempoOtomatis() {
   document.getElementById('infoJatuhTempo').innerHTML = 'Jatuh tempo: <b>' + tglIndo(jt) + '</b> (' + tempo + ' hari dari ' + tglIndo(tgl) + '). Bila perlu, tanggal jatuh tempo bisa diubah manual.';
 }
 function renderPiutang() {
+  if (!db) { return; }
+  isiSelectCabang();
   var bulan = bulanSekarang();
-  var aktif = db.piutang.filter(function (u) { return sisaPiutang(u) > 0; });
+  var aktif = piutangCabang().filter(function (u) { return sisaPiutang(u) > 0; });
   var lewat = aktif.filter(function (u) { return statusPiutang(u) === 'Jatuh Tempo'; });
-  var diterimaBulan = db.pembayaran
+  var diterimaBulan = pembayaranCabang()
     .filter(function (b) { return bulanDariTanggal(b.tanggal) === bulan; })
     .reduce(function (a, b) { return a + Number(b.jumlah || 0); }, 0);
   document.getElementById('statSisaAktif').textContent = fmtRp(aktif.reduce(function (a, u) { return a + sisaPiutang(u); }, 0));
@@ -727,7 +1117,7 @@ function renderPiutang() {
   var fS = document.getElementById('filterStatusPiutang').value;
   var fP = document.getElementById('filterPelangganPiutang').value;
   var cari = document.getElementById('cariPiutang').value.trim().toLowerCase();
-  var list = db.piutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
+  var list = piutangCabang().slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
     .filter(function (u) {
       var st = statusPiutang(u);
       if (fS && st !== fS) return false;
@@ -777,11 +1167,13 @@ function renderPiutang() {
     b.addEventListener('click', function () {
       var u = db.piutang.find(function (x) { return x.id === b.dataset.hapusPiutang; });
       if (!u) return;
+      if (!bisa('hapus_minta')) { toast('Staf tidak bisa menghapus piutang.'); return; }
       var jmlBayar = db.pembayaran.filter(function (x) { return x.piutangId === u.id; }).length;
-      if (!confirm('Hapus piutang "' + u.keterangan + '"? ' + (jmlBayar ? jmlBayar + ' pembayaran terkait juga akan dihapus.' : ''))) return;
-      db.piutang = db.piutang.filter(function (x) { return x.id !== u.id; });
-      db.pembayaran = db.pembayaran.filter(function (x) { return x.piutangId !== u.id; });
-      save(); renderAll(); toast('Piutang dihapus.');
+      buatPersetujuan('hapus_piutang', { piutangId: u.id },
+        'Hapus piutang "' + u.keterangan + '" (' + namaPelanggan(u.pelangganId) + ', ' + fmtRp(u.total) + ', sisa ' + fmtRp(sisaPiutang(u)) + ')' +
+        (jmlBayar ? ' — ' + jmlBayar + ' pembayaran terkait ikut terhapus.' : ''));
+      renderAll();
+      toast('Penghapusan piutang diajukan — menunggu persetujuan Manager/Owner.');
     });
   });
 }
@@ -826,10 +1218,12 @@ document.getElementById('formPiutang').addEventListener('submit', function (e) {
     if (u) {
       if (data.total < dibayar(u.id)) { toast('Total baru tidak boleh lebih kecil dari yang sudah dibayar (' + fmtRp(dibayar(u.id)) + ').'); return; }
       Object.assign(u, data);
+      catatAudit('ubah', 'Piutang diubah: ' + u.keterangan + ' (' + namaPelanggan(u.pelangganId) + ', total ' + fmtRp(u.total) + ').');
     }
     toast('Piutang diperbarui.');
   } else {
-    db.piutang.push(Object.assign({ id: uid(), diingatkan: '' }, data));
+    db.piutang.push(Object.assign({ id: uid(), diingatkan: '', cabang: cabangAktif() }, data));
+    catatAudit('tambah', 'Piutang ditambahkan: ' + data.keterangan + ' (' + namaPelanggan(data.pelangganId) + ', ' + fmtRp(data.total) + ', ' + namaCabang(cabangAktif()) + ').');
     toast('Piutang ditambahkan.');
   }
   save(); batalUbahPiutang(); renderAll();
@@ -850,7 +1244,8 @@ document.getElementById('cariPiutang').addEventListener('input', renderPiutang);
 
 /* ---------- RENDER: JATUH TEMPO ---------- */
 function renderJatuhTempo() {
-  var aktif = db.piutang.filter(function (u) { return sisaPiutang(u) > 0; });
+  if (!db) { return; }
+  var aktif = piutangCabang().filter(function (u) { return sisaPiutang(u) > 0; });
   var lewat = aktif.filter(function (u) { return statusPiutang(u) === 'Jatuh Tempo'; });
   var hariIni = aktif.filter(function (u) { return hariTerlambat(u) === 0; });
   var segera = aktif.filter(function (u) { var d = hariTerlambat(u); return d < 0 && d >= -7; });
@@ -907,6 +1302,7 @@ function renderJatuhTempo() {
       var u = db.piutang.find(function (x) { return x.id === b.dataset.sudahDiingatkan; });
       if (!u) return;
       u.diingatkan = hariIniISO();
+      catatAudit('ubah', 'Pengingat penagihan ditandai untuk piutang "' + u.keterangan + '" (' + namaPelanggan(u.pelangganId) + ').');
       save(); renderAll(); toast('Ditandai sudah diingatkan hari ini.');
     });
   });
@@ -931,7 +1327,7 @@ document.getElementById('filterJatuhTempo').addEventListener('change', renderJat
 /* ---------- RENDER: PEMBAYARAN ---------- */
 function isiSelectPiutangBayar(nilai) {
   var el = document.getElementById('fBayarPiutang');
-  var list = db.piutang.filter(function (u) { return sisaPiutang(u) > 0; })
+  var list = piutangCabang().filter(function (u) { return sisaPiutang(u) > 0; })
     .slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); });
   el.innerHTML = list.length
     ? list.map(function (u) {
@@ -958,11 +1354,12 @@ function pilihPiutangUntukBayar(piutangId) {
   perbaruiInfoSisa();
 }
 function renderPembayaran() {
+  if (!db) { return; }
   isiSelectPiutangBayar(document.getElementById('fBayarPiutang').value || null);
   isiSelectPelanggan(document.getElementById('filterPelangganBayar'), document.getElementById('filterPelangganBayar').value, true);
   var fP = document.getElementById('filterPelangganBayar').value;
   var fM = document.getElementById('filterMetodeBayar').value;
-  var list = db.pembayaran.slice().sort(function (a, b) {
+  var list = pembayaranCabang().slice().sort(function (a, b) {
     if (a.tanggal === b.tanggal) return 0;
     return b.tanggal.localeCompare(a.tanggal);
   }).filter(function (b) {
@@ -987,9 +1384,12 @@ function renderPembayaran() {
     b.addEventListener('click', function () {
       var by = db.pembayaran.find(function (x) { return x.id === b.dataset.hapusBayar; });
       if (!by) return;
-      if (!confirm('Hapus pembayaran ' + fmtRp(by.jumlah) + ' tanggal ' + tglIndo(by.tanggal) + '? Sisa piutang terkait akan bertambah kembali.')) return;
-      db.pembayaran = db.pembayaran.filter(function (x) { return x.id !== by.id; });
-      save(); renderAll(); toast('Pembayaran dihapus.');
+      if (!bisa('hapus_minta')) { toast('Staf tidak bisa menghapus pembayaran.'); return; }
+      var u = db.piutang.find(function (x) { return x.id === by.piutangId; });
+      buatPersetujuan('hapus_pembayaran', { pembayaranId: by.id },
+        'Hapus pembayaran ' + fmtRp(by.jumlah) + ' tanggal ' + tglIndo(by.tanggal) + ' (' + (u ? u.keterangan : '(piutang dihapus)') + ') — sisa piutang terkait akan bertambah kembali.');
+      renderAll();
+      toast('Penghapusan pembayaran diajukan — menunggu persetujuan Manager/Owner.');
     });
   });
 }
@@ -1012,7 +1412,8 @@ document.getElementById('formBayar').addEventListener('submit', function (e) {
   var s = sisaPiutang(u);
   if (!tanggal || !jumlah || jumlah <= 0) { toast('Isi tanggal dan jumlah pembayaran dengan benar.'); return; }
   if (jumlah > s) { toast('Jumlah melebihi sisa piutang (' + fmtRp(s) + ').'); return; }
-  db.pembayaran.push({ id: uid(), piutangId: piutangId, tanggal: tanggal, jumlah: jumlah, metode: metode, catatan: catatan });
+  db.pembayaran.push({ id: uid(), piutangId: piutangId, tanggal: tanggal, jumlah: jumlah, metode: metode, catatan: catatan, cabang: u.cabang || 'pusat' });
+  catatAudit('tambah', 'Pembayaran dicatat: ' + fmtRp(jumlah) + ' (' + metode + ') untuk piutang "' + u.keterangan + '" (' + namaPelanggan(u.pelangganId) + ').');
   save();
   var lunas = jumlah >= s;
   document.getElementById('formBayar').reset();
@@ -1026,19 +1427,20 @@ document.getElementById('filterMetodeBayar').addEventListener('change', renderPe
 /* ---------- RENDER: PELANGGAN ---------- */
 var editPelangganId = null;
 function renderPelanggan() {
-  document.getElementById('statPelanggan').textContent = db.pelanggan.length;
-  var berhutang = db.pelanggan.filter(function (p) {
+  if (!db) { return; }
+  document.getElementById('statPelanggan').textContent = pelangganCabang().length;
+  var berhutang = pelangganCabang().filter(function (p) {
     return db.piutang.some(function (u) { return u.pelangganId === p.id && sisaPiutang(u) > 0; });
   }).length;
   document.getElementById('statPelangganHutang').textContent = berhutang;
-  var rata = db.pelanggan.length
-    ? Math.round(db.pelanggan.reduce(function (a, p) { return a + Number(p.tempo || 0); }, 0) / db.pelanggan.length)
+  var rata = pelangganCabang().length
+    ? Math.round(pelangganCabang().reduce(function (a, p) { return a + Number(p.tempo || 0); }, 0) / pelangganCabang().length)
     : 0;
   document.getElementById('statRataTempo').textContent = rata + ' hari';
 
   var wadah = document.getElementById('daftarPelanggan');
-  if (!db.pelanggan.length) { wadah.innerHTML = '<p class="kosong">Belum ada pelanggan. Tambahkan lewat formulir di atas.</p>'; return; }
-  wadah.innerHTML = db.pelanggan.map(function (p) {
+  if (!pelangganCabang().length) { wadah.innerHTML = '<p class="kosong">Belum ada pelanggan. Tambahkan lewat formulir di atas.</p>'; return; }
+  wadah.innerHTML = pelangganCabang().map(function (p) {
     var list = db.piutang.filter(function (u) { return u.pelangganId === p.id; });
     var total = list.reduce(function (a, u) { return a + Number(u.total || 0); }, 0);
     var byr = list.reduce(function (a, u) { return a + dibayar(u.id); }, 0);
@@ -1073,9 +1475,11 @@ function renderPelanggan() {
       if (!p) return;
       var terkait = db.piutang.filter(function (u) { return u.pelangganId === p.id; }).length;
       if (terkait > 0) { toast('Pelanggan ini masih punya ' + terkait + ' piutang — hapus piutangnya dulu.'); return; }
-      if (!confirm('Hapus pelanggan "' + p.nama + '"?')) return;
-      db.pelanggan = db.pelanggan.filter(function (x) { return x.id !== p.id; });
-      save(); renderAll(); toast('Pelanggan dihapus.');
+      if (!bisa('hapus_minta')) { toast('Staf tidak bisa menghapus pelanggan.'); return; }
+      buatPersetujuan('hapus_pelanggan', { pelangganId: p.id },
+        'Hapus pelanggan "' + p.nama + '"' + (p.hp ? ' (HP ' + p.hp + ')' : '') + '.');
+      renderAll();
+      toast('Penghapusan pelanggan diajukan — menunggu persetujuan Manager/Owner.');
     });
   });
 }
@@ -1115,10 +1519,11 @@ document.getElementById('formPelanggan').addEventListener('submit', function (e)
   if (!data.nama || !data.hp) { toast('Isi nama toko dan nomor HP.'); return; }
   if (editPelangganId) {
     var p = db.pelanggan.find(function (x) { return x.id === editPelangganId; });
-    if (p) Object.assign(p, data);
+    if (p) { Object.assign(p, data); catatAudit('ubah', 'Pelanggan diubah: ' + p.nama + ' (tempo ' + p.tempo + ' hari).'); }
     toast('Data pelanggan diperbarui.');
   } else {
-    db.pelanggan.push(Object.assign({ id: uid() }, data));
+    db.pelanggan.push(Object.assign({ id: uid(), cabang: cabangAktif() }, data));
+    catatAudit('tambah', 'Pelanggan ditambahkan: ' + data.nama + ' (' + namaCabang(cabangAktif()) + ').');
     toast('Pelanggan ditambahkan.');
   }
   save(); batalUbahPelanggan(); renderAll();
@@ -1136,16 +1541,17 @@ function kelompokUmur(u) {
   return 'Lewat > 30 hari';
 }
 function renderLaporan() {
+  if (!db) { return; }
   var bulanFilter = document.getElementById('filterBulanLaporan').value || bulanSekarang();
   isiSelectBulan(document.getElementById('filterBulanLaporan'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanLaporan').value;
 
-  var baruBulan = db.piutang.filter(function (u) { return bulanDariTanggal(u.tanggal) === bulanFilter; })
+  var baruBulan = piutangCabang().filter(function (u) { return bulanDariTanggal(u.tanggal) === bulanFilter; })
     .reduce(function (a, u) { return a + Number(u.total || 0); }, 0);
-  var diterimaBulan = db.pembayaran.filter(function (b) { return bulanDariTanggal(b.tanggal) === bulanFilter; })
+  var diterimaBulan = pembayaranCabang().filter(function (b) { return bulanDariTanggal(b.tanggal) === bulanFilter; })
     .reduce(function (a, b) { return a + Number(b.jumlah || 0); }, 0);
-  var sisaAktif = db.piutang.reduce(function (a, u) { return a + sisaPiutang(u); }, 0);
-  var lunasBulan = db.piutang.filter(function (u) {
+  var sisaAktif = piutangCabang().reduce(function (a, u) { return a + sisaPiutang(u); }, 0);
+  var lunasBulan = piutangCabang().filter(function (u) {
     if (sisaPiutang(u) > 0) return false;
     var bayar = db.pembayaran.filter(function (b) { return b.piutangId === u.id; });
     if (!bayar.length) return false;
@@ -1160,7 +1566,7 @@ function renderLaporan() {
   var urutan = ['Belum jatuh tempo', 'Lewat 1–7 hari', 'Lewat 8–14 hari', 'Lewat 15–30 hari', 'Lewat > 30 hari'];
   var agregat = {};
   urutan.forEach(function (k) { agregat[k] = { jml: 0, sisa: 0 }; });
-  db.piutang.forEach(function (u) {
+  piutangCabang().forEach(function (u) {
     var k = kelompokUmur(u);
     if (!k) return;
     agregat[k].jml += 1;
@@ -1175,8 +1581,8 @@ function renderLaporan() {
     '<table class="tabel-harga"><tr><th>Kelompok umur</th><th>Jumlah piutang</th><th>Total sisa</th></tr>' + rowsAging +
     '<tr><td><b>TOTAL AKTIF</b></td><td><b>' + totJml + '</b></td><td><b>' + fmtRp(totSisa) + '</b></td></tr></table>';
 
-  var rowsLap = db.pelanggan.map(function (p) {
-    var list = db.piutang.filter(function (u) { return u.pelangganId === p.id && bulanDariTanggal(u.tanggal) === bulanFilter; });
+  var rowsLap = pelangganCabang().map(function (p) {
+    var list = piutangCabang().filter(function (u) { return u.pelangganId === p.id && bulanDariTanggal(u.tanggal) === bulanFilter; });
     if (!list.length) return '';
     var tot = list.reduce(function (a, u) { return a + Number(u.total || 0); }, 0);
     var byr = list.reduce(function (a, u) { return a + dibayar(u.id); }, 0);
@@ -1187,8 +1593,8 @@ function renderLaporan() {
     ? '<table class="tabel-harga"><tr><th>Pelanggan</th><th>Piutang baru</th><th>Total piutang</th><th>Dibayar</th><th>Sisa</th><th>Lunas</th></tr>' + rowsLap + '</table>'
     : '<p class="kosong">Belum ada piutang baru pada ' + labelBulan(bulanFilter) + '.</p>';
 
-  var rowsPer = db.pelanggan.map(function (p) {
-    var list = db.piutang.filter(function (u) { return u.pelangganId === p.id; });
+  var rowsPer = pelangganCabang().map(function (p) {
+    var list = piutangCabang().filter(function (u) { return u.pelangganId === p.id; });
     if (!list.length) return '';
     var tot = list.reduce(function (a, u) { return a + Number(u.total || 0); }, 0);
     var byr = list.reduce(function (a, u) { return a + dibayar(u.id); }, 0);
@@ -1197,36 +1603,423 @@ function renderLaporan() {
   document.getElementById('tabelPerPelanggan').innerHTML = rowsPer
     ? '<table class="tabel-harga"><tr><th>Pelanggan</th><th>Tagihan</th><th>Total piutang</th><th>Total dibayar</th><th>Sisa</th></tr>' + rowsPer + '</table>'
     : '<p class="kosong">Belum ada piutang.</p>';
+
+  var rowsCb = db.cabang.map(function (c) {
+    var list = db.piutang.filter(function (u) { return (u.cabang || 'pusat') === c.id; });
+    var tot = list.reduce(function (a, u) { return a + Number(u.total || 0); }, 0);
+    var byr = list.reduce(function (a, u) { return a + dibayar(u.id); }, 0);
+    var belum = list.filter(function (u) { return sisaPiutang(u) > 0; }).length;
+    return '<tr><td><b>' + esc(c.nama) + '</b>' + (c.id === cabangAktif() ? ' <span class="lencana st-baru">Aktif</span>' : '') + '<br><span style="color:var(--muted); font-size:12.5px">' + esc(c.alamat) + '</span></td><td>' + list.length + '</td><td>' + fmtRp(tot) + '</td><td>' + fmtRp(byr) + '</td><td><b>' + fmtRp(tot - byr) + '</b></td><td>' + belum + '</td></tr>';
+  }).join('');
+  document.getElementById('tabelPerCabang').innerHTML =
+    '<table class="tabel-harga"><tr><th>Cabang</th><th>Tagihan</th><th>Total piutang</th><th>Total dibayar</th><th>Sisa</th><th>Belum lunas</th></tr>' + rowsCb + '</table>';
 }
 document.getElementById('filterBulanLaporan').addEventListener('change', renderLaporan);
 document.getElementById('btnCetakLaporan').addEventListener('click', function () { window.print(); });
 document.getElementById('btnUnduhCsv').addEventListener('click', function () {
-  var baris = [['Pelanggan', 'Keterangan', 'Tanggal', 'Jatuh Tempo', 'Total (Rp)', 'Dibayar (Rp)', 'Sisa (Rp)', 'Status']];
-  db.piutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); }).forEach(function (u) {
-    baris.push([namaPelanggan(u.pelangganId), u.keterangan, u.tanggal, u.jatuhTempo, u.total, dibayar(u.id), sisaPiutang(u), statusPiutang(u)]);
+  var baris = [['Pelanggan', 'Cabang', 'Keterangan', 'Tanggal', 'Jatuh Tempo', 'Total (Rp)', 'Dibayar (Rp)', 'Sisa (Rp)', 'Status']];
+  piutangCabang().slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); }).forEach(function (u) {
+    baris.push([namaPelanggan(u.pelangganId), namaCabang(u.cabang), u.keterangan, u.tanggal, u.jatuhTempo, u.total, dibayar(u.id), sisaPiutang(u), statusPiutang(u)]);
   });
   var csv = baris.map(function (r) {
     return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';');
   }).join('\r\n');
-  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'laporan-piutang-' + bulanSekarang() + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  unduhBlob(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), 'laporan-piutang-' + namaCabang(cabangAktif()).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase() + '-' + bulanSekarang() + '.csv');
+  catatAudit('ekspor', 'Laporan CSV diunduh (' + namaCabang(cabangAktif()) + ', ' + bulanSekarang() + ').');
   toast('Laporan CSV diunduh.');
 });
 
 /* ---------- PANDUAN / RESET ---------- */
 document.getElementById('btnResetData').addEventListener('click', function () {
-  if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
+  if (!(currentUser && currentUser.peran === 'owner')) { toast('Hanya Owner yang bisa mengembalikan data contoh.'); return; }
+  if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang. Pengguna aplikasi tidak berubah.')) return;
+  var penggunaLama = db.pengguna;
   db = dataContoh();
+  db.pengguna = penggunaLama;
   save();
   batalUbahPiutang(); batalUbahPelanggan();
+  catatAudit('sistem', 'Data contoh dikembalikan (oleh ' + currentUser.username + ').');
   renderAll();
   toast('Data contoh dikembalikan.');
+});
+
+/* ---------- Peran & hak akses (ditegakkan di logika, bukan hanya sembunyikan tombol) ---------- */
+var PERAN = {
+  owner:   { label: 'Owner',   izin: ['*'] },
+  manager: { label: 'Manager', izin: ['persetujuan_putuskan', 'audit_lihat', 'ekspor', 'hapus_minta'] },
+  staf:    { label: 'Staf',    izin: [] }
+};
+var TAB_PERAN = {
+  piutang: ['owner', 'manager', 'staf'],
+  jatuhtempo: ['owner', 'manager', 'staf'],
+  pembayaran: ['owner', 'manager', 'staf'],
+  pelanggan: ['owner', 'manager', 'staf'],
+  persetujuan: ['owner', 'manager', 'staf'],
+  audit: ['owner', 'manager'],
+  laporan: ['owner', 'manager', 'staf'],
+  panduan: ['owner', 'manager', 'staf']
+};
+var currentUser = null;
+function labelPeran(r) { return (PERAN[r] || { label: r }).label; }
+function bisa(aksi) {
+  if (!currentUser) { return false; }
+  var p = PERAN[currentUser.peran];
+  if (!p) { return false; }
+  return p.izin.indexOf('*') !== -1 || p.izin.indexOf(aksi) !== -1;
+}
+function terapkanTabPeran() {
+  if (!currentUser) { return; }
+  var peran = currentUser.peran;
+  document.querySelectorAll('.tab-btn').forEach(function (b) {
+    var tab = b.dataset.tab;
+    var boleh = (TAB_PERAN[tab] || []).indexOf(peran) !== -1;
+    b.classList.toggle('tersembunyi', !boleh);
+  });
+  var aktif = document.querySelector('.tab-btn.active');
+  if (aktif && aktif.classList.contains('tersembunyi')) { pindahTab('piutang'); }
+  perbaruiBadgePersetujuan();
+}
+function applyRole() {
+  if (!currentUser) { return; }
+  document.body.setAttribute('data-role', currentUser.peran);
+  document.getElementById('userChip').textContent = currentUser.nama + ' (' + labelPeran(currentUser.peran) + ')';
+  terapkanTabPeran();
+  renderAll();
+}
+function doLogin() {
+  var u = document.getElementById('loginUser').value.trim().toLowerCase();
+  var p = document.getElementById('loginPass').value;
+  var found = null;
+  (db.pengguna || []).forEach(function (x) { if (x.username.toLowerCase() === u && x.sandi === p) { found = x; } });
+  if (!found || found.aktif === false) { document.getElementById('loginError').hidden = false; return; }
+  currentUser = found;
+  try { sessionStorage.setItem(SESI_KEY, found.username); } catch (e) { /* sesi tidak tersimpan */ }
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('loginError').hidden = true;
+  document.getElementById('loginPass').value = '';
+  catatAudit('login', 'Masuk sebagai ' + found.username + ' (' + labelPeran(found.peran) + ').');
+  applyRole();
+  toast('Selamat datang, ' + found.nama);
+}
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', function (e) { if (e.key === 'Enter') { doLogin(); } });
+document.getElementById('loginUser').addEventListener('keydown', function (e) { if (e.key === 'Enter') { doLogin(); } });
+document.getElementById('btnKeluar').addEventListener('click', function () {
+  if (currentUser) { catatAudit('login', 'Keluar (' + currentUser.username + ').'); }
+  try { sessionStorage.removeItem(SESI_KEY); } catch (e) { /* abaikan */ }
+  location.reload();
+});
+
+/* ---------- Cabang ---------- */
+function cabangAktif() { return (db && db.cabangAktif) || 'pusat'; }
+function namaCabang(id) {
+  var c = (db.cabang || []).find(function (x) { return x.id === id; });
+  return c ? c.nama : id;
+}
+function piutangCabang() { return db.piutang.filter(function (u) { return (u.cabang || 'pusat') === cabangAktif(); }); }
+function pelangganCabang() { return db.pelanggan.filter(function (p) { return (p.cabang || 'pusat') === cabangAktif(); }); }
+function pembayaranCabang() {
+  return db.pembayaran.filter(function (b) {
+    var u = db.piutang.find(function (x) { return x.id === b.piutangId; });
+    return u && (u.cabang || 'pusat') === cabangAktif();
+  });
+}
+function isiSelectCabang() {
+  var el = document.getElementById('pilihCabang');
+  var cb = cabangAktif();
+  el.innerHTML = db.cabang.map(function (c) {
+    return '<option value="' + c.id + '"' + (c.id === cb ? ' selected' : '') + '>' + esc(c.nama) + '</option>';
+  }).join('');
+  var c = db.cabang.find(function (x) { return x.id === cb; });
+  document.getElementById('infoCabang').textContent = c ? c.alamat : '';
+}
+document.getElementById('pilihCabang').addEventListener('change', function () {
+  var id = this.value;
+  if (!db.cabang.some(function (c) { return c.id === id; })) { return; }
+  db.cabangAktif = id;
+  save();
+  batalUbahPiutang();
+  renderAll();
+  toast('Cabang aktif: ' + namaCabang(id) + '.');
+});
+
+/* ---------- Audit log ---------- */
+function catatAudit(aksi, detail) {
+  if (!db) { return; }
+  if (!Array.isArray(db.audit)) { db.audit = []; }
+  db.audit.unshift({
+    waktu: new Date().toISOString(),
+    user: currentUser ? currentUser.username : 'tamu',
+    peran: currentUser ? currentUser.peran : '-',
+    cabang: cabangAktif(),
+    aksi: aksi, detail: detail || ''
+  });
+  if (db.audit.length > 200) { db.audit.length = 200; }
+  save();
+}
+
+/* ---------- Persetujuan ---------- */
+function buatPersetujuan(tipe, detail, ringkasan) {
+  var id = db.nextPersetujuan++;
+  db.persetujuan.unshift({
+    id: id, tipe: tipe, cabang: cabangAktif(),
+    dibuatOleh: currentUser ? currentUser.username : 'tamu',
+    dibuatPada: new Date().toISOString(),
+    status: 'menunggu', detail: detail, ringkasan: ringkasan || '',
+    diputuskanOleh: '', diputuskanPada: '', alasan: ''
+  });
+  catatAudit('persetujuan', 'Permintaan persetujuan #' + id + ' (' + labelTipePersetujuan(tipe) + '): ' + (ringkasan || '') + '.');
+  save();
+  perbaruiBadgePersetujuan();
+  return id;
+}
+function labelTipePersetujuan(t) {
+  return { hapus_piutang: 'Hapus piutang', hapus_pembayaran: 'Hapus pembayaran', hapus_pelanggan: 'Hapus pelanggan' }[t] || t;
+}
+function terapkanPersetujuan(apr) {
+  var d = apr.detail || {};
+  if (apr.tipe === 'hapus_piutang') {
+    db.piutang = db.piutang.filter(function (x) { return x.id !== d.piutangId; });
+    db.pembayaran = db.pembayaran.filter(function (x) { return x.piutangId !== d.piutangId; });
+    return true;
+  }
+  if (apr.tipe === 'hapus_pembayaran') {
+    db.pembayaran = db.pembayaran.filter(function (x) { return x.id !== d.pembayaranId; });
+    return true;
+  }
+  if (apr.tipe === 'hapus_pelanggan') {
+    if (db.piutang.some(function (u) { return u.pelangganId === d.pelangganId; })) { return false; }
+    db.pelanggan = db.pelanggan.filter(function (x) { return x.id !== d.pelangganId; });
+    return true;
+  }
+  return false;
+}
+function putuskanPersetujuan(id, setuju) {
+  if (!bisa('persetujuan_putuskan')) { toast('Hanya Owner/Manager yang bisa memutuskan persetujuan.'); return; }
+  var apr = db.persetujuan.find(function (a) { return a.id === id; });
+  if (!apr || apr.status !== 'menunggu') { toast('Permintaan ini sudah diputuskan.'); return; }
+  if (currentUser && apr.dibuatOleh === currentUser.username) { toast('Tidak bisa menyetujui permintaan sendiri — minta Owner/Manager lain.'); return; }
+  if (setuju && !terapkanPersetujuan(apr)) {
+    apr.status = 'ditolak';
+    apr.diputuskanOleh = currentUser.username;
+    apr.diputuskanPada = new Date().toISOString();
+    apr.alasan = 'Tidak bisa diterapkan (data terkait sudah berubah).';
+    catatAudit('persetujuan', 'Permintaan #' + id + ' (' + labelTipePersetujuan(apr.tipe) + ') DITOLAK otomatis — ' + apr.alasan);
+    save(); renderAll();
+    toast('Permintaan #' + id + ' tidak bisa diterapkan.');
+    return;
+  }
+  apr.status = setuju ? 'disetujui' : 'ditolak';
+  apr.diputuskanOleh = currentUser.username;
+  apr.diputuskanPada = new Date().toISOString();
+  catatAudit('persetujuan', 'Permintaan #' + id + ' (' + labelTipePersetujuan(apr.tipe) + ') ' + (setuju ? 'DISETUJUI' : 'DITOLAK') + ' oleh ' + currentUser.username + '.');
+  save();
+  renderAll();
+  toast('Permintaan #' + id + (setuju ? ' disetujui.' : ' ditolak.'));
+}
+function perbaruiBadgePersetujuan() {
+  var bp = document.getElementById('badgePersetujuan');
+  if (!bp || !db) { return; }
+  var menunggu = db.persetujuan.filter(function (a) { return a.status === 'menunggu'; }).length;
+  bp.hidden = menunggu === 0;
+  bp.textContent = menunggu;
+}
+function renderPersetujuan() {
+  if (!db) { return; }
+  var menunggu = db.persetujuan.filter(function (a) { return a.status === 'menunggu'; });
+  var selesai = db.persetujuan.filter(function (a) { return a.status !== 'menunggu'; }).slice(0, 10);
+  var box = document.getElementById('daftarPersetujuan');
+  if (!menunggu.length) { box.innerHTML = '<p class="kosong">Tidak ada permintaan menunggu. Hapus piutang, hapus pembayaran, dan hapus pelanggan akan muncul di sini.</p>'; }
+  else {
+    box.innerHTML = menunggu.map(function (a) {
+      var tombol = bisa('persetujuan_putuskan')
+        ? '<div class="aksi"><button class="btn kecil hijau" data-putus="ya" data-id="' + a.id + '">Setujui</button>' +
+          '<button class="btn kecil merah" data-putus="tidak" data-id="' + a.id + '">Tolak</button></div>'
+        : '<div class="detail" style="margin-top:8px">Menunggu keputusan Manager/Owner.</div>';
+      return '<div class="appr-card"><div class="atas"><div>' +
+        '<div class="nama">#' + a.id + ' · ' + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+        '<div class="detail">' + esc(a.ringkasan || '') + '</div>' +
+        '<div class="detail">Diajukan ' + esc(String(a.dibuatPada || '').replace('T', ' ').slice(0, 16)) + ' oleh ' + esc(a.dibuatOleh) + ' · ' + esc(namaCabang(a.cabang)) + '</div></div></div>' +
+        tombol + '</div>';
+    }).join('');
+    box.querySelectorAll('[data-putus]').forEach(function (b) {
+      b.addEventListener('click', function () { putuskanPersetujuan(Number(b.dataset.id), b.dataset.putus === 'ya'); });
+    });
+  }
+  var box2 = document.getElementById('daftarPersetujuanSelesai');
+  if (!selesai.length) { box2.innerHTML = '<p class="kosong">Belum ada keputusan.</p>'; }
+  else {
+    box2.innerHTML = selesai.map(function (a) {
+      return '<div class="appr-card"><div class="atas"><div>' +
+        '<div class="nama">#' + a.id + ' · ' + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + (a.status === 'disetujui' ? 'st-disetujui' : 'st-ditolak') + '">' + (a.status === 'disetujui' ? 'Disetujui' : 'Ditolak') + '</span></div>' +
+        '<div class="detail">' + esc(a.ringkasan || '') + '</div>' +
+        '<div class="detail">Diputuskan oleh ' + esc(a.diputuskanOleh || '-') + ' · ' + esc(String(a.diputuskanPada || '').replace('T', ' ').slice(0, 16)) + (a.alasan ? ' · ' + esc(a.alasan) : '') + '</div></div></div></div>';
+    }).join('');
+  }
+  perbaruiBadgePersetujuan();
+}
+
+/* ---------- Audit log (render) ---------- */
+function renderAudit() {
+  if (!db) { return; }
+  var box = document.getElementById('daftarAudit');
+  if (!bisa('audit_lihat')) {
+    box.innerHTML = '<p class="kosong">Audit Log hanya bisa dilihat Owner dan Manager.</p>';
+    return;
+  }
+  var fu = document.getElementById('filterAuditUser');
+  if (fu) {
+    var pengguna = [];
+    db.audit.forEach(function (a) { if (pengguna.indexOf(a.user) === -1) { pengguna.push(a.user); } });
+    var nilai = fu.value;
+    fu.innerHTML = '<option value="">Semua pengguna</option>' + pengguna.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + '</option>'; }).join('');
+    fu.value = nilai;
+  }
+  var fa = document.getElementById('filterAuditAksi').value;
+  var list = db.audit.filter(function (a) {
+    if (fu && fu.value && a.user !== fu.value) { return false; }
+    if (fa && a.aksi !== fa) { return false; }
+    return true;
+  }).slice(0, 100);
+  if (!list.length) { box.innerHTML = '<p class="kosong">Belum ada catatan audit pada filter ini.</p>'; return; }
+  box.innerHTML = '<table class="audit-table"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Cabang</th><th>Aksi</th><th>Detail</th></tr>' +
+    list.map(function (a) {
+      return '<tr><td>' + esc(String(a.waktu || '').replace('T', ' ').slice(0, 19)) + '</td><td>' + esc(a.user) + '</td><td>' + esc(a.peran) + '</td><td>' + esc(namaCabang(a.cabang)) + '</td><td>' + esc(a.aksi) + '</td><td>' + esc(a.detail) + '</td></tr>';
+    }).join('') + '</table>';
+}
+document.getElementById('filterAuditUser').addEventListener('change', renderAudit);
+document.getElementById('filterAuditAksi').addEventListener('change', renderAudit);
+document.getElementById('btnEksporAudit').addEventListener('click', function () {
+  if (!bisa('audit_lihat')) { toast('Hanya Owner/Manager yang bisa mengekspor audit.'); return; }
+  var baris = [['Waktu', 'Pengguna', 'Peran', 'Cabang', 'Aksi', 'Detail']];
+  db.audit.forEach(function (a) {
+    baris.push([a.waktu, a.user, a.peran, namaCabang(a.cabang), a.aksi, a.detail]);
+  });
+  var csv = baris.map(function (r) {
+    return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';');
+  }).join('\r\n');
+  unduhBlob(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), 'audit-piutang-' + bulanSekarang() + '.csv');
+  catatAudit('ekspor', 'Audit log diekspor (CSV, ' + db.audit.length + ' baris).');
+  toast('Audit CSV diunduh.');
+});
+
+/* ---------- Kelola pengguna (Owner saja) ---------- */
+function renderPengguna() {
+  if (!db) { return; }
+  var wadah = document.getElementById('daftarPengguna');
+  if (!wadah) { return; }
+  if (!bisa('kelola_pengguna') && !(currentUser && currentUser.peran === 'owner')) {
+    wadah.innerHTML = '';
+    return;
+  }
+  wadah.innerHTML = db.pengguna.map(function (u) {
+    var diriSendiri = currentUser && u.username === currentUser.username;
+    return '<div class="user-row"><div><b>' + esc(u.nama) + '</b> <span class="lencana st-baru">' + esc(labelPeran(u.peran)) + '</span>' +
+      '<div class="detail" style="color:var(--muted); font-size:13px">Login: ' + esc(u.username) + (u.aktif === false ? ' · <b>Nonaktif</b>' : ' · Aktif') + (diriSendiri ? ' · (Anda)' : '') + '</div></div>' +
+      '<div class="aksi">' +
+      '<select data-peran-user="' + esc(u.username) + '" ' + (diriSendiri ? 'disabled' : '') + '>' +
+        ['owner', 'manager', 'staf'].map(function (r) { return '<option value="' + r + '"' + (u.peran === r ? ' selected' : '') + '>' + labelPeran(r) + '</option>'; }).join('') +
+      '</select>' +
+      '<button class="btn kecil ghost" data-aktif-user="' + esc(u.username) + '"' + (diriSendiri ? ' disabled' : '') + '>' + (u.aktif === false ? 'Aktifkan' : 'Nonaktifkan') + '</button>' +
+      '<button class="btn kecil merah" data-hapus-user="' + esc(u.username) + '"' + (diriSendiri ? ' disabled' : '') + '>Hapus</button>' +
+      '</div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-peran-user]').forEach(function (s) {
+    s.addEventListener('change', function () {
+      var u = db.pengguna.find(function (x) { return x.username === s.dataset.peranUser; });
+      if (!u) { return; }
+      var lama = u.peran;
+      u.peran = s.value;
+      catatAudit('pengguna', 'Peran diubah: ' + u.nama + ' dari ' + labelPeran(lama) + ' ke ' + labelPeran(u.peran) + '.');
+      save(); renderAll();
+      toast('Peran ' + u.nama + ' diubah ke ' + labelPeran(u.peran) + '.');
+    });
+  });
+  wadah.querySelectorAll('[data-aktif-user]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var u = db.pengguna.find(function (x) { return x.username === b.dataset.aktifUser; });
+      if (!u) { return; }
+      u.aktif = u.aktif === false ? true : false;
+      catatAudit('pengguna', 'Pengguna ' + (u.aktif ? 'diaktifkan' : 'dinonaktifkan') + ': ' + u.nama + ' (' + u.username + ').');
+      save(); renderAll();
+      toast('Pengguna ' + u.nama + (u.aktif ? ' diaktifkan.' : ' dinonaktifkan.'));
+    });
+  });
+  wadah.querySelectorAll('[data-hapus-user]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var u = db.pengguna.find(function (x) { return x.username === b.dataset.hapusUser; });
+      if (!u) { return; }
+      if (db.pengguna.filter(function (x) { return x.peran === 'owner' && x.aktif !== false; }).length <= 1 && u.peran === 'owner') {
+        toast('Tidak bisa menghapus Owner terakhir yang aktif.');
+        return;
+      }
+      if (!confirm('Hapus pengguna "' + u.nama + '" (' + u.username + ')?')) { return; }
+      db.pengguna = db.pengguna.filter(function (x) { return x.username !== u.username; });
+      catatAudit('pengguna', 'Pengguna dihapus: ' + u.nama + ' (' + u.username + ').');
+      save(); renderAll();
+      toast('Pengguna dihapus.');
+    });
+  });
+}
+document.getElementById('formPengguna').addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (!(currentUser && currentUser.peran === 'owner')) { toast('Hanya Owner yang bisa menambah pengguna.'); return; }
+  var nama = document.getElementById('fUserNama').value.trim();
+  var username = document.getElementById('fUserUsername').value.trim().toLowerCase();
+  var peran = document.getElementById('fUserPeran').value;
+  var sandi = document.getElementById('fUserSandi').value;
+  if (!nama || !username || !sandi || sandi.length < 6) { toast('Isi nama, username, dan kata sandi (minimal 6 karakter).'); return; }
+  if (db.pengguna.some(function (x) { return x.username.toLowerCase() === username; })) { toast('Username sudah dipakai.'); return; }
+  db.pengguna.push({ username: username, nama: nama, peran: peran, sandi: sandi, aktif: true });
+  catatAudit('pengguna', 'Pengguna ditambahkan: ' + nama + ' (' + username + ', ' + labelPeran(peran) + ').');
+  save();
+  document.getElementById('formPengguna').reset();
+  renderAll();
+  toast('Pengguna ' + nama + ' ditambahkan.');
+});
+
+/* ---------- Ekspor / backup ---------- */
+function unduhBlob(blob, namaFile) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = namaFile;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+document.getElementById('btnBackupJson').addEventListener('click', function () {
+  var data = JSON.parse(JSON.stringify(db));
+  data._backup = { aplikasi: 'Aplikasi Piutang', versi: 3, dibuat: new Date().toISOString(), dibuatOleh: currentUser ? currentUser.username : 'tamu' };
+  unduhBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'backup-piutang-' + hariIniISO() + '.json');
+  catatAudit('ekspor', 'Backup JSON diunduh (seluruh data incl. pengguna, audit, persetujuan).');
+  toast('Backup JSON diunduh.');
+});
+document.getElementById('inputPulihkan').addEventListener('change', function () {
+  var f = this.files && this.files[0];
+  if (!f) { return; }
+  var r = new FileReader();
+  r.onload = function () {
+    try {
+      var obj = JSON.parse(r.result);
+      if (!obj || !Array.isArray(obj.pelanggan) || !Array.isArray(obj.piutang) || !Array.isArray(obj.pembayaran)) {
+        toast('File bukan backup Aplikasi Piutang yang valid.');
+        return;
+      }
+      if (!confirm('Pulihkan data dari file ini? Seluruh data saat ini akan diganti.')) { return; }
+      db = normalisasiDb(obj);
+      save();
+      batalUbahPiutang(); batalUbahPelanggan();
+      catatAudit('ekspor', 'Data dipulihkan dari file backup JSON (' + f.name + ').');
+      renderAll();
+      toast('Data dipulihkan dari backup.');
+    } catch (e) {
+      toast('File backup tidak bisa dibaca (bukan JSON valid).');
+    }
+  };
+  r.onerror = function () { toast('Gagal membaca file backup.'); };
+  r.readAsText(f);
+  this.value = '';
 });
 
 /* ---------- INIT ---------- */
@@ -1235,14 +2028,38 @@ function renderAll() {
   renderJatuhTempo();
   renderPembayaran();
   renderPelanggan();
+  renderPersetujuan();
+  renderAudit();
+  renderPengguna();
   renderLaporan();
 }
-document.getElementById('tanggalHariIni').textContent = hariIniIndo();
-document.getElementById('fPiutangTanggal').value = hariIniISO();
-document.getElementById('fBayarTanggal').value = hariIniISO();
-load();
-renderAll();
-hitungJatuhTempoOtomatis();
+function boot() {
+  siapkanKripto().then(function () { return muatState(); }).then(function () {
+    var sesi = null;
+    try { sesi = sessionStorage.getItem(SESI_KEY); } catch (e) { /* abaikan */ }
+    if (sesi) {
+      var u = (db.pengguna || []).find(function (x) { return x.username === sesi; });
+      if (u && u.aktif !== false) { currentUser = u; }
+    }
+    document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+    document.getElementById('fPiutangTanggal').value = hariIniISO();
+    document.getElementById('fBayarTanggal').value = hariIniISO();
+    renderAll();
+    hitungJatuhTempoOtomatis();
+    if (currentUser) {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      applyRole();
+    } else {
+      document.getElementById('loginOverlay').classList.remove('hidden');
+    }
+    bootSelesai();
+  }).catch(function () {
+    db = dataContoh();
+    renderAll();
+    bootSelesai();
+  });
+}
+boot();
 </script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->

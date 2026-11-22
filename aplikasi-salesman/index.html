@@ -177,6 +177,37 @@
     color: var(--muted); font-size: 13px;
   }
   footer .btn { margin-top: 10px; }
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 10001; display: flex; align-items: center;
+    justify-content: center; background: var(--bg); padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow);
+  }
+  .login-card h2 { font-size: 22px; margin-bottom: 4px; }
+  .login-card .login-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 14px; }
+  .login-card label { margin-top: 10px; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-error { color: var(--red); font-size: 13.5px; font-weight: 600; margin-top: 10px; }
+  .login-note { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .bar-pengguna {
+    display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .bar-pengguna .chip-pengguna {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-weight: 700; font-size: 13.5px; box-shadow: var(--shadow);
+  }
+  .bar-pengguna .bar-info { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+  body[data-role="manager"] .hanya-owner,
+  body[data-role="staf"] .hanya-owner,
+  body[data-role="staf"] .hanya-manajer { display: none !important; }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .st-masuk { background: var(--blue-soft); color: var(--blue); }
   @media print {
     .tabbar, .hero .tanggal, footer .btn, .aksi, .btn { display: none !important; }
     .panel { display: none !important; }
@@ -193,6 +224,12 @@
     <div class="tanggal" id="tanggalHariIni"></div>
   </header>
 
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">Belum masuk</span>
+    <span class="bar-info" id="infoCabangBar"></span>
+    <button class="btn kecil ghost" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
   <nav class="tabbar" aria-label="Menu utama">
     <button class="tab-btn active" data-tab="salesman">Salesman</button>
     <button class="tab-btn" data-tab="target">Target</button>
@@ -200,6 +237,9 @@
     <button class="tab-btn" data-tab="pesanan">Pesanan Lapangan</button>
     <button class="tab-btn" data-tab="komisi">Komisi</button>
     <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn hanya-manajer" data-tab="audit">Audit Log</button>
+    <button class="tab-btn hanya-owner" data-tab="pengguna">Pengguna</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
 
@@ -208,6 +248,16 @@
     <div class="page-head">
       <h2>Salesman &amp; Ringkasan</h2>
       <p>Data tim salesman lapangan dan ringkasan kinerja bulan berjalan.</p>
+    </div>
+    <div class="card">
+      <h3>Cabang Aktif</h3>
+      <p class="sub">Pilih cabang yang sedang dikelola — salesman, target, kunjungan, pesanan, dan statistik mengikuti cabang ini. Data contoh lama masuk ke Cabang Pusat.</p>
+      <div class="row">
+        <div class="grow">
+          <label for="pilihCabang">Cabang aktif</label>
+          <select id="pilihCabang"></select>
+        </div>
+      </div>
     </div>
     <div class="grid-stat">
       <div class="stat"><div class="label">Total Salesman</div><div class="angka" id="statSalesman">0</div></div>
@@ -257,7 +307,7 @@
     </div>
     <div class="card">
       <h3>Daftar Salesman</h3>
-      <p class="sub">Ubah data atau hapus salesman yang sudah tidak bekerja. Menghapus salesman tidak menghapus riwayat kunjungan dan pesanannya.</p>
+      <p class="sub">Ubah data atau ajukan penghapusan salesman yang sudah tidak bekerja — penghapusan butuh persetujuan Manager/Owner di tab Persetujuan. Menghapus salesman tidak menghapus riwayat kunjungan dan pesanannya.</p>
       <div id="daftarSalesman"></div>
     </div>
   </section>
@@ -433,7 +483,7 @@
     </div>
     <div class="card">
       <h3>Daftar Pesanan</h3>
-      <p class="sub">Pesanan terbaru tampil paling atas. Ubah status menjadi Selesai setelah barang terkirim dan dibayar.</p>
+      <p class="sub">Pesanan terbaru tampil paling atas. Ubah status menjadi Selesai setelah barang terkirim dan dibayar. Penghapusan pesanan butuh persetujuan Manager/Owner.</p>
       <div class="row" style="margin-bottom:14px">
         <div class="grow">
           <label for="filterSalesmanPesanan">Filter salesman</label>
@@ -462,7 +512,7 @@
     </div>
     <div class="card">
       <h3>Pengaturan Komisi</h3>
-      <p class="sub">Persentase ini berlaku untuk semua salesman dan langsung mengubah perhitungan komisi di seluruh aplikasi.</p>
+      <p class="sub">Perubahan tarif tidak langsung berlaku — diajukan dulu ke tab Persetujuan dan baru berlaku setelah disetujui Manager/Owner.</p>
       <form id="formKomisiRate">
         <div class="row">
           <div class="grow">
@@ -516,9 +566,116 @@
       <div class="tabel-wrap"><div id="tabelLaporan"></div></div>
     </div>
     <div class="card">
+      <h3>Ringkasan per Cabang</h3>
+      <p class="sub">Rekap bulan laporan untuk semua cabang sekaligus — tidak tergantung cabang aktif.</p>
+      <div class="tabel-wrap"><div id="ringkasanCabang"></div></div>
+    </div>
+    <div class="card">
+      <h3>Ekspor &amp; Backup</h3>
+      <p class="sub">Unduh laporan bulan ini sebagai CSV, atau cadangkan seluruh data (termasuk pengguna, persetujuan, dan audit log) sebagai file JSON. Pulihkan hanya dari file backup aplikasi ini.</p>
+      <div class="row">
+        <button type="button" class="btn kecil biru" id="btnEksporCSV">Ekspor CSV Laporan</button>
+        <button type="button" class="btn kecil" id="btnBackup">Backup JSON</button>
+        <button type="button" class="btn kecil ghost" id="btnPulihkan">Pulihkan dari File JSON</button>
+        <input type="file" id="inputPulihkan" accept="application/json,.json" hidden>
+      </div>
+      <p style="font-size:13.5px; color:var(--muted); margin-top:10px">Backup JSON dan Pulihkan hanya untuk Owner/Manager. Ekspor CSV bisa dipakai semua peran yang sudah masuk.</p>
+    </div>
+    <div class="card">
       <h3>Pesanan Selesai Bulan Ini</h3>
       <p class="sub">Daftar pesanan yang membentuk omzet pada bulan laporan.</p>
       <div id="daftarLaporanPesanan"></div>
+    </div>
+  </section>
+
+  <!-- ============ PERSETUJUAN ============ -->
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Aksi sensitif tidak langsung jalan — diajukan dulu ke sini dan baru berlaku setelah disetujui Manager/Owner. Yang ditolak dibatalkan. Semua keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Persetujuan</h3>
+      <p class="sub">Penghapusan salesman, penghapusan pesanan lapangan, penghapusan target, dan perubahan tarif komisi.</p>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Riwayat Keputusan</h3>
+      <p class="sub">Pengajuan yang sudah disetujui atau ditolak (20 terakhir).</p>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT LOG ============ -->
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Catatan siapa melakukan apa dan kapan — termasuk masuk aplikasi, tambah/ubah/hapus, persetujuan, ekspor, migrasi, dan reset. Hanya Owner dan Manager.</p>
+    </div>
+    <div class="card">
+      <h3>Riwayat Aksi</h3>
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Filter pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Filter aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">Masuk / Keluar</option>
+            <option value="tambah">Tambah</option>
+            <option value="ubah">Ubah</option>
+            <option value="hapus">Hapus</option>
+            <option value="persetujuan">Persetujuan</option>
+            <option value="ekspor">Ekspor / Backup</option>
+            <option value="sistem">Sistem / Migrasi</option>
+            <option value="reset">Reset Data</option>
+          </select>
+        </div>
+      </div>
+      <div id="daftarAudit"></div>
+    </div>
+  </section>
+
+  <!-- ============ PENGGUNA ============ -->
+  <section class="panel" id="panel-pengguna">
+    <div class="page-head">
+      <h2>Pengguna Aplikasi</h2>
+      <p>Kelola akun yang bisa masuk ke aplikasi ini. Hanya Owner.</p>
+    </div>
+    <div class="card">
+      <h3 id="judulFormPengguna">Tambah Pengguna</h3>
+      <p class="sub">Peran: Owner (semua akses), Manager (semua kecuali kelola pengguna), Staf (input harian; tidak bisa hapus salesman, ubah tarif komisi, kelola pengguna, atau melihat audit).</p>
+      <form id="formPengguna">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fUserNama">Nama pengguna *</label>
+            <input type="text" id="fUserNama" placeholder="Contoh: andi" required>
+          </div>
+          <div class="field">
+            <label for="fUserSandi">Kata sandi *</label>
+            <input type="text" id="fUserSandi" placeholder="Minimal 6 karakter" required>
+          </div>
+          <div class="field">
+            <label for="fUserPeran">Peran *</label>
+            <select id="fUserPeran">
+              <option value="staf">Staf</option>
+              <option value="manager">Manager</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn" id="btnSimpanPengguna">Simpan Pengguna</button>
+        </div>
+      </form>
+      <p style="font-size:13.5px; color:var(--muted); margin-top:10px">Akun demo hanya untuk mencoba — segera ganti kata sandinya dan buat akun sendiri setelah membeli.</p>
+    </div>
+    <div class="card">
+      <h3>Daftar Pengguna</h3>
+      <p class="sub">Ubah peran lewat pilihan di bawah, atau nonaktifkan akun yang sudah tidak boleh masuk.</p>
+      <div id="daftarPengguna"></div>
     </div>
   </section>
 
@@ -529,6 +686,13 @@
       <p>Cara memakai Aplikasi Salesman, harga, dan garansi.</p>
     </div>
     <div class="card">
+      <h3>Masuk &amp; peran</h3>
+      <ul>
+        <li><b>Owner</b> — semua akses: data, persetujuan, audit, pengguna, ekspor/backup, dan reset data.</li>
+        <li><b>Manager</b> — semua kecuali kelola pengguna; bisa menyetujui/menolak pengajuan.</li>
+        <li><b>Staf</b> — input harian (salesman, target, kunjungan, pesanan). Tidak bisa menghapus salesman, mengubah tarif komisi, mengelola pengguna, atau melihat Audit Log — penghapusan dan perubahan tarif diajukan dulu ke Persetujuan.</li>
+      </ul>
+      <p style="font-size:14px; margin-top:8px">Sesi masuk tersimpan selama tab peramban masih terbuka — memuat ulang halaman tidak meminta masuk lagi, tetapi menutup tab akan meminta masuk kembali. Owner bisa menambah pengguna, mengubah peran, dan menonaktifkan pengguna di tab <b>Pengguna</b>.</p>
       <h3>Cara memakai</h3>
       <ol>
         <li>Tambahkan <b>Salesman</b> di tab <b>Salesman</b>: nama, wilayah, nomor HP, dan tanggal bergabung.</li>
@@ -538,22 +702,21 @@
         <li>Ubah status pesanan menjadi <b>Selesai</b> setelah barang terkirim. Pesanan Selesai masuk ke omzet dan komisi.</li>
         <li>Di tab <b>Komisi</b>, lihat komisi otomatis tiap salesman (standar 5% dari omzet) dan tandai <b>Dibayar</b> setelah diserahkan.</li>
         <li>Di tab <b>Laporan</b>, pilih bulan dan lihat rekap kinerja tiap salesman — bisa dicetak atau disimpan sebagai PDF.</li>
-        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+        <li>Masuk dulu dengan akun Anda (Owner / Manager / Staf) — akun demo tertera di layar masuk. Staf hanya bisa input harian; penghapusan dan perubahan tarif komisi harus disetujui Manager/Owner.</li>
+        <li>Pilih <b>Cabang Aktif</b> di tab <b>Salesman</b> sebelum menginput — data baru masuk ke cabang itu, dan statistik mengikuti cabang aktif. Laporan menampilkan ringkasan semua cabang.</li>
+        <li>Pengajuan yang menunggu persetujuan ada di tab <b>Persetujuan</b>; riwayat semua aksi ada di tab <b>Audit Log</b> (hanya Owner/Manager).</li>
+        <li>Cadangkan data berkala lewat <b>Backup JSON</b> di tab <b>Laporan</b> — file backup bisa dipulihkan lewat tombol <b>Pulihkan dari File JSON</b>.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan (IndexedDB terenkripsi).</li>
       </ol>
     </div>
     <div class="card">
       <h3>Harga aplikasi</h3>
-      <table class="tabel-harga">
-        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
-        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
-        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
-        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
-      </table>
+      <p style="font-size:14px">Harga: <b>Rp999.000</b> (sekali bayar). APK Android <b>+Rp400.000</b>.</p>
       <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Garansi</h3>
-      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+      <p style="font-size:14px">Perbaikan bug/error gratis <b>30 hari</b> sejak pembelian. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
     </div>
     <div class="card">
       <h3>Request khusus (penyesuaian)</h3>
@@ -561,7 +724,7 @@
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data salesman, target, kunjungan, pesanan, dan komisi <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data salesman, target, kunjungan, pesanan, dan komisi <b>hanya tersimpan di perangkat ini</b> — sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b>, kapasitas jauh lebih besar dari localStorage. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Data pengguna aplikasi (nama, peran, kata sandi) juga hanya tersimpan di perangkat ini. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
       <div style="margin-top:14px">
         <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
       </div>
@@ -569,9 +732,24 @@
   </section>
 
   <footer>
-    <p><b>Aplikasi Salesman v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Aplikasi Salesman v3.</b> Multi-cabang, 3 peran, alur persetujuan, IndexedDB + enkripsi, offline. Harga Rp999.000 (sekali bayar). APK Android +Rp400.000. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis 30 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Salesman." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
+</div>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Aplikasi Salesman</h2>
+    <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+    <label for="loginUser">Nama pengguna</label>
+    <input type="text" id="loginUser" autocomplete="username">
+    <label for="loginPass">Kata sandi</label>
+    <input type="password" id="loginPass" autocomplete="current-password">
+    <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+    <button class="btn" id="loginBtn" type="button">Masuk</button>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Owner: <b>owner</b> / <b>owner123</b> (semua akses)<br>Manager: <b>manager</b> / <b>manager123</b> (semua kecuali kelola pengguna)<br>Staf: <b>staf</b> / <b>staf123</b> (input harian; tidak bisa hapus salesman, ubah tarif komisi, kelola pengguna, atau melihat audit).</p>
+    <p class="login-note">Sesi masuk tersimpan selama tab peramban masih terbuka — memuat ulang halaman tidak meminta masuk lagi, tetapi menutup tab akan meminta masuk kembali. Klik <b>Keluar</b> di kanan atas untuk keluar.</p>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -608,52 +786,231 @@ function hariIniIndo() {
 function dataContoh() {
   return {
     komisiRate: 5,
+    cabangAktif: 'pusat',
+    cabang: [
+      { id: 'pusat', nama: 'Cabang Pusat', alamat: 'Jl. Merdeka No. 10, Jakarta Pusat' },
+      { id: 'jaktim', nama: 'Cabang Jakarta Timur', alamat: 'Jl. Raya Kalimalang No. 88, Jakarta Timur' },
+      { id: 'bekasi', nama: 'Cabang Bekasi', alamat: 'Jl. Ahmad Yani No. 210, Bekasi' }
+    ],
+    pengguna: penggunaDemo(),
+    persetujuan: [],
+    audit: [],
     salesman: [
-      { id: 'sm1', nama: 'Budi Santoso', wilayah: 'Jakarta Selatan', hp: '081234567801', tglMasuk: '2025-03-01', status: 'Aktif' },
-      { id: 'sm2', nama: 'Dewi Lestari', wilayah: 'Jakarta Timur', hp: '081234567802', tglMasuk: '2025-05-15', status: 'Aktif' },
-      { id: 'sm3', nama: 'Agus Wijaya', wilayah: 'Bekasi', hp: '081234567803', tglMasuk: '2025-08-10', status: 'Aktif' },
-      { id: 'sm4', nama: 'Siti Rahma', wilayah: 'Tangerang', hp: '081234567804', tglMasuk: '2026-01-05', status: 'Aktif' }
+      { id: 'sm1', nama: 'Budi Santoso', wilayah: 'Jakarta Selatan', hp: '081234567801', tglMasuk: '2025-03-01', status: 'Aktif', cabang: 'pusat' },
+      { id: 'sm2', nama: 'Dewi Lestari', wilayah: 'Jakarta Timur', hp: '081234567802', tglMasuk: '2025-05-15', status: 'Aktif', cabang: 'jaktim' },
+      { id: 'sm3', nama: 'Agus Wijaya', wilayah: 'Bekasi', hp: '081234567803', tglMasuk: '2025-08-10', status: 'Aktif', cabang: 'bekasi' },
+      { id: 'sm4', nama: 'Siti Rahma', wilayah: 'Tangerang', hp: '081234567804', tglMasuk: '2026-01-05', status: 'Aktif', cabang: 'pusat' }
     ],
     target: [
-      { id: 'tg1', salesmanId: 'sm1', bulan: '2026-11', targetOmzet: 60000000, targetKunjungan: 40 },
-      { id: 'tg2', salesmanId: 'sm2', bulan: '2026-11', targetOmzet: 50000000, targetKunjungan: 36 },
-      { id: 'tg3', salesmanId: 'sm3', bulan: '2026-11', targetOmzet: 45000000, targetKunjungan: 36 },
-      { id: 'tg4', salesmanId: 'sm4', bulan: '2026-11', targetOmzet: 40000000, targetKunjungan: 32 }
+      { id: 'tg1', salesmanId: 'sm1', bulan: '2026-11', targetOmzet: 60000000, targetKunjungan: 40, cabang: 'pusat' },
+      { id: 'tg2', salesmanId: 'sm2', bulan: '2026-11', targetOmzet: 50000000, targetKunjungan: 36, cabang: 'jaktim' },
+      { id: 'tg3', salesmanId: 'sm3', bulan: '2026-11', targetOmzet: 45000000, targetKunjungan: 36, cabang: 'bekasi' },
+      { id: 'tg4', salesmanId: 'sm4', bulan: '2026-11', targetOmzet: 40000000, targetKunjungan: 32, cabang: 'pusat' }
     ],
     kunjungan: [
-      { id: 'kj1', salesmanId: 'sm1', tanggal: '2026-11-02', pelanggan: 'Toko Berkah Jaya', alamat: 'Jl. Mampang Prapatan No. 45', hasil: 'Order', catatan: 'Pesan 20 karton minyak goreng 5 liter.' },
-      { id: 'kj2', salesmanId: 'sm1', tanggal: '2026-11-03', pelanggan: 'Toko Sinar Abadi', alamat: 'Jl. Kemang Raya No. 12', hasil: 'Follow-up', catatan: 'Minta penawaran harga khusus gula 50 kg.' },
-      { id: 'kj3', salesmanId: 'sm2', tanggal: '2026-11-02', pelanggan: 'Toko Murah Meriah', alamat: 'Jl. Raya Kalimalang No. 88', hasil: 'Order', catatan: 'Pesan 30 dus mie instan dan 10 karung beras.' },
-      { id: 'kj4', salesmanId: 'sm2', tanggal: '2026-11-04', pelanggan: 'Toko Keluarga', alamat: 'Jl. Cipinang Muara No. 7', hasil: 'Kunjungan Rutin', catatan: 'Cek stok, semua masih aman.' },
-      { id: 'kj5', salesmanId: 'sm3', tanggal: '2026-11-03', pelanggan: 'Toko Sumber Rezeki', alamat: 'Jl. Ahmad Yani No. 210, Bekasi', hasil: 'Order', catatan: 'Pesan 15 dus kopi sachet dan 10 dus teh celup.' },
-      { id: 'kj6', salesmanId: 'sm3', tanggal: '2026-11-05', pelanggan: 'Toko Melati', alamat: 'Jl. Cut Mutia No. 33, Bekasi', hasil: 'Tidak Bertemu', catatan: 'Toko tutup, pemilik sedang ke pasar induk.' },
-      { id: 'kj7', salesmanId: 'sm4', tanggal: '2026-11-04', pelanggan: 'Toko Jaya Makmur', alamat: 'Jl. Merdeka No. 56, Tangerang', hasil: 'Order', catatan: 'Pesan 25 karton susu UHT 1 liter.' },
-      { id: 'kj8', salesmanId: 'sm4', tanggal: '2026-11-06', pelanggan: 'Toko Amanah', alamat: 'Jl. Sudirman No. 90, Tangerang', hasil: 'Follow-up', catatan: 'Bandingkan harga sabun cuci dengan supplier lama.' }
+      { id: 'kj1', salesmanId: 'sm1', tanggal: '2026-11-02', pelanggan: 'Toko Berkah Jaya', alamat: 'Jl. Mampang Prapatan No. 45', hasil: 'Order', catatan: 'Pesan 20 karton minyak goreng 5 liter.' , cabang: 'pusat'},
+      { id: 'kj2', salesmanId: 'sm1', tanggal: '2026-11-03', pelanggan: 'Toko Sinar Abadi', alamat: 'Jl. Kemang Raya No. 12', hasil: 'Follow-up', catatan: 'Minta penawaran harga khusus gula 50 kg.' , cabang: 'pusat'},
+      { id: 'kj3', salesmanId: 'sm2', tanggal: '2026-11-02', pelanggan: 'Toko Murah Meriah', alamat: 'Jl. Raya Kalimalang No. 88', hasil: 'Order', catatan: 'Pesan 30 dus mie instan dan 10 karung beras.' , cabang: 'jaktim'},
+      { id: 'kj4', salesmanId: 'sm2', tanggal: '2026-11-04', pelanggan: 'Toko Keluarga', alamat: 'Jl. Cipinang Muara No. 7', hasil: 'Kunjungan Rutin', catatan: 'Cek stok, semua masih aman.' , cabang: 'jaktim'},
+      { id: 'kj5', salesmanId: 'sm3', tanggal: '2026-11-03', pelanggan: 'Toko Sumber Rezeki', alamat: 'Jl. Ahmad Yani No. 210, Bekasi', hasil: 'Order', catatan: 'Pesan 15 dus kopi sachet dan 10 dus teh celup.' , cabang: 'bekasi'},
+      { id: 'kj6', salesmanId: 'sm3', tanggal: '2026-11-05', pelanggan: 'Toko Melati', alamat: 'Jl. Cut Mutia No. 33, Bekasi', hasil: 'Tidak Bertemu', catatan: 'Toko tutup, pemilik sedang ke pasar induk.' , cabang: 'bekasi'},
+      { id: 'kj7', salesmanId: 'sm4', tanggal: '2026-11-04', pelanggan: 'Toko Jaya Makmur', alamat: 'Jl. Merdeka No. 56, Tangerang', hasil: 'Order', catatan: 'Pesan 25 karton susu UHT 1 liter.' , cabang: 'pusat'},
+      { id: 'kj8', salesmanId: 'sm4', tanggal: '2026-11-06', pelanggan: 'Toko Amanah', alamat: 'Jl. Sudirman No. 90, Tangerang', hasil: 'Follow-up', catatan: 'Bandingkan harga sabun cuci dengan supplier lama.' , cabang: 'pusat'}
     ],
     pesanan: [
-      { id: 'ps1', salesmanId: 'sm1', tanggal: '2026-11-02', pelanggan: 'Toko Berkah Jaya', produk: 'Minyak Goreng 5 Liter', jumlah: 20, hargaSatuan: 95000, status: 'Selesai' },
-      { id: 'ps2', salesmanId: 'sm1', tanggal: '2026-11-05', pelanggan: 'Toko Sinar Abadi', produk: 'Gula Pasir 50 Kg', jumlah: 10, hargaSatuan: 650000, status: 'Diproses' },
-      { id: 'ps3', salesmanId: 'sm2', tanggal: '2026-11-02', pelanggan: 'Toko Murah Meriah', produk: 'Mie Instan (dus isi 40)', jumlah: 30, hargaSatuan: 110000, status: 'Selesai' },
-      { id: 'ps4', salesmanId: 'sm2', tanggal: '2026-11-03', pelanggan: 'Toko Murah Meriah', produk: 'Beras Premium 25 Kg', jumlah: 10, hargaSatuan: 325000, status: 'Selesai' },
-      { id: 'ps5', salesmanId: 'sm3', tanggal: '2026-11-03', pelanggan: 'Toko Sumber Rezeki', produk: 'Kopi Sachet (dus isi 120)', jumlah: 15, hargaSatuan: 145000, status: 'Selesai' },
-      { id: 'ps6', salesmanId: 'sm3', tanggal: '2026-11-06', pelanggan: 'Toko Sumber Rezeki', produk: 'Teh Celup (dus isi 100)', jumlah: 10, hargaSatuan: 98000, status: 'Baru' },
-      { id: 'ps7', salesmanId: 'sm4', tanggal: '2026-11-04', pelanggan: 'Toko Jaya Makmur', produk: 'Susu UHT 1 Liter (karton isi 12)', jumlah: 25, hargaSatuan: 185000, status: 'Selesai' },
-      { id: 'ps8', salesmanId: 'sm4', tanggal: '2026-11-07', pelanggan: 'Toko Amanah', produk: 'Sabun Cuci Cair 5 Liter', jumlah: 12, hargaSatuan: 78000, status: 'Baru' }
+      { id: 'ps1', salesmanId: 'sm1', tanggal: '2026-11-02', pelanggan: 'Toko Berkah Jaya', produk: 'Minyak Goreng 5 Liter', jumlah: 20, hargaSatuan: 95000, status: 'Selesai' , cabang: 'pusat'},
+      { id: 'ps2', salesmanId: 'sm1', tanggal: '2026-11-05', pelanggan: 'Toko Sinar Abadi', produk: 'Gula Pasir 50 Kg', jumlah: 10, hargaSatuan: 650000, status: 'Diproses' , cabang: 'pusat'},
+      { id: 'ps3', salesmanId: 'sm2', tanggal: '2026-11-02', pelanggan: 'Toko Murah Meriah', produk: 'Mie Instan (dus isi 40)', jumlah: 30, hargaSatuan: 110000, status: 'Selesai' , cabang: 'jaktim'},
+      { id: 'ps4', salesmanId: 'sm2', tanggal: '2026-11-03', pelanggan: 'Toko Murah Meriah', produk: 'Beras Premium 25 Kg', jumlah: 10, hargaSatuan: 325000, status: 'Selesai' , cabang: 'jaktim'},
+      { id: 'ps5', salesmanId: 'sm3', tanggal: '2026-11-03', pelanggan: 'Toko Sumber Rezeki', produk: 'Kopi Sachet (dus isi 120)', jumlah: 15, hargaSatuan: 145000, status: 'Selesai' , cabang: 'bekasi'},
+      { id: 'ps6', salesmanId: 'sm3', tanggal: '2026-11-06', pelanggan: 'Toko Sumber Rezeki', produk: 'Teh Celup (dus isi 100)', jumlah: 10, hargaSatuan: 98000, status: 'Baru' , cabang: 'bekasi'},
+      { id: 'ps7', salesmanId: 'sm4', tanggal: '2026-11-04', pelanggan: 'Toko Jaya Makmur', produk: 'Susu UHT 1 Liter (karton isi 12)', jumlah: 25, hargaSatuan: 185000, status: 'Selesai' , cabang: 'pusat'},
+      { id: 'ps8', salesmanId: 'sm4', tanggal: '2026-11-07', pelanggan: 'Toko Amanah', produk: 'Sabun Cuci Cair 5 Liter', jumlah: 12, hargaSatuan: 78000, status: 'Baru' , cabang: 'pusat'}
     ],
     komisiDibayar: []
   };
 }
 
 var db = null;
-function load() {
-  try {
-    var raw = localStorage.getItem(KEY);
-    if (raw) { db = JSON.parse(raw); return; }
-  } catch (e) { db = null; }
-  db = dataContoh();
-  save();
+
+/* ---------- Penyimpanan internal: IndexedDB + enkripsi WebCrypto ---------- */
+/* Data kerja tetap di memori (db); IndexedDB adalah tempat simpan utamanya
+   (asinkron). localStorage hanya dipakai untuk migrasi sekali dari versi
+   lama dan sebagai cadangan bila IndexedDB tidak ada. save() tetap bisa
+   dipanggil sinkron dari kode lama (fire-and-forget berantre). */
+var DB_NAMA = 'salesmanDB';
+var DB_VERSI = 1;
+var dbSiap = null;
+var infoSimpan = { jenis: 'indexeddb', enkripsi: false, termigrasi: false };
+var antreSimpan = Promise.resolve();
+window.__infoSimpan = infoSimpan;
+
+function idbTersedia() { return typeof indexedDB !== 'undefined'; }
+function bukaDB() {
+  if (dbSiap) { return dbSiap; }
+  dbSiap = new Promise(function (selesai) {
+    if (!idbTersedia()) { infoSimpan.jenis = 'localstorage'; selesai(null); return; }
+    var req;
+    try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = 'localstorage'; selesai(null); return; }
+    req.onupgradeneeded = function () {
+      var d = req.result;
+      if (!d.objectStoreNames.contains('kv')) { d.createObjectStore('kv'); }
+    };
+    req.onsuccess = function () { selesai(req.result); };
+    req.onerror = function () { infoSimpan.jenis = 'localstorage'; selesai(null); };
+    req.onblocked = function () { infoSimpan.jenis = 'localstorage'; selesai(null); };
+  });
+  return dbSiap;
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+function idbGet(kunci) {
+  return bukaDB().then(function (d) {
+    if (!d) { return undefined; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction('kv', 'readonly'); req = tx.objectStore('kv').get(kunci); }
+      catch (e) { selesai(undefined); return; }
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { selesai(undefined); };
+    });
+  });
+}
+function idbPut(kunci, nilai) {
+  return bukaDB().then(function (d) {
+    if (!d) { return false; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction('kv', 'readwrite'); req = tx.objectStore('kv').put(nilai, kunci); }
+      catch (e) { selesai(false); return; }
+      req.onsuccess = function () { selesai(true); };
+      req.onerror = function () { selesai(false); };
+    });
+  });
+}
+function lsCadanganGet(kunci) { try { var r = localStorage.getItem(KEY + '.idb-' + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(KEY + '.idb-' + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+function simpanKV(kunci, nilai) {
+  return idbPut(kunci, nilai).then(function (ok) {
+    if (!ok) { lsCadanganPut(kunci, nilai); }
+    return true;
+  });
+}
+function muatKV(kunci) {
+  return idbGet(kunci).then(function (v) {
+    if (v !== undefined) { return v; }
+    return lsCadanganGet(kunci);
+  });
+}
+
+/* Enkripsi WebCrypto (AES-GCM 256). Kunci acak dibuat sekali per perangkat
+   dan disimpan di IndexedDB yang sama — JUJUR: ini enkripsi demo, bukan
+   keamanan tingkat enterprise, karena kunci dan datanya berada di perangkat
+   yang sama. */
+var kunciKripto = null;
+function b64DariBuffer(buf) { var b = new Uint8Array(buf); var s = ''; for (var i = 0; i < b.length; i++) { s += String.fromCharCode(b[i]); } return btoa(s); }
+function bufferDariB64(s) { var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+function siapkanKripto() {
+  if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+  return muatKV('kunci').then(function (jwk) {
+    var janji = jwk
+      ? crypto.subtle.importKey('jwk', jwk, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+      : crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+          .then(function (k) { return crypto.subtle.exportKey('jwk', k).then(function (j) { return simpanKV('kunci', j).then(function () { return k; }); }); });
+    return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+      .catch(function () { infoSimpan.enkripsi = false; return false; });
+  });
+}
+function enkripData(obj) {
+  if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+    .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+    .catch(function () { return { v: 0, data: obj }; });
+}
+function dekripData(paket) {
+  if (!paket) { return Promise.resolve(null); }
+  if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+    .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+    .catch(function () { return null; });
+}
+
+function penggunaDemo() {
+  return [
+    { username: 'owner', password: 'owner123', peran: 'owner', aktif: true },
+    { username: 'manager', password: 'manager123', peran: 'manager', aktif: true },
+    { username: 'staf', password: 'staf123', peran: 'staf', aktif: true }
+  ];
+}
+function cabangDariSalesman(salesmanId) {
+  if (!db) { return 'pusat'; }
+  var sm = db.salesman.find(function (x) { return x.id === salesmanId; });
+  return sm && sm.cabang ? sm.cabang : 'pusat';
+}
+function normalisasiDb(obj) {
+  if (!obj || typeof obj !== 'object') { obj = dataContoh(); }
+  if (!Array.isArray(obj.cabang) || !obj.cabang.length) {
+    obj.cabang = [
+      { id: 'pusat', nama: 'Cabang Pusat', alamat: 'Jl. Merdeka No. 10, Jakarta Pusat' },
+      { id: 'jaktim', nama: 'Cabang Jakarta Timur', alamat: 'Jl. Raya Kalimalang No. 88, Jakarta Timur' },
+      { id: 'bekasi', nama: 'Cabang Bekasi', alamat: 'Jl. Ahmad Yani No. 210, Bekasi' }
+    ];
+  }
+  if (!obj.cabangAktif || !obj.cabang.some(function (c) { return c.id === obj.cabangAktif; })) { obj.cabangAktif = 'pusat'; }
+  if (typeof obj.komisiRate !== 'number') { obj.komisiRate = 5; }
+  ['salesman', 'target', 'kunjungan', 'pesanan', 'komisiDibayar'].forEach(function (k) { if (!Array.isArray(obj[k])) { obj[k] = []; } });
+  if (!Array.isArray(obj.pengguna) || !obj.pengguna.length) { obj.pengguna = penggunaDemo(); }
+  if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+  if (!Array.isArray(obj.audit)) { obj.audit = []; }
+  obj.salesman.forEach(function (sm) { if (!sm.cabang) { sm.cabang = 'pusat'; } });
+  obj.target.forEach(function (t) { if (!t.cabang) { t.cabang = cabangDariSalesmanLokal(obj, t.salesmanId); } });
+  obj.kunjungan.forEach(function (k) { if (!k.cabang) { k.cabang = cabangDariSalesmanLokal(obj, k.salesmanId); } });
+  obj.pesanan.forEach(function (p) { if (!p.cabang) { p.cabang = cabangDariSalesmanLokal(obj, p.salesmanId); } });
+  return obj;
+}
+function cabangDariSalesmanLokal(obj, salesmanId) {
+  var sm = (obj.salesman || []).find(function (x) { return x.id === salesmanId; });
+  return sm && sm.cabang ? sm.cabang : 'pusat';
+}
+
+/* save() tetap sinkron dari sisi pemanggil: antrean async di belakang. */
+function saveData() {
+  if (!db) { return; }
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(db).then(function (paket) { return simpanKV('state', paket); });
+  }).catch(function () { /* simpan gagal: data tetap di memori */ });
+}
+function save() { saveData(); }
+
+function muatState() {
+  return muatKV('state').then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (obj) {
+        if (obj && Array.isArray(obj.salesman)) { db = normalisasiDb(obj); return; }
+        db = dataContoh(); saveData();
+      });
+    }
+    /* Migrasi SATU KALI dari localStorage versi lama (kunci 'salesman.v1'). */
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (lama && Array.isArray(lama.salesman)) {
+          db = normalisasiDb(lama);
+          infoSimpan.termigrasi = true;
+          db.audit.unshift({ waktu: new Date().toISOString(), user: 'sistem', peran: '-', cabang: 'pusat', aksi: 'sistem', detail: 'Data dimigrasikan dari localStorage ke IndexedDB terenkripsi.' });
+          try { localStorage.setItem(KEY + '.cadangan-l3', raw); localStorage.removeItem(KEY); } catch (e) {}
+          saveData();
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke data contoh */ }
+    db = dataContoh();
+    saveData();
+  }).catch(function () {
+    db = dataContoh();
+    saveData();
+  });
+}
 
 var toastTimer = null;
 function toast(pesan) {
@@ -702,8 +1059,9 @@ function isiSelectBulan(el, nilai) {
   }).join('');
 }
 function isiSelectSalesman(el, nilai, denganSemua) {
+  var daftar = db.salesman.filter(function (sm) { return (sm.cabang || 'pusat') === db.cabangAktif; });
   var opt = denganSemua ? '<option value="">Semua salesman</option>' : '';
-  opt += db.salesman.map(function (s) {
+  opt += daftar.map(function (s) {
     return '<option value="' + s.id + '"' + (s.id === nilai ? ' selected' : '') + '>' + esc(s.nama) + ' — ' + esc(s.wilayah) + '</option>';
   }).join('');
   el.innerHTML = opt;
@@ -717,6 +1075,8 @@ document.querySelectorAll('.tab-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
     document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+    if (btn.dataset.tab === 'audit' && !bisa('audit_lihat')) { toast('Hanya Owner dan Manager yang bisa melihat Audit Log.'); return; }
+    if (btn.dataset.tab === 'pengguna' && !bisa('kelola_pengguna')) { toast('Hanya Owner yang bisa mengelola pengguna.'); return; }
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
     renderAll();
@@ -730,18 +1090,19 @@ function pindahTab(nama) {
 /* ---------- RENDER: SALESMAN ---------- */
 function renderSalesman() {
   var bulan = bulanSekarang();
-  document.getElementById('labelBulanRingkasan').textContent = labelBulan(bulan);
+  document.getElementById('labelBulanRingkasan').textContent = labelBulan(bulan) + ' — ' + namaCabang(db.cabangAktif);
+  var daftarCabang = salesmanCabangAktif();
   var omzetTotal = 0, komisiTotal = 0, kunjTotal = 0;
-  db.salesman.forEach(function (s) {
+  daftarCabang.forEach(function (s) {
     var o = omzetSalesmanBulan(s.id, bulan);
     omzetTotal += o; komisiTotal += komisiDariOmzet(o); kunjTotal += kunjunganSalesmanBulan(s.id, bulan);
   });
-  document.getElementById('statSalesman').textContent = db.salesman.length;
+  document.getElementById('statSalesman').textContent = daftarCabang.length;
   document.getElementById('statOmzet').textContent = fmtRp(omzetTotal);
   document.getElementById('statKomisi').textContent = fmtRp(komisiTotal);
   document.getElementById('statKunjungan').textContent = kunjTotal;
 
-  var rows = db.salesman.map(function (s) {
+  var rows = daftarCabang.map(function (s) {
     var o = omzetSalesmanBulan(s.id, bulan);
     var t = db.target.find(function (x) { return x.salesmanId === s.id && x.bulan === bulan; });
     var persen = t && t.targetOmzet > 0 ? Math.min(100, Math.round(o / t.targetOmzet * 100)) : 0;
@@ -755,8 +1116,8 @@ function renderSalesman() {
     '<table class="tabel-harga"><tr><th>Salesman</th><th>Omzet</th><th>Target (capaian)</th><th>Kunjungan</th><th>Komisi ' + db.komisiRate + '%</th></tr>' + rows + '</table>';
 
   var daftar = document.getElementById('daftarSalesman');
-  if (!db.salesman.length) { daftar.innerHTML = '<p class="kosong">Belum ada salesman. Tambahkan lewat formulir di atas.</p>'; return; }
-  daftar.innerHTML = db.salesman.map(function (s) {
+  if (!daftarCabang.length) { daftar.innerHTML = '<p class="kosong">Belum ada salesman di ' + esc(namaCabang(db.cabangAktif)) + '. Tambahkan lewat formulir di atas.</p>'; return; }
+  daftar.innerHTML = daftarCabang.map(function (s) {
     return '<div class="item-menu"><div class="atas"><div>' +
       '<div class="nama">' + esc(s.nama) + ' <span class="lencana ' + kelasStatus(s.status) + '">' + esc(s.status) + '</span></div>' +
       '<div class="detail">Wilayah: ' + esc(s.wilayah) + ' · HP: ' + esc(s.hp) + ' · Bergabung: ' + tglIndo(s.tglMasuk) + '</div>' +
@@ -771,9 +1132,9 @@ function renderSalesman() {
     b.addEventListener('click', function () {
       var s = db.salesman.find(function (x) { return x.id === b.dataset.hapusSalesman; });
       if (!s) return;
-      if (!confirm('Hapus salesman "' + s.nama + '"? Riwayat kunjungan dan pesanan tetap tersimpan.')) return;
-      db.salesman = db.salesman.filter(function (x) { return x.id !== s.id; });
-      save(); renderAll(); toast('Salesman dihapus.');
+      if (!confirm('Hapus salesman "' + s.nama + '"? Penghapusan diajukan dulu dan butuh persetujuan Manager/Owner. Riwayat kunjungan dan pesanan tetap tersimpan.')) return;
+      ajukanPersetujuan('hapus_salesman', { salesmanId: s.id }, 'Hapus salesman "' + s.nama + '" (' + namaCabang(s.cabang || 'pusat') + ').');
+      renderAll();
     });
   });
 }
@@ -815,10 +1176,12 @@ document.getElementById('formSalesman').addEventListener('submit', function (e) 
     if (s) Object.assign(s, data);
     toast('Data salesman diperbarui.');
   } else {
-    db.salesman.push(Object.assign({ id: uid() }, data));
+    db.salesman.push(Object.assign({ id: uid(), cabang: db.cabangAktif }, data));
     toast('Salesman ditambahkan.');
   }
+  var adalahUbahSm = !!editSalesmanId;
   save(); batalUbahSalesman(); renderAll();
+  catatAudit(adalahUbahSm ? 'ubah' : 'tambah', (adalahUbahSm ? 'Ubah salesman: ' : 'Tambah salesman: ') + data.nama + ' (' + namaCabang(db.cabangAktif) + ').');
 });
 document.getElementById('btnBatalUbahSalesman').addEventListener('click', batalUbahSalesman);
 
@@ -829,7 +1192,7 @@ function renderTarget() {
   var bulanFilter = document.getElementById('filterBulanTarget').value || bulanSekarang();
   isiSelectBulan(document.getElementById('filterBulanTarget'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanTarget').value;
-  var list = db.target.filter(function (t) { return t.bulan === bulanFilter; });
+  var list = db.target.filter(function (t) { return t.bulan === bulanFilter && (t.cabang || 'pusat') === db.cabangAktif; });
   var wadah = document.getElementById('daftarTarget');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada target untuk ' + labelBulan(bulanFilter) + '.</p>'; return; }
   wadah.innerHTML = list.map(function (t) {
@@ -854,9 +1217,9 @@ function renderTarget() {
     b.addEventListener('click', function () {
       var t = db.target.find(function (x) { return x.id === b.dataset.hapusTarget; });
       if (!t) return;
-      if (!confirm('Hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '?')) return;
-      db.target = db.target.filter(function (x) { return x.id !== t.id; });
-      save(); renderAll(); toast('Target dihapus.');
+      if (!confirm('Hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '? Penghapusan diajukan dulu dan butuh persetujuan Manager/Owner.')) return;
+      ajukanPersetujuan('hapus_target', { targetId: t.id }, 'Hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '.');
+      renderAll();
     });
   });
 }
@@ -895,10 +1258,12 @@ document.getElementById('formTarget').addEventListener('submit', function (e) {
   } else {
     var duplikat = db.target.find(function (x) { return x.salesmanId === data.salesmanId && x.bulan === data.bulan; });
     if (duplikat) { toast('Target salesman ini untuk bulan tersebut sudah ada — gunakan tombol Ubah.'); return; }
-    db.target.push(Object.assign({ id: uid() }, data));
+    db.target.push(Object.assign({ id: uid(), cabang: db.cabangAktif }, data));
     toast('Target ditambahkan.');
   }
+  var adalahUbahTg = !!editTargetId;
   save(); batalUbahTarget(); renderAll();
+  catatAudit(adalahUbahTg ? 'ubah' : 'tambah', (adalahUbahTg ? 'Ubah target: ' : 'Tambah target: ') + namaSalesman(data.salesmanId) + ' bulan ' + labelBulan(data.bulan) + ' (' + namaCabang(db.cabangAktif) + ').');
 });
 document.getElementById('btnBatalUbahTarget').addEventListener('click', batalUbahTarget);
 document.getElementById('filterBulanTarget').addEventListener('change', renderTarget);
@@ -911,7 +1276,7 @@ function renderKunjungan() {
   var fS = document.getElementById('filterSalesmanKunjungan').value;
   var fH = document.getElementById('filterHasilKunjungan').value;
   var list = db.kunjungan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
-    .filter(function (k) { return (!fS || k.salesmanId === fS) && (!fH || k.hasil === fH); });
+    .filter(function (k) { return (!fS || k.salesmanId === fS) && (!fH || k.hasil === fH) && (k.cabang || 'pusat') === db.cabangAktif; });
   var wadah = document.getElementById('daftarKunjungan');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada kunjungan yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (k) {
@@ -932,6 +1297,7 @@ function renderKunjungan() {
       if (!k) return;
       if (!confirm('Hapus kunjungan ke "' + k.pelanggan + '" tanggal ' + tglIndo(k.tanggal) + '?')) return;
       db.kunjungan = db.kunjungan.filter(function (x) { return x.id !== k.id; });
+      catatAudit('hapus', 'Hapus kunjungan ke "' + k.pelanggan + '" tanggal ' + tglIndo(k.tanggal) + ' (' + namaCabang(k.cabang || 'pusat') + ').');
       save(); renderAll(); toast('Kunjungan dihapus.');
     });
   });
@@ -974,10 +1340,12 @@ document.getElementById('formKunjungan').addEventListener('submit', function (e)
     if (k) Object.assign(k, data);
     toast('Kunjungan diperbarui.');
   } else {
-    db.kunjungan.push(Object.assign({ id: uid() }, data));
+    db.kunjungan.push(Object.assign({ id: uid(), cabang: db.cabangAktif }, data));
     toast('Kunjungan ditambahkan.');
   }
+  var adalahUbahKj = !!editKunjunganId;
   save(); batalUbahKunjungan(); renderAll();
+  catatAudit(adalahUbahKj ? 'ubah' : 'tambah', (adalahUbahKj ? 'Ubah kunjungan: ' : 'Tambah kunjungan: ') + data.pelanggan + ' tanggal ' + tglIndo(data.tanggal) + ' (' + namaCabang(db.cabangAktif) + ').');
 });
 document.getElementById('btnBatalUbahKunjungan').addEventListener('click', batalUbahKunjungan);
 document.getElementById('filterSalesmanKunjungan').addEventListener('change', renderKunjungan);
@@ -999,7 +1367,7 @@ function renderPesanan() {
   var fS = document.getElementById('filterSalesmanPesanan').value;
   var fT = document.getElementById('filterStatusPesanan').value;
   var list = db.pesanan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
-    .filter(function (p) { return (!fS || p.salesmanId === fS) && (!fT || p.status === fT); });
+    .filter(function (p) { return (!fS || p.salesmanId === fS) && (!fT || p.status === fT) && (p.cabang || 'pusat') === db.cabangAktif; });
   var wadah = document.getElementById('daftarPesanan');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada pesanan yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (p) {
@@ -1020,9 +1388,9 @@ function renderPesanan() {
     b.addEventListener('click', function () {
       var p = db.pesanan.find(function (x) { return x.id === b.dataset.hapusPesanan; });
       if (!p) return;
-      if (!confirm('Hapus pesanan "' + p.produk + '" dari ' + p.pelanggan + '?')) return;
-      db.pesanan = db.pesanan.filter(function (x) { return x.id !== p.id; });
-      save(); renderAll(); toast('Pesanan dihapus.');
+      if (!confirm('Hapus pesanan "' + p.produk + '" dari ' + p.pelanggan + '"? Penghapusan diajukan dulu dan butuh persetujuan Manager/Owner.')) return;
+      ajukanPersetujuan('hapus_pesanan', { pesananId: p.id }, 'Hapus pesanan "' + p.produk + '" dari ' + p.pelanggan + ' (' + fmtRp(p.jumlah * p.hargaSatuan) + ').');
+      renderAll();
     });
   });
 }
@@ -1068,10 +1436,12 @@ document.getElementById('formPesanan').addEventListener('submit', function (e) {
     if (p) Object.assign(p, data);
     toast('Pesanan diperbarui.');
   } else {
-    db.pesanan.push(Object.assign({ id: uid() }, data));
+    db.pesanan.push(Object.assign({ id: uid(), cabang: db.cabangAktif }, data));
     toast('Pesanan ditambahkan.');
   }
+  var adalahUbahPs = !!editPesananId;
   save(); batalUbahPesanan(); renderAll();
+  catatAudit(adalahUbahPs ? 'ubah' : 'tambah', (adalahUbahPs ? 'Ubah pesanan: ' : 'Tambah pesanan: ') + data.produk + ' dari ' + data.pelanggan + ' (' + fmtRp(data.jumlah * data.hargaSatuan) + ').');
 });
 document.getElementById('btnBatalUbahPesanan').addEventListener('click', batalUbahPesanan);
 document.getElementById('filterSalesmanPesanan').addEventListener('change', renderPesanan);
@@ -1083,7 +1453,7 @@ function renderKomisi() {
   var bulanFilter = document.getElementById('filterBulanKomisi').value || '2026-11';
   isiSelectBulan(document.getElementById('filterBulanKomisi'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanKomisi').value;
-  var rows = db.salesman.map(function (s) {
+  var rows = salesmanCabangAktif().map(function (s) {
     var omzet = omzetSalesmanBulan(s.id, bulanFilter);
     var komisi = komisiDariOmzet(omzet);
     var st = statusKomisi(s.id, bulanFilter);
@@ -1100,12 +1470,13 @@ function renderKomisi() {
       var id = b.dataset.komisiBayar;
       var st = statusKomisi(id, bulanFilter);
       setStatusKomisi(id, bulanFilter, st === 'Dibayar' ? 'Belum Dibayar' : 'Dibayar');
+      catatAudit('ubah', 'Komisi ' + namaSalesman(id) + ' ' + labelBulan(bulanFilter) + ' ditandai ' + (st === 'Dibayar' ? 'Belum Dibayar' : 'Dibayar') + '.');
       renderAll();
       toast(st === 'Dibayar' ? 'Status komisi dikembalikan ke Belum Dibayar.' : 'Komisi ditandai Dibayar.');
     });
   });
   var rincian = db.pesanan
-    .filter(function (p) { return p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter; })
+    .filter(function (p) { return p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter && (p.cabang || 'pusat') === db.cabangAktif; })
     .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
   var wadah = document.getElementById('rincianKomisi');
   if (!rincian.length) { wadah.innerHTML = '<p class="kosong">Belum ada pesanan Selesai pada ' + labelBulan(bulanFilter) + '.</p>'; return; }
@@ -1122,8 +1493,9 @@ document.getElementById('formKomisiRate').addEventListener('submit', function (e
   e.preventDefault();
   var v = Number(document.getElementById('fKomisiRate').value);
   if (isNaN(v) || v < 0 || v > 100) { toast('Persentase komisi harus 0–100.'); return; }
-  db.komisiRate = v;
-  save(); renderAll(); toast('Persentase komisi diubah menjadi ' + v + '%.');
+  if (v === db.komisiRate) { toast('Persentase komisi sudah ' + v + '%.'); return; }
+  ajukanPersetujuan('ubah_komisi', { rateBaru: v, rateLama: db.komisiRate }, 'Ubah tarif komisi dari ' + db.komisiRate + '% menjadi ' + v + '%.');
+  renderAll();
 });
 document.getElementById('filterBulanKomisi').addEventListener('change', renderKomisi);
 
@@ -1133,7 +1505,7 @@ function renderLaporan() {
   isiSelectBulan(document.getElementById('filterBulanLaporan'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanLaporan').value;
   var totOmzet = 0, totKomisi = 0, totKunj = 0, totPesanan = 0;
-  var rows = db.salesman.map(function (s) {
+  var rows = salesmanCabangAktif().map(function (s) {
     var omzet = omzetSalesmanBulan(s.id, bulanFilter);
     var komisi = komisiDariOmzet(omzet);
     var kunj = kunjunganSalesmanBulan(s.id, bulanFilter);
@@ -1157,9 +1529,22 @@ function renderLaporan() {
     '<table class="tabel-harga"><tr><th>Salesman</th><th>Target Omzet</th><th>Omzet</th><th>Pencapaian</th><th>Kunjungan</th><th>Pesanan Selesai</th><th>Komisi</th></tr>' + rows +
     '<tr><td><b>TOTAL</b></td><td></td><td><b>' + fmtRp(totOmzet) + '</b></td><td></td><td><b>' + totKunj + '</b></td><td><b>' + totPesanan + '</b></td><td><b>' + fmtRp(totKomisi) + '</b></td></tr></table>';
   var list = db.pesanan
-    .filter(function (p) { return p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter; })
+    .filter(function (p) { return p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter && (p.cabang || 'pusat') === db.cabangAktif; })
     .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
   var wadah = document.getElementById('daftarLaporanPesanan');
+  var barisCabang = db.cabang.map(function (cb) {
+    var sms = db.salesman.filter(function (sm) { return (sm.cabang || 'pusat') === cb.id; });
+    var o = 0, k = 0, kj = 0, ps = 0;
+    sms.forEach(function (sm) {
+      o += omzetSalesmanBulan(sm.id, bulanFilter);
+      kj += kunjunganSalesmanBulan(sm.id, bulanFilter);
+      ps += db.pesanan.filter(function (p) { return p.salesmanId === sm.id && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter; }).length;
+    });
+    k = komisiDariOmzet(o);
+    return '<tr><td><b>' + esc(cb.nama) + '</b></td><td>' + sms.length + '</td><td>' + fmtRp(o) + '</td><td>' + fmtRp(k) + '</td><td>' + kj + '</td><td>' + ps + '</td></tr>';
+  }).join('');
+  document.getElementById('ringkasanCabang').innerHTML =
+    '<table class="tabel-harga"><tr><th>Cabang</th><th>Salesman</th><th>Omzet ' + labelBulan(bulanFilter) + '</th><th>Komisi</th><th>Kunjungan</th><th>Pesanan Selesai</th></tr>' + barisCabang + '</table>';
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada pesanan Selesai pada ' + labelBulan(bulanFilter) + '.</p>'; return; }
   wadah.innerHTML = list.map(function (p) {
     return '<div class="item-menu"><div class="atas"><div>' +
@@ -1173,26 +1558,416 @@ document.getElementById('btnCetakLaporan').addEventListener('click', function ()
 
 /* ---------- PANDUAN / RESET ---------- */
 document.getElementById('btnResetData').addEventListener('click', function () {
+  if (!bisa('reset')) { toast('Hanya Owner/Manager yang bisa mengembalikan data contoh.'); return; }
   if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
-  db = dataContoh();
+  db = normalisasiDb(dataContoh());
+  catatAudit('reset', 'Data dikembalikan ke data contoh oleh ' + (currentUser ? currentUser.username : 'sistem') + '.');
   save();
   batalUbahSalesman(); batalUbahTarget(); batalUbahKunjungan(); batalUbahPesanan();
   renderAll();
   toast('Data contoh dikembalikan.');
 });
 
+/* ---------- CABANG ---------- */
+function namaCabang(id) {
+  if (!db) { return id || '-'; }
+  var c = db.cabang.find(function (x) { return x.id === id; });
+  return c ? c.nama : (id || '-');
+}
+function salesmanCabangAktif() {
+  if (!db) { return []; }
+  return db.salesman.filter(function (sm) { return (sm.cabang || 'pusat') === db.cabangAktif; });
+}
+function renderCabangSelect() {
+  var el = document.getElementById('pilihCabang');
+  if (!el || !db) { return; }
+  el.innerHTML = db.cabang.map(function (c) {
+    return '<option value="' + c.id + '"' + (c.id === db.cabangAktif ? ' selected' : '') + '>' + esc(c.nama) + '</option>';
+  }).join('');
+  el.onchange = function () {
+    db.cabangAktif = el.value;
+    save(); renderAll();
+    toast('Cabang aktif: ' + namaCabang(db.cabangAktif) + '.');
+  };
+  var info = document.getElementById('infoCabangBar');
+  if (info) { info.textContent = 'Cabang aktif: ' + namaCabang(db.cabangAktif); }
+}
+
+/* ---------- LOGIN & PERAN ---------- */
+var currentUser = null;
+function labelPeran(peran) {
+  return peran === 'owner' ? 'Owner' : peran === 'manager' ? 'Manager' : peran === 'staf' ? 'Staf' : (peran || '-');
+}
+function bisa(aksi) {
+  if (!currentUser) { return false; }
+  if (currentUser.peran === 'owner') { return true; }
+  if (currentUser.peran === 'manager') { return aksi !== 'kelola_pengguna'; }
+  return ['ajukan', 'tambah', 'ubah', 'ekspor_csv'].indexOf(aksi) !== -1;
+}
+function terapkanPeran() {
+  document.body.setAttribute('data-role', currentUser ? currentUser.peran : '');
+  document.getElementById('userChip').textContent = currentUser
+    ? currentUser.username + ' (' + labelPeran(currentUser.peran) + ')'
+    : 'Belum masuk';
+}
+function simpanSesi() {
+  try { sessionStorage.setItem('sesiSalesman', JSON.stringify({ username: currentUser.username, peran: currentUser.peran })); } catch (e) {}
+}
+function pulihkanSesi() {
+  try {
+    var raw = sessionStorage.getItem('sesiSalesman');
+    if (!raw) { return false; }
+    var s = JSON.parse(raw);
+    var u = db.pengguna.find(function (x) { return x.username === s.username && x.aktif !== false; });
+    if (!u || u.peran !== s.peran) { return false; }
+    currentUser = u;
+    return true;
+  } catch (e) { return false; }
+}
+function cobaMasuk() {
+  var nama = document.getElementById('loginUser').value.trim();
+  var sandi = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginError');
+  var u = db.pengguna.find(function (x) { return x.username.toLowerCase() === nama.toLowerCase() && x.password === sandi && x.aktif !== false; });
+  if (!u) { err.hidden = false; return; }
+  err.hidden = true;
+  currentUser = u;
+  simpanSesi();
+  document.getElementById('loginOverlay').classList.add('hidden');
+  terapkanPeran();
+  catatAudit('login', 'Pengguna ' + u.username + ' (' + labelPeran(u.peran) + ') masuk.');
+  renderAll();
+  toast('Selamat datang, ' + u.username + '.');
+}
+document.getElementById('loginBtn').addEventListener('click', cobaMasuk);
+document.getElementById('loginPass').addEventListener('keydown', function (e) { if (e.key === 'Enter') { cobaMasuk(); } });
+document.getElementById('loginUser').addEventListener('keydown', function (e) { if (e.key === 'Enter') { document.getElementById('loginPass').focus(); } });
+document.getElementById('btnKeluar').addEventListener('click', function () {
+  if (currentUser) { catatAudit('login', 'Pengguna ' + currentUser.username + ' keluar.'); }
+  currentUser = null;
+  try { sessionStorage.removeItem('sesiSalesman'); } catch (e) {}
+  document.getElementById('loginPass').value = '';
+  terapkanPeran();
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  renderAll();
+  setTimeout(function () { var u = document.getElementById('loginUser'); if (u) { u.focus(); } }, 50);
+});
+
+/* ---------- AUDIT LOG ---------- */
+function catatAudit(aksi, detail) {
+  if (!db) { return; }
+  if (!Array.isArray(db.audit)) { db.audit = []; }
+  db.audit.unshift({
+    waktu: new Date().toISOString(),
+    user: currentUser ? currentUser.username : 'sistem',
+    peran: currentUser ? labelPeran(currentUser.peran) : '-',
+    cabang: db.cabangAktif || 'pusat',
+    aksi: aksi,
+    detail: detail
+  });
+  if (db.audit.length > 500) { db.audit.length = 500; }
+  save();
+}
+function fmtWaktuAudit(iso) {
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) { return iso || '-'; }
+  return d.toLocaleDateString('id-ID') + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+function renderAudit() {
+  var wadah = document.getElementById('daftarAudit');
+  if (!wadah || !db) { return; }
+  if (!bisa('audit_lihat')) {
+    wadah.innerHTML = '<p class="kosong">Hanya Owner dan Manager yang bisa melihat Audit Log.</p>';
+    return;
+  }
+  var selUser = document.getElementById('filterAuditUser');
+  var nilaiUser = selUser.value;
+  var users = [];
+  db.audit.forEach(function (a) { if (users.indexOf(a.user) === -1) { users.push(a.user); } });
+  selUser.innerHTML = '<option value="">Semua pengguna</option>' + users.map(function (u) {
+    return '<option value="' + esc(u) + '"' + (u === nilaiUser ? ' selected' : '') + '>' + esc(u) + '</option>';
+  }).join('');
+  selUser.onchange = renderAudit;
+  var selAksi = document.getElementById('filterAuditAksi');
+  selAksi.onchange = renderAudit;
+  var fU = selUser.value, fA = selAksi.value;
+  var list = db.audit.filter(function (a) { return (!fU || a.user === fU) && (!fA || a.aksi === fA); }).slice(0, 100);
+  if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada catatan audit yang cocok dengan filter.</p>'; return; }
+  wadah.innerHTML = '<table class="tabel-harga"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Cabang</th><th>Aksi</th><th>Detail</th></tr>' +
+    list.map(function (a) {
+      return '<tr><td style="white-space:nowrap">' + fmtWaktuAudit(a.waktu) + '</td><td>' + esc(a.user) + '</td><td>' + esc(a.peran) + '</td><td>' + esc(namaCabang(a.cabang)) + '</td><td>' + esc(a.aksi) + '</td><td>' + esc(a.detail) + '</td></tr>';
+    }).join('') + '</table>';
+}
+
+/* ---------- PERSETUJUAN ---------- */
+function labelTipePersetujuan(t) {
+  return t === 'hapus_salesman' ? 'Hapus Salesman'
+    : t === 'hapus_pesanan' ? 'Hapus Pesanan'
+    : t === 'hapus_target' ? 'Hapus Target'
+    : t === 'ubah_komisi' ? 'Ubah Tarif Komisi' : t;
+}
+function ajukanPersetujuan(tipe, detail, ringkasan) {
+  if (!db) { return; }
+  var ap = {
+    id: uid(), tipe: tipe, detail: detail, ringkasan: ringkasan,
+    diajukanOleh: currentUser ? currentUser.username : 'sistem',
+    peran: currentUser ? labelPeran(currentUser.peran) : '-',
+    cabang: db.cabangAktif || 'pusat',
+    waktu: new Date().toISOString(), status: 'menunggu',
+    diputuskanOleh: '', waktuPutusan: ''
+  };
+  db.persetujuan.unshift(ap);
+  catatAudit('persetujuan', 'Pengajuan ' + labelTipePersetujuan(tipe) + ' oleh ' + ap.diajukanOleh + ': ' + ringkasan);
+  save();
+  toast('Diajukan ke Persetujuan — menunggu keputusan Manager/Owner.');
+}
+function terapkanPersetujuan(apr) {
+  var d = apr.detail || {};
+  if (apr.tipe === 'hapus_salesman') {
+    db.salesman = db.salesman.filter(function (x) { return x.id !== d.salesmanId; });
+  } else if (apr.tipe === 'hapus_pesanan') {
+    db.pesanan = db.pesanan.filter(function (x) { return x.id !== d.pesananId; });
+  } else if (apr.tipe === 'hapus_target') {
+    db.target = db.target.filter(function (x) { return x.id !== d.targetId; });
+  } else if (apr.tipe === 'ubah_komisi') {
+    db.komisiRate = d.rateBaru;
+  }
+}
+function putuskanPersetujuan(id, setuju) {
+  if (!bisa('persetujuan_putuskan')) { toast('Hanya Manager/Owner yang bisa memutuskan persetujuan.'); return; }
+  var apr = db.persetujuan.find(function (x) { return x.id === id; });
+  if (!apr || apr.status !== 'menunggu') { return; }
+  apr.status = setuju ? 'disetujui' : 'ditolak';
+  apr.diputuskanOleh = currentUser.username;
+  apr.waktuPutusan = new Date().toISOString();
+  if (setuju) { terapkanPersetujuan(apr); }
+  catatAudit('persetujuan', 'Pengajuan ' + labelTipePersetujuan(apr.tipe) + ' (' + apr.ringkasan + ') ' + (setuju ? 'DISETUJUI' : 'DITOLAK') + ' oleh ' + currentUser.username + (setuju ? ' — aksi dieksekusi.' : ' — aksi dibatalkan.'));
+  save(); renderAll();
+  toast(setuju ? 'Pengajuan disetujui — aksi dieksekusi.' : 'Pengajuan ditolak — aksi dibatalkan.');
+}
+function updateBadgePersetujuan() {
+  var b = document.getElementById('badgePersetujuan');
+  if (!b || !db) { return; }
+  var n = db.persetujuan.filter(function (x) { return x.status === 'menunggu'; }).length;
+  b.textContent = n;
+  b.hidden = n === 0;
+}
+function renderPersetujuan() {
+  var wadah = document.getElementById('daftarPersetujuan');
+  var wadahSelesai = document.getElementById('daftarPersetujuanSelesai');
+  if (!wadah || !db) { return; }
+  var menunggu = db.persetujuan.filter(function (x) { return x.status === 'menunggu'; });
+  var bolehPutus = bisa('persetujuan_putuskan');
+  if (!menunggu.length) { wadah.innerHTML = '<p class="kosong">Tidak ada pengajuan yang menunggu.</p>'; }
+  else {
+    wadah.innerHTML = menunggu.map(function (a) {
+      return '<div class="item-menu"><div class="atas"><div>' +
+        '<div class="nama">' + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+        '<div class="detail">' + esc(a.ringkasan) + '</div>' +
+        '<div class="detail">Diajukan oleh ' + esc(a.diajukanOleh) + ' (' + esc(a.peran) + ') · ' + esc(namaCabang(a.cabang)) + ' · ' + fmtWaktuAudit(a.waktu) + '</div>' +
+        '</div></div>' +
+        (bolehPutus
+          ? '<div class="aksi"><button class="btn kecil hijau" data-setuju="' + a.id + '">Setujui</button>' +
+            '<button class="btn kecil merah" data-tolak="' + a.id + '">Tolak</button></div>'
+          : '<div class="detail" style="margin-top:8px">Menunggu keputusan Manager/Owner.</div>') +
+        '</div>';
+    }).join('');
+    wadah.querySelectorAll('[data-setuju]').forEach(function (b) {
+      b.addEventListener('click', function () { putuskanPersetujuan(b.dataset.setuju, true); });
+    });
+    wadah.querySelectorAll('[data-tolak]').forEach(function (b) {
+      b.addEventListener('click', function () { putuskanPersetujuan(b.dataset.tolak, false); });
+    });
+  }
+  var selesai = db.persetujuan.filter(function (x) { return x.status !== 'menunggu'; }).slice(0, 20);
+  if (!selesai.length) { wadahSelesai.innerHTML = '<p class="kosong">Belum ada pengajuan yang diputuskan.</p>'; return; }
+  wadahSelesai.innerHTML = selesai.map(function (a) {
+    var st = a.status === 'disetujui' ? 'st-disetujui' : 'st-ditolak';
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">' + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + st + '">' + (a.status === 'disetujui' ? 'Disetujui' : 'Ditolak') + '</span></div>' +
+      '<div class="detail">' + esc(a.ringkasan) + '</div>' +
+      '<div class="detail">Diajukan oleh ' + esc(a.diajukanOleh) + ' · Diputuskan oleh ' + esc(a.diputuskanOleh || '-') + ' · ' + fmtWaktuAudit(a.waktuPutusan) + '</div>' +
+      '</div></div></div>';
+  }).join('');
+}
+
+/* ---------- PENGGUNA (Owner saja) ---------- */
+function renderPengguna() {
+  var wadah = document.getElementById('daftarPengguna');
+  if (!wadah || !db) { return; }
+  if (!bisa('kelola_pengguna')) {
+    wadah.innerHTML = '<p class="kosong">Hanya Owner yang bisa mengelola pengguna.</p>';
+    return;
+  }
+  wadah.innerHTML = db.pengguna.map(function (u) {
+    return '<div class="item-menu"><div class="atas"><div>' +
+      '<div class="nama">' + esc(u.username) + ' <span class="lencana ' + (u.aktif === false ? 'st-nonaktif' : 'st-aktif') + '">' + (u.aktif === false ? 'Nonaktif' : 'Aktif') + '</span></div>' +
+      '<div class="detail">Peran: ' + esc(labelPeran(u.peran)) + (currentUser && u.username === currentUser.username ? ' · (Anda)' : '') + '</div>' +
+      '</div></div>' +
+      '<div class="aksi"><select data-peran-user="' + esc(u.username) + '" aria-label="Peran ' + esc(u.username) + '">' +
+      ['owner', 'manager', 'staf'].map(function (r) {
+        return '<option value="' + r + '"' + (u.peran === r ? ' selected' : '') + '>' + labelPeran(r) + '</option>';
+      }).join('') + '</select>' +
+      '<button class="btn kecil ' + (u.aktif === false ? 'hijau' : 'merah') + '" data-aktif-user="' + esc(u.username) + '"' +
+      (currentUser && u.username === currentUser.username ? ' disabled' : '') + '>' +
+      (u.aktif === false ? 'Aktifkan' : 'Nonaktifkan') + '</button></div></div>';
+  }).join('');
+  wadah.querySelectorAll('[data-peran-user]').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var u = db.pengguna.find(function (x) { return x.username === sel.dataset.peranUser; });
+      if (!u) { return; }
+      u.peran = sel.value;
+      catatAudit('ubah', 'Peran pengguna ' + u.username + ' diubah menjadi ' + labelPeran(u.peran) + '.');
+      save(); renderAll();
+      toast('Peran ' + u.username + ' diubah menjadi ' + labelPeran(u.peran) + '.');
+    });
+  });
+  wadah.querySelectorAll('[data-aktif-user]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var u = db.pengguna.find(function (x) { return x.username === b.dataset.aktifUser; });
+      if (!u) { return; }
+      u.aktif = u.aktif === false ? true : false;
+      catatAudit('ubah', 'Pengguna ' + u.username + (u.aktif ? ' diaktifkan.' : ' dinonaktifkan.'));
+      save(); renderAll();
+      toast('Pengguna ' + u.username + (u.aktif ? ' diaktifkan.' : ' dinonaktifkan.'));
+    });
+  });
+}
+document.getElementById('formPengguna').addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (!bisa('kelola_pengguna')) { toast('Hanya Owner yang bisa menambah pengguna.'); return; }
+  var nama = document.getElementById('fUserNama').value.trim();
+  var sandi = document.getElementById('fUserSandi').value;
+  var peran = document.getElementById('fUserPeran').value;
+  if (!nama || sandi.length < 6) { toast('Nama pengguna wajib diisi dan kata sandi minimal 6 karakter.'); return; }
+  if (db.pengguna.some(function (x) { return x.username.toLowerCase() === nama.toLowerCase(); })) { toast('Nama pengguna sudah ada.'); return; }
+  db.pengguna.push({ username: nama, password: sandi, peran: peran, aktif: true });
+  catatAudit('tambah', 'Pengguna baru ditambahkan: ' + nama + ' (' + labelPeran(peran) + ').');
+  save();
+  document.getElementById('formPengguna').reset();
+  renderAll();
+  toast('Pengguna ' + nama + ' ditambahkan.');
+});
+
+/* ---------- EKSPOR & BACKUP ---------- */
+function unduhFile(namaFile, isi, tipe) {
+  var blob = new Blob([isi], { type: tipe || 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = namaFile;
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+function csvEsc(v) {
+  var t = String(v == null ? '' : v);
+  return '"' + t.replace(/"/g, '""') + '"';
+}
+function eksporCSV() {
+  if (!bisa('ekspor_csv')) { toast('Masuk dulu untuk mengekspor laporan.'); return; }
+  var bulan = document.getElementById('filterBulanLaporan').value || bulanSekarang();
+  var baris = [['Salesman', 'Cabang', 'Target Omzet (Rp)', 'Omzet (Rp)', 'Pencapaian (%)', 'Kunjungan', 'Pesanan Selesai', 'Komisi (Rp)']];
+  salesmanCabangAktif().forEach(function (sm) {
+    var omzet = omzetSalesmanBulan(sm.id, bulan);
+    var t = db.target.find(function (x) { return x.salesmanId === sm.id && x.bulan === bulan; });
+    var persen = t && t.targetOmzet > 0 ? Math.round(omzet / t.targetOmzet * 100) : 0;
+    var kunj = kunjunganSalesmanBulan(sm.id, bulan);
+    var jml = db.pesanan.filter(function (p) { return p.salesmanId === sm.id && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulan; }).length;
+    baris.push([sm.nama, namaCabang(sm.cabang || 'pusat'), t ? t.targetOmzet : 0, omzet, persen, kunj, jml, komisiDariOmzet(omzet)]);
+  });
+  baris.push([]);
+  baris.push(['Ringkasan per Cabang', 'Salesman', 'Omzet (Rp)', 'Komisi (Rp)', 'Kunjungan', 'Pesanan Selesai']);
+  db.cabang.forEach(function (cb) {
+    var sms = db.salesman.filter(function (sm) { return (sm.cabang || 'pusat') === cb.id; });
+    var o = 0, kj = 0, ps = 0;
+    sms.forEach(function (sm) {
+      o += omzetSalesmanBulan(sm.id, bulan);
+      kj += kunjunganSalesmanBulan(sm.id, bulan);
+      ps += db.pesanan.filter(function (p) { return p.salesmanId === sm.id && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulan; }).length;
+    });
+    baris.push([cb.nama, sms.length, o, komisiDariOmzet(o), kj, ps]);
+  });
+  var csv = 'Laporan Salesman — ' + labelBulan(bulan) + ' (' + namaCabang(db.cabangAktif) + ' aktif)' + '\n' +
+    baris.map(function (r) { return r.map(csvEsc).join(','); }).join('\n');
+  unduhFile('laporan-salesman-' + bulan + '.csv', csv, 'text/csv;charset=utf-8');
+  catatAudit('ekspor', 'Ekspor CSV laporan ' + labelBulan(bulan) + ' diunduh.');
+  toast('CSV laporan diunduh.');
+}
+function backupJSON() {
+  if (!bisa('ekspor')) { toast('Hanya Owner/Manager yang bisa mengunduh backup.'); return; }
+  var isi = JSON.stringify({ aplikasi: 'Aplikasi Salesman', versi: 3, diekspor: new Date().toISOString(), db: db }, null, 2);
+  unduhFile('backup-salesman-' + new Date().toISOString().slice(0, 10) + '.json', isi);
+  catatAudit('ekspor', 'Backup JSON diunduh.');
+  toast('Backup JSON diunduh.');
+}
+function pulihkanJSON(file) {
+  if (!bisa('pulihkan')) { toast('Hanya Owner/Manager yang bisa memulihkan backup.'); return; }
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var parsed = JSON.parse(reader.result);
+      var masuk = parsed.db || parsed;
+      if (!masuk || !Array.isArray(masuk.salesman)) { toast('File backup tidak valid.'); return; }
+      db = normalisasiDb(masuk);
+      catatAudit('ekspor', 'Backup JSON dipulihkan (' + db.salesman.length + ' salesman).');
+      save(); renderAll();
+      toast('Backup dipulihkan.');
+    } catch (e) { toast('File backup tidak bisa dibaca.'); }
+  };
+  reader.onerror = function () { toast('Gagal membaca file backup.'); };
+  reader.readAsText(file);
+}
+document.getElementById('btnEksporCSV').addEventListener('click', eksporCSV);
+document.getElementById('btnBackup').addEventListener('click', backupJSON);
+document.getElementById('btnPulihkan').addEventListener('click', function () {
+  if (!bisa('pulihkan')) { toast('Hanya Owner/Manager yang bisa memulihkan backup.'); return; }
+  document.getElementById('inputPulihkan').click();
+});
+document.getElementById('inputPulihkan').addEventListener('change', function () {
+  var f = this.files && this.files[0];
+  if (!f) { return; }
+  if (!confirm('Pulihkan backup "' + f.name + '"? Data saat ini akan diganti.')) { this.value = ''; return; }
+  pulihkanJSON(f);
+  this.value = '';
+});
+
+/* ---------- BOOT ASINKRON ---------- */
+function bootAplikasi() {
+  bukaDB().then(function () { return siapkanKripto(); }).then(function () { return muatState(); }).then(function () {
+    db = normalisasiDb(db);
+    document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+    if (pulihkanSesi()) {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      terapkanPeran();
+    } else {
+      terapkanPeran();
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      setTimeout(function () { var u = document.getElementById('loginUser'); if (u) { u.focus(); } }, 50);
+    }
+    renderAll();
+    if (infoSimpan.termigrasi) { toast('Data lama dimigrasikan ke penyimpanan terenkripsi.'); }
+  }).catch(function () {
+    db = normalisasiDb(dataContoh());
+    renderAll();
+  });
+}
+
 /* ---------- INIT ---------- */
 function renderAll() {
+  if (!db) { return; }
+  renderCabangSelect();
+  updateBadgePersetujuan();
   renderSalesman();
   renderTarget();
   renderKunjungan();
   renderPesanan();
   renderKomisi();
   renderLaporan();
+  renderPersetujuan();
+  renderAudit();
+  renderPengguna();
 }
 document.getElementById('tanggalHariIni').textContent = hariIniIndo();
-load();
-renderAll();
+bootAplikasi();
 </script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->

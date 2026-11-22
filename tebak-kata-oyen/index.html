@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#14263d" />
+    <meta name="description" content="Tebak Kata Oyen — tebak kata bertema kucing dan sehari-hari bersama Oyen dari Podcast Meong." />
+    <title>Tebak Kata Oyen</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --navy: #14263d;
+        --blue: #8fb4d9;
+        --blue-soft: #dbe8f5;
+        --bg: #eaf2fa;
+        --bg-deep: #d5e4f3;
+        --panel: #ffffff;
+        --panel-edge: #c3d5e8;
+        --ink: #14263d;
+        --ink-soft: #5b6b80;
+        --accent: #e8761a;
+        --accent-dark: #bc5808;
+        --gold: #f2a81d;
+        --danger: #d64541;
+        --good: #3d9b4f;
+        --shadow: 0 10px 30px rgba(20, 38, 61, 0.16);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1c2e; --bg-deep: #0a1522; --panel: #1b2f47; --panel-edge: #33506e;
+          --ink: #eaf2fa; --ink-soft: #a9bdd4; --accent: #ff8f2b; --accent-dark: #ff8f2b;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(120% 60% at 50% -10%, var(--bg) 0%, var(--bg-deep) 100%);
+        color: var(--ink); min-height: 100dvh;
+        display: flex; justify-content: center; padding: 14px 12px 28px;
+      }
+      .wrap { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 10px; }
+      .topbar { display: flex; align-items: center; gap: 10px; background: var(--navy); color: #fff; border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow); }
+      .topbar .logo { font-size: 1.7rem; line-height: 1; }
+      .topbar h1 { margin: 0; font-size: 1.15rem; font-weight: 900; line-height: 1.15; }
+      .topbar p { margin: 1px 0 0; font-size: 0.75rem; color: var(--blue); }
+      .hud { display: flex; align-items: stretch; gap: 8px; }
+      .hud-box { flex: 1; background: var(--panel); border: 2px solid var(--panel-edge); border-radius: 14px; padding: 7px 10px 8px; text-align: center; box-shadow: 0 3px 0 var(--panel-edge); }
+      .hud-box .label { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+      .hud-box .value { display: block; font-size: 1.35rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
+      .hearts { display: flex; justify-content: center; align-items: center; gap: 3px; min-height: 1.55rem; }
+      .hearts svg { width: 22px; height: 22px; display: block; }
+      .hearts .lost { opacity: 0.22; filter: grayscale(1); }
+      .board { position: relative; background: var(--panel); border: 2px solid var(--panel-edge); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+      .oyen-face { display: flex; justify-content: center; }
+      .oyen-face svg { width: 104px; height: 104px; }
+      .cat-label { text-align: center; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-top: -6px; }
+      .hint-box { background: var(--blue-soft); border: 1.5px dashed var(--blue); border-radius: 12px; padding: 10px 12px; font-size: 0.95rem; line-height: 1.45; text-align: center; }
+      .hint-box b { color: var(--navy); }
+      .word-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 46px; }
+      .letter-box { width: 34px; height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; color: var(--navy); background: var(--panel); border: 2px solid var(--panel-edge); border-bottom-width: 4px; border-radius: 9px; text-transform: uppercase; }
+      .letter-box.revealed { border-color: var(--good); background: #e9f7ec; color: var(--good); }
+      .letter-box.space { border: none; background: transparent; width: 14px; }
+      @media (prefers-color-scheme: dark) { .letter-box.revealed { background: #17351f; } }
+      .msg { min-height: 1.5em; text-align: center; font-weight: 700; font-size: 0.95rem; }
+      .msg.good { color: var(--good); }
+      .msg.bad { color: var(--danger); }
+      .msg.info { color: var(--ink-soft); }
+      .keyboard { display: flex; flex-direction: column; gap: 6px; }
+      .kb-row { display: flex; gap: 5px; justify-content: center; }
+      .key { flex: 1 1 0; max-width: 42px; min-height: 46px; font: inherit; font-weight: 800; font-size: 1rem; color: var(--ink); background: var(--panel); border: 2px solid var(--panel-edge); border-bottom-width: 3px; border-radius: 9px; cursor: pointer; text-transform: uppercase; }
+      .key:active { transform: translateY(2px); border-bottom-width: 1px; }
+      .key:disabled { cursor: default; opacity: 0.55; }
+      .key.correct { background: var(--good); border-color: #2c7a3c; color: #fff; }
+      .key.wrong { background: var(--danger); border-color: #a02c28; color: #fff; }
+      .controls { display: flex; gap: 8px; }
+      .ctl-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 8px; font: inherit; font-size: 0.92rem; font-weight: 700; color: var(--ink); background: var(--panel); border: 2px solid var(--panel-edge); border-radius: 14px; box-shadow: 0 3px 0 var(--panel-edge); cursor: pointer; }
+      .ctl-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--panel-edge); }
+      .ctl-btn[disabled] { opacity: 0.45; cursor: default; }
+      .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(20, 38, 61, 0.55); z-index: 50; }
+      .overlay[hidden] { display: none; }
+      .card { background: var(--panel); border: 2px solid var(--panel-edge); border-radius: 20px; box-shadow: 0 14px 34px rgba(20, 38, 61, 0.35); padding: 22px 20px 20px; width: 100%; max-width: 380px; text-align: center; max-height: 92dvh; overflow-y: auto; }
+      .card h1 { margin: 0 0 2px; font-size: 1.9rem; font-weight: 900; line-height: 1.1; color: var(--navy); }
+      .card h2 { margin: 0 0 6px; font-size: 1.55rem; font-weight: 900; line-height: 1.15; color: var(--navy); }
+      .brand { margin: 0 0 12px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+      .btn { appearance: none; border: none; cursor: pointer; font: inherit; font-weight: 800; border-radius: 14px; min-height: 52px; padding: 12px 26px; font-size: 1.05rem; transition: transform 0.06s ease, filter 0.15s ease; }
+      .btn:active { transform: scale(0.97); }
+      .btn-primary { background: var(--navy); color: #fff; box-shadow: 0 5px 0 #0a1522, 0 10px 18px rgba(20, 38, 61, 0.35); width: 100%; }
+      .btn-primary:hover { filter: brightness(1.15); }
+      .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
+      .cat-btn { appearance: none; border: 2px solid var(--panel-edge); background: var(--panel); color: var(--ink); border-radius: 12px; padding: 12px 8px; font: inherit; font-weight: 800; font-size: 0.95rem; cursor: pointer; }
+      .cat-btn small { display: block; font-weight: 600; font-size: 0.78rem; color: var(--ink-soft); margin-top: 2px; }
+      .cat-btn.sel { border-color: var(--navy); background: var(--blue-soft); box-shadow: 0 3px 0 var(--navy); }
+      .howto { text-align: left; margin: 0 auto 14px; padding: 0; list-style: none; max-width: 300px; display: flex; flex-direction: column; gap: 7px; font-size: 0.9rem; line-height: 1.4; }
+      .howto li { display: flex; gap: 8px; }
+      .howto li::before { content: "\2022"; color: var(--accent); font-weight: 900; }
+      .final-score { font-size: 2.6rem; font-weight: 900; line-height: 1; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+      .final-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+      .high-line { margin: 8px 0 16px; font-size: 0.95rem; color: var(--ink-soft); }
+      .high-line strong { color: var(--ink); }
+      .record-badge { display: inline-block; background: var(--gold); color: #4a2c00; font-weight: 800; font-size: 0.82rem; padding: 5px 12px; border-radius: 99px; margin-bottom: 10px; }
+      .record-badge[hidden] { display: none; }
+      .menu-high { margin: 12px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+      .menu-high strong { color: var(--ink); }
+      .stats-row { display: flex; gap: 8px; justify-content: center; margin: 4px 0 12px; font-size: 0.85rem; color: var(--ink-soft); flex-wrap: wrap; }
+      .stats-row strong { color: var(--ink); }
+      .hint { margin: 2px 4px 0; text-align: center; font-size: 0.82rem; line-height: 1.45; color: var(--ink-soft); }
+      .hint kbd { font-family: inherit; font-weight: 700; background: var(--panel); border: 1px solid var(--panel-edge); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 0.78rem; }
+      @media (max-width: 480px) {
+        .card h1 { font-size: 1.6rem; }
+        .hud-box .value { font-size: 1.15rem; }
+        .hud { flex-wrap: wrap; }
+        .hud-box { flex: 1 1 calc(50% - 4px); }
+        .letter-box { width: 29px; height: 40px; font-size: 1.15rem; }
+        .key { min-height: 42px; font-size: 0.92rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="topbar">
+        <span class="logo" aria-hidden="true">&#128008;</span>
+        <div>
+          <h1>Tebak Kata Oyen</h1>
+          <p>Podcast Meong &middot; Tebak kata bertema kucing</p>
+        </div>
+      </div>
+      <div class="hud" aria-label="Status permainan">
+        <div class="hud-box">
+          <span class="label">Skor</span>
+          <span class="value" id="hudScore">0</span>
+        </div>
+        <div class="hud-box">
+          <span class="label">Tahap</span>
+          <span class="value" id="hudStage">1</span>
+        </div>
+        <div class="hud-box">
+          <span class="label">Kata Benar</span>
+          <span class="value" id="hudWords">0</span>
+        </div>
+        <div class="hud-box">
+          <span class="label">Nyawa</span>
+          <span class="hearts" id="hudLives" role="img" aria-label="6 nyawa"></span>
+        </div>
+      </div>
+      <div class="board" id="board">
+        <div class="oyen-face" id="oyenFace" aria-hidden="true"></div>
+        <div class="cat-label" id="catLabel">Kategori: &mdash;</div>
+        <div class="hint-box" id="hintBox">Tekan <b>Mulai Main</b> untuk memulai.</div>
+        <div class="word-row" id="wordRow"></div>
+        <div class="msg info" id="msg">Pilih kategori, lalu tebak hurufnya!</div>
+        <div class="keyboard" id="keyboard"></div>
+      </div>
+      <div class="controls">
+        <button class="ctl-btn" id="pauseBtn" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20"><rect x="6" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.4" fill="currentColor"/></svg>
+          <span>Jeda</span>
+        </button>
+        <button class="ctl-btn" id="muteBtn" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" id="soundIconOn"><path d="M4 9.5 v5 h3.5 L12 18.6 V5.4 L7.5 9.5 Z" fill="currentColor"/><path d="M15 9.2 a4 4 0 0 1 0 5.6 M17.4 6.8 a7.4 7.4 0 0 1 0 10.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" id="soundIconOff" style="display:none"><path d="M4 9.5 v5 h3.5 L12 18.6 V5.4 L7.5 9.5 Z" fill="currentColor"/><path d="M15.5 9.8 L21 15.3 M21 9.8 L15.5 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="muteLabel">Suara: Nyala</span>
+        </button>
+        <button class="ctl-btn" id="restartBtn" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20"><path d="M4.5 8.5 A8 8 0 1 1 4 13.5" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M4 4.6 L4.6 9 L8.8 7.4 Z" fill="currentColor"/></svg>
+          <span>Ulangi</span>
+        </button>
+      </div>
+      <p class="hint">Tebak huruf dengan mengetuk keyboard di layar atau menekan tombol keyboard fisik. <kbd>P</kbd> untuk jeda.</p>
+    </main>
+    <div class="overlay" id="menuOverlay">
+      <div class="card">
+        <h1>Tebak Kata Oyen</h1>
+        <p class="brand">Podcast Meong</p>
+        <ul class="howto">
+          <li>Tebak kata yang tersembunyi, huruf demi huruf.</li>
+          <li>Kamu punya <strong>6 nyawa</strong> per kata. Salah tebak, nyawa berkurang 1.</li>
+          <li>Setiap kata benar: <strong>+100 poin</strong> ditambah bonus nyawa tersisa.</li>
+          <li><strong>Tahap naik tiap 5 kata benar.</strong> Makin tinggi tahap, kata makin panjang.</li>
+        </ul>
+        <div class="cat-grid" id="catGrid" role="group" aria-label="Pilih kategori"></div>
+        <button class="btn btn-primary" id="startBtn" type="button">Mulai Main</button>
+        <p class="menu-high" id="menuHigh">Skor tertinggi: <strong>0</strong></p>
+      </div>
+    </div>
+    <div class="overlay" id="overOverlay" hidden>
+      <div class="card">
+        <h2 id="overTitle">Game Over!</h2>
+        <p style="margin:0; color: var(--ink-soft); font-size:0.92rem;" id="overText">Nyawa Oyen habis. Kata itu belum tertebak&hellip;</p>
+        <div class="final-label" style="margin-top:14px;">Skor kamu</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div><span class="record-badge" id="recordBadge" hidden>Rekor Baru!</span></div>
+        <div class="stats-row"><span>Kata benar: <strong id="overWords">0</strong></span><span>Tahap: <strong id="overStage">1</strong></span></div>
+        <p class="high-line">Skor tertinggi: <strong id="overHigh">0</strong></p>
+        <button class="btn btn-primary" id="againBtn" type="button">Main Lagi</button>
+      </div>
+    </div>
+    <div class="overlay" id="pauseOverlay" hidden>
+      <div class="card">
+        <h2>Jeda Sebentar</h2>
+        <p style="margin:0 0 16px; color: var(--ink-soft); font-size:0.92rem;">Kata-katanya menunggu, kok.</p>
+        <button class="btn btn-primary" id="resumeBtn" type="button">Lanjutkan</button>
+      </div>
+    </div>
+    <script>
+      "use strict";
+      /* ============================================================
+         TEBAK KATA OYEN — Podcast Meong
+         Tebak kata ala hangman: pilih kategori, tebak huruf lewat
+         keyboard layar / keyboard fisik, 6 nyawa per kata, petunjuk
+         tiap kata, tahap naik tiap 5 kata benar, skor tertinggi
+         tersimpan di perangkat (localStorage).
+         ============================================================ */
+      var WORDS = {
+        "Kucing": [
+          ["KUCING", "Hewan peliharaan berbulu yang suka mengeong."],
+          ["KUMIS", "Rambut halus di wajah kucing, berguna untuk mengukur ruang."],
+          ["EKOR", "Bagian tubuh kucing yang panjang di belakang badan."],
+          ["CAKAR", "Kuku tajam pada kaki kucing untuk memanjat dan menangkap."],
+          ["MEONG", "Suara yang dikeluarkan kucing saat lapar atau minta perhatian."],
+          ["IKAN", "Makanan favorit Oyen, paling enak kalau digoreng."],
+          ["SUSU", "Minuman putih kesukaan anak kucing."],
+          ["TIDUR", "Kucing bisa melakukannya sampai 16 jam sehari."],
+          ["BULU", "Penutup tubuh kucing yang lembut dan hangat."],
+          ["MATA", "Bagian tubuh kucing untuk melihat, menyala saat gelap."],
+          ["TELINGA", "Bagian tubuh kucing yang runcing untuk mendengar suara halus."],
+          ["HIDUNG", "Bagian tubuh kucing untuk mencium bau makanan dari jauh."]
+        ],
+        "Makanan": [
+          ["NASI", "Makanan pokok orang Indonesia, dimasak dari beras."],
+          ["SOTO", "Sup berkuah kuning yang hangat dan gurih."],
+          ["BAKSO", "Bola daging yang disajikan dengan kuah panas dan mi."],
+          ["RENDANG", "Masakan daging khas Minangkabau yang kaya rempah."],
+          ["KECAP", "Saus manis dari kedelai, teman nasi goreng."],
+          ["SAMBAL", "Saus pedas dari cabai, bikin makan makin semangat."],
+          ["TEMPE", "Makanan dari kedelai yang difermentasi, digoreng renyah."],
+          ["TAHU", "Makanan lembut dari kedelai, enak digoreng atau dikukus."],
+          ["AYAM", "Daging unggas yang sering digoreng atau dibuat sup."],
+          ["TELUR", "Hasil ayam yang bisa direbus, digoreng, atau dibuat dadar."],
+          ["PISANG", "Buah kuning berkulit tebal, manis dan mengenyangkan."],
+          ["MANGGA", "Buah tropis yang manis dan harum saat matang."]
+        ],
+        "Sehari-hari": [
+          ["RUMAH", "Tempat tinggal keluarga, ada atap dan pintu."],
+          ["SEKOLAH", "Tempat anak-anak belajar membaca dan berhitung."],
+          ["BUKU", "Kumpulan halaman berisi tulisan dan gambar."],
+          ["PENSIL", "Alat tulis dari kayu berisi grafit untuk menulis."],
+          ["SEPATU", "Alas kaki yang dipakai saat keluar rumah."],
+          ["PAYUNG", "Alat pelindung dari hujan, bisa dilipat."],
+          ["LAMPU", "Alat yang memberi cahaya saat malam hari."],
+          ["JAM", "Alat penunjuk waktu, ada di dinding atau di tangan."],
+          ["MEJA", "Perabot dengan permukaan datar untuk menulis dan makan."],
+          ["KURSI", "Tempat duduk berkaki empat."],
+          ["BANTAL", "Benda empuk untuk alas kepala saat tidur."],
+          ["SELIMUT", "Kain tebal untuk menghangatkan tubuh saat tidur."]
+        ]
+      };
+      var CATS = Object.keys(WORDS);
+      var HS_KEY = "tebak-kata-oyen-highscore";
+      var highScore = 0;
+      try { highScore = parseInt(localStorage.getItem(HS_KEY) || "0", 10) || 0; } catch (e) { highScore = 0; }
+      function saveHighScore(v) { try { localStorage.setItem(HS_KEY, String(v)); } catch (e) {} }
+
+      var audioCtx = null, muted = false;
+      function ensureAudio() {
+        if (!audioCtx) { var AC = window.AudioContext || window.webkitAudioContext; if (AC) { try { audioCtx = new AC(); } catch (e) { audioCtx = null; } } }
+        if (audioCtx && audioCtx.state === "suspended") { audioCtx.resume(); }
+      }
+      function tone(freq, dur, type, vol, delay, slideTo) {
+        if (muted || !audioCtx) return;
+        var t0 = audioCtx.currentTime + (delay || 0);
+        var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = type || "sine";
+        osc.frequency.setValueAtTime(freq, t0);
+        if (slideTo) { osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur); }
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(vol || 0.16, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(t0); osc.stop(t0 + dur + 0.05);
+      }
+      function sfxGood() { tone(659, 0.09, "sine", 0.16); tone(988, 0.12, "sine", 0.15, 0.06); }
+      function sfxBad() { tone(196, 0.2, "sawtooth", 0.12, 0, 92); }
+      function sfxWin() { tone(523, 0.1, "triangle", 0.16); tone(659, 0.1, "triangle", 0.16, 0.09); tone(784, 0.16, "triangle", 0.18, 0.18); }
+      function sfxOver() { tone(392, 0.18, "triangle", 0.15); tone(330, 0.18, "triangle", 0.15, 0.17); tone(262, 0.3, "triangle", 0.16, 0.34); }
+      function sfxClick() { tone(740, 0.05, "sine", 0.1); }
+
+      var STATE = { MENU: 0, PLAYING: 1, PAUSED: 2, OVER: 3 };
+      var state = STATE.MENU;
+      var score = 0, stage = 1, wordsCorrect = 0, lives = 6;
+      var category = "Acak";
+      var deck = [], current = null, revealed = [], guessed = {};
+      var newRecord = false;
+      var lock = false;
+
+      var hudScore = document.getElementById("hudScore");
+      var hudStage = document.getElementById("hudStage");
+      var hudWords = document.getElementById("hudWords");
+      var hudLives = document.getElementById("hudLives");
+      var wordRow = document.getElementById("wordRow");
+      var hintBox = document.getElementById("hintBox");
+      var msgEl = document.getElementById("msg");
+      var catLabel = document.getElementById("catLabel");
+      var keyboardEl = document.getElementById("keyboard");
+      var oyenFaceEl = document.getElementById("oyenFace");
+      var menuOverlay = document.getElementById("menuOverlay");
+      var overOverlay = document.getElementById("overOverlay");
+      var pauseOverlay = document.getElementById("pauseOverlay");
+      var pauseBtn = document.getElementById("pauseBtn");
+      var restartBtn = document.getElementById("restartBtn");
+
+      var HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 C6.2 16.4 3 13.1 3 9.3 C3 6.4 5.2 4.2 8 4.2 C9.7 4.2 11.2 5 12 6.2 C12.8 5 14.3 4.2 16 4.2 C18.8 4.2 21 6.4 21 9.3 C21 13.1 17.8 16.4 12 20.6 Z" fill="#e2483d"/></svg>';
+      function renderLives() {
+        var html = "";
+        for (var i = 0; i < 6; i++) { html += '<span class="' + (i < lives ? "" : "lost") + '">' + HEART + "</span>"; }
+        hudLives.innerHTML = html;
+        hudLives.setAttribute("aria-label", lives + " nyawa");
+      }
+      function renderHUD() {
+        hudScore.textContent = score;
+        hudStage.textContent = stage;
+        hudWords.textContent = wordsCorrect;
+        renderLives();
+      }
+      function renderMenuHigh() {
+        document.getElementById("menuHigh").innerHTML = "Skor tertinggi: <strong>" + highScore + "</strong>";
+      }
+      function setMsg(text, kind) { msgEl.textContent = text; msgEl.className = "msg " + (kind || "info"); }
+
+      /* Wajah Oyen: makin sedih saat nyawa berkurang */
+      function renderOyen() {
+        var mood = lives >= 5 ? "senang" : lives >= 3 ? "khawatir" : "sedih";
+        var mouth = mood === "senang"
+          ? '<path d="M42 66 Q52 76 62 66" stroke="#8a4d12" stroke-width="3" fill="none" stroke-linecap="round"/>'
+          : mood === "khawatir"
+          ? '<path d="M46 70 Q52 66 58 70" stroke="#8a4d12" stroke-width="3" fill="none" stroke-linecap="round"/>'
+          : '<path d="M46 72 Q52 64 58 72" stroke="#8a4d12" stroke-width="3" fill="none" stroke-linecap="round"/>';
+        var eyes = mood === "sedih"
+          ? '<path d="M36 46 L44 52 M44 46 L36 52" stroke="#40260f" stroke-width="2.4" stroke-linecap="round"/><path d="M60 46 L68 52 M68 46 L60 52" stroke="#40260f" stroke-width="2.4" stroke-linecap="round"/>'
+          : '<ellipse cx="40" cy="49" rx="4" ry="5.5" fill="#40260f"/><ellipse cx="64" cy="49" rx="4" ry="5.5" fill="#40260f"/><circle cx="38.8" cy="47" r="1.4" fill="#fff"/><circle cx="62.8" cy="47" r="1.4" fill="#fff"/>';
+        oyenFaceEl.innerHTML =
+          '<svg viewBox="0 0 104 104" role="img" aria-label="Oyen ' + mood + '">' +
+          '<circle cx="52" cy="56" r="34" fill="#f07f13"/>' +
+          '<path d="M24 34 L28 12 L44 26 Z" fill="#f07f13"/><path d="M28 30 L30 18 L40 26 Z" fill="#ffb3a0"/>' +
+          '<path d="M80 34 L76 12 L60 26 Z" fill="#f07f13"/><path d="M76 30 L74 18 L64 26 Z" fill="#ffb3a0"/>' +
+          '<path d="M44 26 L46 33 M52 24 L52 32 M60 26 L58 33" stroke="rgba(178,84,8,0.7)" stroke-width="2.4" stroke-linecap="round"/>' +
+          eyes +
+          '<ellipse cx="32" cy="60" rx="6" ry="4" fill="rgba(255,140,90,0.5)"/><ellipse cx="72" cy="60" rx="6" ry="4" fill="rgba(255,140,90,0.5)"/>' +
+          '<path d="M49 58 L55 58 L52 62 Z" fill="#e2607a"/>' + mouth +
+          '<path d="M30 56 L18 53 M30 60 L19 62 M74 56 L86 53 M74 60 L85 62" stroke="rgba(90,50,10,0.55)" stroke-width="1.6" stroke-linecap="round"/>' +
+          '</svg>';
+      }
+
+      function buildKeyboard() {
+        var rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+        keyboardEl.innerHTML = "";
+        rows.forEach(function (row) {
+          var div = document.createElement("div");
+          div.className = "kb-row";
+          row.split("").forEach(function (ch) {
+            var b = document.createElement("button");
+            b.type = "button"; b.className = "key"; b.textContent = ch;
+            b.setAttribute("data-letter", ch);
+            b.addEventListener("click", function () { guess(ch); });
+            div.appendChild(b);
+          });
+          keyboardEl.appendChild(div);
+        });
+      }
+      function setKeyboardEnabled(on) {
+        var keys = keyboardEl.querySelectorAll(".key");
+        for (var i = 0; i < keys.length; i++) { keys[i].disabled = !on || !!guessed[keys[i].getAttribute("data-letter")]; }
+      }
+      function buildCatGrid() {
+        var grid = document.getElementById("catGrid");
+        grid.innerHTML = "";
+        var opts = [{ name: "Acak", desc: "Semua kategori" }];
+        CATS.forEach(function (c) { opts.push({ name: c, desc: WORDS[c].length + " kata" }); });
+        opts.forEach(function (o) {
+          var b = document.createElement("button");
+          b.type = "button"; b.className = "cat-btn" + (category === o.name ? " sel" : "");
+          b.innerHTML = o.name + "<small>" + o.desc + "</small>";
+          b.addEventListener("click", function () {
+            category = o.name;
+            var btns = grid.querySelectorAll(".cat-btn");
+            for (var i = 0; i < btns.length; i++) btns[i].classList.remove("sel");
+            b.classList.add("sel");
+            sfxClick();
+          });
+          grid.appendChild(b);
+        });
+      }
+      function shuffle(a) {
+        for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+        return a;
+      }
+      function buildDeck() {
+        var pool = [];
+        if (category === "Acak") { CATS.forEach(function (c) { WORDS[c].forEach(function (w) { pool.push({ cat: c, word: w[0], hint: w[1] }); }); }); }
+        else { WORDS[category].forEach(function (w) { pool.push({ cat: category, word: w[0], hint: w[1] }); }); }
+        return shuffle(pool);
+      }
+      function nextWord() {
+        lock = false;
+        if (deck.length === 0) { deck = buildDeck(); }
+        current = deck.pop();
+        revealed = []; guessed = {};
+        for (var i = 0; i < current.word.length; i++) { revealed.push(current.word[i] === " " ? " " : "_"); }
+        lives = 6;
+        catLabel.textContent = "Kategori: " + current.cat;
+        hintBox.innerHTML = "<b>Petunjuk:</b> " + current.hint;
+        renderWord();
+        renderOyen();
+        setKeyboardEnabled(state === STATE.PLAYING);
+        var keys = keyboardEl.querySelectorAll(".key");
+        for (var k = 0; k < keys.length; k++) { keys[k].classList.remove("correct", "wrong"); }
+        renderHUD();
+      }
+      function renderWord() {
+        wordRow.innerHTML = "";
+        for (var i = 0; i < current.word.length; i++) {
+          var ch = current.word[i];
+          var span = document.createElement("span");
+          if (ch === " ") { span.className = "letter-box space"; }
+          else {
+            span.className = "letter-box" + (revealed[i] !== "_" ? " revealed" : "");
+            span.textContent = revealed[i] === "_" ? "" : revealed[i];
+          }
+          wordRow.appendChild(span);
+        }
+      }
+      function guess(letter) {
+        if (state !== STATE.PLAYING || !current || lock) return;
+        letter = letter.toUpperCase();
+        if (guessed[letter]) return;
+        guessed[letter] = true;
+        ensureAudio();
+        var btn = keyboardEl.querySelector('[data-letter="' + letter + '"]');
+        if (current.word.indexOf(letter) >= 0) {
+          var found = 0;
+          for (var i = 0; i < current.word.length; i++) { if (current.word[i] === letter) { revealed[i] = letter; found++; } }
+          if (btn) { btn.classList.add("correct"); btn.disabled = true; }
+          sfxGood();
+          setMsg("Betul! Huruf " + letter + " ada " + found + " kali.", "good");
+          renderWord();
+          if (revealed.indexOf("_") < 0) { wordSolved(); }
+        } else {
+          if (btn) { btn.classList.add("wrong"); btn.disabled = true; }
+          lives--;
+          sfxBad();
+          setMsg("Huruf " + letter + " tidak ada. Nyawa tersisa " + lives + ".", "bad");
+          renderOyen();
+          renderHUD();
+          if (lives <= 0) { gameOver(false); }
+        }
+      }
+      function wordSolved() {
+        wordsCorrect++;
+        lock = true;
+        var bonus = lives * 10;
+        score += 100 + bonus;
+        var newStage = Math.floor(wordsCorrect / 5) + 1;
+        var naik = newStage > stage;
+        if (naik) { stage = newStage; }
+        sfxWin();
+        setMsg("Benar! Kata \"" + current.word + "\" tertebak. +100" + (bonus ? " + bonus nyawa " + bonus : "") + (naik ? " — Tahap " + stage + "!" : ""), "good");
+        renderHUD();
+        setKeyboardEnabled(false);
+        setTimeout(function () { if (state === STATE.PLAYING) { nextWord(); setMsg("Kata baru! Tebak hurufnya.", "info"); } }, 1400);
+      }
+      function startGame() {
+        ensureAudio(); sfxClick();
+        score = 0; stage = 1; wordsCorrect = 0; lives = 6;
+        newRecord = false;
+        deck = buildDeck();
+        state = STATE.PLAYING;
+        menuOverlay.hidden = true; overOverlay.hidden = true; pauseOverlay.hidden = true;
+        pauseBtn.disabled = false; restartBtn.disabled = false;
+        nextWord();
+        setMsg("Tebak hurufnya!", "info");
+        renderHUD();
+      }
+      function gameOver(wonAll) {
+        state = STATE.OVER;
+        sfxOver();
+        newRecord = score > highScore;
+        if (newRecord) { highScore = score; saveHighScore(highScore); }
+        document.getElementById("overTitle").textContent = wonAll ? "Hebat Sekali!" : "Game Over!";
+        document.getElementById("overText").textContent = wonAll
+          ? "Kamu menebak semua kata! Oyen bangga padamu."
+          : "Nyawa Oyen habis. Kata itu adalah \"" + current.word + "\".";
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("overHigh").textContent = highScore;
+        document.getElementById("overWords").textContent = wordsCorrect;
+        document.getElementById("overStage").textContent = stage;
+        document.getElementById("recordBadge").hidden = !newRecord;
+        overOverlay.hidden = false;
+        pauseBtn.disabled = true; restartBtn.disabled = true;
+        setKeyboardEnabled(false);
+        renderMenuHigh();
+      }
+      function setPaused(on) {
+        if (on && state === STATE.PLAYING) { state = STATE.PAUSED; pauseOverlay.hidden = false; setKeyboardEnabled(false); }
+        else if (!on && state === STATE.PAUSED) { state = STATE.PLAYING; pauseOverlay.hidden = true; setKeyboardEnabled(true); }
+      }
+      document.getElementById("startBtn").addEventListener("click", startGame);
+      document.getElementById("againBtn").addEventListener("click", startGame);
+      document.getElementById("resumeBtn").addEventListener("click", function () { ensureAudio(); sfxClick(); setPaused(false); });
+      pauseBtn.addEventListener("click", function () {
+        ensureAudio();
+        if (state === STATE.PLAYING) setPaused(true);
+        else if (state === STATE.PAUSED) setPaused(false);
+      });
+      restartBtn.addEventListener("click", function () { if (state === STATE.PLAYING || state === STATE.PAUSED) startGame(); });
+      var muteBtn = document.getElementById("muteBtn");
+      muteBtn.addEventListener("click", function () {
+        muted = !muted;
+        muteBtn.setAttribute("aria-pressed", String(muted));
+        document.getElementById("soundIconOn").style.display = muted ? "none" : "";
+        document.getElementById("soundIconOff").style.display = muted ? "" : "none";
+        document.getElementById("muteLabel").textContent = muted ? "Suara: Mati" : "Suara: Nyala";
+        if (!muted) { ensureAudio(); sfxClick(); }
+      });
+      window.addEventListener("keydown", function (e) {
+        if (/^[a-zA-Z]$/.test(e.key)) { guess(e.key); }
+        else if (e.key === " " || e.key === "Enter") {
+          if (state === STATE.MENU || state === STATE.OVER) { startGame(); e.preventDefault(); }
+          else if (state === STATE.PAUSED) { ensureAudio(); setPaused(false); e.preventDefault(); }
+        }
+        else if (e.key === "p" || e.key === "P" || e.key === "Escape") {
+          if (state === STATE.PLAYING) setPaused(true);
+          else if (state === STATE.PAUSED) setPaused(false);
+        }
+      });
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden && state === STATE.PLAYING) setPaused(true);
+      });
+      /* Kait uji headless (tidak terlihat di UI) */
+      window.__test = {
+        state: function () { return { state: state, score: score, lives: lives, stage: stage, wordsCorrect: wordsCorrect, highScore: highScore, word: current ? current.word : null, cat: current ? current.cat : null, revealed: revealed.join(""), overHidden: overOverlay.hidden, menuHidden: menuOverlay.hidden, pauseHidden: pauseOverlay.hidden, wordCount: CATS.reduce(function (n, c) { return n + WORDS[c].length; }, 0) }; },
+        start: startGame,
+        guess: guess,
+        setCategory: function (c) { category = c; buildCatGrid(); },
+        pause: function (on) { setPaused(on); },
+        gameOver: function () { gameOver(false); }
+      };
+      buildKeyboard();
+      buildCatGrid();
+      renderOyen();
+      renderHUD();
+      renderMenuHigh();
+      setKeyboardEnabled(false);
+    </script>
+<!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->
+<script>
+/* ============================================================
+   KIKI-PENGATURAN v1 — Panel Pengaturan (nama, warna, logo,
+   pengguna). Cuplikan mandiri, tanpa dependensi eksternal.
+   Disimpan per aplikasi di localStorage. Mode: game
+   (app = aplikasi bisnis, game = game, web = website demo)
+   ============================================================ */
+(function () {
+  if (window.__kikiSet) return;
+  window.__kikiSet = true;
+  var KIKI_MODE = 'game'; /* app | game | web */
+
+  var slug = (location.pathname.replace(/\/index\.html?$/i, '').split('/').filter(Boolean).pop() || 'beranda');
+  var KEY = 'kikiSet:' + slug;
+  var DEF = { nama: '', warna: '', logo: '', users: [], aktif: '' };
+  var S = load();
+  var defaultName = detectDefaultName();
+  var nameTarget = findNameTarget();
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var o = JSON.parse(raw); if (o && typeof o === 'object') return merge(DEF, o); }
+    } catch (e) {}
+    return merge(DEF, {});
+  }
+  function merge(d, o) {
+    var r = {};
+    for (var k in d) r[k] = (o[k] !== undefined && o[k] !== null) ? o[k] : d[k];
+    if (!Array.isArray(r.users)) r.users = [];
+    return r;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  /* ---------- deteksi nama & target ---------- */
+  function detectDefaultName() {
+    var cn = document.getElementById('companyName');
+    if (cn) return cn.textContent.trim();
+    var h1 = document.querySelector('.hero h1') || document.querySelector('h1');
+    if (h1) {
+      var t = h1.textContent.trim();
+      var m = t.split(/\s+[—–-]\s+/);
+      if (m.length > 1) return m[m.length - 1].trim();
+    }
+    return '';
+  }
+  function findNameTarget() {
+    var cn = document.getElementById('companyName');
+    if (cn) return cn;
+    var h1 = document.querySelector('.hero h1') || document.querySelector('h1');
+    if (h1 && KIKI_MODE !== 'game') return h1;
+    if (KIKI_MODE === 'web') {
+      var b = document.querySelector('header .brand, header .logo-text, header .logo, header a');
+      if (b && b.textContent.trim().length < 40) return b;
+    }
+    return null;
+  }
+  function effName() { return (S.nama || '').trim() || defaultName; }
+
+  /* ---------- warna ---------- */
+  function shade(hex, pct) {
+    var h = String(hex || '').replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) return '#14263d';
+    var n = parseInt(h, 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255, f = 1 + pct / 100;
+    r = Math.max(0, Math.min(255, Math.round(r * f)));
+    g = Math.max(0, Math.min(255, Math.round(g * f)));
+    b = Math.max(0, Math.min(255, Math.round(b * f)));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  function applyColor() {
+    var root = document.documentElement;
+    var st = document.getElementById('kiki-theme');
+    if (!S.warna) {
+      ['--kiki-accent', '--kiki-accent-dark', '--navy', '--blue'].forEach(function (v) { root.style.removeProperty(v); });
+      if (st) st.remove();
+      return;
+    }
+    var dark = shade(S.warna, -35);
+    root.style.setProperty('--kiki-accent', S.warna);
+    root.style.setProperty('--kiki-accent-dark', dark);
+    root.style.setProperty('--navy', dark);
+    root.style.setProperty('--blue', S.warna);
+    if (KIKI_MODE === 'app') {
+      if (!st) {
+        st = document.createElement('style');
+        st.id = 'kiki-theme';
+        document.head.appendChild(st);
+      }
+      st.textContent =
+        '.hero{background:linear-gradient(135deg,var(--kiki-accent-dark),var(--kiki-accent))!important}' +
+        '.tab-btn.active{background:var(--kiki-accent)!important;border-color:var(--kiki-accent)!important}' +
+        '.btn:not(.secondary):not(.btn-ghost):not(.ghost):not(.danger){background:var(--kiki-accent)!important;border-color:var(--kiki-accent)!important}';
+    } else if (st) { st.remove(); }
+  }
+
+  /* ---------- nama ---------- */
+  function applyName() {
+    var name = effName();
+    if (!nameTarget || KIKI_MODE === 'game') { updateBtnTitle(); return; }
+    if (nameTarget.id === 'companyName') { nameTarget.textContent = name; updateBtnTitle(); return; }
+    if (nameTarget.tagName === 'H1') {
+      if (!nameTarget.dataset.kikiOrig) nameTarget.dataset.kikiOrig = nameTarget.textContent.trim();
+      var orig = nameTarget.dataset.kikiOrig;
+      var parts = orig.split(/\s+[—–-]\s+/);
+      if (parts.length > 1) {
+        nameTarget.textContent = parts.slice(0, -1).join(' — ') + ' — ' + name;
+      } else if (S.nama.trim()) {
+        nameTarget.textContent = orig + ' — ' + S.nama.trim();
+      } else {
+        nameTarget.textContent = orig;
+      }
+    } else {
+      if (S.nama.trim()) nameTarget.textContent = S.nama.trim();
+    }
+    updateBtnTitle();
+  }
+
+  /* ---------- logo ---------- */
+  function applyLogo() {
+    var old = document.querySelector('.kiki-logo');
+    if (old) old.remove();
+    var fav = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
+    if (S.logo) {
+      if (nameTarget && KIKI_MODE !== 'game') {
+        var img = document.createElement('img');
+        img.className = 'kiki-logo';
+        img.src = S.logo;
+        img.alt = 'Logo';
+        img.style.cssText = 'height:42px;width:42px;object-fit:cover;border-radius:10px;vertical-align:middle;margin-right:10px;background:#fff';
+        nameTarget.parentNode.insertBefore(img, nameTarget);
+      }
+      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+      fav.href = S.logo;
+    }
+  }
+  function applyAll() { applyName(); applyColor(); applyLogo(); }
+
+  /* ---------- CSS panel ---------- */
+  var css = document.createElement('style');
+  css.textContent = [
+    '.kiki-fab{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:8px;background:#14263d;color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 14px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;box-shadow:0 8px 24px rgba(20,38,61,.35);cursor:pointer}',
+    '.kiki-fab:hover{background:#2f639e}',
+    '@media (max-width:600px){.kiki-fab span{display:none}.kiki-fab{padding:12px 14px}}',
+    '.kiki-overlay{position:fixed;inset:0;z-index:10000;background:rgba(20,38,61,.5);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto}',
+    '.kiki-overlay[hidden]{display:none}',
+    '.kiki-card{box-sizing:border-box;width:100%;max-width:520px;background:#fff;color:#14263d;border-radius:16px;box-shadow:0 16px 48px rgba(20,38,61,.3);padding:22px;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}',
+    '.kiki-card *{box-sizing:border-box}',
+    '.kiki-card h2{margin:0 0 4px;font-size:20px}',
+    '.kiki-card .kiki-sub{color:#5b6b80;font-size:13.5px;margin:0 0 16px}',
+    '.kiki-sec{border-top:1px solid #dbe4ef;padding:14px 0}',
+    '.kiki-sec[hidden]{display:none}',
+    '.kiki-sec h3{margin:0 0 8px;font-size:15px}',
+    '.kiki-sec p{margin:0 0 8px;color:#5b6b80;font-size:13.5px}',
+    '.kiki-card label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}',
+    '.kiki-card input[type=text],.kiki-card input[type=color],.kiki-card select{width:100%;padding:10px 12px;border:1.5px solid #dbe4ef;border-radius:10px;background:#f7f9fc;color:#14263d;font:inherit}',
+    '.kiki-card input[type=color]{height:44px;padding:4px}',
+    '.kiki-swatches{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}',
+    '.kiki-sw{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #dbe4ef;cursor:pointer;padding:0}',
+    '.kiki-sw.on{box-shadow:0 0 0 2.5px #14263d}',
+    '.kiki-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
+    '.kiki-btn{background:#14263d;color:#fff;border:0;border-radius:10px;padding:9px 15px;font:700 13.5px system-ui,sans-serif;cursor:pointer}',
+    '.kiki-btn.sec{background:#eef3f9;color:#14263d;border:1px solid #dbe4ef}',
+    '.kiki-btn.danger{background:#f9e6e3;color:#b3372f}',
+    '.kiki-user{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #dbe4ef;border-radius:10px;padding:8px 12px;margin-bottom:8px}',
+    '.kiki-user b{font-size:14px}',
+    '.kiki-user .tag{font-size:12px;color:#5b6b80}',
+    '.kiki-close{float:right;background:#eef3f9;border:0;border-radius:10px;width:34px;height:34px;font-size:18px;cursor:pointer;color:#14263d}',
+    '.kiki-logo-preview{max-height:64px;max-width:200px;border-radius:10px;border:1px solid #dbe4ef;display:block;margin:8px 0}',
+    '.kiki-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:10001;background:#14263d;color:#fff;border-radius:999px;padding:10px 18px;font:700 13.5px system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,38,61,.35);opacity:0;pointer-events:none;transition:opacity .2s}',
+    '.kiki-toast.show{opacity:1}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  /* ---------- tombol & panel ---------- */
+  var fab = document.createElement('button');
+  fab.type = 'button';
+  fab.className = 'kiki-fab';
+  fab.innerHTML = '&#9881; <span>Pengaturan</span>';
+  fab.title = 'Pengaturan';
+  document.body.appendChild(fab);
+
+  var overlay = document.createElement('div');
+  overlay.className = 'kiki-overlay';
+  overlay.hidden = true;
+  overlay.innerHTML =
+    '<div class="kiki-card" role="dialog" aria-label="Pengaturan">' +
+    '<button class="kiki-close" type="button" data-kiki-close title="Tutup">&times;</button>' +
+    '<h2>Pengaturan</h2><p class="kiki-sub">Tersimpan di perangkat ini saja (localStorage). Berlaku untuk aplikasi ini.</p>' +
+    '<div class="kiki-sec"><h3>Nama Usaha / Toko</h3>' +
+    '<label for="kiki-nama">Nama yang tampil di aplikasi</label>' +
+    '<input type="text" id="kiki-nama" autocomplete="off" placeholder="cth: Toko Sari Jaya">' +
+    '<p>Nama ini tampil di judul aplikasi. Kosongkan untuk kembali ke nama awal.</p></div>' +
+    '<div class="kiki-sec"><h3>Warna Tema</h3>' +
+    '<div class="kiki-swatches" id="kiki-swatches"></div>' +
+    '<label for="kiki-warna">Warna utama (pilih sendiri)</label>' +
+    '<input type="color" id="kiki-warna" value="#14263d">' +
+    '<div class="kiki-row" style="margin-top:10px"><button class="kiki-btn sec" type="button" id="kiki-reset-warna">Kembalikan warna awal</button></div></div>' +
+    '<div class="kiki-sec"><h3>Logo</h3>' +
+    '<img class="kiki-logo-preview" id="kiki-logo-preview" hidden alt="Logo">' +
+    '<label for="kiki-logo">Unggah logo (gambar, maks 1,5 MB)</label>' +
+    '<input type="file" id="kiki-logo" accept="image/*">' +
+    '<div class="kiki-row" style="margin-top:10px"><button class="kiki-btn sec" type="button" id="kiki-hapus-logo">Hapus logo</button></div></div>' +
+    '<div class="kiki-sec" id="kiki-sec-user"><h3>Pengguna</h3><div id="kiki-user-body"></div></div>' +
+    '<div class="kiki-sec"><div class="kiki-row"><button class="kiki-btn" type="button" data-kiki-close>Tutup</button>' +
+    '<button class="kiki-btn sec" type="button" id="kiki-reset-semua">Reset semua pengaturan</button></div></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var toastEl = document.createElement('div');
+  toastEl.className = 'kiki-toast';
+  document.body.appendChild(toastEl);
+  var toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------- pengguna ---------- */
+  function hasLoginSystem() {
+    if (document.getElementById('userChip')) return 'chip';
+    if (document.querySelector('.login-overlay, #loginOverlay, [id*=login i]')) return 'login';
+    return null;
+  }
+  function renderUsers() {
+    var body = document.getElementById('kiki-user-body');
+    var sec = document.getElementById('kiki-sec-user');
+    if (KIKI_MODE === 'web') { sec.hidden = true; sec.style.display = 'none'; return; }
+    sec.hidden = false; sec.style.display = '';
+    var sys = hasLoginSystem();
+    if (sys === 'chip') {
+      var chip = document.getElementById('userChip');
+      var cur = chip ? chip.textContent.trim() : '—';
+      var tabBtn = document.querySelector('[data-tab="pengguna"]');
+      var tabHidden = tabBtn && getComputedStyle(tabBtn).display === 'none';
+      body.innerHTML = '<p>Pengguna aktif: <b>' + esc(cur) + '</b></p>' +
+        (tabHidden
+          ? '<p>Aplikasi ini punya kelola pengguna sendiri — masuk sebagai Admin untuk menambah pengguna.</p>'
+          : '<p>Aplikasi ini punya kelola pengguna sendiri (nama, peran, kata sandi).</p>' +
+            '<button class="kiki-btn" type="button" id="kiki-buka-user">Buka Kelola Pengguna</button>');
+      var b = document.getElementById('kiki-buka-user');
+      if (b) b.addEventListener('click', function () {
+        closePanel();
+        if (tabBtn) tabBtn.click();
+      });
+      return;
+    }
+    if (sys === 'login') {
+      body.innerHTML = '<p>Aplikasi ini punya layar login sendiri — pengguna dikelola lewat login aplikasi.</p>';
+      return;
+    }
+    var label = KIKI_MODE === 'game' ? 'Profil pemain — pilih siapa yang sedang bermain.' : 'Daftar pengguna aplikasi ini. Pengguna aktif tampil di tombol Pengaturan.';
+    var html = '<p>' + label + '</p>';
+    if (!S.users.length) html += '<p>Belum ada pengguna — tambahkan di bawah.</p>';
+    S.users.forEach(function (u, i) {
+      html += '<div class="kiki-user"><span><b>' + esc(u) + '</b>' +
+        (S.aktif === u ? ' <span class="tag">• aktif</span>' : '') + '</span><span class="kiki-row">' +
+        (S.aktif !== u ? '<button class="kiki-btn sec" type="button" data-kiki-aktif="' + i + '">Pilih</button>' : '') +
+        '<button class="kiki-btn danger" type="button" data-kiki-hapus-user="' + i + '">Hapus</button></span></div>';
+    });
+    html += '<label for="kiki-user-baru">Tambah pengguna</label>' +
+      '<div class="kiki-row"><input type="text" id="kiki-user-baru" autocomplete="off" placeholder="Nama pengguna" style="flex:1;min-width:140px">' +
+      '<button class="kiki-btn" type="button" id="kiki-tambah-user">Tambah</button></div>';
+    body.innerHTML = html;
+    Array.prototype.forEach.call(body.querySelectorAll('[data-kiki-aktif]'), function (btn) {
+      btn.addEventListener('click', function () {
+        S.aktif = S.users[+btn.getAttribute('data-kiki-aktif')] || '';
+        save(); renderUsers(); updateBtnTitle(); toast('Pengguna aktif: ' + S.aktif);
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-kiki-hapus-user]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var i = +btn.getAttribute('data-kiki-hapus-user');
+        if (S.aktif === S.users[i]) S.aktif = '';
+        S.users.splice(i, 1);
+        save(); renderUsers(); updateBtnTitle(); toast('Pengguna dihapus');
+      });
+    });
+    document.getElementById('kiki-tambah-user').addEventListener('click', function () {
+      var inp = document.getElementById('kiki-user-baru');
+      var v = inp.value.trim();
+      if (!v) { toast('Isi nama pengguna dulu'); return; }
+      if (S.users.indexOf(v) < 0) S.users.push(v);
+      S.aktif = v;
+      save(); renderUsers(); updateBtnTitle(); toast('Pengguna ditambahkan: ' + v);
+    });
+  }
+
+  function updateBtnTitle() {
+    var t = 'Pengaturan';
+    if (effName()) t += ' — ' + effName();
+    if (S.aktif) t += ' (pengguna: ' + S.aktif + ')';
+    fab.title = t;
+  }
+
+  /* ---------- isi panel ---------- */
+  var PRESETS = ['#14263d', '#2f639e', '#2e7d4f', '#0f766e', '#5b4a8a', '#8c2f2f', '#96690f', '#9d2c5a'];
+  var swWrap = document.getElementById('kiki-swatches');
+  PRESETS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kiki-sw' + (S.warna === c ? ' on' : '');
+    b.style.background = c;
+    b.title = c;
+    b.addEventListener('click', function () {
+      S.warna = c;
+      save(); applyColor(); syncSwatches();
+      document.getElementById('kiki-warna').value = c;
+      toast('Warna tema diubah');
+    });
+    swWrap.appendChild(b);
+  });
+  function syncSwatches() {
+    Array.prototype.forEach.call(swWrap.children, function (b, i) {
+      b.classList.toggle('on', PRESETS[i] === S.warna);
+    });
+  }
+
+  var namaInput = document.getElementById('kiki-nama');
+  var warnaInput = document.getElementById('kiki-warna');
+  var logoInput = document.getElementById('kiki-logo');
+  var logoPrev = document.getElementById('kiki-logo-preview');
+
+  function syncPanel() {
+    namaInput.value = S.nama || '';
+    warnaInput.value = S.warna || '#14263d';
+    syncSwatches();
+    if (S.logo) { logoPrev.src = S.logo; logoPrev.hidden = false; }
+    else { logoPrev.removeAttribute('src'); logoPrev.hidden = true; }
+    renderUsers();
+  }
+
+  namaInput.addEventListener('input', function () {
+    S.nama = namaInput.value;
+    save(); applyName();
+  });
+  warnaInput.addEventListener('input', function () {
+    S.warna = warnaInput.value;
+    save(); applyColor(); syncSwatches();
+  });
+  document.getElementById('kiki-reset-warna').addEventListener('click', function () {
+    S.warna = '';
+    save(); applyColor(); syncPanel(); toast('Warna kembali ke awal');
+  });
+  logoInput.addEventListener('change', function () {
+    var f = logoInput.files && logoInput.files[0];
+    if (!f) return;
+    if (f.size > 1500000) { toast('Logo terlalu besar (maks 1,5 MB)'); logoInput.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+      S.logo = r.result;
+      save(); applyLogo(); syncPanel(); toast('Logo dipasang');
+    };
+    r.onerror = function () { toast('Gagal membaca file logo'); };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('kiki-hapus-logo').addEventListener('click', function () {
+    S.logo = '';
+    save(); applyLogo(); syncPanel(); logoInput.value = ''; toast('Logo dihapus');
+  });
+  document.getElementById('kiki-reset-semua').addEventListener('click', function () {
+    if (!window.confirm('Hapus semua pengaturan aplikasi ini dan kembali ke awal?')) return;
+    S = merge(DEF, {});
+    save(); applyAll(); syncPanel(); toast('Pengaturan direset');
+  });
+
+  /* ---------- buka/tutup ---------- */
+  function openPanel() { syncPanel(); overlay.hidden = false; }
+  function closePanel() { overlay.hidden = true; }
+  fab.addEventListener('click', openPanel);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closePanel();
+    var c = e.target.closest ? e.target.closest('[data-kiki-close]') : null;
+    if (c) closePanel();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePanel();
+  });
+
+  applyAll();
+  updateBtnTitle();
+})();
+
+</script>
+</body>
+</html>
