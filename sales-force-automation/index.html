@@ -208,14 +208,50 @@
     .panel { display: none !important; }
     .panel.active { display: block !important; }
   }
-</style>
+
+  .bar-pengguna { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 13.5px; color: var(--muted); }
+  .bar-pengguna .chip-pengguna { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-weight: 700; color: var(--ink); }
+  .branch-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .branch-bar select { width: auto; min-width: 220px; }
+  .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+  .login-overlay.hidden { display: none; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .item-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .user-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .user-row select { width: auto; min-width: 120px; }
+  .audit-wrap { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.data th, table.data td { border-bottom: 1px solid var(--line); padding: 9px 8px; text-align: left; vertical-align: top; }
+  table.data th { background: var(--surface-2); font-size: 12.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+
+  body[data-role="manajer"] .hanya-admin, body[data-role="sales"] .hanya-admin { display: none !important; }
+  body[data-role="sales"] .hanya-manajer { display: none !important; }
+  body[data-role="sales"] .tab-btn[data-tab="persetujuan"], body[data-role="sales"] .tab-btn[data-tab="audit"] { display: none !important; }</style>
 </head>
 <body>
 <div class="wrap">
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
 
   <header class="hero">
     <h1>Sales Force Automation (SFA)</h1>
-    <p>Kelola tim penjualan lapangan perusahaan distributor: rencana kunjungan salesman, pencatatan kunjungan dan hasil, pesanan dari lapangan, target vs pencapaian, monitoring posisi kunjungan, dan laporan aktivitas tim.</p>
+    <p>Kelola tim penjualan lapangan perusahaan distributor: rencana kunjungan salesman, pencatatan kunjungan dan hasil, pesanan dari lapangan, target vs pencapaian, monitoring posisi kunjungan, dan laporan aktivitas tim. Multi-cabang, tiga peran pengguna, alur persetujuan, dan penyimpanan IndexedDB terenkripsi — tetap offline di perangkat ini.</p>
     <div class="tanggal" id="tanggalHariIni"></div>
   </header>
 
@@ -225,6 +261,8 @@
     <button class="tab-btn" data-tab="target">Target</button>
     <button class="tab-btn" data-tab="monitoring">Monitoring</button>
     <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn" data-tab="audit">Audit Log</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
 
@@ -233,6 +271,11 @@
     <div class="page-head">
       <h2>Kunjungan &amp; Rencana Kunjungan</h2>
       <p>Susun rencana kunjungan harian tiap salesman, lalu catat hasil setiap kunjungan setelah selesai.</p>
+    </div>
+    <div class="branch-bar">
+      <label for="selCabangAktif"><b>Cabang aktif:</b></label>
+      <select id="selCabangAktif"></select>
+      <span style="color:var(--muted); font-size:13.5px">Kunjungan, pesanan, target, dan statistik mengikuti cabang ini. Laporan menampilkan ringkasan semua cabang.</span>
     </div>
     <div class="grid-stat">
       <div class="stat"><div class="label">Rencana Hari Ini</div><div class="angka" id="statRencanaHariIni">0</div></div>
@@ -382,6 +425,36 @@
         </div>
       </form>
       <div id="daftarTim" style="margin-top:14px"></div>
+    </div>
+    <div class="card hanya-admin">
+      <h3>Pengguna Aplikasi</h3>
+      <p class="sub">Hanya Admin yang bisa menambah pengguna, mengubah peran, atau menonaktifkan akun. Akun demo: admin / manajer / sales.</p>
+      <form id="formPengguna">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fUserBaru">Nama pengguna *</label>
+            <input type="text" id="fUserBaru" placeholder="Contoh: budi" required>
+          </div>
+          <div class="field">
+            <label for="fNamaUserBaru">Nama tampil *</label>
+            <input type="text" id="fNamaUserBaru" placeholder="Contoh: Budi Santoso" required>
+          </div>
+          <div class="field">
+            <label for="fPeranUserBaru">Peran *</label>
+            <select id="fPeranUserBaru">
+              <option value="sales">Sales</option>
+              <option value="manajer">Manajer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fPassUserBaru">Kata sandi *</label>
+            <input type="password" id="fPassUserBaru" placeholder="Minimal 4 karakter" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil" id="btnSimpanPengguna">+ Tambah Pengguna</button>
+      </form>
+      <div id="daftarPengguna" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -598,6 +671,69 @@
       <p class="sub">Daftar pesanan yang membentuk omzet pada bulan laporan.</p>
       <div id="daftarLaporanPesanan"></div>
     </div>
+    <div class="card">
+      <h3>Ringkasan per Cabang</h3>
+      <p class="sub"></p>
+      <div class="tabel-wrap"><div id="tabelRingkasanCabang"></div></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; Pulihkan Data</h3>
+      <p class="sub">Cadangkan seluruh data (termasuk pengguna, persetujuan, dan audit) sebagai file JSON, atau pulihkan dari file backup. Pulihkan hanya bisa dilakukan Admin/Manajer.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnBackupJson">Backup JSON</button>
+        <label class="btn kecil ghost" for="filePulihkan" style="display:inline-flex;align-items:center;cursor:pointer">Pulihkan dari JSON</label>
+        <input type="file" id="filePulihkan" accept="application/json,.json" style="display:none">
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ PERSETUJUAN ============ -->
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Permintaan yang butuh persetujuan Admin/Manajer: hapus rencana kunjungan, hapus pesanan, hapus target, hapus salesman, dan pesanan Rp10.000.000 atau lebih. Keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Persetujuan</h3>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Keputusan Sebelumnya</h3>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT LOG ============ -->
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Riwayat aksi di aplikasi: siapa, kapan, dari cabang mana, dan apa yang dilakukan. Hanya Admin dan Manajer yang bisa melihat tab ini.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">login</option>
+            <option value="kunjungan">kunjungan</option>
+            <option value="pesanan">pesanan</option>
+            <option value="target">target</option>
+            <option value="monitoring">monitoring</option>
+            <option value="persetujuan">persetujuan</option>
+            <option value="ekspor">ekspor</option>
+            <option value="pengguna">pengguna</option>
+            <option value="sistem">sistem</option>
+          </select>
+        </div>
+      </div>
+      <div class="audit-wrap"><div id="daftarAudit"></div></div>
+    </div>
   </section>
 
   <!-- ============ PANDUAN ============ -->
@@ -616,30 +752,29 @@
         <li>Di tab <b>Target</b>, tetapkan target omzet dan target kunjungan bulanan tiap salesman, lalu pantau pencapaiannya lewat bilah progres.</li>
         <li>Di tab <b>Monitoring</b>, perbarui status lapangan tiap salesman (Berangkat / Tiba di Lokasi / Selesai / Istirahat) dan lihat linimasa aktivitas hari ini.</li>
         <li>Di tab <b>Laporan</b>, pilih bulan untuk melihat rekap kinerja tiap salesman — bisa dicetak atau disimpan sebagai PDF.</li>
-        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+        <li>Masuk dengan akun Anda (Admin / Manajer / Sales) — akun demo: <b>admin</b> / <b>admin123</b>, <b>manajer</b> / <b>manajer123</b>, <b>sales</b> / <b>sales123</b>. Sesi berlaku selama tab masih terbuka.</li>
+        <li>Pilih <b>Cabang aktif</b> di tab Kunjungan — kunjungan, pesanan, target, dan statistik mengikuti cabang itu; laporan menampilkan ringkasan semua cabang.</li>
+        <li>Aksi sensitif (hapus rencana kunjungan, hapus pesanan, hapus target, hapus salesman, dan pesanan Rp10.000.000 atau lebih) tidak langsung jalan — diajukan ke tab <b>Persetujuan</b> dan baru berlaku bila disetujui Admin/Manajer. Semua tercatat di tab <b>Audit Log</b>.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini (IndexedDB + enkripsi) setiap kali ada perubahan. Cadangkan berkala dengan tombol <b>Backup JSON</b> di tab Laporan.</li>
       </ol>
     </div>
     <div class="card">
       <h3>Harga aplikasi</h3>
-      <table class="tabel-harga">
-        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
-        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
-        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
-        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
-      </table>
+      <p style="font-size:14px">Harga: <b>Rp999.000</b> (sekali bayar). APK Android <b>+Rp400.000</b>.</p>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
       <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Garansi</h3>
-      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+      <p style="font-size:14px">Perbaikan bug/error gratis <b>30 hari</b> sejak pembelian. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
     </div>
     <div class="card">
       <h3>Request khusus (penyesuaian)</h3>
-      <p style="font-size:14px">Butuh penyesuaian di luar paket standar? Biaya tambahan per permintaan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> per permintaan. Besar biaya diputuskan per permintaan dan disepakati dulu lewat WhatsApp sebelum pengerjaan; konsultasi gratis.</p>
+      <p style="font-size:14px">Butuh fitur tambahan di luar versi standar? Biaya penyesuaian: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> sejak permintaan disetujui. Diskusikan dulu lewat WhatsApp <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data rencana kunjungan, kunjungan, pesanan, dan target <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP.</p>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data rencana kunjungan, kunjungan, pesanan, dan target <b>hanya tersimpan di perangkat ini</b> — sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b>. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tidak tersinkron ke perangkat lain</b> dan tidak ada backup cloud otomatis — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP.</p>
       <p style="font-size:14px; margin-top:8px"><b>Monitoring posisi hanya contoh:</b> posisi dan status lapangan di tab Monitoring adalah <b>contoh yang diinput manual</b> — aplikasi ini <b>tidak memakai GPS live</b> dan tidak melacak lokasi perangkat secara otomatis.</p>
       <p style="font-size:14px; margin-top:8px">Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>), penyimpanan permanen di server, dan GPS live, dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
       <div style="margin-top:14px">
@@ -649,9 +784,25 @@
   </section>
 
   <footer>
-    <p><b>Sales Force Automation (SFA) v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat. Monitoring posisi hanya contoh (bukan GPS live). Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Sales Force Automation (SFA) v1.</b> Multi-cabang, 3 peran, alur persetujuan, IndexedDB + enkripsi, offline. Harga Rp999.000 (sekali bayar). APK Android +Rp400.000. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Monitoring posisi hanya contoh (bukan GPS live). Garansi perbaikan bug gratis 30 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Sales%20Force%20Automation%20(SFA)." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
+</div>
+
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Sales Force Automation (SFA)</h2>
+    <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+    <label for="loginUser">Nama pengguna</label>
+    <input type="text" id="loginUser" autocomplete="username">
+    <label for="loginPass">Kata sandi</label>
+    <input type="password" id="loginPass" autocomplete="current-password">
+    <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+    <button class="btn" id="loginBtn" type="button">Masuk</button>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses)<br>Manajer: <b>manajer</b> / <b>manajer123</b> (tanpa kelola pengguna)<br>Sales: <b>sales</b> / <b>sales123</b> (tanpa hapus data dan audit)</p>
+    <p class="login-note">Sesi berlaku selama tab masih terbuka — tutup tab dan buka lagi untuk masuk kembali.</p>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -743,15 +894,314 @@ function dataContoh() {
 }
 
 var db = null;
-function load() {
-  try {
-    var raw = localStorage.getItem(KEY);
-    if (raw) { db = JSON.parse(raw); return; }
-  } catch (e) { db = null; }
-  db = dataContoh();
+/* ---------- Penyimpanan internal: IndexedDB + enkripsi WebCrypto (AES-GCM 256) ---------- */
+// Internal: penyimpanan terenkripsi (IndexedDB + enkripsi, multi-cabang, peran,
+// persetujuan, audit). Data kerja tetap di memori (db); IndexedDB adalah tempat
+// simpan utamanya (asinkron). localStorage hanya dipakai untuk migrasi sekali
+// dari versi lama dan sebagai cadangan bila IndexedDB tidak ada.
+// JUJUR: kunci enkripsi dibuat acak per perangkat dan disimpan di IndexedDB
+// yang sama — ini enkripsi demo, bukan keamanan tingkat enterprise, karena
+// kunci dan datanya berada di perangkat yang sama.
+var DB_NAMA = "sfaDB";
+var DB_VERSI = 1;
+var dbSiap = null;
+var infoSimpan = { jenis: "indexeddb", enkripsi: false, termigrasi: false };
+var antreSimpan = Promise.resolve();
+var kunciKripto = null;
+var usersCache = null;
+var SESSION_KEY = KEY + ".session";
+var PERAN_VALID = ["admin", "manajer", "sales"];
+var DEFAULT_USERS = [
+  { username: "admin", password: "admin123", nama: "Admin", peran: "admin", aktif: true },
+  { username: "manajer", password: "manajer123", nama: "Manajer", peran: "manajer", aktif: true },
+  { username: "sales", password: "sales123", nama: "Sales", peran: "sales", aktif: true }
+];
+
+function idbTersedia() { return typeof indexedDB !== "undefined"; }
+function bukaDB() {
+  if (dbSiap) { return dbSiap; }
+  dbSiap = new Promise(function (selesai) {
+    if (!idbTersedia()) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+    var req;
+    try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+    req.onupgradeneeded = function () {
+      var d = req.result;
+      if (!d.objectStoreNames.contains("kv")) { d.createObjectStore("kv"); }
+    };
+    req.onsuccess = function () { selesai(req.result); };
+    req.onerror = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+    req.onblocked = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+  });
+  return dbSiap;
+}
+function idbGet(kunci) {
+  return bukaDB().then(function (d) {
+    if (!d) { return undefined; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction("kv", "readonly"); req = tx.objectStore("kv").get(kunci); }
+      catch (e) { selesai(undefined); return; }
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { selesai(undefined); };
+    });
+  });
+}
+function idbPut(kunci, nilai) {
+  return bukaDB().then(function (d) {
+    if (!d) { return false; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction("kv", "readwrite"); req = tx.objectStore("kv").put(nilai, kunci); }
+      catch (e) { selesai(false); return; }
+      req.onsuccess = function () { selesai(true); };
+      req.onerror = function () { selesai(false); };
+    });
+  });
+}
+function lsCadanganGet(kunci) { try { var r = localStorage.getItem(KEY + ".idb-" + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(KEY + ".idb-" + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+function simpanKV(kunci, nilai) {
+  return idbPut(kunci, nilai).then(function (ok) {
+    if (!ok) { lsCadanganPut(kunci, nilai); }
+    return true;
+  });
+}
+function muatKV(kunci) {
+  return idbGet(kunci).then(function (v) {
+    if (v !== undefined) { return v; }
+    return lsCadanganGet(kunci);
+  });
+}
+function b64DariBuffer(buf) { var b = new Uint8Array(buf); var s = ""; for (var i = 0; i < b.length; i++) { s += String.fromCharCode(b[i]); } return btoa(s); }
+function bufferDariB64(s) { var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+function siapkanKripto() {
+  if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+  return muatKV("kunci").then(function (jwk) {
+    var janji = jwk
+      ? crypto.subtle.importKey("jwk", jwk, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+      : crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+          .then(function (k) { return crypto.subtle.exportKey("jwk", k).then(function (j) { return simpanKV("kunci", j).then(function () { return k; }); }); });
+    return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+      .catch(function () { infoSimpan.enkripsi = false; return false; });
+  });
+}
+function enkripData(obj) {
+  if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+    .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+    .catch(function () { return { v: 0, data: obj }; });
+}
+function dekripData(paket) {
+  if (!paket) { return Promise.resolve(null); }
+  if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+    .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+    .catch(function () { return null; });
+}
+// save() tetap bisa dipanggil sinkron dari kode lama (fire-and-forget berantre).
+function save() {
+  if (!db) { return; }
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(db).then(function (paket) { return simpanKV("state", paket); });
+  }).catch(function () { /* simpan gagal: data tetap di memori */ });
+}
+function normalisasiDb(obj) {
+  if (!obj || typeof obj !== "object") { obj = dataContoh(); }
+  if (!Array.isArray(obj.cabang) || !obj.cabang.length) {
+    obj.cabang = [
+      { id: "pusat", nama: "Cabang Pusat", alamat: "Jl. Raya Bogor No. 12, Jakarta Timur" },
+      { id: "jaktim", nama: "Cabang Jakarta Timur", alamat: "Jl. Pahlawan Revolusi No. 8, Jakarta Timur" },
+      { id: "bekasi", nama: "Cabang Bekasi", alamat: "Jl. Ahmad Yani No. 45, Bekasi" }
+    ];
+  }
+  if (!obj.cabangAktif) { obj.cabangAktif = "pusat"; }
+["salesman", "kunjungan", "pesanan", "target", "posisi"].forEach(function (k) {
+    if (!Array.isArray(obj[k])) { obj[k] = []; }
+  });
+  obj.salesman.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.kunjungan.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.pesanan.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.target.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.posisi.forEach(function (x) { if (!x.cabang) { var s = obj.salesman.find(function (y) { return y.id === x.salesmanId; }); x.cabang = s ? (s.cabang || "pusat") : "pusat"; } });
+  if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+  if (!Array.isArray(obj.audit)) { obj.audit = []; }
+  if (typeof obj.nextPersetujuan !== "number") { obj.nextPersetujuan = (obj.persetujuan.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0)) + 1; }
+  return obj;
+}
+function muatState() {
+  return muatKV("state").then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (obj) {
+        if (obj && Array.isArray(obj.kunjungan) && Array.isArray(obj.pesanan)) { db = normalisasiDb(obj); return; }
+        db = normalisasiDb(dataContoh()); save();
+      });
+    }
+    // Migrasi SATU KALI dari localStorage lama
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (lama && Array.isArray(lama.kunjungan) && Array.isArray(lama.pesanan)) {
+          db = normalisasiDb(lama);
+          infoSimpan.termigrasi = true;
+          db.audit.unshift({ waktu: new Date().toISOString(), user: "sistem", peran: "-", cabang: "pusat", aksi: "sistem", detail: "Data dimigrasikan dari localStorage ke IndexedDB terenkripsi." });
+          try { localStorage.setItem(KEY + ".cadangan-lama", raw); localStorage.removeItem(KEY); } catch (e) {}
+          save();
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke data contoh */ }
+    db = normalisasiDb(dataContoh());
+    save();
+  }).catch(function () {
+    db = normalisasiDb(dataContoh());
+    save();
+  });
+}
+
+/* ---------- Pengguna & sesi ---------- */
+function normalisasiPengguna(u) {
+  var peran = PERAN_VALID.indexOf(u.peran) === -1 ? "sales" : u.peran;
+  return { username: String(u.username || "").toLowerCase(), password: String(u.password || ""), nama: u.nama || u.username, peran: peran, aktif: u.aktif !== false };
+}
+function getUsers() {
+  if (!usersCache) { usersCache = DEFAULT_USERS.map(normalisasiPengguna); }
+  return usersCache;
+}
+function saveUsers(users) {
+  usersCache = users;
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(users).then(function (paket) { return simpanKV("pengguna", paket); });
+  }).catch(function () { /* simpan gagal */ });
+}
+function muatUsers() {
+  return muatKV("pengguna").then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (arr) {
+        if (Array.isArray(arr) && arr.length) { usersCache = arr.map(normalisasiPengguna); return; }
+        usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+      });
+    }
+    try {
+      var raw = localStorage.getItem(KEY + ".pengguna");
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (Array.isArray(lama) && lama.length) {
+          usersCache = lama.map(normalisasiPengguna);
+          try { localStorage.setItem(KEY + ".pengguna.cadangan-lama", raw); localStorage.removeItem(KEY + ".pengguna"); } catch (e) {}
+          saveUsers(usersCache);
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke default */ }
+    usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+    saveUsers(usersCache);
+  }).catch(function () {
+    usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+  });
+}
+var currentUser = null;
+function labelPeran(r) { return { admin: "Admin", manajer: "Manajer", sales: "Sales" }[r] || r; }
+function peran() { return currentUser ? currentUser.peran : null; }
+function bisa(aksi) {
+  var r = peran();
+  if (!r) { return false; }
+  if (aksi === "kelola_pengguna") { return r === "admin"; }
+  if (aksi === "audit" || aksi === "putuskan" || aksi === "hapus" || aksi === "reset" || aksi === "pulihkan") { return r === "admin" || r === "manajer"; }
+  return true;
+}
+function butuh(aksi, pesan) {
+  if (bisa(aksi)) { return true; }
+  toast(pesan || "Akses ditolak untuk peran Anda.");
+  return false;
+}
+function namaCabang(id) {
+  var c = (db.cabang || []).find(function (x) { return x.id === id; });
+  return c ? c.nama : id;
+}
+function cabangAktif() { return (db && db.cabangAktif) || "pusat"; }
+function isiSelectCabang() {
+  var sel = document.getElementById("selCabangAktif");
+  if (!sel || !db.cabang) { return; }
+  sel.innerHTML = db.cabang.map(function (c) { return '<option value="' + c.id + '">' + esc(c.nama) + "</option>"; }).join("");
+  sel.value = cabangAktif();
+}
+function setCabang(id) {
+  if (!db.cabang.some(function (c) { return c.id === id; })) { return; }
+  db.cabangAktif = id;
+  save();
+  catatAudit("sistem", "Cabang aktif diubah ke " + namaCabang(id) + ".");
+  renderAll();
+}
+/* ---------- Audit log ---------- */
+function catatAudit(aksi, detail) {
+  if (!db) { return; }
+  if (!Array.isArray(db.audit)) { db.audit = []; }
+  db.audit.unshift({
+    waktu: new Date().toISOString(),
+    user: currentUser ? currentUser.username : "sistem",
+    peran: currentUser ? currentUser.peran : "-",
+    cabang: cabangAktif(),
+    aksi: aksi, detail: detail || ""
+  });
+  if (db.audit.length > 200) { db.audit.length = 200; }
   save();
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+/* ---------- Persetujuan ---------- */
+function labelTipePersetujuan(t) {
+  return { hapus_kunjungan: "Hapus rencana kunjungan", hapus_pesanan: "Hapus pesanan", hapus_target: "Hapus target", hapus_salesman: "Hapus salesman", pesanan_besar: "Pesanan besar" }[t] || t;
+}
+function buatPersetujuan(tipe, detail, ringkasan) {
+  var id = db.nextPersetujuan++;
+  db.persetujuan.unshift({
+    id: id, tipe: tipe, cabang: cabangAktif(),
+    dibuatOleh: currentUser ? currentUser.username : "tamu",
+    dibuatPada: new Date().toISOString(),
+    status: "menunggu", detail: detail, ringkasan: ringkasan || "",
+    diputuskanOleh: "", diputuskanPada: ""
+  });
+  catatAudit("persetujuan", "Permintaan persetujuan #" + id + " (" + labelTipePersetujuan(tipe) + "): " + (ringkasan || "") + ".");
+  save(); perbaruiBadge();
+  return id;
+}
+function terapkanPersetujuan(apr) {
+  var d = apr.detail || {};
+  if (apr.tipe === "hapus_kunjungan") {
+    db.kunjungan = db.kunjungan.filter(function (x) { return x.id !== d.kunjunganId; });
+  } else if (apr.tipe === "hapus_pesanan") {
+    db.pesanan = db.pesanan.filter(function (x) { return x.id !== d.pesananId; });
+  } else if (apr.tipe === "hapus_target") {
+    db.target = db.target.filter(function (x) { return x.id !== d.targetId; });
+  } else if (apr.tipe === "hapus_salesman") {
+    db.salesman = db.salesman.filter(function (x) { return x.id !== d.salesmanId; });
+    db.posisi = db.posisi.filter(function (x) { return x.salesmanId !== d.salesmanId; });
+  } else if (apr.tipe === "pesanan_besar") {
+    if (d.mode === "baru") { db.pesanan.push(d.data); }
+    else { var p = db.pesanan.find(function (x) { return x.id === d.data.id; }); if (p) { Object.assign(p, d.data); } }
+  }
+}
+function putuskanPersetujuan(id, setuju) {
+  if (!bisa("putuskan")) { toast("Hanya Admin/Manajer yang bisa memutuskan persetujuan."); return; }
+  var apr = db.persetujuan.find(function (a) { return a.id === id; });
+  if (!apr || apr.status !== "menunggu") { toast("Permintaan ini sudah diputuskan."); return; }
+  apr.status = setuju ? "disetujui" : "ditolak";
+  apr.diputuskanOleh = currentUser.username;
+  apr.diputuskanPada = new Date().toISOString();
+  if (setuju) { terapkanPersetujuan(apr); }
+  catatAudit("persetujuan", "Permintaan #" + id + " (" + labelTipePersetujuan(apr.tipe) + ") " + (setuju ? "DISETUJUI" : "DITOLAK") + " oleh " + currentUser.username + ".");
+  save(); renderAll();
+  toast("Permintaan #" + id + (setuju ? " disetujui." : " ditolak."));
+}
+function perbaruiBadge() {
+  var bpp = document.getElementById("badgePersetujuan");
+  if (!bpp) { return; }
+  var menunggu = db ? db.persetujuan.filter(function (a) { return a.status === "menunggu"; }).length : 0;
+  var tampil = menunggu > 0 && bisa("putuskan");
+  bpp.hidden = !tampil;
+  bpp.textContent = menunggu;
+}
+
 
 var toastTimer = null;
 function toast(pesan) {
@@ -768,17 +1218,17 @@ function namaSalesman(id) {
 }
 function omzetSalesmanBulan(salesmanId, bulan) {
   return db.pesanan
-    .filter(function (p) { return p.salesmanId === salesmanId && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulan; })
+    .filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && p.salesmanId === salesmanId && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulan; })
     .reduce(function (a, p) { return a + p.jumlah * p.hargaSatuan; }, 0);
 }
 function kunjunganSelesaiBulan(salesmanId, bulan) {
-  return db.kunjungan.filter(function (k) { return k.salesmanId === salesmanId && k.status === 'Selesai' && bulanDariTanggal(k.tanggal) === bulan; }).length;
+  return db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && k.salesmanId === salesmanId && k.status === 'Selesai' && bulanDariTanggal(k.tanggal) === bulan; }).length;
 }
 function semuaBulan() {
   var set = {};
-  db.target.forEach(function (t) { set[t.bulan] = true; });
-  db.pesanan.forEach(function (p) { set[bulanDariTanggal(p.tanggal)] = true; });
-  db.kunjungan.forEach(function (k) { set[bulanDariTanggal(k.tanggal)] = true; });
+  db.target.forEach(function (t) { if ((t.cabang || 'pusat') === cabangAktif()) { set[t.bulan] = true; } });
+  db.pesanan.forEach(function (p) { if ((p.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(p.tanggal)] = true; } });
+  db.kunjungan.forEach(function (k) { if ((k.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(k.tanggal)] = true; } });
   var arr = Object.keys(set).sort();
   if (arr.indexOf(bulanSekarang()) === -1) arr.push(bulanSekarang());
   return arr.sort();
@@ -791,7 +1241,7 @@ function isiSelectBulan(el, nilai) {
 }
 function isiSelectSalesman(el, nilai, denganSemua) {
   var opt = denganSemua ? '<option value="">Semua salesman</option>' : '';
-  opt += db.salesman.map(function (s) {
+  opt += db.salesman.filter(function (s) { return (s.cabang || 'pusat') === cabangAktif(); }).map(function (s) {
     return '<option value="' + s.id + '"' + (s.id === nilai ? ' selected' : '') + '>' + esc(s.nama) + ' — ' + esc(s.wilayah) + '</option>';
   }).join('');
   el.innerHTML = opt;
@@ -804,6 +1254,7 @@ function kelasStatus(status) {
 document.querySelectorAll('.tab-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
     document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    if ((btn.dataset.tab === 'persetujuan' || btn.dataset.tab === 'audit') && !bisa('audit')) { toast('Hanya Admin/Manajer yang bisa membuka tab ini.'); return; }
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
@@ -823,10 +1274,11 @@ function renderKunjungan() {
   isiSelectSalesman(document.getElementById('fRencSalesman'), null, false);
   isiSelectSalesman(document.getElementById('filterSalesmanRencana'), document.getElementById('filterSalesmanRencana').value, true);
 
-  var rencanaHariIni = db.kunjungan.filter(function (k) { return k.tanggal === hariIni; }).length;
-  var kunjBulan = db.kunjungan.filter(function (k) { return k.status === 'Selesai' && bulanDariTanggal(k.tanggal) === bulan; }).length;
-  var orderBulan = db.kunjungan.filter(function (k) { return k.status === 'Selesai' && k.hasil === 'Order' && bulanDariTanggal(k.tanggal) === bulan; }).length;
-  var followup = db.kunjungan.filter(function (k) { return k.status === 'Selesai' && k.hasil === 'Follow-up'; }).length;
+  var cb = cabangAktif();
+  var rencanaHariIni = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.tanggal === hariIni; }).length;
+  var kunjBulan = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.status === 'Selesai' && bulanDariTanggal(k.tanggal) === bulan; }).length;
+  var orderBulan = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.status === 'Selesai' && k.hasil === 'Order' && bulanDariTanggal(k.tanggal) === bulan; }).length;
+  var followup = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.status === 'Selesai' && k.hasil === 'Follow-up'; }).length;
   document.getElementById('statRencanaHariIni').textContent = rencanaHariIni;
   document.getElementById('statKunjunganBulan').textContent = kunjBulan;
   document.getElementById('statOrderBulan').textContent = orderBulan;
@@ -839,7 +1291,7 @@ function renderKunjungan() {
   var list = db.kunjungan.slice().sort(function (a, b) {
     return (a.tanggal + a.jam).localeCompare(b.tanggal + b.jam);
   }).filter(function (k) {
-    return (!fTgl || k.tanggal === fTgl) && (!fS || k.salesmanId === fS) && (!fSt || k.status === fSt);
+    return (k.cabang || 'pusat') === cb && (!fTgl || k.tanggal === fTgl) && (!fS || k.salesmanId === fS) && (!fSt || k.status === fSt);
   });
   var wadah = document.getElementById('daftarRencana');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada rencana kunjungan yang cocok dengan filter. Ubah tanggal filter atau buat rencana baru di atas.</p>'; }
@@ -878,9 +1330,10 @@ function renderKunjungan() {
       b.addEventListener('click', function () {
         var k = db.kunjungan.find(function (x) { return x.id === b.dataset.hapusRencana; });
         if (!k) return;
-        if (!confirm('Hapus rencana kunjungan ke "' + k.pelanggan + '" tanggal ' + tglIndo(k.tanggal) + '?')) return;
-        db.kunjungan = db.kunjungan.filter(function (x) { return x.id !== k.id; });
-        save(); renderAll(); toast('Rencana kunjungan dihapus.');
+        if (!butuh('hapus', 'Sales tidak boleh menghapus data.')) return;
+        if (!confirm('Ajukan hapus rencana kunjungan ke "' + k.pelanggan + '" tanggal ' + tglIndo(k.tanggal) + '? Bila disetujui Admin/Manajer, rencana dihapus.')) return;
+        buatPersetujuan('hapus_kunjungan', { kunjunganId: k.id }, 'Hapus rencana kunjungan ke ' + k.pelanggan + ' (' + tglIndo(k.tanggal) + ' ' + k.jam + ').');
+        renderAll(); toast('Penghapusan rencana kunjungan diajukan untuk persetujuan.');
       });
     });
   }
@@ -891,7 +1344,7 @@ function renderKunjungan() {
   // Riwayat kunjungan selesai
   var fH = document.getElementById('filterHasilRiwayat').value;
   var riwayat = db.kunjungan.slice().sort(function (a, b) { return (b.tanggal + b.jam).localeCompare(a.tanggal + a.jam); })
-    .filter(function (k) { return k.status === 'Selesai' && (!fH || k.hasil === fH); });
+    .filter(function (k) { return (k.cabang || 'pusat') === cb && k.status === 'Selesai' && (!fH || k.hasil === fH); });
   var wadahR = document.getElementById('daftarRiwayat');
   if (!riwayat.length) { wadahR.innerHTML = '<p class="kosong">Belum ada kunjungan selesai yang cocok dengan filter.</p>'; }
   else {
@@ -922,7 +1375,7 @@ function renderKunjungan() {
   var wadahT = document.getElementById('daftarTim');
   if (!db.salesman.length) { wadahT.innerHTML = '<p class="kosong">Belum ada salesman.</p>'; }
   else {
-    wadahT.innerHTML = db.salesman.map(function (s) {
+    wadahT.innerHTML = db.salesman.filter(function (s) { return (s.cabang || 'pusat') === cb; }).map(function (s) {
       var jmlRencana = db.kunjungan.filter(function (k) { return k.salesmanId === s.id && k.tanggal === hariIni; }).length;
       return '<div class="item-menu"><div class="atas"><div>' +
         '<div class="nama">' + esc(s.nama) + '</div>' +
@@ -934,10 +1387,10 @@ function renderKunjungan() {
       b.addEventListener('click', function () {
         var s = db.salesman.find(function (x) { return x.id === b.dataset.hapusSalesman; });
         if (!s) return;
-        if (!confirm('Hapus salesman "' + s.nama + '"? Riwayat kunjungan dan pesanan tetap tersimpan.')) return;
-        db.salesman = db.salesman.filter(function (x) { return x.id !== s.id; });
-        db.posisi = db.posisi.filter(function (p) { return p.salesmanId !== s.id; });
-        save(); renderAll(); toast('Salesman dihapus.');
+        if (!butuh('hapus', 'Sales tidak boleh menghapus data.')) return;
+        if (!confirm('Ajukan hapus salesman "' + s.nama + '"? Bila disetujui Admin/Manajer, salesman dihapus; riwayat kunjungan dan pesanan tetap tersimpan.')) return;
+        buatPersetujuan('hapus_salesman', { salesmanId: s.id }, 'Hapus salesman ' + s.nama + ' (' + s.wilayah + ').');
+        renderAll(); toast('Penghapusan salesman ' + s.nama + ' diajukan untuk persetujuan.');
       });
     });
   }
@@ -945,7 +1398,7 @@ function renderKunjungan() {
 function isiSelectHasil() {
   var el = document.getElementById('fHasilKunjungan');
   var nilai = el.value;
-  var terbuka = db.kunjungan.filter(function (k) { return k.status === 'Direncanakan'; })
+  var terbuka = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && k.status === 'Direncanakan'; })
     .sort(function (a, b) { return (a.tanggal + a.jam).localeCompare(b.tanggal + b.jam); });
   el.innerHTML = terbuka.length
     ? terbuka.map(function (k) {
@@ -987,12 +1440,14 @@ document.getElementById('formRencana').addEventListener('submit', function (e) {
     alamat: document.getElementById('fRencAlamat').value.trim()
   };
   if (!data.salesmanId || !data.tanggal || !data.jam || !data.pelanggan) { toast('Lengkapi semua kolom wajib.'); return; }
+  data.cabang = cabangAktif();
   if (editRencanaId) {
     var k = db.kunjungan.find(function (x) { return x.id === editRencanaId; });
-    if (k) Object.assign(k, data);
+    if (k) { Object.assign(k, data); catatAudit('kunjungan', 'Rencana kunjungan ke ' + k.pelanggan + ' diubah.'); }
     toast('Rencana kunjungan diperbarui.');
   } else {
     db.kunjungan.push(Object.assign({ id: uid(), status: 'Direncanakan', hasil: '', jamSelesai: '', catatan: '' }, data));
+    catatAudit('kunjungan', 'Rencana kunjungan baru ke ' + data.pelanggan + ' (' + data.tanggal + ' ' + data.jam + ').');
     toast('Rencana kunjungan ditambahkan.');
   }
   save(); batalUbahRencana(); renderAll();
@@ -1009,6 +1464,7 @@ document.getElementById('formHasil').addEventListener('submit', function (e) {
   k.status = 'Selesai';
   var pos = db.posisi.find(function (p) { return p.salesmanId === k.salesmanId; });
   if (pos) { pos.status = 'Selesai'; pos.jamUpdate = k.jamSelesai; pos.kunjunganId = k.id; }
+  catatAudit('kunjungan', 'Hasil kunjungan ke ' + k.pelanggan + ' dicatat: ' + k.hasil + '.');
   save();
   document.getElementById('formHasil').reset();
   renderAll();
@@ -1020,9 +1476,10 @@ document.getElementById('formSalesmanMini').addEventListener('submit', function 
   var wilayah = document.getElementById('fWilayahS').value.trim();
   var hp = document.getElementById('fHpS').value.trim();
   if (!nama || !wilayah || !hp) { toast('Lengkapi nama, wilayah, dan HP.'); return; }
-  var baru = { id: uid(), nama: nama, wilayah: wilayah, hp: hp };
+  var baru = { id: uid(), nama: nama, wilayah: wilayah, hp: hp, cabang: cabangAktif() };
   db.salesman.push(baru);
-  db.posisi.push({ salesmanId: baru.id, status: 'Belum Berangkat', lokasi: 'Kantor (contoh)', jamUpdate: jamSekarang(), x: 50, y: 50, kunjunganId: '' });
+  db.posisi.push({ salesmanId: baru.id, status: 'Belum Berangkat', lokasi: 'Kantor (contoh)', jamUpdate: jamSekarang(), x: 50, y: 50, kunjunganId: '', cabang: cabangAktif() });
+  catatAudit('kunjungan', 'Salesman baru ditambahkan: ' + nama + ' (' + wilayah + ').');
   save();
   document.getElementById('formSalesmanMini').reset();
   renderAll();
@@ -1047,7 +1504,7 @@ function renderPesanan() {
   var bulan = bulanSekarang();
   isiSelectSalesman(document.getElementById('fPesanSalesman'), null, false);
   isiSelectSalesman(document.getElementById('filterSalesmanPesanan'), document.getElementById('filterSalesmanPesanan').value, true);
-  var listBulan = db.pesanan.filter(function (p) { return bulanDariTanggal(p.tanggal) === bulan; });
+  var listBulan = db.pesanan.filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(p.tanggal) === bulan; });
   var omzet = listBulan.filter(function (p) { return p.status === 'Selesai'; }).reduce(function (a, p) { return a + p.jumlah * p.hargaSatuan; }, 0);
   var aktif = listBulan.filter(function (p) { return p.status === 'Baru' || p.status === 'Diproses'; }).length;
   var selesai = listBulan.filter(function (p) { return p.status === 'Selesai'; });
@@ -1059,7 +1516,7 @@ function renderPesanan() {
   var fS = document.getElementById('filterSalesmanPesanan').value;
   var fT = document.getElementById('filterStatusPesanan').value;
   var list = db.pesanan.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
-    .filter(function (p) { return (!fS || p.salesmanId === fS) && (!fT || p.status === fT); });
+    .filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && (!fS || p.salesmanId === fS) && (!fT || p.status === fT); });
   var wadah = document.getElementById('daftarPesanan');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada pesanan yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (p) {
@@ -1079,9 +1536,10 @@ function renderPesanan() {
     b.addEventListener('click', function () {
       var p = db.pesanan.find(function (x) { return x.id === b.dataset.hapusPesanan; });
       if (!p) return;
-      if (!confirm('Hapus pesanan "' + p.produk + '" dari ' + p.pelanggan + '?')) return;
-      db.pesanan = db.pesanan.filter(function (x) { return x.id !== p.id; });
-      save(); renderAll(); toast('Pesanan dihapus.');
+      if (!butuh('hapus', 'Sales tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus pesanan "' + p.produk + '" dari ' + p.pelanggan + '? Bila disetujui Admin/Manajer, pesanan dihapus.')) return;
+      buatPersetujuan('hapus_pesanan', { pesananId: p.id }, 'Hapus pesanan ' + p.produk + ' (' + p.pelanggan + ', ' + fmtRp(p.jumlah * p.hargaSatuan) + ').');
+      renderAll(); toast('Penghapusan pesanan diajukan untuk persetujuan.');
     });
   });
 }
@@ -1122,12 +1580,30 @@ document.getElementById('formPesanan').addEventListener('submit', function (e) {
     status: document.getElementById('fPesanStatus').value
   };
   if (!data.salesmanId || !data.tanggal || !data.pelanggan || !data.produk || !data.jumlah) { toast('Lengkapi semua kolom wajib.'); return; }
+  data.cabang = cabangAktif();
+  var totalBaru = data.jumlah * data.hargaSatuan;
+  if (totalBaru >= 10000000) {
+    if (editPesananId) {
+      var pLama = db.pesanan.find(function (x) { return x.id === editPesananId; });
+      data.id = pLama.id;
+      buatPersetujuan('pesanan_besar', { mode: 'ubah', data: data },
+        'Ubah pesanan ' + data.produk + ' (' + data.pelanggan + ') total ' + fmtRp(totalBaru) + ' (≥ Rp10.000.000).');
+    } else {
+      data.id = uid();
+      buatPersetujuan('pesanan_besar', { mode: 'baru', data: data },
+        'Pesanan baru ' + data.produk + ' (' + data.pelanggan + ') total ' + fmtRp(totalBaru) + ' (≥ Rp10.000.000).');
+    }
+    toast('Pesanan Rp10.000.000 atau lebih diajukan untuk persetujuan Admin/Manajer.');
+    save(); batalUbahPesanan(); renderAll();
+    return;
+  }
   if (editPesananId) {
     var p = db.pesanan.find(function (x) { return x.id === editPesananId; });
-    if (p) Object.assign(p, data);
+    if (p) { Object.assign(p, data); catatAudit('pesanan', 'Pesanan diubah: ' + p.produk + ' (' + p.pelanggan + ', ' + fmtRp(p.jumlah * p.hargaSatuan) + ').'); }
     toast('Pesanan diperbarui.');
   } else {
     db.pesanan.push(Object.assign({ id: uid() }, data));
+    catatAudit('pesanan', 'Pesanan baru: ' + data.produk + ' (' + data.pelanggan + ', ' + fmtRp(totalBaru) + ').');
     toast('Pesanan ditambahkan.');
   }
   save(); batalUbahPesanan(); renderAll();
@@ -1143,7 +1619,7 @@ function renderTarget() {
   var bulanFilter = document.getElementById('filterBulanTarget').value || bulanSekarang();
   isiSelectBulan(document.getElementById('filterBulanTarget'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanTarget').value;
-  var list = db.target.filter(function (t) { return t.bulan === bulanFilter; });
+  var list = db.target.filter(function (t) { return (t.cabang || 'pusat') === cabangAktif() && t.bulan === bulanFilter; });
   var totTarget = 0, totOmzet = 0, capai = 0, persenList = [];
   list.forEach(function (t) {
     var omzet = omzetSalesmanBulan(t.salesmanId, t.bulan);
@@ -1181,9 +1657,10 @@ function renderTarget() {
     b.addEventListener('click', function () {
       var t = db.target.find(function (x) { return x.id === b.dataset.hapusTarget; });
       if (!t) return;
-      if (!confirm('Hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '?')) return;
-      db.target = db.target.filter(function (x) { return x.id !== t.id; });
-      save(); renderAll(); toast('Target dihapus.');
+      if (!butuh('hapus', 'Sales tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '? Bila disetujui Admin/Manajer, target dihapus.')) return;
+      buatPersetujuan('hapus_target', { targetId: t.id }, 'Hapus target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + '.');
+      renderAll(); toast('Penghapusan target diajukan untuk persetujuan.');
     });
   });
 }
@@ -1215,14 +1692,16 @@ document.getElementById('formTarget').addEventListener('submit', function (e) {
     targetKunjungan: Number(document.getElementById('fTargetKunjungan').value)
   };
   if (!data.salesmanId || !data.bulan) { toast('Pilih salesman dan bulan.'); return; }
+  data.cabang = cabangAktif();
   if (editTargetId) {
     var t = db.target.find(function (x) { return x.id === editTargetId; });
-    if (t) Object.assign(t, data);
+    if (t) { Object.assign(t, data); catatAudit('target', 'Target ' + namaSalesman(t.salesmanId) + ' bulan ' + labelBulan(t.bulan) + ' diubah.'); }
     toast('Target diperbarui.');
   } else {
     var duplikat = db.target.find(function (x) { return x.salesmanId === data.salesmanId && x.bulan === data.bulan; });
     if (duplikat) { toast('Target salesman ini untuk bulan tersebut sudah ada — gunakan tombol Ubah.'); return; }
     db.target.push(Object.assign({ id: uid() }, data));
+    catatAudit('target', 'Target baru: ' + namaSalesman(data.salesmanId) + ' bulan ' + labelBulan(data.bulan) + ' (' + fmtRp(data.targetOmzet) + ').');
     toast('Target ditambahkan.');
   }
   save(); batalUbahTarget(); renderAll();
@@ -1237,10 +1716,11 @@ function renderMonitoring() {
   var tgl = document.getElementById('filterTglMonitoring').value || tanggalHariIni();
   var fS = document.getElementById('filterSalesmanMonitoring').value;
 
-  var diLapangan = db.posisi.filter(function (p) { return p.status === 'Dalam Perjalanan' || p.status === 'Sudah Tiba'; }).length;
-  var sudahTiba = db.posisi.filter(function (p) { return p.status === 'Sudah Tiba'; }).length;
-  var selesaiHariIni = db.kunjungan.filter(function (k) { return k.tanggal === tgl && k.status === 'Selesai'; }).length;
-  var belumJalan = db.kunjungan.filter(function (k) { return k.tanggal === tgl && k.status === 'Direncanakan'; }).length;
+  var cb = cabangAktif();
+  var diLapangan = db.posisi.filter(function (p) { return (p.cabang || 'pusat') === cb && (p.status === 'Dalam Perjalanan' || p.status === 'Sudah Tiba'); }).length;
+  var sudahTiba = db.posisi.filter(function (p) { return (p.cabang || 'pusat') === cb && p.status === 'Sudah Tiba'; }).length;
+  var selesaiHariIni = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.tanggal === tgl && k.status === 'Selesai'; }).length;
+  var belumJalan = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cb && k.tanggal === tgl && k.status === 'Direncanakan'; }).length;
   document.getElementById('statDiLapangan').textContent = diLapangan;
   document.getElementById('statSudahTiba').textContent = sudahTiba;
   document.getElementById('statSelesaiHariIni').textContent = selesaiHariIni;
@@ -1249,7 +1729,7 @@ function renderMonitoring() {
   // Peta contoh
   var peta = document.getElementById('petaContoh');
   peta.querySelectorAll('.marker').forEach(function (m) { m.remove(); });
-  db.posisi.filter(function (p) { return !fS || p.salesmanId === fS; }).forEach(function (p) {
+  db.posisi.filter(function (p) { return (p.cabang || 'pusat') === cb && (!fS || p.salesmanId === fS); }).forEach(function (p) {
     var s = db.salesman.find(function (x) { return x.id === p.salesmanId; });
     if (!s) return;
     var kelas = p.status === 'Selesai' ? 'selesai' : (p.status === 'Dalam Perjalanan' || p.status === 'Sudah Tiba' ? 'jalan' : 'istirahat');
@@ -1263,7 +1743,7 @@ function renderMonitoring() {
 
   // Status lapangan per salesman
   var wadah = document.getElementById('daftarMonitoring');
-  var listS = db.salesman.filter(function (s) { return !fS || s.id === fS; });
+  var listS = db.salesman.filter(function (s) { return (s.cabang || 'pusat') === cb && (!fS || s.id === fS); });
   if (!listS.length) { wadah.innerHTML = '<p class="kosong">Belum ada salesman yang cocok dengan filter.</p>'; }
   else {
     wadah.innerHTML = listS.map(function (s) {
@@ -1289,12 +1769,13 @@ function renderMonitoring() {
         var sid = parts[0], st = parts[1];
         var pos = db.posisi.find(function (p) { return p.salesmanId === sid; });
         if (!pos) {
-          pos = { salesmanId: sid, status: st, lokasi: 'Kantor (contoh)', jamUpdate: jamSekarang(), x: 50, y: 50, kunjunganId: '' };
+          pos = { salesmanId: sid, status: st, lokasi: 'Kantor (contoh)', jamUpdate: jamSekarang(), x: 50, y: 50, kunjunganId: '', cabang: cabangAktif() };
           db.posisi.push(pos);
         } else {
           pos.status = st;
           pos.jamUpdate = jamSekarang();
         }
+        catatAudit('monitoring', 'Status lapangan ' + namaSalesman(sid) + ' diubah: ' + st + '.');
         save(); renderAll();
         toast(namaSalesman(sid) + ' ditandai: ' + st + '.');
       });
@@ -1303,7 +1784,7 @@ function renderMonitoring() {
 
   // Linimasa hari ini
   var timeline = db.kunjungan.slice()
-    .filter(function (k) { return k.tanggal === tgl && (!fS || k.salesmanId === fS); })
+    .filter(function (k) { return (k.cabang || 'pusat') === cb && k.tanggal === tgl && (!fS || k.salesmanId === fS); })
     .sort(function (a, b) { return a.jam.localeCompare(b.jam); });
   var wadahT = document.getElementById('daftarTimeline');
   if (!timeline.length) { wadahT.innerHTML = '<p class="kosong">Tidak ada rencana kunjungan pada ' + tglIndo(tgl) + '.</p>'; }
@@ -1329,11 +1810,11 @@ function renderLaporan() {
   var fS = document.getElementById('filterSalesmanLaporan').value;
 
   var totOmzet = 0, totKunj = 0, totPesanan = 0, totOrder = 0;
-  var rows = db.salesman.filter(function (s) { return !fS || s.id === fS; }).map(function (s) {
+  var rows = db.salesman.filter(function (s) { return (s.cabang || 'pusat') === cabangAktif() && (!fS || s.id === fS); }).map(function (s) {
     var omzet = omzetSalesmanBulan(s.id, bulanFilter);
     var kunj = kunjunganSelesaiBulan(s.id, bulanFilter);
-    var order = db.kunjungan.filter(function (k) { return k.salesmanId === s.id && k.status === 'Selesai' && k.hasil === 'Order' && bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
-    var jmlPesanan = db.pesanan.filter(function (p) { return p.salesmanId === s.id && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter; }).length;
+    var order = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && k.salesmanId === s.id && k.status === 'Selesai' && k.hasil === 'Order' && bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
+    var jmlPesanan = db.pesanan.filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && p.salesmanId === s.id && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter; }).length;
     var t = db.target.find(function (x) { return x.salesmanId === s.id && x.bulan === bulanFilter; });
     var persen = t && t.targetOmzet > 0 ? Math.round(omzet / t.targetOmzet * 100) : null;
     totOmzet += omzet; totKunj += kunj; totPesanan += jmlPesanan; totOrder += order;
@@ -1355,14 +1836,14 @@ function renderLaporan() {
 
   var hasilList = ['Order', 'Follow-up', 'Kunjungan Rutin', 'Tidak Bertemu'];
   var rekapRows = hasilList.map(function (h) {
-    var jml = db.kunjungan.filter(function (k) { return k.status === 'Selesai' && k.hasil === h && bulanDariTanggal(k.tanggal) === bulanFilter && (!fS || k.salesmanId === fS); }).length;
+    var jml = db.kunjungan.filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && k.status === 'Selesai' && k.hasil === h && bulanDariTanggal(k.tanggal) === bulanFilter && (!fS || k.salesmanId === fS); }).length;
     return '<tr><td>' + h + '</td><td>' + jml + '</td><td>' + (totKunj ? Math.round(jml / totKunj * 100) : 0) + '%</td></tr>';
   }).join('');
   document.getElementById('rekapHasil').innerHTML =
     '<table class="tabel-harga"><tr><th>Hasil kunjungan</th><th>Jumlah</th><th>Persentase</th></tr>' + rekapRows + '</table>';
 
   var list = db.pesanan
-    .filter(function (p) { return p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter && (!fS || p.salesmanId === fS); })
+    .filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && p.status === 'Selesai' && bulanDariTanggal(p.tanggal) === bulanFilter && (!fS || p.salesmanId === fS); })
     .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
   var wadah = document.getElementById('daftarLaporanPesanan');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada pesanan Selesai pada ' + labelBulan(bulanFilter) + '.</p>'; return; }
@@ -1377,10 +1858,218 @@ document.getElementById('filterBulanLaporan').addEventListener('change', renderL
 document.getElementById('filterSalesmanLaporan').addEventListener('change', renderLaporan);
 document.getElementById('btnCetakLaporan').addEventListener('click', function () { window.print(); });
 
+
+/* ---------- Login ---------- */
+function applyRole() {
+  if (!currentUser) { return; }
+  document.body.setAttribute("data-role", currentUser.peran);
+  document.getElementById("userChip").textContent = currentUser.nama + " (" + labelPeran(currentUser.peran) + ")";
+  perbaruiBadge();
+  renderAll();
+}
+function doLogin() {
+  var u = document.getElementById("loginUser").value.trim().toLowerCase();
+  var p = document.getElementById("loginPass").value;
+  var found = null;
+  getUsers().forEach(function (x) { if (x.username.toLowerCase() === u && x.password === p) { found = x; } });
+  if (!found || found.aktif === false) { document.getElementById("loginError").hidden = false; return; }
+  currentUser = found;
+  try { sessionStorage.setItem(SESSION_KEY, found.username); } catch (e) { /* sesi tidak tersimpan */ }
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.getElementById("loginError").hidden = true;
+  document.getElementById("loginPass").value = "";
+  catatAudit("login", "Masuk sebagai " + found.username + " (" + labelPeran(found.peran) + ").");
+  applyRole();
+  toast("Selamat datang, " + found.nama);
+}
+document.getElementById("loginBtn").addEventListener("click", doLogin);
+document.getElementById("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+document.getElementById("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+document.getElementById("btnKeluar").addEventListener("click", function () {
+  if (currentUser) { catatAudit("login", "Keluar (" + currentUser.username + ")."); }
+  try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+  location.reload();
+});
+document.getElementById("selCabangAktif").addEventListener("change", function () { setCabang(this.value); });
+
+/* ---------- Render Persetujuan ---------- */
+function renderPersetujuan() {
+  var box = document.getElementById("daftarPersetujuan");
+  var box2 = document.getElementById("daftarPersetujuanSelesai");
+  if (!box || !box2) { return; }
+  var menunggu = db.persetujuan.filter(function (a) { return a.status === "menunggu"; });
+  var selesai = db.persetujuan.filter(function (a) { return a.status !== "menunggu"; }).slice(0, 10);
+  if (!menunggu.length) { box.innerHTML = '<div class="kosong">Tidak ada permintaan menunggu. Hapus kunjungan/pesanan/target/salesman dan pesanan Rp10.000.000 atau lebih akan muncul di sini.</div>'; }
+  else {
+    box.innerHTML = menunggu.map(function (a) {
+      return '<div class="item-bar" style="align-items:flex-start"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+        '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+        '<div class="dt">Diajukan ' + esc(String(a.dibuatPada || "").replace("T", " ").slice(0, 16)) + " oleh " + esc(a.dibuatOleh) + " · " + esc(namaCabang(a.cabang)) + "</div></div>" +
+        '<div style="display:flex;gap:6px"><button class="btn kecil hijau" data-putus="ya" data-id="' + a.id + '">Setujui</button>' +
+        '<button class="btn kecil merah" data-putus="tidak" data-id="' + a.id + '">Tolak</button></div></div>';
+    }).join("");
+  }
+  if (!selesai.length) { box2.innerHTML = '<div class="kosong">Belum ada keputusan.</div>'; }
+  else {
+    box2.innerHTML = selesai.map(function (a) {
+      return '<div class="item-bar"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + (a.status === "disetujui" ? "st-disetujui" : "st-ditolak") + '">' + (a.status === "disetujui" ? "Disetujui" : "Ditolak") + "</span></div>" +
+        '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+        '<div class="dt">Diputuskan oleh ' + esc(a.diputuskanOleh || "-") + " · " + esc(String(a.diputuskanPada || "").replace("T", " ").slice(0, 16)) + "</div></div></div>";
+    }).join("");
+  }
+  box.querySelectorAll("[data-putus]").forEach(function (b) {
+    b.addEventListener("click", function () { putuskanPersetujuan(Number(b.dataset.id), b.dataset.putus === "ya"); });
+  });
+}
+
+/* ---------- Render Audit Log ---------- */
+function renderAudit() {
+  var box = document.getElementById("daftarAudit");
+  if (!box) { return; }
+  var fu = document.getElementById("filterAuditUser");
+  if (fu) {
+    var pengguna = [];
+    db.audit.forEach(function (a) { if (pengguna.indexOf(a.user) === -1) { pengguna.push(a.user); } });
+    var nilai = fu.value;
+    fu.innerHTML = '<option value="">Semua pengguna</option>' + pengguna.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + "</option>"; }).join("");
+    fu.value = nilai;
+  }
+  var fa = document.getElementById("filterAuditAksi").value;
+  var list = db.audit.filter(function (a) {
+    if (fu && fu.value && a.user !== fu.value) { return false; }
+    if (fa && a.aksi !== fa) { return false; }
+    return true;
+  }).slice(0, 100);
+  if (!list.length) { box.innerHTML = '<div class="kosong">Belum ada catatan audit pada filter ini.</div>'; return; }
+  box.innerHTML = '<table class="data"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Cabang</th><th>Aksi</th><th>Detail</th></tr>' +
+    list.map(function (a) {
+      return "<tr><td>" + esc(String(a.waktu || "").replace("T", " ").slice(0, 19)) + "</td><td>" + esc(a.user) + "</td><td>" + esc(a.peran) + "</td><td>" + esc(namaCabang(a.cabang)) + "</td><td>" + esc(a.aksi) + "</td><td>" + esc(a.detail) + "</td></tr>";
+    }).join("") + "</table>";
+}
+["filterAuditUser", "filterAuditAksi"].forEach(function (id) {
+  document.getElementById(id).addEventListener("change", renderAudit);
+});
+
+/* ---------- Render Kelola Pengguna ---------- */
+function renderPengguna() {
+  var wadah = document.getElementById("daftarPengguna");
+  if (!wadah) { return; }
+  var list = getUsers();
+  if (!list.length) { wadah.innerHTML = '<div class="kosong">Belum ada pengguna.</div>'; return; }
+  wadah.innerHTML = list.map(function (u) {
+    var saya = currentUser && u.username === currentUser.username;
+    return '<div class="user-row"><div><div class="nm">' + esc(u.nama) + " (" + esc(u.username) + ') <span class="lencana st-baru">' + labelPeran(u.peran) + "</span>" + (u.aktif === false ? ' <span class="lencana st-batal">Nonaktif</span>' : "") + '</div><div class="dt">Admin: semua akses · Manajer: tanpa kelola pengguna · Sales: tanpa hapus data dan audit.</div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select data-peran-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">" +
+      ["admin", "manajer", "sales"].map(function (r) { return '<option value="' + r + '"' + (u.peran === r ? " selected" : "") + ">" + labelPeran(r) + "</option>"; }).join("") + "</select>" +
+      '<button class="btn kecil ghost" type="button" data-aktif-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">" + (u.aktif === false ? "Aktifkan" : "Nonaktifkan") + "</button>" +
+      '<button class="btn kecil merah" type="button" data-hapus-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">Hapus</button></div></div>";
+  }).join("");
+  wadah.querySelectorAll("[data-peran-user]").forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { renderPengguna(); return; }
+      var u = getUsers().find(function (x) { return x.username === sel.dataset.peranUser; });
+      if (!u) { return; }
+      var lama = u.peran;
+      u.peran = sel.value;
+      saveUsers(getUsers());
+      catatAudit("pengguna", "Peran diubah: " + u.nama + " (" + u.username + ") dari " + labelPeran(lama) + " ke " + labelPeran(u.peran) + ".");
+      renderPengguna(); toast("Peran " + u.nama + " diubah.");
+    });
+  });
+  wadah.querySelectorAll("[data-aktif-user]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+      var u = getUsers().find(function (x) { return x.username === b.dataset.aktifUser; });
+      if (!u) { return; }
+      u.aktif = u.aktif === false;
+      saveUsers(getUsers());
+      catatAudit("pengguna", "Pengguna " + (u.aktif ? "diaktifkan" : "dinonaktifkan") + ": " + u.nama + " (" + u.username + ").");
+      renderPengguna(); toast("Pengguna " + u.nama + (u.aktif ? " diaktifkan." : " dinonaktifkan."));
+    });
+  });
+  wadah.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+      var u = getUsers().find(function (x) { return x.username === b.dataset.hapusUser; });
+      if (!u) { return; }
+      if (!confirm("Hapus pengguna " + u.nama + " (" + u.username + ")?")) { return; }
+      usersCache = getUsers().filter(function (x) { return x.username !== u.username; });
+      saveUsers(usersCache);
+      catatAudit("pengguna", "Pengguna dihapus: " + u.nama + " (" + u.username + ").");
+      renderPengguna(); toast("Pengguna dihapus.");
+    });
+  });
+}
+document.getElementById("formPengguna").addEventListener("submit", function (e) {
+  e.preventDefault();
+  if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+  var username = document.getElementById("fUserBaru").value.trim().toLowerCase();
+  var nama = document.getElementById("fNamaUserBaru").value.trim();
+  var peranBaru = document.getElementById("fPeranUserBaru").value;
+  var pass = document.getElementById("fPassUserBaru").value;
+  if (!username || !nama || !pass) { toast("Isi nama pengguna, nama tampil, dan kata sandi."); return; }
+  if (getUsers().some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+  getUsers().push({ username: username, password: pass, nama: nama, peran: peranBaru, aktif: true });
+  saveUsers(getUsers());
+  catatAudit("pengguna", "Pengguna ditambahkan: " + nama + " (" + username + ", " + labelPeran(peranBaru) + ").");
+  document.getElementById("formPengguna").reset();
+  renderPengguna(); toast("Pengguna " + nama + " ditambahkan.");
+});
+
+/* ---------- Ringkasan per Cabang ---------- */
+function renderRingkasanCabang() {
+  var t = document.getElementById("tabelRingkasanCabang");
+  if (!t) { return; }
+  var bulanFilter = (document.getElementById("filterBulanLaporan") && document.getElementById("filterBulanLaporan").value) || bulanSekarang();
+  var rows = db.cabang.map(function (c) {
+    var omzet = db.pesanan.filter(function (p) { return (p.cabang || "pusat") === c.id && p.status === "Selesai" && bulanDariTanggal(p.tanggal) === bulanFilter; }).reduce(function (a, p) { return a + p.jumlah * p.hargaSatuan; }, 0);
+    var kunj = db.kunjungan.filter(function (k) { return (k.cabang || "pusat") === c.id && k.status === "Selesai" && bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
+    var psn = db.pesanan.filter(function (p) { return (p.cabang || "pusat") === c.id && p.status === "Selesai" && bulanDariTanggal(p.tanggal) === bulanFilter; }).length;
+    return "<tr><td>" + esc(c.nama) + "</td><td>" + fmtRp(omzet) + "</td><td>" + kunj + "</td><td>" + psn + "</td></tr>";
+  }).join("");
+  t.innerHTML = '<table class="tabel-harga"><tr><th>Cabang</th><th>Omzet</th><th>Kunjungan Selesai</th><th>Pesanan Selesai</th></tr>' + rows + "</table>";
+}
+
+/* ---------- Backup JSON & Pulihkan ---------- */
+document.getElementById("btnBackupJson").addEventListener("click", function () {
+  var paket = { aplikasi: "Sales Force Automation (SFA)", versi: "v1", dieksporPada: new Date().toISOString(), data: db, pengguna: getUsers() };
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" }));
+  a.download = "backup-sfa.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  catatAudit("ekspor", "Backup JSON diunduh.");
+  toast("Backup JSON diunduh.");
+});
+document.getElementById("filePulihkan").addEventListener("change", function () {
+  var f = this.files && this.files[0];
+  if (!f) { return; }
+  if (!butuh("pulihkan", "Hanya Admin/Manajer yang bisa memulihkan data.")) { this.value = ""; return; }
+  var input = this;
+  var rd = new FileReader();
+  rd.onload = function () {
+    try {
+      var paket = JSON.parse(rd.result);
+      var d = paket.data || paket;
+      if (!d || !Array.isArray(d.kunjungan) || !Array.isArray(d.pesanan)) { toast("File backup tidak valid."); return; }
+      db = normalisasiDb(d);
+      if (Array.isArray(paket.pengguna) && paket.pengguna.length) { usersCache = paket.pengguna.map(normalisasiPengguna); saveUsers(usersCache); }
+      save();
+      catatAudit("sistem", "Data dipulihkan dari file backup JSON.");
+      batalUbahRencana(); batalUbahTarget(); batalUbahPesanan();
+      renderAll(); toast("Data dipulihkan dari backup.");
+    } catch (err) { toast("File backup tidak bisa dibaca."); }
+  };
+  rd.readAsText(f);
+  input.value = "";
+});
+
 /* ---------- PANDUAN / RESET ---------- */
 document.getElementById('btnResetData').addEventListener('click', function () {
+  if (!butuh('reset', 'Hanya Admin/Manajer yang bisa mengembalikan data contoh.')) return;
   if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
-  db = dataContoh();
+  db = normalisasiDb(dataContoh());
+  catatAudit('sistem', 'Data contoh dikembalikan (oleh ' + (currentUser ? currentUser.username : 'sistem') + ').');
   save();
   batalUbahRencana(); batalUbahTarget(); batalUbahPesanan();
   renderAll();
@@ -1389,17 +2078,42 @@ document.getElementById('btnResetData').addEventListener('click', function () {
 
 /* ---------- INIT ---------- */
 function renderAll() {
+  isiSelectCabang();
   renderKunjungan();
   renderPesanan();
   renderTarget();
   renderMonitoring();
   renderLaporan();
+  renderPersetujuan();
+  renderAudit();
+  renderPengguna();
+  renderRingkasanCabang();
+  perbaruiBadge();
 }
-document.getElementById('tanggalHariIni').textContent = hariIniIndo();
-document.getElementById('filterTglRencana').value = tanggalHariIni();
-document.getElementById('filterTglMonitoring').value = tanggalHariIni();
-load();
-renderAll();
+function initAplikasi() {
+  document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+  document.getElementById('filterTglRencana').value = tanggalHariIni();
+  document.getElementById('filterTglMonitoring').value = tanggalHariIni();
+  renderAll();
+  window.__appSiap = true;
+}
+// Boot asinkron: siapkan kunci enkripsi, muat dari IndexedDB dulu (dengan
+// migrasi sekali dari localStorage lama), baru render.
+siapkanKripto().then(muatState).then(muatUsers).then(function () {
+  var saved = null;
+  try { saved = sessionStorage.getItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+  if (saved) {
+    var u = getUsers().find(function (x) { return x.username === saved && x.aktif !== false; });
+    if (u) {
+      currentUser = u;
+      document.getElementById("loginOverlay").classList.add("hidden");
+      document.body.setAttribute("data-role", u.peran);
+      document.getElementById("userChip").textContent = u.nama + " (" + labelPeran(u.peran) + ")";
+    }
+  }
+  initAplikasi();
+}).catch(function () { initAplikasi(); });
+
 </script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->

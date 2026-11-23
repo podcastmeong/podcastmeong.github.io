@@ -187,14 +187,50 @@
     .panel { display: none !important; }
     .panel.active { display: block !important; }
   }
-</style>
+
+  .bar-pengguna { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 13.5px; color: var(--muted); }
+  .bar-pengguna .chip-pengguna { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-weight: 700; color: var(--ink); }
+  .branch-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .branch-bar select { width: auto; min-width: 220px; }
+  .login-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+  .login-overlay.hidden { display: none; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; box-shadow: var(--shadow); }
+  .login-card h2 { margin: 0 0 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .login-card label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 5px; }
+  .login-card input { width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+  .login-error { color: var(--red); font-size: 13px; font-weight: 700; margin: 10px 0 0; }
+  .login-card .btn { width: 100%; margin-top: 16px; }
+  .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .item-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; }
+  .item-bar .nm { font-weight: 700; }
+  .item-bar .dt { color: var(--muted); font-size: 13px; }
+  .item-bar .harga { font-weight: 800; color: var(--blue); white-space: nowrap; }
+  .user-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .user-row select { width: auto; min-width: 120px; }
+  .audit-wrap { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.data th, table.data td { border-bottom: 1px solid var(--line); padding: 9px 8px; text-align: left; vertical-align: top; }
+  table.data th { background: var(--surface-2); font-size: 12.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+
+  body[data-role="manajer"] .hanya-admin, body[data-role="akuntan"] .hanya-admin { display: none !important; }
+  body[data-role="akuntan"] .hanya-manajer { display: none !important; }
+  body[data-role="akuntan"] .tab-btn[data-tab="persetujuan"], body[data-role="akuntan"] .tab-btn[data-tab="audit"] { display: none !important; }</style>
 </head>
 <body>
 <div class="wrap">
+  <div class="bar-pengguna">
+    <span class="chip-pengguna" id="userChip">—</span>
+    <button class="btn ghost kecil" id="btnKeluar" type="button">Keluar</button>
+  </div>
+
 
   <header class="hero">
     <h1>Aplikasi Akuntansi Distributor</h1>
-    <p>Pembukuan khusus perusahaan distributor: kas masuk &amp; keluar, biaya operasional, hutang supplier, piutang pelanggan, laporan laba rugi, dan laporan keuntungan — semua dalam satu file.</p>
+    <p>Pembukuan khusus perusahaan distributor: kas masuk &amp; keluar, biaya operasional, hutang supplier, piutang pelanggan, laporan laba rugi, dan laporan keuntungan — semua dalam satu file. Multi-cabang, tiga peran pengguna, alur persetujuan, dan penyimpanan IndexedDB terenkripsi — tetap offline di perangkat ini.</p>
     <div class="tanggal" id="tanggalHariIni"></div>
   </header>
 
@@ -205,6 +241,8 @@
     <button class="tab-btn" data-tab="piutang">Piutang</button>
     <button class="tab-btn" data-tab="labarugi">Laba Rugi</button>
     <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn" data-tab="audit">Audit Log</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
 
@@ -213,6 +251,11 @@
     <div class="page-head">
       <h2>Kas Masuk &amp; Keluar</h2>
       <p>Semua uang yang masuk dan keluar perusahaan. Kas masuk Penjualan dan kas keluar Pembelian Barang ikut dihitung ke laporan laba rugi; Pelunasan Piutang dan Bayar Hutang adalah pelunasan, bukan pendapatan/biaya.</p>
+    </div>
+    <div class="branch-bar">
+      <label for="selCabangAktif"><b>Cabang aktif:</b></label>
+      <select id="selCabangAktif"></select>
+      <span style="color:var(--muted); font-size:13.5px">Kas, biaya, hutang, piutang, dan statistik mengikuti cabang ini. Laporan menampilkan ringkasan semua cabang.</span>
     </div>
     <div class="grid-stat">
       <div class="stat hijau"><div class="label">Kas Masuk — <span class="label-bulan-kas"></span></div><div class="angka" id="statKasMasuk">Rp0</div></div>
@@ -250,7 +293,7 @@
           </div>
           <div class="field">
             <label for="fKasJumlah">Jumlah (Rp) *</label>
-            <input type="number" id="fKasJumlah" min="1" step="1000" placeholder="Contoh: 2500000" required>
+            <input type="number" id="fKasJumlah" min="1" step="any" placeholder="Contoh: 2500000" required>
           </div>
           <div class="field">
             <label for="fKasKeterangan">Keterangan *</label>
@@ -295,6 +338,36 @@
       </div>
       <div id="daftarKas"></div>
     </div>
+    <div class="card hanya-admin">
+      <h3>Pengguna Aplikasi</h3>
+      <p class="sub">Hanya Admin yang bisa menambah pengguna, mengubah peran, atau menonaktifkan akun. Akun demo: admin / manajer / akuntan.</p>
+      <form id="formPengguna">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fUserBaru">Nama pengguna *</label>
+            <input type="text" id="fUserBaru" placeholder="Contoh: budi" required>
+          </div>
+          <div class="field">
+            <label for="fNamaUserBaru">Nama tampil *</label>
+            <input type="text" id="fNamaUserBaru" placeholder="Contoh: Budi Santoso" required>
+          </div>
+          <div class="field">
+            <label for="fPeranUserBaru">Peran *</label>
+            <select id="fPeranUserBaru">
+              <option value="akuntan">Akuntan</option>
+              <option value="manajer">Manajer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fPassUserBaru">Kata sandi *</label>
+            <input type="password" id="fPassUserBaru" placeholder="Minimal 4 karakter" required>
+          </div>
+        </div>
+        <button type="submit" class="btn kecil" id="btnSimpanPengguna">+ Tambah Pengguna</button>
+      </form>
+      <div id="daftarPengguna" style="margin-top:14px"></div>
+    </div>
   </section>
 
   <!-- ============ BIAYA ============ -->
@@ -332,7 +405,7 @@
           </div>
           <div class="field">
             <label for="fBiayaJumlah">Jumlah (Rp) *</label>
-            <input type="number" id="fBiayaJumlah" min="1" step="1000" placeholder="Contoh: 4500000" required>
+            <input type="number" id="fBiayaJumlah" min="1" step="any" placeholder="Contoh: 4500000" required>
           </div>
           <div class="field">
             <label for="fBiayaKeterangan">Keterangan *</label>
@@ -398,7 +471,7 @@
           </div>
           <div class="field">
             <label for="fBayarHutangJumlah">Jumlah bayar (Rp) *</label>
-            <input type="number" id="fBayarHutangJumlah" min="1" step="1000" placeholder="Contoh: 2500000" required>
+            <input type="number" id="fBayarHutangJumlah" min="1" step="any" placeholder="Contoh: 2500000" required>
           </div>
           <div class="field">
             <label for="fBayarHutangCara">Cara bayar *</label>
@@ -435,7 +508,7 @@
           </div>
           <div class="field">
             <label for="fHutangJumlah">Jumlah hutang (Rp) *</label>
-            <input type="number" id="fHutangJumlah" min="1" step="1000" placeholder="Contoh: 6000000" required>
+            <input type="number" id="fHutangJumlah" min="1" step="any" placeholder="Contoh: 6000000" required>
           </div>
           <div class="field">
             <label for="fHutangKeterangan">Keterangan</label>
@@ -489,7 +562,7 @@
           </div>
           <div class="field">
             <label for="fBayarPiutangJumlah">Jumlah terima (Rp) *</label>
-            <input type="number" id="fBayarPiutangJumlah" min="1" step="1000" placeholder="Contoh: 1500000" required>
+            <input type="number" id="fBayarPiutangJumlah" min="1" step="any" placeholder="Contoh: 1500000" required>
           </div>
           <div class="field">
             <label for="fBayarPiutangCara">Cara terima *</label>
@@ -526,7 +599,7 @@
           </div>
           <div class="field">
             <label for="fPiutangJumlah">Jumlah piutang (Rp) *</label>
-            <input type="number" id="fPiutangJumlah" min="1" step="1000" placeholder="Contoh: 5500000" required>
+            <input type="number" id="fPiutangJumlah" min="1" step="any" placeholder="Contoh: 5500000" required>
           </div>
           <div class="field">
             <label for="fPiutangKeterangan">Keterangan</label>
@@ -620,6 +693,69 @@
       <p class="sub">Total sisa piutang yang masih harus ditagih dari setiap pelanggan (semua bulan).</p>
       <div class="tabel-wrap"><div id="tabelLaporanPiutang"></div></div>
     </div>
+    <div class="card">
+      <h3>Ringkasan per Cabang</h3>
+      <p class="sub"></p>
+      <div class="tabel-wrap"><div id="tabelRingkasanCabang"></div></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; Pulihkan Data</h3>
+      <p class="sub">Cadangkan seluruh data (termasuk pengguna, persetujuan, dan audit) sebagai file JSON, atau pulihkan dari file backup. Pulihkan hanya bisa dilakukan Admin/Manajer.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnBackupJson">Backup JSON</button>
+        <label class="btn kecil ghost" for="filePulihkan" style="display:inline-flex;align-items:center;cursor:pointer">Pulihkan dari JSON</label>
+        <input type="file" id="filePulihkan" accept="application/json,.json" style="display:none">
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ PERSETUJUAN ============ -->
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Permintaan yang butuh persetujuan Admin/Manajer: hapus transaksi kas, hapus biaya, hapus hutang, hapus piutang, dan kas keluar Rp5.000.000 atau lebih. Keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Persetujuan</h3>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Keputusan Sebelumnya</h3>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <!-- ============ AUDIT LOG ============ -->
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Riwayat aksi di aplikasi: siapa, kapan, dari cabang mana, dan apa yang dilakukan. Hanya Admin dan Manajer yang bisa melihat tab ini.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">login</option>
+            <option value="kas">kas</option>
+            <option value="biaya">biaya</option>
+            <option value="hutang">hutang</option>
+            <option value="piutang">piutang</option>
+            <option value="persetujuan">persetujuan</option>
+            <option value="ekspor">ekspor</option>
+            <option value="pengguna">pengguna</option>
+            <option value="sistem">sistem</option>
+          </select>
+        </div>
+      </div>
+      <div class="audit-wrap"><div id="daftarAudit"></div></div>
+    </div>
   </section>
 
   <!-- ============ PANDUAN ============ -->
@@ -637,7 +773,10 @@
         <li>Bila menjual barang secara kredit, catat di tab <b>Piutang</b>: pelanggan, jumlah, dan jatuh tempo. Terima pelunasan lewat tombol <b>Catat Pelunasan</b> — kas masuk tercatat otomatis.</li>
         <li>Di tab <b>Laba Rugi</b>, pilih bulan dan lihat laba bersih: pendapatan − pembelian barang − biaya operasional.</li>
         <li>Di tab <b>Laporan</b>, lihat rekap bulanan lengkap beserta sisa hutang per supplier dan sisa piutang per pelanggan — bisa dicetak atau disimpan sebagai PDF.</li>
-        <li>Semua data tersimpan otomatis di perangkat ini setiap kali ada perubahan.</li>
+        <li>Masuk dengan akun Anda (Admin / Manajer / Akuntan) — akun demo: <b>admin</b> / <b>admin123</b>, <b>manajer</b> / <b>manajer123</b>, <b>akuntan</b> / <b>akuntan123</b>. Sesi berlaku selama tab masih terbuka.</li>
+        <li>Pilih <b>Cabang aktif</b> di tab Kas — kas, biaya, hutang, piutang, dan statistik mengikuti cabang itu; laporan menampilkan ringkasan semua cabang.</li>
+        <li>Aksi sensitif (hapus transaksi kas/biaya/hutang/piutang, dan kas keluar Rp5.000.000 atau lebih) tidak langsung jalan — diajukan ke tab <b>Persetujuan</b> dan baru berlaku bila disetujui Admin/Manajer. Semua tercatat di tab <b>Audit Log</b>.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini (IndexedDB + enkripsi) setiap kali ada perubahan. Cadangkan berkala dengan tombol <b>Backup JSON</b> di tab Laporan.</li>
       </ol>
     </div>
     <div class="card">
@@ -652,25 +791,21 @@
     </div>
     <div class="card">
       <h3>Harga aplikasi</h3>
-      <table class="tabel-harga">
-        <tr><th>Paket</th><th>Beli sekali</th><th>Langganan / bulan</th></tr>
-        <tr><td>Basic</td><td>Rp499.000</td><td>Rp49.000</td></tr>
-        <tr><td>Professional</td><td>Rp999.000</td><td>Rp99.000</td></tr>
-        <tr><td>Business</td><td>Rp1.999.000</td><td>Rp199.000</td></tr>
-      </table>
+      <p style="font-size:14px">Harga: <b>Rp999.000</b> (sekali bayar). APK Android <b>+Rp400.000</b>.</p>
+      <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
       <p style="font-size:14px">Pemesanan dan pertanyaan lewat WhatsApp: <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Garansi</h3>
-      <p style="font-size:14px">Perbaikan bug/error gratis: <b>Basic 30 hari</b>, <b>Professional 60 hari</b>, <b>Business 90 hari</b> sejak pembelian. Berlangganan: garansi dan dukungan selama langganan aktif. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
+      <p style="font-size:14px">Perbaikan bug/error gratis <b>30 hari</b> sejak pembelian. Klaim garansi via WhatsApp <b>0812-4798-6994</b> dengan menyertakan video atau tangkapan layar bug-nya.</p>
     </div>
     <div class="card">
       <h3>Request khusus (penyesuaian)</h3>
-      <p style="font-size:14px">Butuh penyesuaian di luar paket standar? Biaya tambahan per permintaan: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> per permintaan. Besar biaya diputuskan per permintaan dan disepakati dulu lewat WhatsApp sebelum pengerjaan; konsultasi gratis.</p>
+      <p style="font-size:14px">Butuh fitur tambahan di luar versi standar? Biaya penyesuaian: <b>Kecil +Rp100.000</b>, <b>Sedang +Rp250.000</b>, <b>Besar +Rp500.000</b>. Waktu pengerjaan <b>7 hari kalender</b> sejak permintaan disetujui. Diskusikan dulu lewat WhatsApp <b>0812-4798-6994</b>.</p>
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data kas, biaya, hutang, piutang, dan laporan <b>hanya tersimpan di perangkat ini</b> (localStorage browser perangkat yang membuka aplikasi) — <b>data tersimpan PER PERANGKAT</b> dan tidak tersinkron ke perangkat lain. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini <b>tidak terhubung ke bank sungguhan</b> dan <b>tidak punya multi-user</b>: semua transaksi diinput manual dan semua pengguna perangkat ini melihat data yang sama. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dan penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
+      <p style="font-size:14px">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data kas, biaya, hutang, piutang, dan laporan <b>hanya tersimpan di perangkat ini</b> — sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b>. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tidak tersinkron ke perangkat lain</b> dan tidak ada backup cloud otomatis — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini <b>tidak terhubung ke bank sungguhan</b>: semua transaksi diinput manual. Aplikasi ini punya tiga peran pengguna (Admin, Manajer, Akuntan) di perangkat ini. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dan penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut.</p>
       <div style="margin-top:14px">
         <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
       </div>
@@ -678,9 +813,25 @@
   </section>
 
   <footer>
-    <p><b>Aplikasi Akuntansi Distributor v1.</b> Data hanya tersimpan di perangkat ini (localStorage), tanpa sinkron lintas perangkat dan tanpa integrasi bank. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Aplikasi Akuntansi Distributor v1.</b> Multi-cabang, 3 peran, alur persetujuan, IndexedDB + enkripsi, offline. Harga Rp999.000 (sekali bayar). APK Android +Rp400.000. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat dan tanpa integrasi bank. Garansi perbaikan bug gratis 30 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20Aplikasi%20Akuntansi%20Distributor." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
+</div>
+
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h2>Aplikasi Akuntansi Distributor</h2>
+    <p class="login-sub">Masuk untuk memakai aplikasi.</p>
+    <label for="loginUser">Nama pengguna</label>
+    <input type="text" id="loginUser" autocomplete="username">
+    <label for="loginPass">Kata sandi</label>
+    <input type="password" id="loginPass" autocomplete="current-password">
+    <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
+    <button class="btn" id="loginBtn" type="button">Masuk</button>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses)<br>Manajer: <b>manajer</b> / <b>manajer123</b> (tanpa kelola pengguna)<br>Akuntan: <b>akuntan</b> / <b>akuntan123</b> (tanpa hapus data dan audit)</p>
+    <p class="login-note">Sesi berlaku selama tab masih terbuka — tutup tab dan buka lagi untuk masuk kembali.</p>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -763,15 +914,312 @@ function dataContoh() {
 }
 
 var db = null;
-function load() {
-  try {
-    var raw = localStorage.getItem(KEY);
-    if (raw) { db = JSON.parse(raw); return; }
-  } catch (e) { db = null; }
-  db = dataContoh();
+/* ---------- Penyimpanan internal: IndexedDB + enkripsi WebCrypto (AES-GCM 256) ---------- */
+// Internal: penyimpanan terenkripsi (IndexedDB + enkripsi, multi-cabang, peran,
+// persetujuan, audit). Data kerja tetap di memori (db); IndexedDB adalah tempat
+// simpan utamanya (asinkron). localStorage hanya dipakai untuk migrasi sekali
+// dari versi lama dan sebagai cadangan bila IndexedDB tidak ada.
+// JUJUR: kunci enkripsi dibuat acak per perangkat dan disimpan di IndexedDB
+// yang sama — ini enkripsi demo, bukan keamanan tingkat enterprise, karena
+// kunci dan datanya berada di perangkat yang sama.
+var DB_NAMA = "akuntansiDistributorDB";
+var DB_VERSI = 1;
+var dbSiap = null;
+var infoSimpan = { jenis: "indexeddb", enkripsi: false, termigrasi: false };
+var antreSimpan = Promise.resolve();
+var kunciKripto = null;
+var usersCache = null;
+var SESSION_KEY = KEY + ".session";
+var PERAN_VALID = ["admin", "manajer", "akuntan"];
+var DEFAULT_USERS = [
+  { username: "admin", password: "admin123", nama: "Admin", peran: "admin", aktif: true },
+  { username: "manajer", password: "manajer123", nama: "Manajer", peran: "manajer", aktif: true },
+  { username: "akuntan", password: "akuntan123", nama: "Akuntan", peran: "akuntan", aktif: true }
+];
+
+function idbTersedia() { return typeof indexedDB !== "undefined"; }
+function bukaDB() {
+  if (dbSiap) { return dbSiap; }
+  dbSiap = new Promise(function (selesai) {
+    if (!idbTersedia()) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+    var req;
+    try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+    req.onupgradeneeded = function () {
+      var d = req.result;
+      if (!d.objectStoreNames.contains("kv")) { d.createObjectStore("kv"); }
+    };
+    req.onsuccess = function () { selesai(req.result); };
+    req.onerror = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+    req.onblocked = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+  });
+  return dbSiap;
+}
+function idbGet(kunci) {
+  return bukaDB().then(function (d) {
+    if (!d) { return undefined; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction("kv", "readonly"); req = tx.objectStore("kv").get(kunci); }
+      catch (e) { selesai(undefined); return; }
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { selesai(undefined); };
+    });
+  });
+}
+function idbPut(kunci, nilai) {
+  return bukaDB().then(function (d) {
+    if (!d) { return false; }
+    return new Promise(function (selesai) {
+      var tx, req;
+      try { tx = d.transaction("kv", "readwrite"); req = tx.objectStore("kv").put(nilai, kunci); }
+      catch (e) { selesai(false); return; }
+      req.onsuccess = function () { selesai(true); };
+      req.onerror = function () { selesai(false); };
+    });
+  });
+}
+function lsCadanganGet(kunci) { try { var r = localStorage.getItem(KEY + ".idb-" + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(KEY + ".idb-" + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+function simpanKV(kunci, nilai) {
+  return idbPut(kunci, nilai).then(function (ok) {
+    if (!ok) { lsCadanganPut(kunci, nilai); }
+    return true;
+  });
+}
+function muatKV(kunci) {
+  return idbGet(kunci).then(function (v) {
+    if (v !== undefined) { return v; }
+    return lsCadanganGet(kunci);
+  });
+}
+function b64DariBuffer(buf) { var b = new Uint8Array(buf); var s = ""; for (var i = 0; i < b.length; i++) { s += String.fromCharCode(b[i]); } return btoa(s); }
+function bufferDariB64(s) { var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+function siapkanKripto() {
+  if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+  return muatKV("kunci").then(function (jwk) {
+    var janji = jwk
+      ? crypto.subtle.importKey("jwk", jwk, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+      : crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+          .then(function (k) { return crypto.subtle.exportKey("jwk", k).then(function (j) { return simpanKV("kunci", j).then(function () { return k; }); }); });
+    return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+      .catch(function () { infoSimpan.enkripsi = false; return false; });
+  });
+}
+function enkripData(obj) {
+  if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+    .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+    .catch(function () { return { v: 0, data: obj }; });
+}
+function dekripData(paket) {
+  if (!paket) { return Promise.resolve(null); }
+  if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+    .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+    .catch(function () { return null; });
+}
+// save() tetap bisa dipanggil sinkron dari kode lama (fire-and-forget berantre).
+function save() {
+  if (!db) { return; }
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(db).then(function (paket) { return simpanKV("state", paket); });
+  }).catch(function () { /* simpan gagal: data tetap di memori */ });
+}
+function normalisasiDb(obj) {
+  if (!obj || typeof obj !== "object") { obj = dataContoh(); }
+  if (!Array.isArray(obj.cabang) || !obj.cabang.length) {
+    obj.cabang = [
+      { id: "pusat", nama: "Cabang Pusat", alamat: "Jl. Raya Bogor No. 12, Jakarta Timur" },
+      { id: "jaktim", nama: "Cabang Jakarta Timur", alamat: "Jl. Pahlawan Revolusi No. 8, Jakarta Timur" },
+      { id: "bekasi", nama: "Cabang Bekasi", alamat: "Jl. Ahmad Yani No. 45, Bekasi" }
+    ];
+  }
+  if (!obj.cabangAktif) { obj.cabangAktif = "pusat"; }
+["kas", "biaya", "hutang", "piutang"].forEach(function (k) {
+    if (!Array.isArray(obj[k])) { obj[k] = []; }
+  });
+  obj.kas.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.biaya.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.hutang.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  obj.piutang.forEach(function (x) { if (!x.cabang) { x.cabang = "pusat"; } });
+  if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+  if (!Array.isArray(obj.audit)) { obj.audit = []; }
+  if (typeof obj.nextPersetujuan !== "number") { obj.nextPersetujuan = (obj.persetujuan.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0)) + 1; }
+  return obj;
+}
+function muatState() {
+  return muatKV("state").then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (obj) {
+        if (obj && Array.isArray(obj.kas) && Array.isArray(obj.biaya)) { db = normalisasiDb(obj); return; }
+        db = normalisasiDb(dataContoh()); save();
+      });
+    }
+    // Migrasi SATU KALI dari localStorage lama
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (lama && Array.isArray(lama.kas) && Array.isArray(lama.biaya)) {
+          db = normalisasiDb(lama);
+          infoSimpan.termigrasi = true;
+          db.audit.unshift({ waktu: new Date().toISOString(), user: "sistem", peran: "-", cabang: "pusat", aksi: "sistem", detail: "Data dimigrasikan dari localStorage ke IndexedDB terenkripsi." });
+          try { localStorage.setItem(KEY + ".cadangan-lama", raw); localStorage.removeItem(KEY); } catch (e) {}
+          save();
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke data contoh */ }
+    db = normalisasiDb(dataContoh());
+    save();
+  }).catch(function () {
+    db = normalisasiDb(dataContoh());
+    save();
+  });
+}
+
+/* ---------- Pengguna & sesi ---------- */
+function normalisasiPengguna(u) {
+  var peran = PERAN_VALID.indexOf(u.peran) === -1 ? "akuntan" : u.peran;
+  return { username: String(u.username || "").toLowerCase(), password: String(u.password || ""), nama: u.nama || u.username, peran: peran, aktif: u.aktif !== false };
+}
+function getUsers() {
+  if (!usersCache) { usersCache = DEFAULT_USERS.map(normalisasiPengguna); }
+  return usersCache;
+}
+function saveUsers(users) {
+  usersCache = users;
+  antreSimpan = antreSimpan.then(function () {
+    return enkripData(users).then(function (paket) { return simpanKV("pengguna", paket); });
+  }).catch(function () { /* simpan gagal */ });
+}
+function muatUsers() {
+  return muatKV("pengguna").then(function (paket) {
+    if (paket !== undefined) {
+      return dekripData(paket).then(function (arr) {
+        if (Array.isArray(arr) && arr.length) { usersCache = arr.map(normalisasiPengguna); return; }
+        usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+      });
+    }
+    try {
+      var raw = localStorage.getItem(KEY + ".pengguna");
+      if (raw) {
+        var lama = JSON.parse(raw);
+        if (Array.isArray(lama) && lama.length) {
+          usersCache = lama.map(normalisasiPengguna);
+          try { localStorage.setItem(KEY + ".pengguna.cadangan-lama", raw); localStorage.removeItem(KEY + ".pengguna"); } catch (e) {}
+          saveUsers(usersCache);
+          return;
+        }
+      }
+    } catch (e) { /* lanjut ke default */ }
+    usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+    saveUsers(usersCache);
+  }).catch(function () {
+    usersCache = DEFAULT_USERS.map(normalisasiPengguna);
+  });
+}
+var currentUser = null;
+function labelPeran(r) { return { admin: "Admin", manajer: "Manajer", akuntan: "Akuntan" }[r] || r; }
+function peran() { return currentUser ? currentUser.peran : null; }
+function bisa(aksi) {
+  var r = peran();
+  if (!r) { return false; }
+  if (aksi === "kelola_pengguna") { return r === "admin"; }
+  if (aksi === "audit" || aksi === "putuskan" || aksi === "hapus" || aksi === "reset" || aksi === "pulihkan") { return r === "admin" || r === "manajer"; }
+  return true;
+}
+function butuh(aksi, pesan) {
+  if (bisa(aksi)) { return true; }
+  toast(pesan || "Akses ditolak untuk peran Anda.");
+  return false;
+}
+function namaCabang(id) {
+  var c = (db.cabang || []).find(function (x) { return x.id === id; });
+  return c ? c.nama : id;
+}
+function cabangAktif() { return (db && db.cabangAktif) || "pusat"; }
+function isiSelectCabang() {
+  var sel = document.getElementById("selCabangAktif");
+  if (!sel || !db.cabang) { return; }
+  sel.innerHTML = db.cabang.map(function (c) { return '<option value="' + c.id + '">' + esc(c.nama) + "</option>"; }).join("");
+  sel.value = cabangAktif();
+}
+function setCabang(id) {
+  if (!db.cabang.some(function (c) { return c.id === id; })) { return; }
+  db.cabangAktif = id;
+  save();
+  catatAudit("sistem", "Cabang aktif diubah ke " + namaCabang(id) + ".");
+  renderAll();
+}
+/* ---------- Audit log ---------- */
+function catatAudit(aksi, detail) {
+  if (!db) { return; }
+  if (!Array.isArray(db.audit)) { db.audit = []; }
+  db.audit.unshift({
+    waktu: new Date().toISOString(),
+    user: currentUser ? currentUser.username : "sistem",
+    peran: currentUser ? currentUser.peran : "-",
+    cabang: cabangAktif(),
+    aksi: aksi, detail: detail || ""
+  });
+  if (db.audit.length > 200) { db.audit.length = 200; }
   save();
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+/* ---------- Persetujuan ---------- */
+function labelTipePersetujuan(t) {
+  return { hapus_kas: "Hapus transaksi kas", hapus_biaya: "Hapus biaya", hapus_hutang: "Hapus hutang", hapus_piutang: "Hapus piutang", kas_keluar_besar: "Kas keluar besar" }[t] || t;
+}
+function buatPersetujuan(tipe, detail, ringkasan) {
+  var id = db.nextPersetujuan++;
+  db.persetujuan.unshift({
+    id: id, tipe: tipe, cabang: cabangAktif(),
+    dibuatOleh: currentUser ? currentUser.username : "tamu",
+    dibuatPada: new Date().toISOString(),
+    status: "menunggu", detail: detail, ringkasan: ringkasan || "",
+    diputuskanOleh: "", diputuskanPada: ""
+  });
+  catatAudit("persetujuan", "Permintaan persetujuan #" + id + " (" + labelTipePersetujuan(tipe) + "): " + (ringkasan || "") + ".");
+  save(); perbaruiBadge();
+  return id;
+}
+function terapkanPersetujuan(apr) {
+  var d = apr.detail || {};
+  if (apr.tipe === "hapus_kas") {
+    db.kas = db.kas.filter(function (x) { return x.id !== d.kasId; });
+  } else if (apr.tipe === "hapus_biaya") {
+    db.biaya = db.biaya.filter(function (x) { return x.id !== d.biayaId; });
+  } else if (apr.tipe === "hapus_hutang") {
+    db.hutang = db.hutang.filter(function (x) { return x.id !== d.hutangId; });
+  } else if (apr.tipe === "hapus_piutang") {
+    db.piutang = db.piutang.filter(function (x) { return x.id !== d.piutangId; });
+  } else if (apr.tipe === "kas_keluar_besar") {
+    if (d.mode === "baru") { db.kas.push(d.data); }
+    else { var k = db.kas.find(function (x) { return x.id === d.data.id; }); if (k) { Object.assign(k, d.data); } }
+  }
+}
+function putuskanPersetujuan(id, setuju) {
+  if (!bisa("putuskan")) { toast("Hanya Admin/Manajer yang bisa memutuskan persetujuan."); return; }
+  var apr = db.persetujuan.find(function (a) { return a.id === id; });
+  if (!apr || apr.status !== "menunggu") { toast("Permintaan ini sudah diputuskan."); return; }
+  apr.status = setuju ? "disetujui" : "ditolak";
+  apr.diputuskanOleh = currentUser.username;
+  apr.diputuskanPada = new Date().toISOString();
+  if (setuju) { terapkanPersetujuan(apr); }
+  catatAudit("persetujuan", "Permintaan #" + id + " (" + labelTipePersetujuan(apr.tipe) + ") " + (setuju ? "DISETUJUI" : "DITOLAK") + " oleh " + currentUser.username + ".");
+  save(); renderAll();
+  toast("Permintaan #" + id + (setuju ? " disetujui." : " ditolak."));
+}
+function perbaruiBadge() {
+  var bpp = document.getElementById("badgePersetujuan");
+  if (!bpp) { return; }
+  var menunggu = db ? db.persetujuan.filter(function (a) { return a.status === "menunggu"; }).length : 0;
+  var tampil = menunggu > 0 && bisa("putuskan");
+  bpp.hidden = !tampil;
+  bpp.textContent = menunggu;
+}
+
 
 var toastTimer = null;
 function toast(pesan) {
@@ -785,22 +1233,22 @@ function toast(pesan) {
 /* ---------- HITUNGAN ---------- */
 function kasBulan(bulan, jenis, kategori) {
   return db.kas
-    .filter(function (k) { return bulanDariTanggal(k.tanggal) === bulan && (!jenis || k.jenis === jenis) && (!kategori || k.kategori === kategori); })
+    .filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(k.tanggal) === bulan && (!jenis || k.jenis === jenis) && (!kategori || k.kategori === kategori); })
     .reduce(function (a, k) { return a + k.jumlah; }, 0);
 }
 function biayaBulan(bulan) {
   return db.biaya
-    .filter(function (b) { return bulanDariTanggal(b.tanggal) === bulan; })
+    .filter(function (b) { return (b.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(b.tanggal) === bulan; })
     .reduce(function (a, b) { return a + b.jumlah; }, 0);
 }
 function penjualanKreditBulan(bulan) {
   return db.piutang
-    .filter(function (p) { return bulanDariTanggal(p.tanggal) === bulan; })
+    .filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(p.tanggal) === bulan; })
     .reduce(function (a, p) { return a + p.jumlah; }, 0);
 }
 function pembelianKreditBulan(bulan) {
   return db.hutang
-    .filter(function (h) { return bulanDariTanggal(h.tanggal) === bulan; })
+    .filter(function (h) { return (h.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(h.tanggal) === bulan; })
     .reduce(function (a, h) { return a + h.jumlah; }, 0);
 }
 function hitungLabaRugi(bulan) {
@@ -829,10 +1277,10 @@ function lewatTempo(item) {
 }
 function semuaBulan() {
   var set = {};
-  db.kas.forEach(function (k) { set[bulanDariTanggal(k.tanggal)] = true; });
-  db.biaya.forEach(function (b) { set[bulanDariTanggal(b.tanggal)] = true; });
-  db.hutang.forEach(function (h) { set[bulanDariTanggal(h.tanggal)] = true; });
-  db.piutang.forEach(function (p) { set[bulanDariTanggal(p.tanggal)] = true; });
+  db.kas.forEach(function (k) { if ((k.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(k.tanggal)] = true; } });
+  db.biaya.forEach(function (b) { if ((b.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(b.tanggal)] = true; } });
+  db.hutang.forEach(function (h) { if ((h.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(h.tanggal)] = true; } });
+  db.piutang.forEach(function (p) { if ((p.cabang || 'pusat') === cabangAktif()) { set[bulanDariTanggal(p.tanggal)] = true; } });
   var arr = Object.keys(set).sort();
   if (arr.indexOf(bulanSekarang()) === -1) arr.push(bulanSekarang());
   return arr.sort();
@@ -851,6 +1299,7 @@ function setLabelBulan(cls, bulan) {
 document.querySelectorAll('.tab-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
     document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    if ((btn.dataset.tab === 'persetujuan' || btn.dataset.tab === 'audit') && !bisa('audit')) { toast('Hanya Admin/Manajer yang bisa membuka tab ini.'); return; }
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
@@ -881,12 +1330,12 @@ function renderKas() {
   document.getElementById('statKasMasuk').textContent = fmtRp(masuk);
   document.getElementById('statKasKeluar').textContent = fmtRp(keluar);
   document.getElementById('statSelisihKas').textContent = fmtRp(masuk - keluar);
-  document.getElementById('statJmlKas').textContent = db.kas.filter(function (k) { return bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
+  document.getElementById('statJmlKas').textContent = db.kas.filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(k.tanggal) === bulanFilter; }).length;
 
   var fJ = document.getElementById('filterJenisKas').value;
   var fK = document.getElementById('filterKategoriKas').value;
   var list = db.kas.slice().sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); })
-    .filter(function (k) { return bulanDariTanggal(k.tanggal) === bulanFilter && (!fJ || k.jenis === fJ) && (!fK || k.kategori === fK); });
+    .filter(function (k) { return (k.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(k.tanggal) === bulanFilter && (!fJ || k.jenis === fJ) && (!fK || k.kategori === fK); });
   var wadah = document.getElementById('daftarKas');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada transaksi kas pada ' + labelBulan(bulanFilter) + ' yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (k) {
@@ -906,9 +1355,10 @@ function renderKas() {
     b.addEventListener('click', function () {
       var k = db.kas.find(function (x) { return x.id === b.dataset.hapusKas; });
       if (!k) return;
-      if (!confirm('Hapus transaksi kas "' + k.keterangan + '" (' + fmtRp(k.jumlah) + ')?')) return;
-      db.kas = db.kas.filter(function (x) { return x.id !== k.id; });
-      save(); renderAll(); toast('Transaksi kas dihapus.');
+      if (!butuh('hapus', 'Akuntan tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus transaksi kas "' + k.keterangan + '" (' + fmtRp(k.jumlah) + ')? Bila disetujui Admin/Manajer, transaksi dihapus.')) return;
+      buatPersetujuan('hapus_kas', { kasId: k.id }, 'Hapus transaksi kas ' + k.jenis + ' ' + fmtRp(k.jumlah) + ' — ' + k.keterangan + '.');
+      renderAll(); toast('Penghapusan transaksi kas diajukan untuk persetujuan.');
     });
   });
 }
@@ -948,12 +1398,29 @@ document.getElementById('formKas').addEventListener('submit', function (e) {
     keterangan: document.getElementById('fKasKeterangan').value.trim()
   };
   if (!data.tanggal || !data.keterangan || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  data.cabang = cabangAktif();
+  if (data.jenis === 'Keluar' && data.jumlah >= 5000000) {
+    if (editKasId) {
+      var kLama = db.kas.find(function (x) { return x.id === editKasId; });
+      data.id = kLama.id;
+      buatPersetujuan('kas_keluar_besar', { mode: 'ubah', data: data },
+        'Ubah kas keluar ' + fmtRp(data.jumlah) + ' — ' + data.keterangan + ' (≥ Rp5.000.000).');
+    } else {
+      data.id = uid();
+      buatPersetujuan('kas_keluar_besar', { mode: 'baru', data: data },
+        'Kas keluar baru ' + fmtRp(data.jumlah) + ' — ' + data.keterangan + ' (≥ Rp5.000.000).');
+    }
+    toast('Kas keluar Rp5.000.000 atau lebih diajukan untuk persetujuan Admin/Manajer.');
+    save(); batalUbahKas(); renderAll();
+    return;
+  }
   if (editKasId) {
     var k = db.kas.find(function (x) { return x.id === editKasId; });
-    if (k) Object.assign(k, data);
+    if (k) { Object.assign(k, data); catatAudit('kas', 'Transaksi kas diubah: ' + k.keterangan + ' (' + fmtRp(k.jumlah) + ').'); }
     toast('Transaksi kas diperbarui.');
   } else {
     db.kas.push(Object.assign({ id: uid() }, data));
+    catatAudit('kas', 'Transaksi kas baru ' + data.jenis + ' ' + fmtRp(data.jumlah) + ' — ' + data.keterangan + '.');
     toast('Transaksi kas ditambahkan.');
   }
   save(); batalUbahKas(); renderAll();
@@ -970,7 +1437,7 @@ function renderBiaya() {
   isiSelectBulan(document.getElementById('filterBulanBiaya'), bulanFilter);
   bulanFilter = document.getElementById('filterBulanBiaya').value;
   setLabelBulan('label-bulan-biaya', bulanFilter);
-  var listBulan = db.biaya.filter(function (b) { return bulanDariTanggal(b.tanggal) === bulanFilter; });
+  var listBulan = db.biaya.filter(function (b) { return (b.cabang || 'pusat') === cabangAktif() && bulanDariTanggal(b.tanggal) === bulanFilter; });
   var total = listBulan.reduce(function (a, b) { return a + b.jumlah; }, 0);
   document.getElementById('statTotalBiaya').textContent = fmtRp(total);
   document.getElementById('statJmlBiaya').textContent = listBulan.length;
@@ -1009,9 +1476,10 @@ function renderBiaya() {
     b.addEventListener('click', function () {
       var x = db.biaya.find(function (y) { return y.id === b.dataset.hapusBiaya; });
       if (!x) return;
-      if (!confirm('Hapus biaya "' + x.keterangan + '" (' + fmtRp(x.jumlah) + ')?')) return;
-      db.biaya = db.biaya.filter(function (y) { return y.id !== x.id; });
-      save(); renderAll(); toast('Biaya dihapus.');
+      if (!butuh('hapus', 'Akuntan tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus biaya "' + x.keterangan + '" (' + fmtRp(x.jumlah) + ')? Bila disetujui Admin/Manajer, biaya dihapus.')) return;
+      buatPersetujuan('hapus_biaya', { biayaId: x.id }, 'Hapus biaya ' + x.kategori + ' ' + fmtRp(x.jumlah) + ' — ' + x.keterangan + '.');
+      renderAll(); toast('Penghapusan biaya diajukan untuk persetujuan.');
     });
   });
 }
@@ -1044,12 +1512,14 @@ document.getElementById('formBiaya').addEventListener('submit', function (e) {
     keterangan: document.getElementById('fBiayaKeterangan').value.trim()
   };
   if (!data.tanggal || !data.keterangan || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  data.cabang = cabangAktif();
   if (editBiayaId) {
     var b = db.biaya.find(function (x) { return x.id === editBiayaId; });
-    if (b) Object.assign(b, data);
+    if (b) { Object.assign(b, data); catatAudit('biaya', 'Biaya diubah: ' + b.keterangan + ' (' + fmtRp(b.jumlah) + ').'); }
     toast('Biaya diperbarui.');
   } else {
     db.biaya.push(Object.assign({ id: uid() }, data));
+    catatAudit('biaya', 'Biaya baru: ' + data.keterangan + ' (' + fmtRp(data.jumlah) + ').');
     toast('Biaya ditambahkan.');
   }
   save(); batalUbahBiaya(); renderAll();
@@ -1062,16 +1532,17 @@ document.getElementById('filterKategoriBiaya').addEventListener('change', render
 var editHutangId = null;
 var bayarHutangId = null;
 function renderHutang() {
-  var total = db.hutang.reduce(function (a, h) { return a + h.jumlah; }, 0);
-  var dibayar = db.hutang.reduce(function (a, h) { return a + h.dibayar; }, 0);
+  var hutangCb = db.hutang.filter(function (h) { return (h.cabang || 'pusat') === cabangAktif(); });
+  var total = hutangCb.reduce(function (a, h) { return a + h.jumlah; }, 0);
+  var dibayar = hutangCb.reduce(function (a, h) { return a + h.dibayar; }, 0);
   document.getElementById('statTotalHutang').textContent = fmtRp(total);
   document.getElementById('statHutangDibayar').textContent = fmtRp(dibayar);
   document.getElementById('statSisaHutang').textContent = fmtRp(total - dibayar);
-  document.getElementById('statHutangTempo').textContent = db.hutang.filter(lewatTempo).length;
+  document.getElementById('statHutangTempo').textContent = hutangCb.filter(lewatTempo).length;
 
   var fS = document.getElementById('filterStatusHutang').value;
   var list = db.hutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
-    .filter(function (h) { return !fS || statusLunas(h) === fS; });
+    .filter(function (h) { return (h.cabang || 'pusat') === cabangAktif() && (!fS || statusLunas(h) === fS); });
   var wadah = document.getElementById('daftarHutang');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada hutang yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (h) {
@@ -1099,9 +1570,10 @@ function renderHutang() {
     b.addEventListener('click', function () {
       var h = db.hutang.find(function (x) { return x.id === b.dataset.hapusHutang; });
       if (!h) return;
-      if (!confirm('Hapus hutang ke "' + h.supplier + '" (' + fmtRp(h.jumlah) + ')? Riwayat kas terkait tetap tersimpan.')) return;
-      db.hutang = db.hutang.filter(function (x) { return x.id !== h.id; });
-      save(); renderAll(); toast('Hutang dihapus.');
+      if (!butuh('hapus', 'Akuntan tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus hutang ke "' + h.supplier + '" (' + fmtRp(h.jumlah) + ')? Bila disetujui Admin/Manajer, hutang dihapus; riwayat kas terkait tetap tersimpan.')) return;
+      buatPersetujuan('hapus_hutang', { hutangId: h.id }, 'Hapus hutang ke ' + h.supplier + ' (' + fmtRp(h.jumlah) + ').');
+      renderAll(); toast('Penghapusan hutang diajukan untuk persetujuan.');
     });
   });
 }
@@ -1132,7 +1604,8 @@ document.getElementById('formBayarHutang').addEventListener('submit', function (
   var sisa = h.jumlah - h.dibayar;
   if (jml > sisa) { jml = sisa; toast('Jumlah bayar melebihi sisa — dicatat sebesar sisa hutang.'); }
   h.dibayar += jml;
-  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — ' + h.supplier, jumlah: jml, cara: cara });
+  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Keluar', kategori: 'Bayar Hutang', keterangan: 'Bayar hutang — ' + h.supplier, jumlah: jml, cara: cara, cabang: h.cabang || cabangAktif() });
+  catatAudit('hutang', 'Pembayaran hutang ' + h.supplier + ' ' + fmtRp(jml) + ' (sisa ' + fmtRp(h.jumlah - h.dibayar) + ').');
   save(); batalBayarHutang(); renderAll();
   toast('Pembayaran hutang ' + fmtRp(jml) + ' tercatat (kas keluar otomatis).');
 });
@@ -1168,15 +1641,18 @@ document.getElementById('formHutang').addEventListener('submit', function (e) {
     keterangan: document.getElementById('fHutangKeterangan').value.trim()
   };
   if (!data.supplier || !data.tanggal || !data.jatuhTempo || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  data.cabang = cabangAktif();
   if (editHutangId) {
     var h = db.hutang.find(function (x) { return x.id === editHutangId; });
     if (h) {
       if (data.jumlah < h.dibayar) { toast('Jumlah hutang tidak boleh lebih kecil dari yang sudah dibayar (' + fmtRp(h.dibayar) + ').'); return; }
       Object.assign(h, data);
+      catatAudit('hutang', 'Hutang ke ' + h.supplier + ' diubah (' + fmtRp(h.jumlah) + ').');
     }
     toast('Hutang diperbarui.');
   } else {
     db.hutang.push(Object.assign({ id: uid(), dibayar: 0 }, data));
+    catatAudit('hutang', 'Hutang baru ke ' + data.supplier + ' (' + fmtRp(data.jumlah) + ').');
     toast('Hutang ditambahkan.');
   }
   save(); batalUbahHutang(); renderAll();
@@ -1188,16 +1664,17 @@ document.getElementById('filterStatusHutang').addEventListener('change', renderH
 var editPiutangId = null;
 var bayarPiutangId = null;
 function renderPiutang() {
-  var total = db.piutang.reduce(function (a, p) { return a + p.jumlah; }, 0);
-  var dibayar = db.piutang.reduce(function (a, p) { return a + p.dibayar; }, 0);
+  var piutangCb = db.piutang.filter(function (p) { return (p.cabang || 'pusat') === cabangAktif(); });
+  var total = piutangCb.reduce(function (a, p) { return a + p.jumlah; }, 0);
+  var dibayar = piutangCb.reduce(function (a, p) { return a + p.dibayar; }, 0);
   document.getElementById('statTotalPiutang').textContent = fmtRp(total);
   document.getElementById('statPiutangDiterima').textContent = fmtRp(dibayar);
   document.getElementById('statSisaPiutang').textContent = fmtRp(total - dibayar);
-  document.getElementById('statPiutangTempo').textContent = db.piutang.filter(lewatTempo).length;
+  document.getElementById('statPiutangTempo').textContent = piutangCb.filter(lewatTempo).length;
 
   var fS = document.getElementById('filterStatusPiutang').value;
   var list = db.piutang.slice().sort(function (a, b) { return a.jatuhTempo.localeCompare(b.jatuhTempo); })
-    .filter(function (p) { return !fS || statusLunas(p) === fS; });
+    .filter(function (p) { return (p.cabang || 'pusat') === cabangAktif() && (!fS || statusLunas(p) === fS); });
   var wadah = document.getElementById('daftarPiutang');
   if (!list.length) { wadah.innerHTML = '<p class="kosong">Belum ada piutang yang cocok dengan filter.</p>'; return; }
   wadah.innerHTML = list.map(function (p) {
@@ -1225,9 +1702,10 @@ function renderPiutang() {
     b.addEventListener('click', function () {
       var p = db.piutang.find(function (x) { return x.id === b.dataset.hapusPiutang; });
       if (!p) return;
-      if (!confirm('Hapus piutang dari "' + p.pelanggan + '" (' + fmtRp(p.jumlah) + ')? Riwayat kas terkait tetap tersimpan.')) return;
-      db.piutang = db.piutang.filter(function (x) { return x.id !== p.id; });
-      save(); renderAll(); toast('Piutang dihapus.');
+      if (!butuh('hapus', 'Akuntan tidak boleh menghapus data.')) return;
+      if (!confirm('Ajukan hapus piutang dari "' + p.pelanggan + '" (' + fmtRp(p.jumlah) + ')? Bila disetujui Admin/Manajer, piutang dihapus; riwayat kas terkait tetap tersimpan.')) return;
+      buatPersetujuan('hapus_piutang', { piutangId: p.id }, 'Hapus piutang dari ' + p.pelanggan + ' (' + fmtRp(p.jumlah) + ').');
+      renderAll(); toast('Penghapusan piutang diajukan untuk persetujuan.');
     });
   });
 }
@@ -1258,7 +1736,8 @@ document.getElementById('formBayarPiutang').addEventListener('submit', function 
   var sisa = p.jumlah - p.dibayar;
   if (jml > sisa) { jml = sisa; toast('Jumlah terima melebihi sisa — dicatat sebesar sisa piutang.'); }
   p.dibayar += jml;
-  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — ' + p.pelanggan, jumlah: jml, cara: cara });
+  db.kas.push({ id: uid(), tanggal: tgl, jenis: 'Masuk', kategori: 'Pelunasan Piutang', keterangan: 'Pelunasan piutang — ' + p.pelanggan, jumlah: jml, cara: cara, cabang: p.cabang || cabangAktif() });
+  catatAudit('piutang', 'Pelunasan piutang ' + p.pelanggan + ' ' + fmtRp(jml) + ' (sisa ' + fmtRp(p.jumlah - p.dibayar) + ').');
   save(); batalBayarPiutang(); renderAll();
   toast('Pelunasan piutang ' + fmtRp(jml) + ' tercatat (kas masuk otomatis).');
 });
@@ -1294,15 +1773,18 @@ document.getElementById('formPiutang').addEventListener('submit', function (e) {
     keterangan: document.getElementById('fPiutangKeterangan').value.trim()
   };
   if (!data.pelanggan || !data.tanggal || !data.jatuhTempo || !data.jumlah || data.jumlah <= 0) { toast('Lengkapi semua kolom wajib dengan jumlah lebih dari 0.'); return; }
+  data.cabang = cabangAktif();
   if (editPiutangId) {
     var p = db.piutang.find(function (x) { return x.id === editPiutangId; });
     if (p) {
       if (data.jumlah < p.dibayar) { toast('Jumlah piutang tidak boleh lebih kecil dari yang sudah diterima (' + fmtRp(p.dibayar) + ').'); return; }
       Object.assign(p, data);
+      catatAudit('piutang', 'Piutang dari ' + p.pelanggan + ' diubah (' + fmtRp(p.jumlah) + ').');
     }
     toast('Piutang diperbarui.');
   } else {
     db.piutang.push(Object.assign({ id: uid(), dibayar: 0 }, data));
+    catatAudit('piutang', 'Piutang baru dari ' + data.pelanggan + ' (' + fmtRp(data.jumlah) + ').');
     toast('Piutang ditambahkan.');
   }
   save(); batalUbahPiutang(); renderAll();
@@ -1352,11 +1834,13 @@ function renderLaporan() {
   var r = hitungLabaRugi(bulanFilter);
   var masuk = kasBulan(bulanFilter, 'Masuk');
   var keluar = kasBulan(bulanFilter, 'Keluar');
-  var totalHutang = db.hutang.reduce(function (a, h) { return a + h.jumlah; }, 0);
-  var dibayarHutang = db.hutang.reduce(function (a, h) { return a + h.dibayar; }, 0);
+  var hutangCb = db.hutang.filter(function (h) { return (h.cabang || 'pusat') === cabangAktif(); });
+  var piutangCb = db.piutang.filter(function (p) { return (p.cabang || 'pusat') === cabangAktif(); });
+  var totalHutang = hutangCb.reduce(function (a, h) { return a + h.jumlah; }, 0);
+  var dibayarHutang = hutangCb.reduce(function (a, h) { return a + h.dibayar; }, 0);
   var sisaHutang = totalHutang - dibayarHutang;
-  var totalPiutang = db.piutang.reduce(function (a, p) { return a + p.jumlah; }, 0);
-  var dibayarPiutang = db.piutang.reduce(function (a, p) { return a + p.dibayar; }, 0);
+  var totalPiutang = piutangCb.reduce(function (a, p) { return a + p.jumlah; }, 0);
+  var dibayarPiutang = piutangCb.reduce(function (a, p) { return a + p.dibayar; }, 0);
   var sisaPiutang = totalPiutang - dibayarPiutang;
   document.getElementById('lapLaba').textContent = fmtRp(r.labaBersih);
   document.getElementById('lapPendapatan').textContent = fmtRp(r.pendapatan);
@@ -1380,7 +1864,7 @@ function renderLaporan() {
     '</table>';
 
   var perSupplier = {};
-  db.hutang.forEach(function (h) { perSupplier[h.supplier] = (perSupplier[h.supplier] || 0) + (h.jumlah - h.dibayar); });
+  hutangCb.forEach(function (h) { perSupplier[h.supplier] = (perSupplier[h.supplier] || 0) + (h.jumlah - h.dibayar); });
   var sup = Object.keys(perSupplier).sort(function (a, b) { return perSupplier[b] - perSupplier[a]; });
   document.getElementById('tabelLaporanHutang').innerHTML = sup.length
     ? '<table class="tabel-harga"><tr><th>Supplier</th><th>Sisa Hutang</th></tr>' +
@@ -1389,7 +1873,7 @@ function renderLaporan() {
     : '<p class="kosong">Belum ada hutang.</p>';
 
   var perPelanggan = {};
-  db.piutang.forEach(function (p) { perPelanggan[p.pelanggan] = (perPelanggan[p.pelanggan] || 0) + (p.jumlah - p.dibayar); });
+  piutangCb.forEach(function (p) { perPelanggan[p.pelanggan] = (perPelanggan[p.pelanggan] || 0) + (p.jumlah - p.dibayar); });
   var pel = Object.keys(perPelanggan).sort(function (a, b) { return perPelanggan[b] - perPelanggan[a]; });
   document.getElementById('tabelLaporanPiutang').innerHTML = pel.length
     ? '<table class="tabel-harga"><tr><th>Pelanggan</th><th>Sisa Piutang</th></tr>' +
@@ -1400,10 +1884,223 @@ function renderLaporan() {
 document.getElementById('filterBulanLaporan').addEventListener('change', renderLaporan);
 document.getElementById('btnCetakLaporan').addEventListener('click', function () { window.print(); });
 
+
+/* ---------- Login ---------- */
+function applyRole() {
+  if (!currentUser) { return; }
+  document.body.setAttribute("data-role", currentUser.peran);
+  document.getElementById("userChip").textContent = currentUser.nama + " (" + labelPeran(currentUser.peran) + ")";
+  perbaruiBadge();
+  renderAll();
+}
+function doLogin() {
+  var u = document.getElementById("loginUser").value.trim().toLowerCase();
+  var p = document.getElementById("loginPass").value;
+  var found = null;
+  getUsers().forEach(function (x) { if (x.username.toLowerCase() === u && x.password === p) { found = x; } });
+  if (!found || found.aktif === false) { document.getElementById("loginError").hidden = false; return; }
+  currentUser = found;
+  try { sessionStorage.setItem(SESSION_KEY, found.username); } catch (e) { /* sesi tidak tersimpan */ }
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.getElementById("loginError").hidden = true;
+  document.getElementById("loginPass").value = "";
+  catatAudit("login", "Masuk sebagai " + found.username + " (" + labelPeran(found.peran) + ").");
+  applyRole();
+  toast("Selamat datang, " + found.nama);
+}
+document.getElementById("loginBtn").addEventListener("click", doLogin);
+document.getElementById("loginPass").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+document.getElementById("loginUser").addEventListener("keydown", function (e) { if (e.key === "Enter") { doLogin(); } });
+document.getElementById("btnKeluar").addEventListener("click", function () {
+  if (currentUser) { catatAudit("login", "Keluar (" + currentUser.username + ")."); }
+  try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+  location.reload();
+});
+document.getElementById("selCabangAktif").addEventListener("change", function () { setCabang(this.value); });
+
+/* ---------- Render Persetujuan ---------- */
+function renderPersetujuan() {
+  var box = document.getElementById("daftarPersetujuan");
+  var box2 = document.getElementById("daftarPersetujuanSelesai");
+  if (!box || !box2) { return; }
+  var menunggu = db.persetujuan.filter(function (a) { return a.status === "menunggu"; });
+  var selesai = db.persetujuan.filter(function (a) { return a.status !== "menunggu"; }).slice(0, 10);
+  if (!menunggu.length) { box.innerHTML = '<div class="kosong">Tidak ada permintaan menunggu. Hapus transaksi/biaya/hutang/piutang dan kas keluar Rp5.000.000 atau lebih akan muncul di sini.</div>'; }
+  else {
+    box.innerHTML = menunggu.map(function (a) {
+      return '<div class="item-bar" style="align-items:flex-start"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+        '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+        '<div class="dt">Diajukan ' + esc(String(a.dibuatPada || "").replace("T", " ").slice(0, 16)) + " oleh " + esc(a.dibuatOleh) + " · " + esc(namaCabang(a.cabang)) + "</div></div>" +
+        '<div style="display:flex;gap:6px"><button class="btn kecil hijau" data-putus="ya" data-id="' + a.id + '">Setujui</button>' +
+        '<button class="btn kecil merah" data-putus="tidak" data-id="' + a.id + '">Tolak</button></div></div>';
+    }).join("");
+  }
+  if (!selesai.length) { box2.innerHTML = '<div class="kosong">Belum ada keputusan.</div>'; }
+  else {
+    box2.innerHTML = selesai.map(function (a) {
+      return '<div class="item-bar"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + (a.status === "disetujui" ? "st-disetujui" : "st-ditolak") + '">' + (a.status === "disetujui" ? "Disetujui" : "Ditolak") + "</span></div>" +
+        '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+        '<div class="dt">Diputuskan oleh ' + esc(a.diputuskanOleh || "-") + " · " + esc(String(a.diputuskanPada || "").replace("T", " ").slice(0, 16)) + "</div></div></div>";
+    }).join("");
+  }
+  box.querySelectorAll("[data-putus]").forEach(function (b) {
+    b.addEventListener("click", function () { putuskanPersetujuan(Number(b.dataset.id), b.dataset.putus === "ya"); });
+  });
+}
+
+/* ---------- Render Audit Log ---------- */
+function renderAudit() {
+  var box = document.getElementById("daftarAudit");
+  if (!box) { return; }
+  var fu = document.getElementById("filterAuditUser");
+  if (fu) {
+    var pengguna = [];
+    db.audit.forEach(function (a) { if (pengguna.indexOf(a.user) === -1) { pengguna.push(a.user); } });
+    var nilai = fu.value;
+    fu.innerHTML = '<option value="">Semua pengguna</option>' + pengguna.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + "</option>"; }).join("");
+    fu.value = nilai;
+  }
+  var fa = document.getElementById("filterAuditAksi").value;
+  var list = db.audit.filter(function (a) {
+    if (fu && fu.value && a.user !== fu.value) { return false; }
+    if (fa && a.aksi !== fa) { return false; }
+    return true;
+  }).slice(0, 100);
+  if (!list.length) { box.innerHTML = '<div class="kosong">Belum ada catatan audit pada filter ini.</div>'; return; }
+  box.innerHTML = '<table class="data"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Cabang</th><th>Aksi</th><th>Detail</th></tr>' +
+    list.map(function (a) {
+      return "<tr><td>" + esc(String(a.waktu || "").replace("T", " ").slice(0, 19)) + "</td><td>" + esc(a.user) + "</td><td>" + esc(a.peran) + "</td><td>" + esc(namaCabang(a.cabang)) + "</td><td>" + esc(a.aksi) + "</td><td>" + esc(a.detail) + "</td></tr>";
+    }).join("") + "</table>";
+}
+["filterAuditUser", "filterAuditAksi"].forEach(function (id) {
+  document.getElementById(id).addEventListener("change", renderAudit);
+});
+
+/* ---------- Render Kelola Pengguna ---------- */
+function renderPengguna() {
+  var wadah = document.getElementById("daftarPengguna");
+  if (!wadah) { return; }
+  var list = getUsers();
+  if (!list.length) { wadah.innerHTML = '<div class="kosong">Belum ada pengguna.</div>'; return; }
+  wadah.innerHTML = list.map(function (u) {
+    var saya = currentUser && u.username === currentUser.username;
+    return '<div class="user-row"><div><div class="nm">' + esc(u.nama) + " (" + esc(u.username) + ') <span class="lencana st-baru">' + labelPeran(u.peran) + "</span>" + (u.aktif === false ? ' <span class="lencana st-batal">Nonaktif</span>' : "") + '</div><div class="dt">Admin: semua akses · Manajer: tanpa kelola pengguna · Akuntan: tanpa hapus data dan audit.</div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select data-peran-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">" +
+      ["admin", "manajer", "akuntan"].map(function (r) { return '<option value="' + r + '"' + (u.peran === r ? " selected" : "") + ">" + labelPeran(r) + "</option>"; }).join("") + "</select>" +
+      '<button class="btn kecil ghost" type="button" data-aktif-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">" + (u.aktif === false ? "Aktifkan" : "Nonaktifkan") + "</button>" +
+      '<button class="btn kecil merah" type="button" data-hapus-user="' + esc(u.username) + '"' + (saya ? " disabled" : "") + ">Hapus</button></div></div>";
+  }).join("");
+  wadah.querySelectorAll("[data-peran-user]").forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { renderPengguna(); return; }
+      var u = getUsers().find(function (x) { return x.username === sel.dataset.peranUser; });
+      if (!u) { return; }
+      var lama = u.peran;
+      u.peran = sel.value;
+      saveUsers(getUsers());
+      catatAudit("pengguna", "Peran diubah: " + u.nama + " (" + u.username + ") dari " + labelPeran(lama) + " ke " + labelPeran(u.peran) + ".");
+      renderPengguna(); toast("Peran " + u.nama + " diubah.");
+    });
+  });
+  wadah.querySelectorAll("[data-aktif-user]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+      var u = getUsers().find(function (x) { return x.username === b.dataset.aktifUser; });
+      if (!u) { return; }
+      u.aktif = u.aktif === false;
+      saveUsers(getUsers());
+      catatAudit("pengguna", "Pengguna " + (u.aktif ? "diaktifkan" : "dinonaktifkan") + ": " + u.nama + " (" + u.username + ").");
+      renderPengguna(); toast("Pengguna " + u.nama + (u.aktif ? " diaktifkan." : " dinonaktifkan."));
+    });
+  });
+  wadah.querySelectorAll("[data-hapus-user]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+      var u = getUsers().find(function (x) { return x.username === b.dataset.hapusUser; });
+      if (!u) { return; }
+      if (!confirm("Hapus pengguna " + u.nama + " (" + u.username + ")?")) { return; }
+      usersCache = getUsers().filter(function (x) { return x.username !== u.username; });
+      saveUsers(usersCache);
+      catatAudit("pengguna", "Pengguna dihapus: " + u.nama + " (" + u.username + ").");
+      renderPengguna(); toast("Pengguna dihapus.");
+    });
+  });
+}
+document.getElementById("formPengguna").addEventListener("submit", function (e) {
+  e.preventDefault();
+  if (!butuh("kelola_pengguna", "Hanya Admin yang bisa mengelola pengguna.")) { return; }
+  var username = document.getElementById("fUserBaru").value.trim().toLowerCase();
+  var nama = document.getElementById("fNamaUserBaru").value.trim();
+  var peranBaru = document.getElementById("fPeranUserBaru").value;
+  var pass = document.getElementById("fPassUserBaru").value;
+  if (!username || !nama || !pass) { toast("Isi nama pengguna, nama tampil, dan kata sandi."); return; }
+  if (getUsers().some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
+  getUsers().push({ username: username, password: pass, nama: nama, peran: peranBaru, aktif: true });
+  saveUsers(getUsers());
+  catatAudit("pengguna", "Pengguna ditambahkan: " + nama + " (" + username + ", " + labelPeran(peranBaru) + ").");
+  document.getElementById("formPengguna").reset();
+  renderPengguna(); toast("Pengguna " + nama + " ditambahkan.");
+});
+
+/* ---------- Ringkasan per Cabang ---------- */
+function renderRingkasanCabang() {
+  var t = document.getElementById("tabelRingkasanCabang");
+  if (!t) { return; }
+  var bulanFilter = (document.getElementById("filterBulanLaporan") && document.getElementById("filterBulanLaporan").value) || bulanSekarang();
+  var rows = db.cabang.map(function (c) {
+    var kasM = db.kas.filter(function (k) { return (k.cabang || "pusat") === c.id && k.jenis === "Masuk" && bulanDariTanggal(k.tanggal) === bulanFilter; }).reduce(function (a, k) { return a + k.jumlah; }, 0);
+    var kasK = db.kas.filter(function (k) { return (k.cabang || "pusat") === c.id && k.jenis === "Keluar" && bulanDariTanggal(k.tanggal) === bulanFilter; }).reduce(function (a, k) { return a + k.jumlah; }, 0);
+    var pend = db.kas.filter(function (k) { return (k.cabang || "pusat") === c.id && k.jenis === "Masuk" && k.kategori === "Penjualan" && bulanDariTanggal(k.tanggal) === bulanFilter; }).reduce(function (a, k) { return a + k.jumlah; }, 0)
+      + db.piutang.filter(function (p) { return (p.cabang || "pusat") === c.id && bulanDariTanggal(p.tanggal) === bulanFilter; }).reduce(function (a, p) { return a + p.jumlah; }, 0);
+    var beli = db.kas.filter(function (k) { return (k.cabang || "pusat") === c.id && k.jenis === "Keluar" && k.kategori === "Pembelian Barang" && bulanDariTanggal(k.tanggal) === bulanFilter; }).reduce(function (a, k) { return a + k.jumlah; }, 0)
+      + db.hutang.filter(function (h) { return (h.cabang || "pusat") === c.id && bulanDariTanggal(h.tanggal) === bulanFilter; }).reduce(function (a, h) { return a + h.jumlah; }, 0);
+    var by = db.biaya.filter(function (b) { return (b.cabang || "pusat") === c.id && bulanDariTanggal(b.tanggal) === bulanFilter; }).reduce(function (a, b) { return a + b.jumlah; }, 0);
+    var laba = pend - beli - by;
+    return "<tr><td>" + esc(c.nama) + "</td><td>" + fmtRp(pend) + "</td><td>" + fmtRp(laba) + "</td><td>" + fmtRp(kasM) + "</td><td>" + fmtRp(kasK) + "</td></tr>";
+  }).join("");
+  t.innerHTML = '<table class="tabel-harga"><tr><th>Cabang</th><th>Pendapatan</th><th>Laba Bersih</th><th>Kas Masuk</th><th>Kas Keluar</th></tr>' + rows + "</table>";
+}
+
+/* ---------- Backup JSON & Pulihkan ---------- */
+document.getElementById("btnBackupJson").addEventListener("click", function () {
+  var paket = { aplikasi: "Aplikasi Akuntansi Distributor", versi: "v1", dieksporPada: new Date().toISOString(), data: db, pengguna: getUsers() };
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" }));
+  a.download = "backup-akuntansi-distributor.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  catatAudit("ekspor", "Backup JSON diunduh.");
+  toast("Backup JSON diunduh.");
+});
+document.getElementById("filePulihkan").addEventListener("change", function () {
+  var f = this.files && this.files[0];
+  if (!f) { return; }
+  if (!butuh("pulihkan", "Hanya Admin/Manajer yang bisa memulihkan data.")) { this.value = ""; return; }
+  var input = this;
+  var rd = new FileReader();
+  rd.onload = function () {
+    try {
+      var paket = JSON.parse(rd.result);
+      var d = paket.data || paket;
+      if (!d || !Array.isArray(d.kas) || !Array.isArray(d.biaya)) { toast("File backup tidak valid."); return; }
+      db = normalisasiDb(d);
+      if (Array.isArray(paket.pengguna) && paket.pengguna.length) { usersCache = paket.pengguna.map(normalisasiPengguna); saveUsers(usersCache); }
+      save();
+      catatAudit("sistem", "Data dipulihkan dari file backup JSON.");
+      batalUbahKas(); batalUbahBiaya(); batalUbahHutang(); batalUbahPiutang(); batalBayarHutang(); batalBayarPiutang();
+      renderAll(); toast("Data dipulihkan dari backup.");
+    } catch (err) { toast("File backup tidak bisa dibaca."); }
+  };
+  rd.readAsText(f);
+  input.value = "";
+});
+
 /* ---------- PANDUAN / RESET ---------- */
 document.getElementById('btnResetData').addEventListener('click', function () {
+  if (!butuh('reset', 'Hanya Admin/Manajer yang bisa mengembalikan data contoh.')) return;
   if (!confirm('Kembalikan semua data ke data contoh? Data yang sudah diubah akan hilang.')) return;
-  db = dataContoh();
+  db = normalisasiDb(dataContoh());
+  catatAudit('sistem', 'Data contoh dikembalikan (oleh ' + (currentUser ? currentUser.username : 'sistem') + ').');
   save();
   batalUbahKas(); batalUbahBiaya(); batalUbahHutang(); batalUbahPiutang();
   batalBayarHutang(); batalBayarPiutang();
@@ -1413,17 +2110,42 @@ document.getElementById('btnResetData').addEventListener('click', function () {
 
 /* ---------- INIT ---------- */
 function renderAll() {
+  isiSelectCabang();
   renderKas();
   renderBiaya();
   renderHutang();
   renderPiutang();
   renderLabaRugi();
   renderLaporan();
+  renderPersetujuan();
+  renderAudit();
+  renderPengguna();
+  renderRingkasanCabang();
+  perbaruiBadge();
 }
-document.getElementById('tanggalHariIni').textContent = hariIniIndo();
-isiKategoriKas();
-load();
-renderAll();
+function initAplikasi() {
+  document.getElementById('tanggalHariIni').textContent = hariIniIndo();
+  isiKategoriKas();
+  renderAll();
+  window.__appSiap = true;
+}
+// Boot asinkron: siapkan kunci enkripsi, muat dari IndexedDB dulu (dengan
+// migrasi sekali dari localStorage lama), baru render.
+siapkanKripto().then(muatState).then(muatUsers).then(function () {
+  var saved = null;
+  try { saved = sessionStorage.getItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+  if (saved) {
+    var u = getUsers().find(function (x) { return x.username === saved && x.aktif !== false; });
+    if (u) {
+      currentUser = u;
+      document.getElementById("loginOverlay").classList.add("hidden");
+      document.body.setAttribute("data-role", u.peran);
+      document.getElementById("userChip").textContent = u.nama + " (" + labelPeran(u.peran) + ")";
+    }
+  }
+  initAplikasi();
+}).catch(function () { initAplikasi(); });
+
 </script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->

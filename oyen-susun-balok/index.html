@@ -16,7 +16,7 @@
   .oyen { width: 84px; height: 84px; margin: 0 auto 8px; display: block; }
   .oyen.bounce { animation: lompat .5s ease; }
   @keyframes lompat { 0% { transform: translateY(0); } 40% { transform: translateY(-14px) rotate(-4deg); } 100% { transform: translateY(0); } }
-  .hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .hud { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
   .stat { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(20,38,61,.08); padding: 8px 4px; text-align: center; }
   .stat .label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #4a6b8a; }
   .stat .value { font-size: 20px; font-weight: 800; color: #14263d; }
@@ -54,6 +54,12 @@
   .nav-bawah a { color: #14263d; font-weight: 700; text-decoration: none; }
   .nav-bawah a:hover { text-decoration: underline; }
   footer { margin-top: 24px; text-align: center; color: #4a6b8a; font-size: 13px; }
+  .pilihan { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .pilihan .cap { width: 100%; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #c9d8ea; letter-spacing: .5px; }
+  .pilihan button { padding: 7px 12px; border-radius: 999px; border: 1.5px solid #8fb4d9; background: #fff; color: #14263d; font: 700 13px inherit; cursor: pointer; }
+  .pilihan button.on { background: #f5820b; color: #fff; border-color: #f5820b; }
+  .mode-info { background: #eaf3fb; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; color: #14263d; }
+  .mode-info[hidden] { display: none; }
   @media (max-width: 420px) {
     .game-area { gap: 8px; }
     #papan { width: 240px; height: 480px; }
@@ -97,7 +103,10 @@
     <div class="stat"><div class="label">Tahap</div><div class="value" id="level">1</div></div>
     <div class="stat"><div class="label">Baris</div><div class="value" id="baris">0</div></div>
     <div class="stat"><div class="label">Rekor</div><div class="value" id="rekor">0</div></div>
+    <div class="stat"><div class="label">Kombo</div><div class="value" id="kombo">×1</div></div>
   </div>
+
+  <div class="mode-info" id="modeInfo" hidden></div>
 
   <div class="game-area">
     <div class="board-wrap">
@@ -106,6 +115,17 @@
       <div class="overlay" id="overlayAwal">
         <h2>Siap main?</h2>
         <p>Balok jatuh dari atas. Geser dan putar baloknya, susun sampai satu baris penuh &mdash; baris penuh akan hilang dan jadi skor!</p>
+        <div class="pilihan" id="pilihanPapan" role="group" aria-label="Ukuran papan">
+          <span class="cap">Ukuran papan</span>
+          <button type="button" data-papan="10x20" class="on">10 &times; 20 (standar)</button>
+          <button type="button" data-papan="8x16">8 &times; 16 (sempit)</button>
+        </div>
+        <div class="pilihan" id="pilihanMode" role="group" aria-label="Mode permainan">
+          <span class="cap">Mode permainan</span>
+          <button type="button" data-mode="santai" class="on">Santai</button>
+          <button type="button" data-mode="target">Target 2000 poin</button>
+          <button type="button" data-mode="waktu">Waktu 2 menit</button>
+        </div>
         <button class="btn orange" id="btnMulai" type="button">Mulai Main</button>
         <p style="font-size:12px">Keyboard: &larr; &rarr; geser &middot; &uarr; putar &middot; &darr; turun cepat &middot; Spasi jatuh langsung</p>
       </div>
@@ -144,10 +164,12 @@
   <section class="cara">
     <h2>Cara main</h2>
     <ul>
-      <li>Balok jatuh satu per satu dari atas papan (10 kolom &times; 20 baris).</li>
+      <li>Balok jatuh satu per satu dari atas papan. Pilih ukuran papan di layar awal: 10 &times; 20 (standar) atau 8 &times; 16 (sempit).</li>
       <li>Geser dengan <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, putar dengan <kbd>&uarr;</kbd>, turun cepat dengan <kbd>&darr;</kbd>, jatuh langsung dengan <kbd>Spasi</kbd>.</li>
       <li>Satu baris penuh akan hilang: 1 baris = 100 poin, 2 baris = 300, 3 baris = 500, 4 baris sekaligus (&ldquo;Tetris&rdquo;) = 800 &mdash; dikali tahap.</li>
       <li>Tiap 10 baris, naik 1 tahap dan balok jatuh makin cepat. Game selesai bila balok menumpuk sampai atas.</li>
+      <li>Kombo: hapus baris di balok berturut-turut untuk menaikkan pengali (sampai &times;5). Kalau satu balok tidak menghapus baris, kombo kembali ke &times;1.</li>
+      <li>Mode Tantangan: kejar target 2000 poin, atau kumpulkan skor sebanyak-banyaknya dalam 2 menit.</li>
       <li>Skor tertinggi tersimpan di perangkat ini (localStorage) &mdash; kalahkan rekormu sendiri!</li>
       <li>Di HP, pakai tombol di bawah papan. Suara bisa dimatikan dengan tombol &ldquo;Suara&rdquo;.</li>
     </ul>
@@ -187,6 +209,9 @@
   var KUNCI_SUARA = "oyenSusunBalok.suara";
 
   var papan, balok, berikut, skor, baris, level, status, timer, suaraNyala, rekor;
+  var kombo = 0, pengali = 1;
+  var mode = "santai", TARGET_SKOR = 2000, WAKTU_MODE = 120, sisaWaktu = 0, timerWaktu = null;
+  var KUNCI_UKURAN = "oyenSusunBalok.ukuran", KUNCI_MODE = "oyenSusunBalok.mode";
   var elSkor = document.getElementById("skor"),
       elLevel = document.getElementById("level"),
       elBaris = document.getElementById("baris"),
@@ -198,6 +223,8 @@
       elSkorAkhir = document.getElementById("skorAkhir"),
       elTeksAkhir = document.getElementById("teksAkhir"),
       elTeksRekor = document.getElementById("teksRekor"),
+      elKombo = document.getElementById("kombo"),
+      elModeInfo = document.getElementById("modeInfo"),
       oyenSvg = document.getElementById("oyenSvg");
 
   try { rekor = parseInt(localStorage.getItem(KUNCI_REKOR) || "0", 10) || 0; } catch (e) { rekor = 0; }
@@ -252,6 +279,18 @@
     return false;
   }
   function kecepatan() { return Math.max(90, 800 - (level - 1) * 70); }
+
+  function terapkanUkuran(kolom, baris) {
+    KOLOM = kolom; BARIS = baris;
+    kanvas.width = kolom * SEL; kanvas.height = baris * SEL;
+    try { localStorage.setItem(KUNCI_UKURAN, kolom + "x" + baris); } catch (e) {}
+  }
+  function hentikanTimerWaktu() { if (timerWaktu) { clearInterval(timerWaktu); timerWaktu = null; } }
+  function fmtWaktu(detik) { var m = Math.floor(detik / 60), s = detik % 60; return m + ":" + (s < 10 ? "0" : "") + s; }
+  function perbaruiModeInfo() {
+    if (mode === "waktu") elModeInfo.textContent = "Mode Tantangan — sisa waktu " + fmtWaktu(Math.max(sisaWaktu, 0)) + " · skor " + skor;
+    else if (mode === "target") elModeInfo.textContent = "Mode Tantangan — target " + TARGET_SKOR + " poin · skor " + skor + " / " + TARGET_SKOR;
+  }
 
   function mulaiTimer() {
     hentikanTimer();
@@ -322,6 +361,8 @@
     elLevel.textContent = level;
     elBaris.textContent = baris;
     elRekor.textContent = rekor;
+    elKombo.textContent = "×" + pengali;
+    if (mode !== "santai" && !elModeInfo.hidden) perbaruiModeInfo();
   }
 
   function munculkanBalok() {
@@ -339,6 +380,7 @@
         if (m[y][x] && balok.y + y >= 0) papan[balok.y + y][balok.x + x] = balok.jenis;
     bunyi(130, 0.08, "square", 0.05);
     bersihkanBaris();
+    if (status !== "main") return;
     munculkanBalok();
   }
   function bersihkanBaris() {
@@ -350,8 +392,10 @@
         penuh++; y++;
       }
     }
-    if (!penuh) return;
-    var poin = [0, 100, 300, 500, 800][penuh] * level;
+    if (!penuh) { kombo = 0; pengali = 1; perbaruiHud(); return; }
+    kombo++;
+    pengali = Math.min(kombo, 5);
+    var poin = [0, 100, 300, 500, 800][penuh] * level * pengali;
     skor += poin;
     baris += penuh;
     var levelBaru = Math.floor(baris / 10) + 1;
@@ -361,13 +405,14 @@
       nadaBerurutan([523, 659, 784, 1047], 0.12);
       mulaiTimer();
     } else if (penuh === 4) {
-      tampilkanToast("MEONG! Tetris! +" + poin);
+      tampilkanToast("MEONG! Tetris! +" + poin + (pengali > 1 ? " · kombo ×" + pengali : ""));
       nadaBerurutan([523, 659, 784, 1047], 0.12);
     } else {
-      tampilkanToast("+" + poin + (penuh > 1 ? " — " + penuh + " baris!" : ""));
+      tampilkanToast("+" + poin + (penuh > 1 ? " — " + penuh + " baris!" : "") + (pengali > 1 ? " · kombo ×" + pengali : ""));
       nadaBerurutan([523, 659, 784], 0.1);
     }
     perbaruiHud();
+    if (mode === "target" && skor >= TARGET_SKOR) { akhiriGame(true); }
   }
 
   function turunSatu() {
@@ -399,8 +444,26 @@
   function mulaiGame() {
     papan = papanKosong();
     skor = 0; baris = 0; level = 1;
+    kombo = 0; pengali = 1;
     balok = null; berikut = null;
     status = "main";
+    hentikanTimerWaktu();
+    if (mode === "waktu") {
+      sisaWaktu = WAKTU_MODE;
+      elModeInfo.hidden = false;
+      perbaruiModeInfo();
+      timerWaktu = setInterval(function () {
+        if (status !== "main") return;
+        sisaWaktu--;
+        perbaruiModeInfo();
+        if (sisaWaktu <= 0) { hentikanTimerWaktu(); akhiriGame(false); }
+      }, 1000);
+    } else if (mode === "target") {
+      elModeInfo.hidden = false;
+      perbaruiModeInfo();
+    } else {
+      elModeInfo.hidden = true;
+    }
     elAwal.classList.add("hidden");
     elAkhir.classList.add("hidden");
     elJeda.classList.add("hidden");
@@ -410,14 +473,19 @@
     mulaiTimer();
     bunyi(440, 0.1, "triangle", 0.08);
   }
-  function akhiriGame() {
+  function akhiriGame(menang) {
     status = "selesai";
     hentikanTimer();
+    hentikanTimerWaktu();
+    elModeInfo.hidden = true;
     document.getElementById("btnJeda").disabled = true;
     var rekorBaru = false;
     if (skor > rekor) { rekor = skor; rekorBaru = true; try { localStorage.setItem(KUNCI_REKOR, String(rekor)); } catch (e) {} }
     elSkorAkhir.textContent = skor;
-    elTeksAkhir.textContent = "Balok sudah menumpuk sampai atas. Kamu membersihkan " + baris + " baris di tahap " + level + ".";
+    document.querySelector("#overlayAkhir h2").textContent = menang ? "Kamu Menang!" : "Game Over!";
+    elTeksAkhir.textContent = menang
+      ? "Target " + TARGET_SKOR + " poin tercapai dengan " + baris + " baris di tahap " + level + ". Hebat!"
+      : "Balok sudah menumpuk sampai atas. Kamu membersihkan " + baris + " baris di tahap " + level + ".";
     elTeksRekor.textContent = rekorBaru ? "Rekor baru! Skor tertinggi sekarang " + rekor + "." : "Rekor tertinggi: " + rekor + ".";
     elAkhir.classList.remove("hidden");
     perbaruiHud();
@@ -435,6 +503,29 @@
     elJeda.classList.add("hidden");
     mulaiTimer();
   }
+
+  // pilihan ukuran papan & mode (di overlay awal)
+  function tandaiPilihan(grup, nilai) {
+    var attr = grup === "pilihanPapan" ? "data-papan" : "data-mode";
+    document.querySelectorAll("#" + grup + " button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute(attr) === nilai);
+    });
+  }
+  document.querySelectorAll("#pilihanPapan button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var v = b.getAttribute("data-papan").split("x");
+      terapkanUkuran(parseInt(v[0], 10), parseInt(v[1], 10));
+      papan = papanKosong(); gambar();
+      tandaiPilihan("pilihanPapan", b.getAttribute("data-papan"));
+    });
+  });
+  document.querySelectorAll("#pilihanMode button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      mode = b.getAttribute("data-mode");
+      try { localStorage.setItem(KUNCI_MODE, mode); } catch (e) {}
+      tandaiPilihan("pilihanMode", mode);
+    });
+  });
 
   document.getElementById("btnMulai").addEventListener("click", mulaiGame);
   document.getElementById("btnUlang").addEventListener("click", mulaiGame);
@@ -497,9 +588,17 @@
   balok = null; berikut = acakBalok();
   perbaruiHud(); gambar();
 
+  // pulihkan pilihan tersimpan (ukuran papan & mode)
+  try {
+    var ukSimpan = localStorage.getItem(KUNCI_UKURAN);
+    if (ukSimpan === "8x16") { terapkanUkuran(8, 16); papan = papanKosong(); gambar(); tandaiPilihan("pilihanPapan", "8x16"); }
+    var modeSimpan = localStorage.getItem(KUNCI_MODE);
+    if (modeSimpan === "target" || modeSimpan === "waktu") { mode = modeSimpan; tandaiPilihan("pilihanMode", modeSimpan); }
+  } catch (e) {}
+
   // kait kecil untuk pengujian otomatis (tidak memengaruhi pemain)
   window.OYEN_TEST = {
-    status: function () { return { status: status, skor: skor, baris: baris, level: level, rekor: rekor, balokX: balok ? balok.x : null, balokY: balok ? balok.y : null, balokJenis: balok ? balok.jenis : null, matriks: balok ? balok.matriks : null }; },
+    status: function () { return { status: status, skor: skor, baris: baris, level: level, rekor: rekor, balokX: balok ? balok.x : null, balokY: balok ? balok.y : null, balokJenis: balok ? balok.jenis : null, matriks: balok ? balok.matriks : null, kombo: kombo, pengali: pengali, mode: mode, kolom: KOLOM, barisPapan: BARIS, sisaWaktu: sisaWaktu }; },
     isiBaris: function (barisKe, kosongKolom) {
       for (var x = 0; x < KOLOM; x++) papan[barisKe][x] = (kosongKolom.indexOf(x) === -1) ? "L" : null;
       gambar();
@@ -512,7 +611,11 @@
       for (var y = 0; y < 3; y++) for (var x = 0; x < KOLOM; x++) papan[y][x] = "L";
       gambar();
     },
-    cobaSpawn: function () { munculkanBalok(); }
+    cobaSpawn: function () { munculkanBalok(); },
+    setUkuran: function (k, b) { terapkanUkuran(k, b); papan = papanKosong(); gambar(); },
+    setMode: function (m) { mode = m; },
+    setSkor: function (v) { skor = v; perbaruiHud(); },
+    setSisaWaktu: function (d) { sisaWaktu = d; }
   };
 })();
 </script>
