@@ -52,6 +52,9 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .lvl small{font-size:11px;color:#f5b301;letter-spacing:1px}
 .lvl.locked{opacity:.45;cursor:not-allowed;background:#eef2f7}
 .lvl.done{border-color:var(--accent);background:#eaf2fa}
+.lvl small.best{font-size:10px;color:var(--muted);letter-spacing:0}
+.statbar{font-size:12.5px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:2px 0 10px;line-height:1.5}
+#btnLanjut{width:100%;margin-bottom:10px}
 .shop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;text-align:left}
 .item{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
 .item b{font-size:13px;color:var(--navy);display:block}
@@ -113,6 +116,8 @@ footer a{color:var(--navy);font-weight:700;text-decoration:none}
 <p><b>Kenapa Rp99.900?</b> Ini game dengan 10 tahap buatan tangan + bos Raja Tikus, musuh AI (tikus menghindar, anjing gigit tali), 5 power-up, progres tersimpan otomatis. File HTML5 — main offline di HP/laptop. Bandingkan: Tangkap Ikan Rp19.900, Susun Balok Rp49.900. Makin lengkap gamenya, makin tinggi harganya.</p>
 </div>
 <div class="grid" id="levelGrid"></div>
+<button class="btn orange" id="btnLanjut">▶ Lanjutkan</button>
+<p class="statbar" id="statBar"></p>
 <div class="row">
 <button class="btn orange" id="btnShop">🛍️ Toko Power-Up</button>
 <button class="btn ghost" id="btnHow">❓ Cara Main</button>
@@ -140,6 +145,7 @@ footer a{color:var(--navy);font-weight:700;text-decoration:none}
 <div class="kv"><span>🐶 Anjing penjaga</span><b id="prepDogs">0</b></div>
 <div class="kv"><span>🧶 Bola benang</span><b id="prepBalls">3</b></div>
 <div class="kv"><span>⭐ Bintang 2 / 3</span><b id="prepStars">—</b></div>
+<div class="kv"><span>🏆 Skor terbaikmu</span><b id="prepBest">—</b></div>
 <p style="margin-top:10px"><b>Power-up (milikmu — tap untuk pakai di tahap ini):</b></p>
 <div class="pwrow" id="prepPw"></div>
 <div class="row">
@@ -322,6 +328,7 @@ var POWERUPS = {
 function defaultSave(){
   return {levelTerbuka:1, bintang:[0,0,0,0,0,0,0,0,0,0],
     skorTerbaik:[0,0,0,0,0,0,0,0,0,0], koin:0,
+    ikanTotal:0, tikusTotal:0, anjingTotal:0,
     inventaris:{baja:0,lengket:0,panjang:0,umpan:0,cadangan:0},
     suara:true, sudahTutorial:false};
 }
@@ -1200,6 +1207,7 @@ if(typeof window!=="undefined") window.OYEN_BENANG = API;
 if(typeof document!=="undefined" && document.getElementById && document.getElementById("game")){
 (function(){
 var $=function(id){ return document.getElementById(id); };
+function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
 var canvas=$("game"), ctx=canvas.getContext("2d");
 var save=loadSave();
 AudioSys.on = !!save.suara;
@@ -1222,11 +1230,26 @@ function renderMenu(){
     var locked = i+1>save.levelTerbuka;
     b.className="lvl"+(locked?" locked":(save.bintang[i]>0?" done":""));
     var st="☆☆☆".slice(0,3-save.bintang[i])+"★".repeat(save.bintang[i]);
-    b.innerHTML="<b>"+(locked?"🔒":L.id)+"</b><small>"+(locked?"":("★".repeat(save.bintang[i])+"☆".repeat(3-save.bintang[i])))+"</small>";
-    b.title=L.nama+(locked?" (terkunci — selesaikan tahap "+save.levelTerbuka+" dulu)":"");
+    b.innerHTML="<b>"+(locked?"🔒":L.id)+"</b><small>"+(locked?"":("★".repeat(save.bintang[i])+"☆".repeat(3-save.bintang[i])))+"</small>"+(locked||!save.skorTerbaik[i]?"":"<small class=\"best\">🏆 "+fmtNum(save.skorTerbaik[i])+"</small>");
+    b.title=L.nama+(locked?" (terkunci — selesaikan tahap "+save.levelTerbuka+" dulu)":"")+(save.skorTerbaik[i]?" — skor terbaik: "+fmtNum(save.skorTerbaik[i]):"");
     if(!locked) b.onclick=function(){ AudioSys.click(); openPrep(i); };
     grid.appendChild(b);
   });
+  /* FITUR: tombol Lanjutkan — lompat ke tahap pertama yang belum selesai */
+  var lanjutIdx=-1;
+  for(var li=0; li<LEVELS.length; li++){
+    if(li+1<=save.levelTerbuka && save.bintang[li]===0){ lanjutIdx=li; break; }
+  }
+  var bl=$("btnLanjut");
+  if(lanjutIdx>=0){
+    bl.textContent="▶ Lanjutkan: Tahap "+LEVELS[lanjutIdx].id+" — "+LEVELS[lanjutIdx].nama;
+    bl.onclick=function(){ AudioSys.click(); openPrep(lanjutIdx); };
+  } else {
+    bl.textContent="🏆 Semua tahap selesai — main lagi dari Tahap 10";
+    bl.onclick=function(){ AudioSys.click(); openPrep(LEVELS.length-1); };
+  }
+  /* FITUR: statistik pemain di menu */
+  $("statBar").textContent="🐟 "+(save.ikanTotal||0)+" ikan diselamatkan · 🐭 "+(save.tikusTotal||0)+" tikus di-bonk · 🐶 "+(save.anjingTotal||0)+" anjing dibuat pusing";
   show("ovMenu");
   /* gambar latar menu: level 1 diam */
   if(!game){ game=createGame(0,{skipTutorial:true}); game.phase="aim"; }
@@ -1245,6 +1268,7 @@ function openPrep(i){
   $("prepDogs").textContent=(L.anjing?L.anjing.length:0)+" 🐶";
   $("prepBalls").textContent=L.bola+(L.id===10?" (Momo +1 = 4)":"")+" 🧶";
   $("prepStars").textContent="★2 ≥ "+L.bintang.s2+" · ★3 ≥ "+L.bintang.s3;
+  $("prepBest").textContent = save.skorTerbaik[i]>0 ? fmtNum(save.skorTerbaik[i])+" (★"+save.bintang[i]+")" : "Belum ada — mainkan tahap ini!";
   var pw=$("prepPw"); pw.innerHTML="";
   Object.keys(POWERUPS).forEach(function(k){
     var P=POWERUPS[k], owned=save.inventaris[k]||0;
@@ -1303,6 +1327,11 @@ function loop(t){
   raf=requestAnimationFrame(loop);
 }
 function onLevelEnd(){
+  /* FITUR: statistik pemain — akumulasi tiap percobaan yang selesai */
+  save.ikanTotal=(save.ikanTotal||0)+game.fishSaved;
+  save.tikusTotal=(save.tikusTotal||0)+game.ratsBonked;
+  save.anjingTotal=(save.anjingTotal||0)+game.dogsDizzied;
+  saveSave(save);
   $("hud").style.display="none"; $("ctrl").style.display="none";
   if(game.won){
     var i=levelIdx;

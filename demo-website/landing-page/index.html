@@ -176,6 +176,18 @@
   }
   footer a { color: #ffd34d; font-weight: 700; text-decoration: none; }
   footer a:hover { text-decoration: underline; }
+  #kontak form label { display: block; font-weight: 700; font-size: 14px; margin: 14px 0 6px; }
+  #kontak form input, #kontak form select, #kontak form textarea {
+    width: 100%; padding: 12px 14px; border: 2px solid #cbd9e8; border-radius: 10px;
+    font: inherit; background: #fff; color: #14263d;
+  }
+  #kontak form input:focus, #kontak form select:focus, #kontak form textarea:focus { outline: 3px solid #8fb4d9; border-color: #14263d; }
+  #kontak form button[type=submit] { margin-top: 18px; border: 0; cursor: pointer; }
+  #kontak .form-error { color: #b3372f; background: #f9e6e3; border: 1px solid #e8b4ae; border-radius: 10px; padding: 10px 12px; margin-top: 14px; font-size: 14px; }
+  #kontak-status { background: #e8f0f8; border: 1px solid #8fb4d9; border-radius: 10px; padding: 14px 16px; margin-top: 16px; font-size: 15px; }
+  .riwayat-list { list-style: none; margin-top: 8px; }
+  .riwayat-list li { padding: 10px 0; border-bottom: 1px solid #eef3f8; font-size: 15px; }
+  .riwayat-list small { display: block; color: #6b7f94; font-size: 13px; }
   @media (max-width: 760px) {
     .hero { grid-template-columns: 1fr; padding: 26px 22px; }
     .hero h1 { font-size: 31px; }
@@ -339,6 +351,36 @@
     </div>
   </section>
 
+  <!-- KIRIM PESAN -->
+  <section class="card" id="kontak">
+    <h2>Kirim Pesan ke Sepatu Kinclong</h2>
+    <p class="section-sub">Punya pertanyaan soal cuci sepatu? Isi formulir di bawah ini. Pesan tersimpan di perangkat Anda (demo) dan kami balas lewat WhatsApp.</p>
+    <form id="form-kontak-kinclong" novalidate>
+      <label for="kontak-nama">Nama Anda</label>
+      <input type="text" id="kontak-nama" name="nama" placeholder="Contoh: Sinta" autocomplete="name">
+      <label for="kontak-wa">Nomor WhatsApp (opsional)</label>
+      <input type="tel" id="kontak-wa" name="wa" placeholder="Contoh: 0812-3456-7890" autocomplete="tel">
+      <label for="kontak-layanan">Layanan yang ditanyakan</label>
+      <select id="kontak-layanan" name="layanan">
+        <option>Cuci Reguler</option>
+        <option>Deep Clean</option>
+        <option>Perawatan Sepatu Putih</option>
+        <option>Cuci + Perawatan Sol</option>
+        <option>Lainnya</option>
+      </select>
+      <label for="kontak-pesan">Pesan Anda</label>
+      <textarea id="kontak-pesan" name="pesan" rows="4" placeholder="Contoh: Sepatu putih saya ada noda kuning, bisa dibersihkan?"></textarea>
+      <p class="form-error" id="kontak-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-gold">Kirim Pesan</button>
+    </form>
+    <div id="kontak-status" role="status" hidden></div>
+    <div id="kontak-riwayat" hidden>
+      <h3 style="margin-top:20px">Pesan tersimpan di perangkat ini</h3>
+      <ul class="riwayat-list" id="kontak-riwayat-list"></ul>
+      <button type="button" class="btn btn-outline" id="kontak-hapus-riwayat" style="cursor:pointer">Hapus Semua Pesan Tersimpan</button>
+    </div>
+  </section>
+
   <!-- CTA AKHIR -->
   <section class="cta-final">
     <h2>Mau sepatu kembali bersih?</h2>
@@ -354,6 +396,83 @@
 
 
 
+
+<script>
+/* FITUR BARU 24 Nov 2026 — Formulir kontak Sepatu Kinclong:
+   validasi di sisi klien, simpan ke localStorage, tampilkan status terkirim. */
+(function () {
+  var KEY = 'kinclongPesan';
+  var form = document.getElementById('form-kontak-kinclong');
+  var errEl = document.getElementById('kontak-error');
+  var statusEl = document.getElementById('kontak-status');
+  var riwayatEl = document.getElementById('kontak-riwayat');
+  var riwayatList = document.getElementById('kontak-riwayat-list');
+
+  function loadPesan() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function savePesan(arr) {
+    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function renderRiwayat() {
+    var arr = loadPesan();
+    if (!arr.length) { riwayatEl.hidden = true; riwayatList.innerHTML = ''; return; }
+    riwayatEl.hidden = false;
+    riwayatList.innerHTML = arr.map(function (p) {
+      return '<li><strong>' + esc(p.nama) + '</strong> — ' + esc(p.layanan) +
+        '<small>' + esc(p.waktu) + (p.wa ? ' • WA: ' + esc(p.wa) : '') + '</small>' +
+        esc(p.pesan) + '</li>';
+    }).join('');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nama = document.getElementById('kontak-nama').value.trim();
+    var wa = document.getElementById('kontak-wa').value.trim();
+    var layanan = document.getElementById('kontak-layanan').value;
+    var pesan = document.getElementById('kontak-pesan').value.trim();
+    var errors = [];
+    if (nama.length < 2) errors.push('Nama diisi minimal 2 huruf.');
+    if (pesan.length < 10) errors.push('Pesan diisi minimal 10 karakter.');
+    if (wa && !/^[0-9+\-\s()]{9,16}$/.test(wa)) errors.push('Nomor WhatsApp tidak valid (9–16 digit angka).');
+    if (errors.length) {
+      errEl.textContent = errors.join(' ');
+      errEl.hidden = false;
+      statusEl.hidden = true;
+      return;
+    }
+    errEl.hidden = true;
+    var arr = loadPesan();
+    arr.unshift({
+      nama: nama, wa: wa, layanan: layanan, pesan: pesan,
+      waktu: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    });
+    savePesan(arr);
+    statusEl.innerHTML = '<strong>Pesan terkirim!</strong> Terima kasih, ' + esc(nama) +
+      '. Pesan Anda tentang <strong>' + esc(layanan) + '</strong> sudah tersimpan di perangkat ini (demo). ' +
+      'Kami akan membalas lewat WhatsApp — atau chat langsung via tombol WhatsApp di halaman ini.';
+    statusEl.hidden = false;
+    form.reset();
+    renderRiwayat();
+    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  document.getElementById('kontak-hapus-riwayat').addEventListener('click', function () {
+    if (!window.confirm('Hapus semua pesan tersimpan di perangkat ini?')) return;
+    savePesan([]);
+    renderRiwayat();
+    statusEl.hidden = true;
+  });
+
+  renderRiwayat();
+})();
+</script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->
 <script>

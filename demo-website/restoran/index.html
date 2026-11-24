@@ -84,6 +84,19 @@
   .price-box h2::after{margin-left:auto;margin-right:auto}
   .price-box p{color:#cfe0f2;max-width:620px;margin:10px auto 0}
   .price-box .big{font-size:20px;font-weight:800;color:#ffd34d;margin-top:12px}
+  /* Keranjang pesanan */
+  .menu-item .tambah{flex:0 0 auto;align-self:center;background:#14263d;color:#fff;border:0;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .menu-item .tambah:hover{background:#1e3a5c}
+  .keranjang-list{list-style:none;margin-top:10px}
+  .keranjang-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #e8eef6}
+  .keranjang-list li:last-child{border-bottom:0}
+  .qty{display:flex;gap:6px;align-items:center}
+  .qty button{width:30px;height:30px;border-radius:50%;border:2px solid #8fb4d9;background:#fff;color:#14263d;font-weight:800;font-size:16px;cursor:pointer;line-height:1}
+  .qty b{min-width:22px;text-align:center}
+  .keranjang-total{display:flex;justify-content:space-between;font-size:18px;font-weight:800;padding:14px 4px 0}
+  .keranjang-aksi{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .keranjang-aksi .btn{cursor:pointer;border:0;font:inherit}
+  .keranjang-kosong{color:#5a718c;margin-top:10px}
   footer{background:#14263d;color:#cfe0f2;text-align:center;padding:28px 18px;margin-top:48px}
   footer a{color:#ffd34d;font-weight:700}
   footer p{max-width:720px;margin:0 auto}
@@ -170,6 +183,22 @@
         <div class="menu-item"><div><h3>Donat Gula</h3><p>Donat goreng taburan gula halus, isi 2 pcs.</p></div><span class="price">Rp10.000</span></div>
       </div>
       <p class="note">Contoh harga di atas hanya untuk demo. Pemesanan di tempat — bayar langsung di kafe.</p>
+    </div>
+  </section>
+
+  <!-- KERANJANG PESANAN -->
+  <section id="keranjang-senja">
+    <h2>Keranjang Pesanan</h2>
+    <p class="lead">Tekan tombol <strong>+ Tambah</strong> di menu untuk memasukkan pesanan ke keranjang. Total dihitung otomatis. Keranjang tersimpan di perangkat ini.</p>
+    <div class="card">
+      <p class="keranjang-kosong" id="keranjang-kosong">Keranjang masih kosong — pilih menu di atas dulu.</p>
+      <ul class="keranjang-list" id="keranjang-list"></ul>
+      <div class="keranjang-total" id="keranjang-total" hidden><span>Total</span><span id="keranjang-total-nominal">Rp0</span></div>
+      <div class="keranjang-aksi">
+        <button class="btn btn-gold" type="button" id="keranjang-kirim" disabled>Kirim Pesanan via WhatsApp</button>
+        <button class="btn btn-navy" type="button" id="keranjang-kosongkan" disabled>Kosongkan Keranjang</button>
+      </div>
+      <p class="note">Ini contoh demo: pesanan dikirim sebagai permintaan lewat WhatsApp, bukan pembayaran online. Bayar langsung di kafe, seperti tertulis di menu.</p>
     </div>
   </section>
 
@@ -338,6 +367,105 @@
     msg.style.display = 'block';
     msg.scrollIntoView({behavior:'smooth', block:'nearest'});
   });
+</script>
+
+<script>
+/* FITUR BARU 24 Nov 2026 — Keranjang pesanan Kafe Senja:
+   tombol tambah di tiap menu, jumlah bisa diubah, total otomatis,
+   tersimpan di localStorage, kirim pesanan via WhatsApp (nomor yang sudah ada). */
+(function () {
+  var KEY = 'kafeSenjaKeranjang';
+  var WA = '6281247986994';
+  var listEl = document.getElementById('keranjang-list');
+  var kosongEl = document.getElementById('keranjang-kosong');
+  var totalEl = document.getElementById('keranjang-total');
+  var totalNominal = document.getElementById('keranjang-total-nominal');
+  var kirimBtn = document.getElementById('keranjang-kirim');
+  var kosongkanBtn = document.getElementById('keranjang-kosongkan');
+
+  function parseHarga(teks) {
+    var n = parseInt(String(teks).replace(/[^0-9]/g, ''), 10);
+    return isNaN(n) ? 0 : n;
+  }
+  function formatRp(n) { return 'Rp' + n.toLocaleString('id-ID'); }
+  function loadKeranjang() {
+    try { var a = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function saveKeranjang(a) { try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {} }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function render() {
+    var items = loadKeranjang();
+    var total = 0;
+    listEl.innerHTML = items.map(function (it, i) {
+      total += it.harga * it.jumlah;
+      return '<li><div><strong>' + esc(it.nama) + '</strong><br><span class="price">' + formatRp(it.harga) + '</span></div>' +
+        '<span class="qty"><button type="button" data-keranjang-kurang="' + i + '" aria-label="Kurangi">−</button><b>' + it.jumlah + '</b>' +
+        '<button type="button" data-keranjang-tambah="' + i + '" aria-label="Tambah">+</button></span>' +
+        '<span class="price">' + formatRp(it.harga * it.jumlah) + '</span></li>';
+    }).join('');
+    kosongEl.style.display = items.length ? 'none' : '';
+    totalEl.hidden = !items.length;
+    totalNominal.textContent = formatRp(total);
+    kirimBtn.disabled = !items.length;
+    kosongkanBtn.disabled = !items.length;
+  }
+
+  /* Pasang tombol "+ Tambah" di setiap item menu */
+  document.querySelectorAll('.menu-item').forEach(function (item) {
+    var namaEl = item.querySelector('h3');
+    var hargaEl = item.querySelector('.price');
+    if (!namaEl || !hargaEl) return;
+    var nama = namaEl.childNodes[0].textContent.trim();
+    var harga = parseHarga(hargaEl.textContent);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tambah';
+    btn.textContent = '+ Tambah';
+    btn.setAttribute('aria-label', 'Tambah ' + nama + ' ke keranjang');
+    btn.addEventListener('click', function () {
+      var items = loadKeranjang();
+      var ada = null;
+      items.forEach(function (it) { if (it.nama === nama) ada = it; });
+      if (ada) ada.jumlah += 1;
+      else items.push({ nama: nama, harga: harga, jumlah: 1 });
+      saveKeranjang(items);
+      render();
+      document.getElementById('keranjang-senja').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    item.appendChild(btn);
+  });
+
+  listEl.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-keranjang-tambah]') : null;
+    var k = e.target.closest ? e.target.closest('[data-keranjang-kurang]') : null;
+    if (!t && !k) return;
+    var items = loadKeranjang();
+    var i = +((t || k).getAttribute(t ? 'data-keranjang-tambah' : 'data-keranjang-kurang'));
+    if (t) items[i].jumlah += 1;
+    else { items[i].jumlah -= 1; if (items[i].jumlah <= 0) items.splice(i, 1); }
+    saveKeranjang(items);
+    render();
+  });
+
+  kirimBtn.addEventListener('click', function () {
+    var items = loadKeranjang();
+    if (!items.length) return;
+    var total = items.reduce(function (s, it) { return s + it.harga * it.jumlah; }, 0);
+    var baris = items.map(function (it) { return '- ' + it.jumlah + 'x ' + it.nama + ' (' + formatRp(it.harga * it.jumlah) + ')'; }).join('\n');
+    var pesan = 'Halo Kafe Senja, saya mau pesan (contoh demo):\n' + baris + '\nTotal: ' + formatRp(total) + '\n\nMohon konfirmasi ketersediaannya. Terima kasih.';
+    window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(pesan), '_blank');
+  });
+
+  kosongkanBtn.addEventListener('click', function () {
+    if (!window.confirm('Kosongkan semua isi keranjang?')) return;
+    saveKeranjang([]);
+    render();
+  });
+
+  render();
+})();
 </script>
 
 <!-- KIKI-PENGATURAN v1 (panel Pengaturan: nama, warna, logo, pengguna) -->
