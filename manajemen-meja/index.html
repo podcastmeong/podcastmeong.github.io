@@ -263,6 +263,14 @@
   .login-note { color: var(--muted); font-size: 12.5px; line-height: 1.6; margin: 14px 0 0; }
 
   body[data-role="kasir"] .hanya-admin { display: none !important; }
+  body[data-role="manajer"] .hanya-admin { display: none !important; }
+  body[data-role="kasir"] .hanya-manajer { display: none !important; }
+  body[data-role="kasir"] .tab-btn[data-tab="persetujuan"],
+  body[data-role="kasir"] .tab-btn[data-tab="audit"] { display: none !important; }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .audit-wrap { overflow-x: auto; }
 
   .bar-pengguna {
     display: flex; justify-content: flex-end; align-items: center; gap: 10px;
@@ -301,6 +309,8 @@
     <button class="tab-btn" data-tab="pemesanan">Pemesanan</button>
     <button class="tab-btn" data-tab="riwayat">Riwayat</button>
     <button class="tab-btn" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn" data-tab="audit">Audit Log</button>
     <button class="tab-btn" data-tab="panduan">Panduan</button>
   </nav>
 
@@ -308,6 +318,16 @@
     <div class="page-head">
       <h2>Dashboard</h2>
       <p>Status meja saat ini, meja yang paling lama terisi, dan kelola pengguna aplikasi.</p>
+    </div>
+    <div class="card">
+      <h3>Outlet Aktif</h3>
+      <p class="sub">Denah meja, pemesanan, dan statistik mengikuti outlet ini. Laporan menampilkan ringkasan semua outlet.</p>
+      <div class="row">
+        <div class="grow">
+          <label for="selOutletDashboard">Outlet aktif</label>
+          <select id="selOutletDashboard" class="selOutlet"></select>
+        </div>
+      </div>
     </div>
     <div class="grid-stat">
       <div class="stat accent"><div class="label">Meja Kosong</div><div class="angka" id="dKosong">0</div></div>
@@ -327,7 +347,7 @@
     </div>
     <div class="card hanya-admin">
       <h3>Pengguna Aplikasi</h3>
-      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
+      <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran (Admin / Manajer / Kasir), menonaktifkan pengguna, dan mengganti kata sandi pengguna. Manajer tidak bisa mengelola pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
       <div id="daftarPengguna"></div>
       <div style="margin-top:14px">
         <h3 style="font-size:15px">Tambah Pengguna Baru</h3>
@@ -346,7 +366,7 @@
           </div>
           <div class="field">
             <label for="nuPeran">Peran *</label>
-            <select id="nuPeran"><option value="kasir">Kasir</option><option value="admin">Admin</option></select>
+            <select id="nuPeran"><option value="kasir">Kasir</option><option value="manajer">Manajer</option><option value="admin">Admin</option></select>
           </div>
         </div>
         <button class="btn kecil" id="btnTambahPengguna" type="button">+ Tambah Pengguna</button>
@@ -376,6 +396,14 @@
       <h2>Denah Meja</h2>
       <p>Klik meja untuk melihat detailnya: duduki meja kosong, selesaikan meja terisi, pindahkan pelanggan, atau pesan meja. Timer menunjukkan lama meja diduduki.</p>
     </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="row">
+        <div class="grow">
+          <label for="selOutletDenah">Outlet aktif</label>
+          <select id="selOutletDenah" class="selOutlet"></select>
+        </div>
+      </div>
+    </div>
     <div class="legenda">
       <span><span class="titik" style="background:var(--green)"></span>Kosong</span>
       <span><span class="titik" style="background:var(--blue)"></span>Terisi</span>
@@ -383,6 +411,25 @@
     </div>
     <div class="chips" id="denahChips"></div>
     <div class="denah-grid" id="denahGrid"></div>
+    <div class="card hanya-manajer" style="margin-top:16px">
+      <h3>Tambah Meja Baru</h3>
+      <p class="sub">Hanya Admin/Manajer. Meja baru ditambahkan ke outlet aktif dan langsung muncul di denah.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="tmNomor">Nomor meja *</label>
+          <input type="number" id="tmNomor" min="1" placeholder="Contoh: 11">
+        </div>
+        <div class="field">
+          <label for="tmZona">Zona *</label>
+          <select id="tmZona"><option>Dalam</option><option>Teras</option><option>Keluarga</option></select>
+        </div>
+        <div class="field">
+          <label for="tmKapasitas">Kapasitas (orang) *</label>
+          <input type="number" id="tmKapasitas" min="1" max="20" value="4">
+        </div>
+      </div>
+      <button class="btn kecil" id="btnTambahMeja" type="button">+ Tambah Meja</button>
+    </div>
   </section>
 
   <section class="panel" id="panel-pemesanan">
@@ -392,6 +439,12 @@
     </div>
     <div class="card">
       <h3>Pemesanan Baru</h3>
+      <div class="row" style="margin-bottom:12px">
+        <div class="grow">
+          <label for="selOutletPemesanan">Outlet aktif</label>
+          <select id="selOutletPemesanan" class="selOutlet"></select>
+        </div>
+      </div>
       <div class="form-grid">
         <div class="field">
           <label for="psNama">Nama pelanggan *</label>
@@ -461,6 +514,64 @@
       <p class="sub">Sesi meja yang sudah selesai, terbaru di atas.</p>
       <div id="laporanSelesai"></div>
     </div>
+    <div class="card">
+      <h3>Ringkasan per Outlet</h3>
+      <p class="sub">Sesi selesai hari ini dan reservasi di semua outlet.</p>
+      <div id="ringkasanOutlet"></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; Pulihkan Data</h3>
+      <p class="sub">Cadangkan seluruh data (termasuk pengguna, persetujuan, dan audit) sebagai file JSON, atau pulihkan dari file backup. Pulihkan hanya bisa dilakukan Admin/Manajer.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnBackupJson" type="button">Backup JSON</button>
+        <label class="btn kecil ghost" for="filePulihkan" style="display:inline-flex;align-items:center;cursor:pointer">Pulihkan dari JSON</label>
+        <input type="file" id="filePulihkan" accept="application/json,.json" style="display:none">
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Permintaan yang butuh persetujuan Admin/Manajer: hapus meja, batalkan/void pemesanan, dan hapus riwayat. Keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Persetujuan</h3>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Keputusan Sebelumnya</h3>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Riwayat aksi di aplikasi: siapa, kapan, dari outlet mana, dan apa yang dilakukan. Hanya Admin dan Manajer yang bisa melihat tab ini.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">login</option>
+            <option value="meja">meja</option>
+            <option value="reservasi">reservasi</option>
+            <option value="persetujuan">persetujuan</option>
+            <option value="pengguna">pengguna</option>
+            <option value="ekspor">ekspor</option>
+            <option value="sistem">sistem</option>
+          </select>
+        </div>
+      </div>
+      <div class="audit-wrap"><div id="daftarAudit"></div></div>
+    </div>
   </section>
 
   <section class="panel panduan" id="panel-panduan">
@@ -471,14 +582,16 @@
     <div class="card">
       <h3>Cara memakai</h3>
       <ol>
-        <li>Masuk sebagai <b>Admin</b> untuk mengatur pengguna, atau sebagai <b>Kasir</b> untuk mengelola meja.</li>
-        <li>Di tab <b>Denah Meja</b>, klik meja untuk melihat detailnya. Meja <b>Kosong</b> bisa diduduki (isi nama pelanggan dan jumlah orang, tambahkan pesanan dari menu bila ada); meja <b>Terisi</b> bisa diselesaikan (meja kembali kosong dan masuk riwayat) atau dipindahkan ke meja kosong lain; meja <b>Dipesan</b> menunggu pelanggan datang.</li>
-        <li>Di tab <b>Pemesanan</b>, buat pemesanan meja (nama, jumlah orang, tanggal, waktu). Saat pelanggan datang, klik <b>Check-in</b> agar meja menjadi terisi.</li>
+        <li>Masuk dengan akun Anda — <b>Admin</b> (semua akses), <b>Manajer</b> (kelola denah dan pemesanan, tanpa kelola pengguna), atau <b>Kasir</b> (denah meja, pemesanan, riwayat, laporan). Akun demo: <b>admin</b> / <b>admin123</b>, <b>manajer</b> / <b>manajer123</b>, <b>kasir</b> / <b>kasir123</b>.</li>
+        <li>Pilih <b>Outlet aktif</b> di tab Dasbor, Denah Meja, atau Pemesanan — denah meja, pemesanan, dan statistik mengikuti outlet itu; laporan menampilkan ringkasan semua outlet (Pusat, Jakarta Timur, Bekasi).</li>
+        <li>Di tab <b>Denah Meja</b>, klik meja untuk melihat detailnya. Meja <b>Kosong</b> bisa diduduki (isi nama pelanggan dan jumlah orang, tambahkan pesanan dari menu bila ada); meja <b>Terisi</b> bisa diselesaikan (meja kembali kosong dan masuk riwayat) atau dipindahkan ke meja kosong lain; meja <b>Dipesan</b> menunggu pelanggan datang. Admin/Manajer bisa menambah meja baru di bawah denah; menghapus meja diajukan ke tab <b>Persetujuan</b>.</li>
+        <li>Di tab <b>Pemesanan</b>, buat pemesanan meja (nama, jumlah orang, tanggal, waktu). Saat pelanggan datang, klik <b>Check-in</b> agar meja menjadi terisi. Membatalkan pemesanan tidak langsung jalan — diajukan ke tab <b>Persetujuan</b> dan baru berlaku bila disetujui Admin/Manajer.</li>
         <li>Timer di tiap meja menunjukkan lama meja diduduki. Meja yang terisi <b>lebih dari 60 menit</b> ditandai di Dashboard — segera tanyakan apakah pelanggan sudah selesai.</li>
-        <li>Di tab <b>Riwayat</b>, lihat semua sesi meja yang selesai dan pemesanan yang sudah selesai atau dibatalkan. Di tab <b>Laporan</b>, lihat perputaran tiap meja, rata-rata durasi duduk, dan meja paling laris.</li>
-        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Di tab <b>Riwayat</b>, lihat semua sesi meja yang selesai dan pemesanan yang sudah selesai atau dibatalkan. Menghapus entri riwayat diajukan ke tab <b>Persetujuan</b>. Di tab <b>Laporan</b>, lihat perputaran tiap meja, rata-rata durasi duduk, meja paling laris, dan ringkasan semua outlet.</li>
+        <li>Aksi sensitif (hapus meja, batalkan/void pemesanan, hapus riwayat) tidak langsung jalan — diajukan ke tab <b>Persetujuan</b> dan baru berlaku bila disetujui Admin/Manajer. Semua tercatat di tab <b>Audit Log</b> (login, perubahan status meja/pemesanan, keputusan persetujuan, backup/restore, ganti outlet).</li>
+        <li>Semua data tersimpan otomatis di perangkat ini (IndexedDB + enkripsi) setiap kali ada perubahan. Cadangkan berkala dengan tombol <b>Backup JSON</b> di tab Laporan. Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
       </ol>
-      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Manajer — <b>manajer</b> / <b>manajer123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
     </div>
     <div class="card">
       <h3>Harga aplikasi</h3>
@@ -494,17 +607,17 @@
     </div>
     <div class="card">
       <h3>Data contoh</h3>
-      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (10 meja di 3 zona, 4 kategori, 12 item menu, 2 pemesanan contoh, 4 sesi selesai contoh). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (10 meja di 3 zona, 4 kategori, 12 item menu, 2 pemesanan contoh, 4 sesi selesai contoh) di Outlet Pusat, plus Outlet Jakarta Timur dan Outlet Bekasi yang denahnya masih kosong. Semua perubahan Anda tersimpan di perangkat ini.</p>
       <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p class="sub">Aplikasi ini mengatur denah, status, pemesanan, dan perputaran meja — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem reservasi online yang terhubung ke pelanggan. Data meja dan pemesanan <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh kasir dan pelayan di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, dan Aplikasi Pemesanan Makanan kami.</p>
+      <p class="sub">Aplikasi ini berupa <b>satu file HTML</b> dan bekerja <b>offline</b>. Data denah, meja, pemesanan, dan laporan <b>hanya tersimpan di perangkat ini</b> — sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b>. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tidak tersinkron ke perangkat lain</b> dan tidak ada backup cloud otomatis — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Aplikasi ini <b>BUKAN .exe native</b> — dibuka lewat browser di laptop atau HP. Aplikasi ini mengatur denah, status, pemesanan, dan perputaran meja — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem reservasi online yang terhubung ke pelanggan. Aplikasi ini punya tiga peran pengguna (Admin, Manajer, Kasir) di perangkat ini. Untuk pemakaian bersama oleh banyak staf di perangkat berbeda (<b>multi-user lintas perangkat</b>) dan penyimpanan permanen di server dibutuhkan <b>versi server</b> — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, dan Aplikasi Pemesanan Makanan kami.</p>
     </div>
   </section>
 
   <footer>
-    <p><b>Manajemen Meja v1.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Manajemen Meja v1.</b> Multi-outlet, 3 peran, alur persetujuan, IndexedDB + enkripsi, offline. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Warung Kopi Oyen, bukan data penjualan sungguhan.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Manajemen%20Meja." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
@@ -536,7 +649,7 @@
       <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
       <button class="btn" type="submit">Masuk</button>
     </form>
-    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (denah meja, pemesanan, riwayat, laporan)</p>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Manajer: <b>manajer</b> / <b>manajer123</b> (kelola denah dan pemesanan, tanpa kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (denah meja, pemesanan, riwayat, laporan)</p>
     <p class="login-note">Akun baru dibuat admin di tab Dasbor (Pengguna Aplikasi). Setelah masuk pertama kali, segera ganti kata sandi Anda di Dasbor agar hanya Anda yang tahu.</p>
   </div>
 </div>
@@ -625,6 +738,19 @@
       d.setHours(jam, menit, 0, 0);
       return d.toISOString();
     }
+    function mejaOutlet(outletId, mulaiId, contoh) {
+      var zonaKap = [[1, "Dalam", 4], [2, "Dalam", 4], [3, "Dalam", 4], [4, "Dalam", 4], [5, "Dalam", 4], [6, "Dalam", 4], [7, "Teras", 2], [8, "Teras", 2], [9, "Keluarga", 6], [10, "Keluarga", 6]];
+      return zonaKap.map(function (z, i) {
+        var m = { id: mulaiId + i, nomor: z[0], zona: z[1], kapasitas: z[2], status: "kosong", pelanggan: null, outlet: outletId };
+        if (contoh) {
+          if (z[0] === 2) { m.status = "dipesan"; m.reservasiId = 1; }
+          if (z[0] === 3) { m.status = "terisi"; m.pelanggan = { nama: "Budi", jumlahOrang: 4, mulai: mntLalu(25), catatan: "", items: [{ id: 1, nama: "Nasi Goreng Oyen", harga: 18000, qty: 2 }, { id: 5, nama: "Es Teh Manis", harga: 5000, qty: 2 }] }; }
+          if (z[0] === 5) { m.status = "terisi"; m.pelanggan = { nama: "Sari", jumlahOrang: 2, mulai: mntLalu(70), catatan: "Minta kursi bayi.", items: [{ id: 7, nama: "Es Kopi Susu Gula Aren", harga: 12000, qty: 2 }] }; }
+          if (z[0] === 7) { m.status = "dipesan"; m.reservasiId = 2; }
+        }
+        return m;
+      });
+    }
     return {
       resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
       kategori: [
@@ -647,48 +773,224 @@
         { id: 11, kat: 3, nama: "Roti Bakar Cokelat", deskripsi: "Roti bakar cokelat, margarin.", harga: 9000, tersedia: true },
         { id: 12, kat: 4, nama: "Paket Nasi + Ayam + Es Teh", deskripsi: "Nasi putih, ayam geprek, es teh manis.", harga: 25000, tersedia: true }
       ],
-      meja: [
-        { id: 1, nomor: 1, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
-        { id: 2, nomor: 2, zona: "Dalam", kapasitas: 4, status: "dipesan", pelanggan: null, reservasiId: 1 },
-        { id: 3, nomor: 3, zona: "Dalam", kapasitas: 4, status: "terisi", pelanggan: { nama: "Budi", jumlahOrang: 4, mulai: mntLalu(25), catatan: "", items: [{ id: 1, nama: "Nasi Goreng Oyen", harga: 18000, qty: 2 }, { id: 5, nama: "Es Teh Manis", harga: 5000, qty: 2 }] } },
-        { id: 4, nomor: 4, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
-        { id: 5, nomor: 5, zona: "Dalam", kapasitas: 4, status: "terisi", pelanggan: { nama: "Sari", jumlahOrang: 2, mulai: mntLalu(70), catatan: "Minta kursi bayi.", items: [{ id: 7, nama: "Es Kopi Susu Gula Aren", harga: 12000, qty: 2 }] } },
-        { id: 6, nomor: 6, zona: "Dalam", kapasitas: 4, status: "kosong", pelanggan: null },
-        { id: 7, nomor: 7, zona: "Teras", kapasitas: 2, status: "dipesan", pelanggan: null, reservasiId: 2 },
-        { id: 8, nomor: 8, zona: "Teras", kapasitas: 2, status: "kosong", pelanggan: null },
-        { id: 9, nomor: 9, zona: "Keluarga", kapasitas: 6, status: "kosong", pelanggan: null },
-        { id: 10, nomor: 10, zona: "Keluarga", kapasitas: 6, status: "kosong", pelanggan: null }
-      ],
+      meja: mejaOutlet("pusat", 1, true).concat(mejaOutlet("jaktim", 11, false), mejaOutlet("bekasi", 21, false)),
       reservasi: [
-        { id: 1, no: "RSV-001", meja: 2, nama: "Dewi", telp: "0812-7777-8888", jumlahOrang: 2, tanggal: hariIniKey(), waktu: "18:30", catatan: "", status: "aktif", dibuat: mntLalu(120) },
-        { id: 2, no: "RSV-002", meja: 7, nama: "Andi", telp: "0813-9999-1111", jumlahOrang: 4, tanggal: hariIniKey(), waktu: "19:00", catatan: "Ulang tahun anak.", status: "aktif", dibuat: mntLalu(90) }
+        { id: 1, no: "RSV-001", meja: 2, outlet: "pusat", nama: "Dewi", telp: "0812-7777-8888", jumlahOrang: 2, tanggal: hariIniKey(), waktu: "18:30", catatan: "", status: "aktif", dibuat: mntLalu(120) },
+        { id: 2, no: "RSV-002", meja: 7, outlet: "pusat", nama: "Andi", telp: "0813-9999-1111", jumlahOrang: 4, tanggal: hariIniKey(), waktu: "19:00", catatan: "Ulang tahun anak.", status: "aktif", dibuat: mntLalu(90) }
       ],
       sesi: [
-        { id: 1, meja: 1, nama: "Rina", jumlahOrang: 3, mulai: jamHariIni(9, 5), selesai: jamHariIni(9, 50), total: 52000 },
-        { id: 2, meja: 4, nama: "Tono", jumlahOrang: 2, mulai: jamHariIni(10, 15), selesai: jamHariIni(10, 55), total: 31000 },
-        { id: 3, meja: 6, nama: "Maya", jumlahOrang: 4, mulai: jamHariIni(11, 30), selesai: jamHariIni(12, 20), total: 74000 },
-        { id: 4, meja: 9, nama: "Keluarga Harto", jumlahOrang: 6, mulai: jamHariIni(12, 40), selesai: jamHariIni(13, 35), total: 125000 }
+        { id: 1, meja: 1, outlet: "pusat", nama: "Rina", jumlahOrang: 3, mulai: jamHariIni(9, 5), selesai: jamHariIni(9, 50), total: 52000 },
+        { id: 2, meja: 4, outlet: "pusat", nama: "Tono", jumlahOrang: 2, mulai: jamHariIni(10, 15), selesai: jamHariIni(10, 55), total: 31000 },
+        { id: 3, meja: 6, outlet: "pusat", nama: "Maya", jumlahOrang: 4, mulai: jamHariIni(11, 30), selesai: jamHariIni(12, 20), total: 74000 },
+        { id: 4, meja: 9, outlet: "pusat", nama: "Keluarga Harto", jumlahOrang: 6, mulai: jamHariIni(12, 40), selesai: jamHariIni(13, 35), total: 125000 }
       ],
       seqReservasi: 3,
-      seqSesi: 5
+      seqSesi: 5,
+      seqMeja: 31,
+      outlet: [
+        { id: "pusat", nama: "Outlet Pusat" },
+        { id: "jaktim", nama: "Outlet Jakarta Timur" },
+        { id: "bekasi", nama: "Outlet Bekasi" }
+      ],
+      outletAktif: "pusat",
+      persetujuan: [],
+      audit: [],
+      nextPersetujuan: 1
     };
   }
 
+  /* ---------- Penyimpanan internal: IndexedDB + enkripsi WebCrypto (AES-GCM 256) ---------- */
+  // Internal: penyimpanan terenkripsi (IndexedDB + enkripsi, multi-outlet, peran,
+  // persetujuan, audit). Data kerja tetap di memori (state); IndexedDB adalah tempat
+  // simpan utamanya (asinkron). localStorage hanya dipakai untuk migrasi sekali
+  // dari versi lama dan sebagai cadangan bila IndexedDB tidak ada.
+  // JUJUR: kunci enkripsi dibuat acak per perangkat dan disimpan di IndexedDB
+  // yang sama — ini enkripsi demo, bukan keamanan tingkat enterprise, karena
+  // kunci dan datanya berada di perangkat yang sama.
+  var DB_NAMA = "manajemenMejaDB";
+  var DB_VERSI = 1;
+  var dbSiap = null;
+  var infoSimpan = { jenis: "indexeddb", enkripsi: false, termigrasi: false };
+  var antreSimpan = Promise.resolve();
+  var kunciKripto = null;
+
+  function idbTersedia() { return typeof indexedDB !== "undefined"; }
+  function bukaDB() {
+    if (dbSiap) { return dbSiap; }
+    dbSiap = new Promise(function (selesai) {
+      if (!idbTersedia()) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+      var req;
+      try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+      req.onupgradeneeded = function () {
+        var d = req.result;
+        if (!d.objectStoreNames.contains("kv")) { d.createObjectStore("kv"); }
+      };
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+      req.onblocked = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+    });
+    return dbSiap;
+  }
+  function idbGet(kunci) {
+    return bukaDB().then(function (d) {
+      if (!d) { return undefined; }
+      return new Promise(function (selesai) {
+        var tx, req;
+        try { tx = d.transaction("kv", "readonly"); req = tx.objectStore("kv").get(kunci); }
+        catch (e) { selesai(undefined); return; }
+        req.onsuccess = function () { selesai(req.result); };
+        req.onerror = function () { selesai(undefined); };
+      });
+    });
+  }
+  function idbPut(kunci, nilai) {
+    return bukaDB().then(function (d) {
+      if (!d) { return false; }
+      return new Promise(function (selesai) {
+        var tx, req;
+        try { tx = d.transaction("kv", "readwrite"); req = tx.objectStore("kv").put(nilai, kunci); }
+        catch (e) { selesai(false); return; }
+        req.onsuccess = function () { selesai(true); };
+        req.onerror = function () { selesai(false); };
+      });
+    });
+  }
+  function lsCadanganGet(kunci) { try { var r = localStorage.getItem(STORAGE_KEY + ".idb-" + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+  function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(STORAGE_KEY + ".idb-" + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+  function simpanKV(kunci, nilai) {
+    return idbPut(kunci, nilai).then(function (ok) {
+      if (!ok) { lsCadanganPut(kunci, nilai); }
+      return true;
+    });
+  }
+  function muatKV(kunci) {
+    return idbGet(kunci).then(function (v) {
+      if (v !== undefined) { return v; }
+      return lsCadanganGet(kunci);
+    });
+  }
+  function b64DariBuffer(buf) { var b = new Uint8Array(buf); var str = ""; for (var i = 0; i < b.length; i++) { str += String.fromCharCode(b[i]); } return btoa(str); }
+  function bufferDariB64(str) { var bin = atob(str); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+  function siapkanKripto() {
+    if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+    return muatKV("kunci").then(function (jwk) {
+      var janji = jwk
+        ? crypto.subtle.importKey("jwk", jwk, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+        : crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+            .then(function (k) { return crypto.subtle.exportKey("jwk", k).then(function (j) { return simpanKV("kunci", j).then(function () { return k; }); }); });
+      return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+        .catch(function () { infoSimpan.enkripsi = false; return false; });
+    });
+  }
+  function enkripData(obj) {
+    if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+      .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+      .catch(function () { return { v: 0, data: obj }; });
+  }
+  function dekripData(paket) {
+    if (!paket) { return Promise.resolve(null); }
+    if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+    return crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+      .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+      .catch(function () { return null; });
+  }
+  // saveState() tetap bisa dipanggil sinkron dari kode lama (fire-and-forget berantre).
   var state = seedState();
   function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+    if (!state) { return; }
+    antreSimpan = antreSimpan.then(function () {
+      return enkripData(state).then(function (paket) { return simpanKV("state", paket); });
+    }).catch(function () { /* simpan gagal: data tetap di memori */ });
   }
-  function loadState() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      var d = JSON.parse(raw);
-      if (d && Array.isArray(d.meja) && Array.isArray(d.reservasi) && Array.isArray(d.sesi)) {
-        state = d;
-        if (!state.seqReservasi) state.seqReservasi = state.reservasi.length + 1;
-        if (!state.seqSesi) state.seqSesi = state.sesi.length + 1;
+  function lengkapiMejaOutlet(obj) {
+    var maksId = obj.meja.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0);
+    var zonaKap = [[1, "Dalam", 4], [2, "Dalam", 4], [3, "Dalam", 4], [4, "Dalam", 4], [5, "Dalam", 4], [6, "Dalam", 4], [7, "Teras", 2], [8, "Teras", 2], [9, "Keluarga", 6], [10, "Keluarga", 6]];
+    obj.outlet.forEach(function (o) {
+      if (obj.meja.some(function (m) { return (m.outlet || "pusat") === o.id; })) { return; }
+      zonaKap.forEach(function (z) {
+        maksId++;
+        obj.meja.push({ id: maksId, nomor: z[0], zona: z[1], kapasitas: z[2], status: "kosong", pelanggan: null, outlet: o.id });
+      });
+    });
+    if (!obj.seqMeja || obj.seqMeja <= maksId) { obj.seqMeja = maksId + 1; }
+  }
+  function normalisasiState(obj) {
+    if (!obj || typeof obj !== "object") { obj = seedState(); }
+    if (!obj.resto || typeof obj.resto !== "object") { obj.resto = seedState().resto; }
+    if (!Array.isArray(obj.outlet) || !obj.outlet.length) { obj.outlet = seedState().outlet; }
+    if (!obj.outletAktif || !obj.outlet.some(function (o) { return o.id === obj.outletAktif; })) { obj.outletAktif = "pusat"; }
+    if (!Array.isArray(obj.kategori)) { obj.kategori = []; }
+    if (!Array.isArray(obj.items)) { obj.items = []; }
+    if (!Array.isArray(obj.meja)) { obj.meja = []; }
+    if (!Array.isArray(obj.reservasi)) { obj.reservasi = []; }
+    if (!Array.isArray(obj.sesi)) { obj.sesi = []; }
+    obj.meja.forEach(function (m) { if (!m.outlet) { m.outlet = "pusat"; } });
+    obj.reservasi.forEach(function (r) { if (!r.outlet) { r.outlet = "pusat"; } });
+    obj.sesi.forEach(function (s) { if (!s.outlet) { s.outlet = "pusat"; } });
+    lengkapiMejaOutlet(obj);
+    if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+    if (!Array.isArray(obj.audit)) { obj.audit = []; }
+    if (typeof obj.nextPersetujuan !== "number") { obj.nextPersetujuan = (obj.persetujuan.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0)) + 1; }
+    if (!obj.seqReservasi) { obj.seqReservasi = obj.reservasi.length + 1; }
+    if (!obj.seqSesi) { obj.seqSesi = obj.sesi.length + 1; }
+    return obj;
+  }
+  function muatState() {
+    return muatKV("state").then(function (paket) {
+      if (paket !== undefined) {
+        return dekripData(paket).then(function (obj) {
+          if (obj && Array.isArray(obj.meja) && Array.isArray(obj.reservasi) && Array.isArray(obj.sesi)) { state = normalisasiState(obj); return; }
+          state = normalisasiState(seedState()); saveState();
+        });
       }
-    } catch (e) { /* data rusak: pakai contoh */ }
+      // Migrasi SATU KALI dari localStorage lama
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          var lama = JSON.parse(raw);
+          if (lama && Array.isArray(lama.meja) && Array.isArray(lama.reservasi) && Array.isArray(lama.sesi)) {
+            state = normalisasiState(lama);
+            infoSimpan.termigrasi = true;
+            state.audit.unshift({ waktu: new Date().toISOString(), user: "sistem", peran: "-", outlet: "pusat", aksi: "sistem", detail: "Data dimigrasikan dari localStorage ke IndexedDB terenkripsi." });
+            try { localStorage.setItem(STORAGE_KEY + ".cadangan-lama", raw); localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            saveState();
+            return;
+          }
+        }
+      } catch (e) { /* lanjut ke data contoh */ }
+      state = normalisasiState(seedState());
+      saveState();
+    }).catch(function () {
+      state = normalisasiState(seedState());
+      saveState();
+    });
+  }
+
+  // ---------- Outlet ----------
+  function outletAktif() { return (state && state.outletAktif) || "pusat"; }
+  function namaOutlet(id) {
+    var o = (state.outlet || []).find(function (x) { return x.id === id; });
+    return o ? o.nama : id;
+  }
+  function isiSelectOutlet() {
+    document.querySelectorAll(".selOutlet").forEach(function (sel) {
+      sel.innerHTML = state.outlet.map(function (o) { return '<option value="' + o.id + '">' + esc(o.nama) + "</option>"; }).join("");
+      sel.value = outletAktif();
+    });
+  }
+  function setOutlet(id) {
+    if (!state.outlet.some(function (o) { return o.id === id; })) { return; }
+    state.outletAktif = id;
+    saveState();
+    catatAudit("sistem", "Outlet aktif diubah ke " + namaOutlet(id) + ".");
+    renderSemua();
+  }
+  function mejaAktif() { return state.meja.filter(function (m) { return (m.outlet || "pusat") === outletAktif(); }); }
+  function reservasiAktif() { return state.reservasi.filter(function (r) { return (r.outlet || "pusat") === outletAktif(); }); }
+  function cariMejaByNomor(nomor, outletId) {
+    return state.meja.find(function (x) { return x.nomor === nomor && (x.outlet || "pusat") === (outletId || outletAktif()); });
   }
 
   function cariMeja(id) { return state.meja.find(function (x) { return x.id === id; }); }
@@ -705,7 +1007,7 @@
   }
   function sesiHariIni() {
     var kunci = hariIniKey();
-    return state.sesi.filter(function (s) { return s.selesai && s.selesai.slice(0, 10) === kunci; });
+    return state.sesi.filter(function (s) { return s.selesai && s.selesai.slice(0, 10) === kunci && (s.outlet || "pusat") === outletAktif(); });
   }
   function rataDurasiSesi() {
     var s = sesiHariIni();
@@ -715,7 +1017,7 @@
   }
   function perputaranPerMeja() {
     var s = sesiHariIni();
-    return state.meja.map(function (m) {
+    return mejaAktif().map(function (m) {
       var sesi = s.filter(function (x) { return x.meja === m.nomor; });
       var rata = null;
       if (sesi.length) {
@@ -728,56 +1030,116 @@
   // ---------- Login & pengguna ----------
   var USERS_KEY = STORAGE_KEY + ".users";
   var SESSION_KEY = STORAGE_KEY + ".session";
+  var PERAN_VALID = ["admin", "manajer", "kasir"];
   var DEFAULT_USERS = [
     { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
+    { username: "manajer", password: "manajer123", name: "Manajer", role: "manajer", aktif: true },
     { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
   ];
   var users = [];
   var currentUser = null;
 
-  function loadUsers() {
-    try {
-      var raw = localStorage.getItem(USERS_KEY);
-      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
-      var d = JSON.parse(raw);
-      if (!Array.isArray(d) || d.length === 0) throw new Error("kosong");
-      users = d.map(function (x) {
-        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
-      });
-    } catch (e) {
-      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
-      saveUsers();
-    }
+  function normalisasiPengguna(u) {
+    var peran = PERAN_VALID.indexOf(u.role) === -1 ? "kasir" : u.role;
+    return { username: String(u.username || "").toLowerCase(), password: String(u.password || ""), name: u.name || u.username, role: peran, aktif: u.aktif !== false };
+  }
+  function labelPeran(r) { return { admin: "Admin", manajer: "Manajer", kasir: "Kasir" }[r] || r; }
+  function peran() { return currentUser ? currentUser.role : null; }
+  function bisa(aksi) {
+    var r = peran();
+    if (!r) { return false; }
+    if (aksi === "kelola_pengguna") { return r === "admin"; }
+    if (aksi === "audit" || aksi === "putuskan" || aksi === "hapus" || aksi === "reset" || aksi === "pulihkan" || aksi === "kelola_denah") { return r === "admin" || r === "manajer"; }
+    return true;
+  }
+  function butuh(aksi, pesan) {
+    if (bisa(aksi)) { return true; }
+    toast(pesan || "Akses ditolak untuk peran Anda.");
+    return false;
   }
   function saveUsers() {
-    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+    antreSimpan = antreSimpan.then(function () {
+      return enkripData(users).then(function (paket) { return simpanKV("pengguna", paket); });
+    }).catch(function () { /* simpan gagal */ });
+  }
+  function muatUsers() {
+    return muatKV("pengguna").then(function (paket) {
+      if (paket !== undefined) {
+        return dekripData(paket).then(function (arr) {
+          if (Array.isArray(arr) && arr.length) { users = arr.map(normalisasiPengguna); return; }
+          users = DEFAULT_USERS.map(normalisasiPengguna);
+          saveUsers();
+        });
+      }
+      // Migrasi SATU KALI pengguna dari localStorage lama
+      try {
+        var raw = localStorage.getItem(USERS_KEY);
+        if (raw) {
+          var lama = JSON.parse(raw);
+          if (Array.isArray(lama) && lama.length) {
+            users = lama.map(normalisasiPengguna);
+            // Pengguna lama belum mengenal peran Manajer: tambahkan akun demo Manajer sekali.
+            if (!users.some(function (x) { return x.username === "manajer"; })) {
+              users.push({ username: "manajer", password: "manajer123", name: "Manajer", role: "manajer", aktif: true });
+            }
+            try { localStorage.setItem(USERS_KEY + ".cadangan-lama", raw); localStorage.removeItem(USERS_KEY); } catch (e) {}
+            saveUsers();
+            return;
+          }
+        }
+      } catch (e) { /* lanjut ke default */ }
+      users = DEFAULT_USERS.map(normalisasiPengguna);
+      saveUsers();
+    }).catch(function () {
+      users = DEFAULT_USERS.map(normalisasiPengguna);
+    });
+  }
+  function simpanSesi(username) {
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ username: username })); }
+    catch (e) { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: username })); } catch (e2) { /* abaikan */ } }
+  }
+  function hapusSesi() {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+  }
+  function bacaSesi() {
+    try { var r = sessionStorage.getItem(SESSION_KEY); if (r) { return r; } } catch (e) { /* abaikan */ }
+    try { return localStorage.getItem(SESSION_KEY); } catch (e) { return null; }
   }
   function terapkanSesi() {
     document.body.setAttribute("data-role", currentUser ? currentUser.role : "");
-    $("userChip").textContent = currentUser ? currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")" : "—";
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + labelPeran(currentUser.role) + ")" : "—";
     $("namaAkunSaya").textContent = currentUser ? currentUser.name : "—";
     $("loginOverlay").classList.toggle("hidden", !!currentUser);
+    perbaruiBadge();
   }
   function masuk(username, password) {
     var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
     if (!u) return false;
     currentUser = u;
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
+    simpanSesi(u.username);
     terapkanSesi();
+    catatAudit("login", "Masuk sebagai " + u.username + " (" + labelPeran(u.role) + ").");
     return true;
   }
   function keluar() {
+    if (currentUser) { catatAudit("login", "Keluar (" + currentUser.username + ")."); }
     currentUser = null;
-    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
+    hapusSesi();
     terapkanSesi();
   }
   function pulihkanSesi() {
     try {
-      var raw = localStorage.getItem(SESSION_KEY);
+      var raw = bacaSesi();
       if (!raw) return;
-      var s = JSON.parse(raw);
-      var u = users.find(function (x) { return x.username === s.username && x.aktif !== false; });
-      if (u) { currentUser = u; terapkanSesi(); }
+      var s2 = JSON.parse(raw);
+      var u = users.find(function (x) { return x.username === s2.username && x.aktif !== false; });
+      if (u) {
+        currentUser = u;
+        // Migrasi sesi lama dari localStorage ke sessionStorage
+        try { if (localStorage.getItem(SESSION_KEY)) { localStorage.removeItem(SESSION_KEY); simpanSesi(u.username); } } catch (e) { /* abaikan */ }
+        terapkanSesi();
+      }
     } catch (e) { /* abaikan */ }
   }
 
@@ -804,29 +1166,33 @@
     btn.addEventListener("click", function () {
       document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      if ((tab === "persetujuan" || tab === "audit") && !bisa("audit")) { toast("Hanya Admin/Manajer yang bisa membuka tab ini."); return; }
       document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
       $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
-      var tab = btn.getAttribute("data-tab");
       if (tab === "dashboard") renderDashboard();
       if (tab === "denah") renderDenah();
       if (tab === "pemesanan") renderPemesanan();
       if (tab === "riwayat") renderRiwayat();
       if (tab === "laporan") renderLaporan();
+      if (tab === "persetujuan") renderPersetujuan();
+      if (tab === "audit") renderAudit();
     });
   });
 
   // ---------- Dashboard ----------
   function renderDashboard() {
-    var kosong = state.meja.filter(function (m) { return m.status === "kosong"; }).length;
-    var terisi = state.meja.filter(function (m) { return m.status === "terisi"; }).length;
-    var dipesan = state.meja.filter(function (m) { return m.status === "dipesan"; }).length;
+    var daftar = mejaAktif();
+    var kosong = daftar.filter(function (m) { return m.status === "kosong"; }).length;
+    var terisi = daftar.filter(function (m) { return m.status === "terisi"; }).length;
+    var dipesan = daftar.filter(function (m) { return m.status === "dipesan"; }).length;
     $("dKosong").textContent = kosong;
     $("dTerisi").textContent = terisi;
     $("dDipesan").textContent = dipesan;
     $("dSesi").textContent = sesiHariIni().length;
     var rata = rataDurasiSesi();
     $("dRataDurasi").textContent = rata == null ? "—" : menitKeTeks(rata);
-    var lama = state.meja.filter(function (m) { return m.status === "terisi" && menitDuduk(m) > BATAS_LAMA_MENIT; })
+    var lama = daftar.filter(function (m) { return m.status === "terisi" && menitDuduk(m) > BATAS_LAMA_MENIT; })
       .sort(function (a, b) { return menitDuduk(b) - menitDuduk(a); });
     $("daftarLama").innerHTML = lama.length ? lama.map(function (m) {
       return '<div class="item-bar"><div><div class="nm">Meja ' + m.nomor + " · " + esc(m.pelanggan.nama) + ' <span class="lencana st-dipesan">LAMA</span></div>' +
@@ -840,15 +1206,16 @@
     var wrap = $("daftarPengguna");
     if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
     wrap.innerHTML = users.map(function (u) {
-      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var teksPeran = labelPeran(u.role);
+      var peranBerikut = u.role === "admin" ? "manajer" : u.role === "manajer" ? "kasir" : "admin";
       var tombol = "";
       if (u.username !== currentUser.username) {
-        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + "</button>";
+        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + labelPeran(peranBerikut) + "</button>";
         tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif !== false ? "Nonaktifkan" : "Aktifkan") + "</button>";
         tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
       }
       return '<div class="user-row"><div><b>' + esc(u.name) + '</b> <span style="color:var(--muted)">(@' + esc(u.username) + ")</span><br>" +
-        '<span class="lencana ' + (u.role === "admin" ? "st-terisi" : "st-dipesan") + '">' + labelPeran + "</span> " +
+        '<span class="lencana ' + (u.role === "admin" ? "st-terisi" : u.role === "manajer" ? "st-aktif" : "st-dipesan") + '">' + teksPeran + "</span> " +
         (u.aktif === false ? '<span class="lencana st-batal">Nonaktif</span>' : "") + "</div>" +
         '<div class="aksi">' + tombol + "</div></div>";
     }).join("");
@@ -863,25 +1230,30 @@
     var u = users.find(function (x) { return x.username === username; });
     if (!u) return;
     if (aksi === "peran") {
+      var peranBaru = u.role === "admin" ? "manajer" : u.role === "manajer" ? "kasir" : "admin";
       if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
         toast("Tidak bisa: minimal harus ada 1 admin."); return;
       }
-      u.role = u.role === "admin" ? "kasir" : "admin";
+      var peranLama = u.role;
+      u.role = peranBaru;
       saveUsers();
+      catatAudit("pengguna", "Peran diubah: " + u.name + " (@" + u.username + ") dari " + labelPeran(peranLama) + " ke " + labelPeran(peranBaru) + ".");
       renderPengguna();
-      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
+      toast("Peran diubah: " + u.name + " sekarang " + labelPeran(peranBaru) + ".");
     } else if (aksi === "aktif") {
       if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
         toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
       }
       u.aktif = u.aktif === false ? true : false;
       saveUsers();
+      catatAudit("pengguna", "Pengguna " + (u.aktif !== false ? "diaktifkan" : "dinonaktifkan") + ": " + u.name + " (@" + u.username + ").");
       renderPengguna();
       toast(u.aktif !== false ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
     } else if (aksi === "sandi") {
       tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ") menjadi \"mm123\"?", function () {
         u.password = "mm123";
         saveUsers();
+        catatAudit("pengguna", "Kata sandi direset: " + u.name + " (@" + u.username + ").");
         toast("Kata sandi " + u.name + " direset menjadi mm123.");
       });
     }
@@ -897,6 +1269,7 @@
     if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
     users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
     saveUsers();
+    catatAudit("pengguna", "Pengguna ditambahkan: " + nama + " (@" + username + ", " + labelPeran(peran) + ").");
     $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
     renderPengguna();
     toast("Pengguna " + nama + " ditambahkan.");
@@ -925,14 +1298,15 @@
   ];
 
   function renderDenah() {
-    var terisi = state.meja.filter(function (m) { return m.status === "terisi"; }).length;
+    var daftar = mejaAktif();
+    var terisi = daftar.filter(function (m) { return m.status === "terisi"; }).length;
     $("badgeDenah").textContent = terisi;
     $("denahChips").innerHTML = FILTER_DENAH.map(function (f) {
-      var jml = f.id === "semua" ? state.meja.length : state.meja.filter(function (m) { return m.status === f.id; }).length;
+      var jml = f.id === "semua" ? daftar.length : daftar.filter(function (m) { return m.status === f.id; }).length;
       return '<button class="chip' + (denahFilter === f.id ? " active" : "") + '" type="button" data-filter-denah="' + f.id + '">' + f.label + " (" + jml + ")</button>";
     }).join("");
-    var daftar = state.meja.filter(function (m) { return denahFilter === "semua" || m.status === denahFilter; });
-    $("denahGrid").innerHTML = daftar.map(function (m) {
+    var tampil = daftar.filter(function (m) { return denahFilter === "semua" || m.status === denahFilter; });
+    $("denahGrid").innerHTML = tampil.length ? tampil.map(function (m) {
       var isi = "";
       if (m.status === "terisi" && m.pelanggan) {
         isi = '<div class="nama">' + esc(m.pelanggan.nama) + " · " + m.pelanggan.jumlahOrang + ' orang</div>' +
@@ -949,7 +1323,7 @@
         '<span class="no">Meja ' + m.nomor + '</span>' +
         '<span class="zona">' + esc(m.zona) + " · maks " + m.kapasitas + ' orang</span>' +
         '<span class="lencana ' + kelasStatusMeja(m.status) + '">' + labelStatusMeja(m.status) + "</span>" + isi + "</button>";
-    }).join("");
+    }).join("") : '<p class="kosong">Belum ada meja di outlet ini. Tambah meja baru di bawah.</p>';
   }
 
   $("denahChips").addEventListener("click", function (e) {
@@ -983,7 +1357,7 @@
           return '<div class="krj-baris"><span class="nm">' + it.qty + "× " + esc(it.nama) + '</span><span class="hg">' + rupiah(it.harga * it.qty) + "</span></div>";
         }).join("") + '<p style="margin-top:8px"><b>Total pesanan: ' + rupiah(totalPesananMeja(m)) + "</b></p>";
       }
-      var tujuan = state.meja.filter(function (x) { return x.status === "kosong"; });
+      var tujuan = mejaAktif().filter(function (x) { return x.status === "kosong"; });
       isi += '<div class="field" style="margin-top:14px"><label for="mdPindahKe">Pindah ke meja kosong</label><select id="mdPindahKe">' +
         (tujuan.length ? tujuan.map(function (x) { return '<option value="' + x.id + '">Meja ' + x.nomor + " (" + esc(x.zona) + ", maks " + x.kapasitas + " orang)</option>"; }).join("") : '<option value="">Tidak ada meja kosong</option>') + "</select></div>";
       isi += '<div class="aksi" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
@@ -1006,6 +1380,7 @@
         '<div id="mdMenu"></div>' +
         '<div class="aksi" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px">' +
         '<button class="btn hijau kecil" type="button" id="mdBtnDuduki">Duduki Meja</button>' +
+        '<button class="btn merah kecil" type="button" id="mdBtnHapusMeja">Hapus Meja</button>' +
         '<button class="btn ghost kecil" type="button" id="mdBtnTutup">Tutup</button></div>';
     }
     bukaModalForm("Meja " + m.nomor + " — " + labelStatusMeja(m.status), "Detail dan tindakan untuk meja ini.", isi);
@@ -1020,6 +1395,8 @@
     if (bPindah) bPindah.addEventListener("click", function () { pindahMeja(m.id); });
     var bCheckin = $("mdBtnCheckin");
     if (bCheckin) bCheckin.addEventListener("click", function () { checkinReservasi(m.reservasiId); });
+    var bHapusMeja = $("mdBtnHapusMeja");
+    if (bHapusMeja) bHapusMeja.addEventListener("click", function () { hapusMeja(m.id); });
   }
 
   function renderMenuDuduki(m) {
@@ -1057,6 +1434,7 @@
     m.status = "terisi";
     m.pelanggan = { nama: nama, jumlahOrang: orang, mulai: new Date().toISOString(), catatan: $("mdCatatan").value.trim(), items: items };
     saveState();
+    catatAudit("meja", "Meja " + m.nomor + " diduduki oleh " + nama + " (" + orang + " orang, " + namaOutlet(m.outlet || outletAktif()) + ").");
     tutupModal();
     renderSemua();
     toast("Meja " + m.nomor + " diduduki oleh " + nama + ".");
@@ -1068,13 +1446,14 @@
     var p = m.pelanggan;
     tanyaKonfirmasi("Selesaikan meja " + m.nomor, "Selesaikan sesi " + p.nama + " di meja " + m.nomor + "? Meja kembali kosong dan sesi masuk riwayat.", function () {
       state.sesi.push({
-        id: state.seqSesi++, meja: m.nomor, nama: p.nama, jumlahOrang: p.jumlahOrang,
+        id: state.seqSesi++, meja: m.nomor, outlet: outletAktif(), nama: p.nama, jumlahOrang: p.jumlahOrang,
         mulai: p.mulai, selesai: new Date().toISOString(),
         total: (p.items || []).reduce(function (a, it) { return a + it.harga * it.qty; }, 0)
       });
       m.status = "kosong";
       m.pelanggan = null;
       saveState();
+      catatAudit("meja", "Meja " + m.nomor + " selesai (" + p.nama + ", " + menitKeTeks((new Date().getTime() - new Date(p.mulai).getTime()) / 60000) + ").");
       tutupModal();
       renderSemua();
       toast("Meja " + m.nomor + " selesai dan kembali kosong.");
@@ -1092,6 +1471,7 @@
     m.status = "kosong";
     m.pelanggan = null;
     saveState();
+    catatAudit("meja", "Pelanggan " + t.pelanggan.nama + " dipindah dari meja " + m.nomor + " ke meja " + t.nomor + " (" + namaOutlet(m.outlet || outletAktif()) + ").");
     tutupModal();
     renderSemua();
     toast("Pelanggan dipindah dari meja " + m.nomor + " ke meja " + t.nomor + ".");
@@ -1100,13 +1480,14 @@
   function checkinReservasi(reservasiId) {
     var r = cariReservasi(reservasiId);
     if (!r || r.status !== "aktif") { toast("Pemesanan tidak aktif."); return; }
-    var m = cariMeja(r.meja);
+    var m = cariMejaByNomor(r.meja, r.outlet);
     if (!m || m.status !== "dipesan") { toast("Meja pemesanan tidak tersedia."); return; }
     m.status = "terisi";
     m.pelanggan = { nama: r.nama, jumlahOrang: r.jumlahOrang, mulai: new Date().toISOString(), catatan: r.catatan || "", items: [] };
     m.reservasiId = null;
     r.status = "selesai";
     saveState();
+    catatAudit("reservasi", "Check-in: " + r.nama + " (" + r.no + ") duduk di meja " + m.nomor + ".");
     tutupModal();
     renderSemua();
     toast("Check-in: " + r.nama + " duduk di meja " + m.nomor + ".");
@@ -1115,7 +1496,7 @@
   // ---------- Pemesanan ----------
   function isiPilihanMejaPemesanan() {
     var sel = $("psMeja");
-    sel.innerHTML = state.meja.filter(function (m) { return m.status === "kosong"; }).map(function (m) {
+    sel.innerHTML = mejaAktif().filter(function (m) { return m.status === "kosong"; }).map(function (m) {
       return '<option value="' + m.id + '">Meja ' + m.nomor + " (" + esc(m.zona) + ", maks " + m.kapasitas + " orang)</option>";
     }).join("") || '<option value="">Tidak ada meja kosong</option>';
   }
@@ -1123,7 +1504,7 @@
   function renderPemesanan() {
     isiPilihanMejaPemesanan();
     if (!$("psTanggal").value) $("psTanggal").value = hariIniKey();
-    var aktif = state.reservasi.filter(function (r) { return r.status === "aktif"; })
+    var aktif = reservasiAktif().filter(function (r) { return r.status === "aktif"; })
       .sort(function (a, b) { return (a.tanggal + a.waktu).localeCompare(b.tanggal + b.waktu); });
     $("daftarReservasi").innerHTML = aktif.length ? aktif.map(function (r) {
       return '<div class="item-bar"><div><div class="nm">' + esc(r.no) + " · " + esc(r.nama) + " · Meja " + r.meja + ' <span class="lencana st-aktif">Aktif</span></div>' +
@@ -1149,7 +1530,7 @@
     if (!tanggal || !waktu) { toast("Tanggal dan waktu wajib diisi."); return; }
     var r = {
       id: state.seqReservasi, no: "RSV-" + String(state.seqReservasi).padStart(3, "0"),
-      meja: m.nomor, nama: nama, telp: telp, jumlahOrang: orang,
+      meja: m.nomor, outlet: outletAktif(), nama: nama, telp: telp, jumlahOrang: orang,
       tanggal: tanggal, waktu: waktu, catatan: catatan, status: "aktif", dibuat: new Date().toISOString()
     };
     state.seqReservasi++;
@@ -1157,6 +1538,7 @@
     m.status = "dipesan";
     m.reservasiId = r.id;
     saveState();
+    catatAudit("reservasi", "Pemesanan " + r.no + " dibuat: " + nama + ", meja " + m.nomor + ", " + tanggal + " " + waktu + " (" + namaOutlet(outletAktif()) + ").");
     $("psNama").value = ""; $("psTelp").value = ""; $("psCatatan").value = ""; $("psOrang").value = "2";
     renderSemua();
     toast("Pemesanan " + r.no + " untuk meja " + m.nomor + " disimpan.");
@@ -1172,13 +1554,10 @@
     if (aksi === "checkin") {
       checkinReservasi(id);
     } else if (aksi === "batal") {
-      tanyaKonfirmasi("Batalkan pemesanan", "Batalkan pemesanan " + r.no + " (" + r.nama + ", meja " + r.meja + ")?", function () {
-        r.status = "batal";
-        var m = state.meja.find(function (x) { return x.reservasiId === r.id; });
-        if (m) { m.status = "kosong"; m.reservasiId = null; }
-        saveState();
-        renderSemua();
-        toast("Pemesanan " + r.no + " dibatalkan.");
+      tanyaKonfirmasi("Batalkan pemesanan", "Ajukan pembatalan pemesanan " + r.no + " (" + r.nama + ", meja " + r.meja + ")? Bila disetujui Admin/Manajer, pemesanan dibatalkan dan meja kembali kosong.", function () {
+        buatPersetujuan("void_reservasi", { reservasiId: r.id }, "Batalkan pemesanan " + r.no + " (" + r.nama + ", meja " + r.meja + ", " + namaOutlet(r.outlet || outletAktif()) + ").");
+        renderPersetujuan();
+        toast("Pembatalan pemesanan diajukan untuk persetujuan.");
       });
     }
   });
@@ -1195,17 +1574,18 @@
     }).join("");
     var baris = [];
     if (riwayatFilter !== "reservasi") {
-      state.sesi.slice().sort(function (a, b) { return new Date(b.selesai) - new Date(a.selesai); }).forEach(function (s) {
+      state.sesi.filter(function (x) { return (x.outlet || "pusat") === outletAktif(); }).slice().sort(function (a, b) { return new Date(b.selesai) - new Date(a.selesai); }).forEach(function (s) {
         var durasi = (new Date(s.selesai).getTime() - new Date(s.mulai).getTime()) / 60000;
         baris.push({ waktu: s.selesai, html: '<div class="item-bar"><div><div class="nm">Meja ' + s.meja + " · " + esc(s.nama) + ' <span class="lencana st-selesai">Sesi Selesai</span></div>' +
           '<div class="dt">' + s.jumlahOrang + " orang · " + jamDari(s.mulai) + "–" + jamDari(s.selesai) + " · " + menitKeTeks(durasi) + "</div></div>" +
-          '<div class="harga">' + rupiah(s.total || 0) + "</div></div>" });
+          '<div style="display:flex;gap:8px;align-items:center"><span class="harga">' + rupiah(s.total || 0) + '</span><button class="btn merah ghost kecil" type="button" data-hapus-riwayat="sesi:' + s.id + '">Hapus</button></div></div>' });
       });
     }
     if (riwayatFilter !== "sesi") {
-      state.reservasi.filter(function (r) { return r.status !== "aktif"; }).forEach(function (r) {
+      state.reservasi.filter(function (r) { return r.status !== "aktif" && (r.outlet || "pusat") === outletAktif(); }).forEach(function (r) {
         baris.push({ waktu: r.dibuat, html: '<div class="item-bar"><div><div class="nm">' + esc(r.no) + " · " + esc(r.nama) + " · Meja " + r.meja + ' <span class="lencana ' + (r.status === "selesai" ? "st-selesai" : "st-batal") + '">' + (r.status === "selesai" ? "Check-in / Selesai" : "Dibatalkan") + '</span></div>' +
-          '<div class="dt">' + r.jumlahOrang + " orang · " + esc(r.tanggal) + " pukul " + esc(r.waktu) + "</div></div></div>" });
+          '<div class="dt">' + r.jumlahOrang + " orang · " + esc(r.tanggal) + " pukul " + esc(r.waktu) + "</div></div>" +
+          '<div><button class="btn merah ghost kecil" type="button" data-hapus-riwayat="reservasi:' + r.id + '">Hapus</button></div></div>' });
       });
     }
     baris.sort(function (a, b) { return new Date(b.waktu) - new Date(a.waktu); });
@@ -1219,6 +1599,21 @@
     renderRiwayat();
   });
 
+  $("riwayatDaftar").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-hapus-riwayat]");
+    if (!btn) return;
+    var kunci = btn.getAttribute("data-hapus-riwayat");
+    var bagian = kunci.split(":");
+    var jenis = bagian[0];
+    var id = Number(bagian[1]);
+    var label = jenis === "sesi" ? "sesi meja" : "pemesanan";
+    tanyaKonfirmasi("Hapus riwayat", "Ajukan hapus " + label + " ini dari riwayat? Bila disetujui Admin/Manajer, entri dihapus permanen.", function () {
+      buatPersetujuan("hapus_riwayat", { jenis: jenis, id: id }, "Hapus riwayat " + label + " #" + id + " (" + namaOutlet(outletAktif()) + ").");
+      renderPersetujuan();
+      toast("Penghapusan riwayat diajukan untuk persetujuan.");
+    });
+  });
+
   // ---------- Laporan ----------
   function renderLaporan() {
     var sesi = sesiHariIni();
@@ -1228,7 +1623,7 @@
     var per = perputaranPerMeja();
     var laris = per.slice().sort(function (a, b) { return b.jumlah - a.jumlah; })[0];
     $("lLaris").textContent = laris && laris.jumlah > 0 ? "Meja " + laris.nomor + " (" + laris.jumlah + "×)" : "—";
-    $("lReservasi").textContent = state.reservasi.filter(function (r) { return r.tanggal === hariIniKey(); }).length;
+    $("lReservasi").textContent = reservasiAktif().filter(function (r) { return r.tanggal === hariIniKey(); }).length;
     $("laporanPerMeja").innerHTML = per.map(function (p) {
       return '<div class="item-bar"><div><div class="nm">Meja ' + p.nomor + ' <span style="color:var(--muted);font-weight:600">(' + esc(p.zona) + ")</span></div>" +
         '<div class="dt">' + p.jumlah + " sesi · rata-rata " + menitKeTeks(p.rata) + "</div></div>" +
@@ -1241,16 +1636,236 @@
         '<div class="dt">' + s.jumlahOrang + " orang · " + jamDari(s.mulai) + "–" + jamDari(s.selesai) + " · " + menitKeTeks(durasi) + "</div></div>" +
         '<div class="harga">' + rupiah(s.total || 0) + "</div></div>";
     }).join("") : '<p class="kosong">Belum ada sesi selesai hari ini.</p>';
+    renderRingkasanOutlet();
+  }
+
+  function renderRingkasanOutlet() {
+    var box = $("ringkasanOutlet");
+    if (!box) { return; }
+    var kunci = hariIniKey();
+    var rows = state.outlet.map(function (o) {
+      var sesi = state.sesi.filter(function (s) { return s.selesai && s.selesai.slice(0, 10) === kunci && (s.outlet || "pusat") === o.id; });
+      var total = sesi.reduce(function (a, x) { return a + (x.total || 0); }, 0);
+      var res = state.reservasi.filter(function (r) { return r.tanggal === kunci && (r.outlet || "pusat") === o.id; }).length;
+      var mejaOutlet = state.meja.filter(function (m) { return (m.outlet || "pusat") === o.id; });
+      var terisi = mejaOutlet.filter(function (m) { return m.status === "terisi"; }).length;
+      return "<tr><td>" + esc(o.nama) + "</td><td>" + sesi.length + "</td><td>" + rupiah(total) + "</td><td>" + res + "</td><td>" + terisi + " / " + mejaOutlet.length + "</td></tr>";
+    }).join("");
+    box.innerHTML = '<table class="tabel-harga"><tr><th>Outlet</th><th>Sesi Selesai Hari Ini</th><th>Total Pesanan Hari Ini</th><th>Reservasi Hari Ini</th><th>Meja Terisi</th></tr>' + rows + "</table>";
   }
 
   // ---------- Reset data ----------
   $("btnResetData").addEventListener("click", function () {
+    if (!bisa("reset")) { toast("Hanya Admin/Manajer yang bisa mengembalikan data contoh."); return; }
     tanyaKonfirmasi("Kembalikan data contoh", "Hapus semua perubahan dan kembalikan data contoh Warung Kopi Oyen?", function () {
-      state = seedState();
+      state = normalisasiState(seedState());
+      modalMejaId = null;
+      dudukiKeranjang = {};
       saveState();
+      catatAudit("sistem", "Data contoh dikembalikan (oleh " + (currentUser ? currentUser.username : "sistem") + ").");
       renderSemua();
       toast("Data contoh dikembalikan.");
     });
+  });
+
+  // ---------- Audit log ----------
+  function catatAudit(aksi, detail) {
+    if (!state) { return; }
+    if (!Array.isArray(state.audit)) { state.audit = []; }
+    state.audit.unshift({
+      waktu: new Date().toISOString(),
+      user: currentUser ? currentUser.username : "sistem",
+      peran: currentUser ? currentUser.role : "-",
+      outlet: outletAktif(),
+      aksi: aksi, detail: detail || ""
+    });
+    if (state.audit.length > 200) { state.audit.length = 200; }
+    saveState();
+  }
+
+  // ---------- Persetujuan ----------
+  function labelTipePersetujuan(t) {
+    return { hapus_meja: "Hapus meja", void_reservasi: "Batalkan pemesanan", hapus_riwayat: "Hapus riwayat" }[t] || t;
+  }
+  function buatPersetujuan(tipe, detail, ringkasan) {
+    var id = state.nextPersetujuan++;
+    state.persetujuan.unshift({
+      id: id, tipe: tipe, outlet: outletAktif(),
+      dibuatOleh: currentUser ? currentUser.username : "tamu",
+      dibuatPada: new Date().toISOString(),
+      status: "menunggu", detail: detail, ringkasan: ringkasan || "",
+      diputuskanOleh: "", diputuskanPada: ""
+    });
+    catatAudit("persetujuan", "Permintaan persetujuan #" + id + " (" + labelTipePersetujuan(tipe) + "): " + (ringkasan || "") + ".");
+    saveState();
+    perbaruiBadge();
+    return id;
+  }
+  function terapkanPersetujuan(apr) {
+    var d = apr.detail || {};
+    if (apr.tipe === "hapus_meja") {
+      var m = cariMeja(d.mejaId);
+      if (m && m.status === "kosong") {
+        state.meja = state.meja.filter(function (x) { return x.id !== d.mejaId; });
+      }
+    } else if (apr.tipe === "void_reservasi") {
+      var r = cariReservasi(d.reservasiId);
+      if (r && r.status === "aktif") {
+        r.status = "batal";
+        var mm = state.meja.find(function (x) { return x.reservasiId === r.id; });
+        if (mm) { mm.status = "kosong"; mm.reservasiId = null; }
+      }
+    } else if (apr.tipe === "hapus_riwayat") {
+      if (d.jenis === "sesi") {
+        state.sesi = state.sesi.filter(function (x) { return x.id !== d.id; });
+      } else if (d.jenis === "reservasi") {
+        state.reservasi = state.reservasi.filter(function (x) { return x.id !== d.id; });
+      }
+    }
+  }
+  function putuskanPersetujuan(id, setuju) {
+    if (!bisa("putuskan")) { toast("Hanya Admin/Manajer yang bisa memutuskan persetujuan."); return; }
+    var apr = state.persetujuan.find(function (a) { return a.id === id; });
+    if (!apr || apr.status !== "menunggu") { toast("Permintaan ini sudah diputuskan."); return; }
+    apr.status = setuju ? "disetujui" : "ditolak";
+    apr.diputuskanOleh = currentUser.username;
+    apr.diputuskanPada = new Date().toISOString();
+    if (setuju) { terapkanPersetujuan(apr); }
+    catatAudit("persetujuan", "Permintaan #" + id + " (" + labelTipePersetujuan(apr.tipe) + ") " + (setuju ? "DISETUJUI" : "DITOLAK") + " oleh " + currentUser.username + ".");
+    saveState();
+    renderSemua();
+    toast("Permintaan #" + id + (setuju ? " disetujui." : " ditolak."));
+  }
+  function perbaruiBadge() {
+    var bpp = $("badgePersetujuan");
+    if (!bpp || !state) { return; }
+    var menunggu = state.persetujuan.filter(function (a) { return a.status === "menunggu"; }).length;
+    var tampil = menunggu > 0 && bisa("putuskan");
+    bpp.hidden = !tampil;
+    bpp.textContent = menunggu;
+  }
+  function renderPersetujuan() {
+    var box = $("daftarPersetujuan");
+    var box2 = $("daftarPersetujuanSelesai");
+    if (!box || !box2) { return; }
+    var menunggu = state.persetujuan.filter(function (a) { return a.status === "menunggu"; });
+    var selesai = state.persetujuan.filter(function (a) { return a.status !== "menunggu"; }).slice(0, 10);
+    if (!menunggu.length) { box.innerHTML = '<p class="kosong">Tidak ada permintaan menunggu. Hapus meja, batalkan pemesanan, dan hapus riwayat akan muncul di sini.</p>'; }
+    else {
+      box.innerHTML = menunggu.map(function (a) {
+        return '<div class="item-bar" style="align-items:flex-start"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+          '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+          '<div class="dt">Diajukan ' + esc(String(a.dibuatPada || "").replace("T", " ").slice(0, 16)) + " oleh " + esc(a.dibuatOleh) + " · " + esc(namaOutlet(a.outlet)) + "</div></div>" +
+          '<div style="display:flex;gap:6px"><button class="btn kecil hijau" type="button" data-putus="ya" data-id="' + a.id + '">Setujui</button>' +
+          '<button class="btn kecil merah" type="button" data-putus="tidak" data-id="' + a.id + '">Tolak</button></div></div>';
+      }).join("");
+    }
+    if (!selesai.length) { box2.innerHTML = '<p class="kosong">Belum ada keputusan.</p>'; }
+    else {
+      box2.innerHTML = selesai.map(function (a) {
+        return '<div class="item-bar"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + (a.status === "disetujui" ? "st-disetujui" : "st-ditolak") + '">' + (a.status === "disetujui" ? "Disetujui" : "Ditolak") + "</span></div>" +
+          '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+          '<div class="dt">Diputuskan oleh ' + esc(a.diputuskanOleh || "-") + " · " + esc(String(a.diputuskanPada || "").replace("T", " ").slice(0, 16)) + "</div></div></div>";
+      }).join("");
+    }
+    box.querySelectorAll("[data-putus]").forEach(function (b) {
+      b.addEventListener("click", function () { putuskanPersetujuan(Number(b.dataset.id), b.dataset.putus === "ya"); });
+    });
+  }
+
+  // ---------- Render Audit Log ----------
+  function renderAudit() {
+    var box = $("daftarAudit");
+    if (!box) { return; }
+    var fu = $("filterAuditUser");
+    if (fu) {
+      var pengguna = [];
+      state.audit.forEach(function (a) { if (pengguna.indexOf(a.user) === -1) { pengguna.push(a.user); } });
+      var nilai = fu.value;
+      fu.innerHTML = '<option value="">Semua pengguna</option>' + pengguna.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + "</option>"; }).join("");
+      fu.value = nilai;
+    }
+    var fa = $("filterAuditAksi").value;
+    var list = state.audit.filter(function (a) {
+      if (fu && fu.value && a.user !== fu.value) { return false; }
+      if (fa && a.aksi !== fa) { return false; }
+      return true;
+    }).slice(0, 100);
+    if (!list.length) { box.innerHTML = '<p class="kosong">Belum ada catatan audit pada filter ini.</p>'; return; }
+    box.innerHTML = '<table class="tabel-harga"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Outlet</th><th>Aksi</th><th>Detail</th></tr>' +
+      list.map(function (a) {
+        return "<tr><td>" + esc(String(a.waktu || "").replace("T", " ").slice(0, 19)) + "</td><td>" + esc(a.user) + "</td><td>" + esc(a.peran) + "</td><td>" + esc(namaOutlet(a.outlet)) + "</td><td>" + esc(a.aksi) + "</td><td>" + esc(a.detail) + "</td></tr>";
+      }).join("") + "</table>";
+  }
+  ["filterAuditUser", "filterAuditAksi"].forEach(function (id) {
+    $(id).addEventListener("change", renderAudit);
+  });
+
+  // ---------- Hapus meja (lewat persetujuan) ----------
+  function hapusMeja(id) {
+    var m = cariMeja(id);
+    if (!m) { return; }
+    if (m.status !== "kosong") { toast("Hanya meja kosong yang bisa dihapus."); return; }
+    tanyaKonfirmasi("Hapus meja " + m.nomor, "Ajukan hapus meja " + m.nomor + " (" + m.zona + ", maks " + m.kapasitas + " orang, " + namaOutlet(m.outlet || outletAktif()) + ")? Bila disetujui Admin/Manajer, meja dihapus dari denah.", function () {
+      buatPersetujuan("hapus_meja", { mejaId: m.id }, "Hapus meja " + m.nomor + " (" + m.zona + ", " + namaOutlet(m.outlet || outletAktif()) + ").");
+      tutupModal();
+      renderPersetujuan();
+      toast("Penghapusan meja diajukan untuk persetujuan.");
+    });
+  }
+
+  // ---------- Tambah meja ----------
+  $("btnTambahMeja").addEventListener("click", function () {
+    if (!bisa("kelola_denah")) { toast("Hanya Admin/Manajer yang bisa menambah meja."); return; }
+    var nomor = Number($("tmNomor").value);
+    var zona = $("tmZona").value;
+    var kapasitas = Number($("tmKapasitas").value);
+    if (!nomor || nomor < 1) { toast("Nomor meja tidak valid."); return; }
+    if (mejaAktif().some(function (m) { return m.nomor === nomor; })) { toast("Nomor meja sudah dipakai di outlet ini."); return; }
+    if (!kapasitas || kapasitas < 1 || kapasitas > 20) { toast("Kapasitas tidak valid."); return; }
+    var mm = { id: state.seqMeja++, nomor: nomor, zona: zona, kapasitas: kapasitas, status: "kosong", pelanggan: null, outlet: outletAktif() };
+    state.meja.push(mm);
+    saveState();
+    catatAudit("meja", "Meja " + nomor + " (" + zona + ", maks " + kapasitas + " orang) ditambahkan di " + namaOutlet(outletAktif()) + ".");
+    $("tmNomor").value = "";
+    renderSemua();
+    toast("Meja " + nomor + " ditambahkan.");
+  });
+
+  // ---------- Backup JSON & Pulihkan ----------
+  $("btnBackupJson").addEventListener("click", function () {
+    var paket = { aplikasi: "Manajemen Meja", versi: "v1", dieksporPada: new Date().toISOString(), data: state, pengguna: users };
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" }));
+    a.download = "backup-manajemen-meja.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    catatAudit("ekspor", "Backup JSON diunduh.");
+    toast("Backup JSON diunduh.");
+  });
+  $("filePulihkan").addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    if (!f) { return; }
+    if (!butuh("pulihkan", "Hanya Admin/Manajer yang bisa memulihkan data.")) { this.value = ""; return; }
+    var input = this;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var paket = JSON.parse(rd.result);
+        var d = paket.data || paket;
+        if (!d || !Array.isArray(d.meja) || !Array.isArray(d.reservasi) || !Array.isArray(d.sesi)) { toast("File backup tidak valid."); return; }
+        state = normalisasiState(d);
+        if (Array.isArray(paket.pengguna) && paket.pengguna.length) { users = paket.pengguna.map(normalisasiPengguna); saveUsers(); }
+        modalMejaId = null;
+        dudukiKeranjang = {};
+        saveState();
+        catatAudit("sistem", "Data dipulihkan dari file backup JSON.");
+        renderSemua();
+        toast("Data dipulihkan dari backup.");
+      } catch (err) { toast("File backup tidak bisa dibaca."); }
+    };
+    rd.readAsText(f);
+    input.value = "";
   });
 
   // ---------- Timer berjalan ----------
@@ -1264,19 +1879,34 @@
 
   // ---------- Render semua & init ----------
   function renderSemua() {
+    isiSelectOutlet();
     renderDashboard();
     renderDenah();
     renderPemesanan();
     renderRiwayat();
     renderLaporan();
+    renderPersetujuan();
+    renderAudit();
+    perbaruiBadge();
   }
 
   $("tanggalHariIni").textContent = tanggalHariIni();
-  loadState();
-  loadUsers();
-  terapkanSesi();
-  pulihkanSesi();
-  if (currentUser) renderSemua();
+  document.querySelectorAll(".selOutlet").forEach(function (sel) {
+    sel.addEventListener("change", function () { setOutlet(sel.value); });
+  });
+  // Boot asinkron: siapkan kunci enkripsi, muat dari IndexedDB dulu (dengan
+  // migrasi sekali dari localStorage lama), baru render.
+  siapkanKripto().then(muatState).then(muatUsers).then(function () {
+    terapkanSesi();
+    pulihkanSesi();
+    if (currentUser) renderSemua();
+    perbaruiBadge();
+    window.__mejaSiap = true;
+  }).catch(function () {
+    terapkanSesi();
+    try { if (currentUser) renderSemua(); } catch (e) { /* render gagal: overlay login tetap tampil */ }
+    window.__mejaSiap = true;
+  });
 })();
 </script>
 

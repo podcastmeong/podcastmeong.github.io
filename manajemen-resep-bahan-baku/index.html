@@ -148,6 +148,14 @@
   .st-habis { background: var(--red-soft); color: var(--red); }
   .st-rendah { background: var(--amber-soft); color: var(--amber); }
   .st-biru { background: var(--blue-soft); color: var(--blue); }
+  .st-menunggu { background: var(--amber-soft); color: var(--amber); }
+  .st-disetujui { background: var(--green-soft); color: var(--green); }
+  .st-ditolak { background: var(--red-soft); color: var(--red); }
+  .audit-wrap { overflow-x: auto; }
+  body[data-role="dapur"] .hanya-admin { display: none !important; }
+  body[data-role="manajer"] .hanya-admin { display: none !important; }
+  body[data-role="dapur"] .hanya-manajer { display: none !important; }
+  body[data-role="dapur"] .tab-btn[data-tab="persetujuan"], body[data-role="dapur"] .tab-btn[data-tab="audit"] { display: none !important; }
 
   .item-bar {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -245,7 +253,7 @@
   <header class="hero">
     <span class="demo-badge">CONTOH DEMO</span>
     <h1>Manajemen Resep &amp; Bahan Baku</h1>
-    <p>Resep per menu dengan takaran bahan, stok bahan baku, peringatan stok menipis, dan hitung biaya bahan per porsi — Warung Kopi Oyen.</p>
+    <p>Resep per menu dengan takaran bahan, stok bahan baku, peringatan stok menipis, dan hitung biaya bahan per porsi — Warung Kopi Oyen. Multi-outlet, tiga peran pengguna, alur persetujuan, dan penyimpanan IndexedDB terenkripsi — tetap offline di perangkat ini.</p>
     <p class="tanggal" id="tanggalHari">—</p>
   </header>
 
@@ -261,6 +269,8 @@
     <button class="tab-btn" type="button" data-tab="produksi">Produksi</button>
     <button class="tab-btn" type="button" data-tab="biaya">Biaya Porsi</button>
     <button class="tab-btn" type="button" data-tab="laporan">Laporan</button>
+    <button class="tab-btn" type="button" data-tab="persetujuan">Persetujuan <span class="badge" id="badgePersetujuan" hidden>0</span></button>
+    <button class="tab-btn" type="button" data-tab="audit">Audit Log</button>
     <button class="tab-btn" type="button" data-tab="panduan">Panduan</button>
   </nav>
 
@@ -276,6 +286,14 @@
       <div class="stat accent"><div class="label">Nilai Stok Bahan</div><div class="angka" id="dNilaiStok">Rp0</div></div>
     </div>
     <div class="card">
+      <h3>Outlet Aktif</h3>
+      <p class="sub">Resep, bahan baku, produksi, dan biaya porsi mengikuti outlet ini. Laporan menampilkan ringkasan semua outlet.</p>
+      <div class="field" style="margin-bottom:0">
+        <label for="selOutletAktif">Outlet aktif</label>
+        <select id="selOutletAktif"></select>
+      </div>
+    </div>
+    <div class="card">
       <h3>Peringatan: Bahan Hampir Habis</h3>
       <p class="sub">Bahan yang stoknya sudah di bawah stok minimum, atau habis. Segera pesan ulang.</p>
       <div id="daftarPeringatan"></div>
@@ -285,7 +303,7 @@
       <p class="sub">Porsi yang sudah diproduksi hari ini dan total biaya bahannya.</p>
       <div id="produksiHariIni"></div>
     </div>
-    <div class="card" id="cardPengguna">
+    <div class="card hanya-admin" id="cardPengguna">
       <h3>Kelola Pengguna</h3>
       <p class="sub">Hanya admin yang melihat bagian ini. Admin bisa menambah pengguna, mengubah peran, menonaktifkan pengguna, dan mengganti kata sandi pengguna. Pengguna yang dinonaktifkan tidak bisa masuk.</p>
       <div id="daftarPengguna"></div>
@@ -305,8 +323,9 @@
         <div class="field">
           <label for="nuPeran">Peran</label>
           <select id="nuPeran">
-            <option value="kasir">Kasir</option>
             <option value="admin">Admin</option>
+            <option value="manajer">Manajer</option>
+            <option value="dapur">Dapur</option>
           </select>
         </div>
       </div>
@@ -333,12 +352,12 @@
   <section class="panel" id="panel-resep">
     <div class="page-head">
       <h2>Resep</h2>
-      <p>Resep per menu: bahan dan takaran untuk 1 porsi, beserta biaya bahannya.</p>
+      <p>Resep per menu: bahan dan takaran untuk 1 porsi, beserta biaya bahannya. Outlet aktif: <b class="outlet-nama">—</b>.</p>
     </div>
     <div class="card">
       <div class="row" style="margin-bottom:12px">
         <div class="grow"><input type="text" id="cariResep" placeholder="Cari resep / menu…"></div>
-        <button class="btn kecil" id="btnTambahResep" type="button">+ Tambah Resep</button>
+        <button class="btn kecil hanya-manajer" id="btnTambahResep" type="button">+ Tambah Resep</button>
       </div>
       <div id="daftarResep"></div>
     </div>
@@ -347,7 +366,7 @@
       <p class="sub" id="detailResepSub"></p>
       <div id="detailResepIsi"></div>
       <div class="row" style="margin-top:12px">
-        <button class="btn ghost kecil" id="btnUbahResep" type="button">Ubah Resep</button>
+        <button class="btn ghost kecil hanya-manajer" id="btnUbahResep" type="button">Ubah Resep</button>
         <button class="btn merah kecil" id="btnHapusResep" type="button">Hapus Resep</button>
       </div>
     </div>
@@ -356,7 +375,7 @@
   <section class="panel" id="panel-bahan">
     <div class="page-head">
       <h2>Bahan Baku</h2>
-      <p>Stok, satuan, harga beli per satuan, dan stok minimum tiap bahan.</p>
+      <p>Stok, satuan, harga beli per satuan, dan stok minimum tiap bahan. Outlet aktif: <b class="outlet-nama">—</b>.</p>
     </div>
     <div class="card">
       <div class="row" style="margin-bottom:12px">
@@ -367,7 +386,7 @@
           <option value="rendah">Hampir habis</option>
           <option value="habis">Habis</option>
         </select>
-        <button class="btn kecil" id="btnTambahBahan" type="button">+ Tambah Bahan</button>
+        <button class="btn kecil hanya-manajer" id="btnTambahBahan" type="button">+ Tambah Bahan</button>
       </div>
       <div class="tabel-wrap"><table class="tabel" id="tabelBahan"></table></div>
     </div>
@@ -376,7 +395,7 @@
   <section class="panel" id="panel-produksi">
     <div class="page-head">
       <h2>Produksi</h2>
-      <p>Produksi sejumlah porsi dari satu resep — stok bahan berkurang otomatis sesuai takaran. Ditolak bila stok tidak cukup.</p>
+      <p>Produksi sejumlah porsi dari satu resep — stok bahan berkurang otomatis sesuai takaran. Ditolak bila stok tidak cukup. Outlet aktif: <b class="outlet-nama">—</b>.</p>
     </div>
     <div class="card">
       <h3>Produksi Baru</h3>
@@ -403,7 +422,7 @@
   <section class="panel" id="panel-biaya">
     <div class="page-head">
       <h2>Biaya Porsi</h2>
-      <p>Biaya bahan per porsi tiap menu, dihitung otomatis dari resep — dibandingkan dengan harga jual.</p>
+      <p>Biaya bahan per porsi tiap menu, dihitung otomatis dari resep — dibandingkan dengan harga jual. Outlet aktif: <b class="outlet-nama">—</b>.</p>
     </div>
     <div class="card">
       <h3>Biaya Bahan per Porsi vs Harga Jual</h3>
@@ -415,7 +434,7 @@
   <section class="panel" id="panel-laporan">
     <div class="page-head">
       <h2>Laporan Pemakaian Bahan</h2>
-      <p>Berapa bahan yang terpakai untuk produksi, dan berapa biaya bahannya.</p>
+      <p>Berapa bahan yang terpakai untuk produksi, dan berapa biaya bahannya. Outlet aktif: <b class="outlet-nama">—</b>.</p>
     </div>
     <div class="card">
       <div class="row" style="margin-bottom:12px">
@@ -441,6 +460,65 @@
       <p class="sub">Stok masuk dari pembelian dan stok keluar manual, terbaru di atas.</p>
       <div id="riwayatMutasi"></div>
     </div>
+    <div class="card">
+      <h3>Ringkasan per Outlet</h3>
+      <p class="sub">Semua outlet: jumlah resep, bahan baku, produksi, porsi hari ini, dan nilai stok.</p>
+      <div class="audit-wrap"><div id="ringkasanOutlet"></div></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; Pulihkan Data</h3>
+      <p class="sub">Cadangkan seluruh data (termasuk pengguna, persetujuan, dan audit) sebagai file JSON, atau pulihkan dari file backup. Pulihkan hanya bisa dilakukan Admin atau Manajer.</p>
+      <div class="row">
+        <button class="btn kecil biru" id="btnBackupJson" type="button">Backup JSON</button>
+        <label class="btn kecil ghost" for="filePulihkan" style="display:inline-flex;align-items:center;cursor:pointer">Pulihkan dari JSON</label>
+        <input type="file" id="filePulihkan" accept="application/json,.json" style="display:none">
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-persetujuan">
+    <div class="page-head">
+      <h2>Persetujuan</h2>
+      <p>Permintaan yang butuh persetujuan Admin atau Manajer: hapus resep, hapus bahan baku, ubah harga pokok di atas 25%, ubah resep yang mengubah biaya porsi di atas 25%, dan hapus catatan produksi. Keputusan tercatat di Audit Log.</p>
+    </div>
+    <div class="card">
+      <h3>Menunggu Persetujuan</h3>
+      <div id="daftarPersetujuan"></div>
+    </div>
+    <div class="card">
+      <h3>Keputusan Sebelumnya</h3>
+      <div id="daftarPersetujuanSelesai"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-audit">
+    <div class="page-head">
+      <h2>Audit Log</h2>
+      <p>Riwayat aksi di aplikasi: siapa, kapan, dari outlet mana, dan apa yang dilakukan. Hanya Admin dan Manajer yang bisa melihat tab ini.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px">
+        <div class="grow">
+          <label for="filterAuditUser">Pengguna</label>
+          <select id="filterAuditUser"><option value="">Semua pengguna</option></select>
+        </div>
+        <div class="grow">
+          <label for="filterAuditAksi">Aksi</label>
+          <select id="filterAuditAksi">
+            <option value="">Semua aksi</option>
+            <option value="login">login</option>
+            <option value="resep">resep</option>
+            <option value="bahan">bahan</option>
+            <option value="produksi">produksi</option>
+            <option value="persetujuan">persetujuan</option>
+            <option value="pengguna">pengguna</option>
+            <option value="sistem">sistem</option>
+            <option value="ekspor">ekspor</option>
+          </select>
+        </div>
+      </div>
+      <div class="audit-wrap"><div id="daftarAudit"></div></div>
+    </div>
   </section>
 
   <section class="panel panduan" id="panel-panduan">
@@ -451,15 +529,17 @@
     <div class="card">
       <h3>Cara memakai</h3>
       <ol>
-        <li>Masuk sebagai <b>Admin</b> untuk mengatur pengguna, atau sebagai <b>Kasir</b> untuk mengelola resep dan stok.</li>
-        <li>Di tab <b>Resep</b>, klik resep untuk melihat bahan dan takarannya. Tambah resep baru untuk menu yang belum punya resep, atau ubah takaran bahan bila resep berubah.</li>
-        <li>Di tab <b>Bahan Baku</b>, catat stok tiap bahan beserta harga beli per satuan dan stok minimum. Tombol <b>+ Stok</b> untuk mencatat pembelian bahan baru; <b>− Stok</b> untuk mencatat pemakaian di luar produksi (misal bahan rusak atau terbuang).</li>
-        <li>Di tab <b>Produksi</b>, pilih resep dan jumlah porsi, lalu klik <b>Produksi Sekarang</b>. Stok bahan berkurang otomatis sesuai takaran resep × jumlah porsi. Bila ada bahan yang stoknya tidak cukup, produksi ditolak dan aplikasi menunjukkan bahan yang kurang.</li>
+        <li>Pilih <b>Outlet aktif</b> di tab <b>Dasbor</b> — resep, bahan baku, produksi, dan biaya porsi mengikuti outlet itu; laporan menampilkan ringkasan semua outlet.</li>
+        <li>Masuk sebagai <b>Admin</b> (semua akses, termasuk kelola pengguna dan audit), <b>Manajer</b> (kelola resep dan bahan, memutuskan persetujuan, tanpa kelola pengguna), atau <b>Dapur</b> (mencatat produksi dan melihat resep, tanpa hapus data dan tanpa tab Persetujuan &amp; Audit).</li>
+        <li>Di tab <b>Resep</b>, klik resep untuk melihat bahan dan takarannya. Tambah resep baru untuk menu yang belum punya resep, atau ubah takaran bahan bila resep berubah. Bila perubahan takaran membuat biaya porsi berubah lebih dari 25%, perubahan itu harus disetujui dulu di tab <b>Persetujuan</b>.</li>
+        <li>Di tab <b>Bahan Baku</b>, catat stok tiap bahan beserta harga beli per satuan dan stok minimum. Tombol <b>+ Stok</b> untuk mencatat pembelian bahan baru; <b>− Stok</b> untuk mencatat pemakaian di luar produksi (misal bahan rusak atau terbuang). Kenaikan harga pokok di atas 25% harus disetujui dulu di tab <b>Persetujuan</b>.</li>
+        <li>Di tab <b>Produksi</b>, pilih resep dan jumlah porsi, lalu klik <b>Produksi Sekarang</b>. Stok bahan berkurang otomatis sesuai takaran resep × jumlah porsi. Bila ada bahan yang stoknya tidak cukup, produksi ditolak dan aplikasi menunjukkan bahan yang kurang. Catatan produksi bisa dihapus, tapi harus lewat persetujuan Admin/Manajer — ajukan dari tombol <b>Hapus</b> di riwayat produksi; bila disetujui, stok bahan yang terpakai dikembalikan.</li>
         <li>Di tab <b>Biaya Porsi</b>, lihat biaya bahan per porsi tiap menu dan marginnya terhadap harga jual — menu dengan margin tipis perlu ditinjau harganya.</li>
-        <li>Di tab <b>Laporan</b>, lihat bahan apa saja yang paling banyak terpakai dan total biaya bahannya dalam periode yang dipilih.</li>
-        <li>Semua data tersimpan di perangkat ini (localStorage). Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
+        <li>Di tab <b>Laporan</b>, lihat bahan apa saja yang paling banyak terpakai dan total biaya bahannya dalam periode yang dipilih, plus ringkasan semua outlet.</li>
+        <li>Hapus resep, hapus bahan baku, ubah harga pokok di atas 25%, dan hapus catatan produksi harus diajukan ke tab <b>Persetujuan</b> dan baru berlaku bila disetujui Admin atau Manajer. Tab <b>Audit Log</b> mencatat siapa melakukan apa dan kapan.</li>
+        <li>Semua data tersimpan otomatis di perangkat ini (IndexedDB + enkripsi AES-GCM 256) setiap kali ada perubahan. Cadangkan berkala dengan tombol <b>Backup JSON</b> di tab Laporan. Bila ganti perangkat, data tidak ikut — itu batas aplikasi satu file HTML ini.</li>
       </ol>
-      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Kasir — <b>kasir</b> / <b>kasir123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
+      <p class="sub" style="margin-top:8px"><b>Akun demo (untuk mencoba):</b> Admin — <b>admin</b> / <b>admin123</b>; Manajer — <b>manajer</b> / <b>manajer123</b>; Dapur — <b>dapur</b> / <b>dapur123</b>. Akun demo hanya untuk mencoba demo ini. Setelah membeli, segera ganti kata sandi dan buat akun sendiri di tab Dasbor.</p>
     </div>
     <div class="card">
       <h3>Harga aplikasi</h3>
@@ -475,17 +555,17 @@
     </div>
     <div class="card">
       <h3>Data contoh</h3>
-      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (4 kategori, 12 item menu, 12 resep, 30 bahan baku, 2 produksi contoh). Semua perubahan Anda tersimpan di perangkat ini.</p>
+      <p class="sub">Aplikasi ini memakai data contoh Warung Kopi Oyen (4 kategori, 12 item menu, 12 resep, 30 bahan baku, 2 produksi contoh — semuanya di Outlet Pusat). Semua perubahan Anda tersimpan di perangkat ini (IndexedDB terenkripsi).</p>
       <button class="btn ghost kecil" id="btnResetData">Kembalikan data contoh</button>
     </div>
     <div class="card">
       <h3>Catatan penting (jujur)</h3>
-      <p class="sub">Aplikasi ini menghitung biaya bahan dari resep dan mencatat stok bahan baku — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem akuntansi (tidak menghitung gaji, sewa, listrik, atau biaya lain). Data resep, bahan, dan produksi <b>hanya tersimpan di perangkat ini</b> (browser perangkat yang membuka aplikasi) dan tidak tersinkron ke perangkat lain. Untuk dipakai bersama oleh dapur dan kasir di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, Aplikasi Pemesanan Makanan, dan Manajemen Meja kami.</p>
+      <p class="sub">Aplikasi ini menghitung biaya bahan dari resep dan mencatat stok bahan baku — <b>bukan</b> sistem kasir dengan pembayaran dan bukan sistem akuntansi (tidak menghitung gaji, sewa, listrik, atau biaya lain). Data resep, bahan, dan produksi <b>hanya tersimpan di perangkat ini</b> — sekarang di <b>IndexedDB</b> dengan <b>enkripsi WebCrypto (AES-GCM 256)</b>. Jujur: kunci enkripsinya juga tersimpan di perangkat yang sama (demo), jadi ini <b>bukan</b> enkripsi tingkat enterprise sungguhan; jangan simpan data sensitif. Data <b>tidak tersinkron ke perangkat lain</b> dan tidak ada backup cloud otomatis — pakai tombol <b>Backup JSON</b> di tab Laporan secara berkala. Multi-outlet di aplikasi ini berarti beberapa cabang dalam satu perangkat, bukan sinkron antar perangkat. Untuk dipakai bersama oleh dapur dan kasir di perangkat berbeda (multi-perangkat), dibutuhkan versi server — silakan hubungi kami lewat WhatsApp untuk penawaran versi tersebut. Aplikasi ini cocok dipasangkan dengan Restaurant POS, Kitchen Display System, Aplikasi Pemesanan Makanan, dan Manajemen Meja kami.</p>
     </div>
   </section>
 
   <footer>
-    <p><b>Manajemen Resep &amp; Bahan Baku v1.</b> Login + dashboard pengelola (admin &amp; kasir). Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
+    <p><b>Manajemen Resep &amp; Bahan Baku v1.</b> Multi-outlet, 3 peran (admin, manajer, dapur), alur persetujuan, IndexedDB + enkripsi, offline. Data hanya tersimpan di perangkat ini, tanpa sinkron lintas perangkat. Garansi perbaikan bug gratis: Basic 30 hari / Professional 60 hari / Business 90 hari — klaim via WhatsApp 0812-4798-6994.</p>
     <p style="margin-top:8px">Aplikasi ini contoh demo (CONTOH DEMO) — data contoh Warung Kopi Oyen, bukan data penjualan sungguhan.</p>
     <a class="btn wa" href="https://wa.me/6281247986994?text=Halo%2C%20saya%20mau%20pesan%20aplikasi%20Manajemen%20Resep%20%26%20Bahan%20Baku." target="_blank" rel="noopener">Pesan via WhatsApp</a>
   </footer>
@@ -517,7 +597,7 @@
       <p class="login-error" id="loginError" hidden>Nama pengguna atau kata sandi salah, atau akun nonaktif.</p>
       <button class="btn" type="submit">Masuk</button>
     </form>
-    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Kasir: <b>kasir</b> / <b>kasir123</b> (resep, bahan baku, produksi, biaya porsi, laporan)</p>
+    <p class="login-note"><b>Akun demo — silakan coba:</b><br>Admin: <b>admin</b> / <b>admin123</b> (semua akses, termasuk kelola pengguna)<br>Manajer: <b>manajer</b> / <b>manajer123</b> (resep, bahan baku, produksi, biaya porsi, laporan, persetujuan)<br>Dapur: <b>dapur</b> / <b>dapur123</b> (mencatat produksi dan melihat resep, tanpa hapus data dan audit)</p>
   </div>
 </div>
 
@@ -586,6 +666,12 @@
 
   // ---------- Data contoh ----------
   var STORAGE_KEY = "manajemenResep.v1";
+  // MR-UPGRADE-2026-11-25: IndexedDB + AES-GCM, multi-outlet, 3 peran, persetujuan, audit log, backup JSON.
+  var OUTLET_CONTOH = [
+    { id: "pusat", nama: "Outlet Pusat", alamat: "Jl. Mawar No. 12, Jakarta Selatan" },
+    { id: "jaktim", nama: "Outlet Jakarta Timur", alamat: "Jl. Pahlawan Revolusi No. 8, Jakarta Timur" },
+    { id: "bekasi", nama: "Outlet Bekasi", alamat: "Jl. Ahmad Yani No. 45, Bekasi" }
+  ];
   function seedState() {
     var kini = Date.now();
     function mntLalu(m) { return new Date(kini - m * 60000).toISOString(); }
@@ -600,7 +686,7 @@
       d.setHours(jam, menit, 0, 0);
       return d.toISOString();
     }
-    return {
+    var s = {
       resto: { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" },
       kategori: [
         { id: 1, nama: "Makanan" },
@@ -683,22 +769,189 @@
       seqResep: 13,
       seqBahan: 31,
       seqProduksi: 3,
-      seqMutasi: 5
+      seqMutasi: 5,
+      outlet: OUTLET_CONTOH.map(function (o) { return { id: o.id, nama: o.nama, alamat: o.alamat }; }),
+      outletAktif: "pusat",
+      persetujuan: [],
+      audit: [],
+      nextPersetujuan: 1
     };
+    s.items.forEach(function (x) { x.outlet = "pusat"; });
+    s.bahan.forEach(function (x) { x.outlet = "pusat"; });
+    s.resep.forEach(function (x) { x.outlet = "pusat"; });
+    s.produksi.forEach(function (x) { x.outlet = "pusat"; });
+    s.mutasi.forEach(function (x) { x.outlet = "pusat"; });
+    return s;
   }
 
   var state = seedState();
-  function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* penyimpanan tidak tersedia */ }
+
+  // ---------- Penyimpanan internal: IndexedDB + enkripsi WebCrypto (AES-GCM 256) ----------
+  // Data kerja tetap di memori (state); IndexedDB adalah tempat simpan utamanya
+  // (asinkron). localStorage hanya dipakai untuk migrasi SATU KALI dari versi lama
+  // dan sebagai cadangan bila IndexedDB tidak ada.
+  // JUJUR: kunci enkripsi dibuat acak per perangkat dan disimpan di IndexedDB
+  // yang sama — ini enkripsi demo, bukan keamanan tingkat enterprise, karena
+  // kunci dan datanya berada di perangkat yang sama.
+  var DB_NAMA = "manajemenResepDB";
+  var DB_VERSI = 1;
+  var dbSiap = null;
+  var infoSimpan = { jenis: "indexeddb", enkripsi: false, termigrasi: false };
+  var antreSimpan = Promise.resolve();
+  var kunciKripto = null;
+
+  function idbTersedia() { return typeof indexedDB !== "undefined"; }
+  function bukaDB() {
+    if (dbSiap) { return dbSiap; }
+    dbSiap = new Promise(function (selesai) {
+      if (!idbTersedia()) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+      var req;
+      try { req = indexedDB.open(DB_NAMA, DB_VERSI); } catch (e) { infoSimpan.jenis = "localstorage"; selesai(null); return; }
+      req.onupgradeneeded = function () {
+        var d = req.result;
+        if (!d.objectStoreNames.contains("kv")) { d.createObjectStore("kv"); }
+      };
+      req.onsuccess = function () { selesai(req.result); };
+      req.onerror = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+      req.onblocked = function () { infoSimpan.jenis = "localstorage"; selesai(null); };
+    });
+    return dbSiap;
   }
-  function loadState() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      var d = JSON.parse(raw);
-      if (!d || !Array.isArray(d.bahan) || !Array.isArray(d.resep)) throw new Error("data rusak");
-      state = d;
-    } catch (e) { /* pakai data contoh */ }
+  function idbGet(kunci) {
+    return bukaDB().then(function (d) {
+      if (!d) { return undefined; }
+      return new Promise(function (selesai) {
+        var tx, req;
+        try { tx = d.transaction("kv", "readonly"); req = tx.objectStore("kv").get(kunci); }
+        catch (e) { selesai(undefined); return; }
+        req.onsuccess = function () { selesai(req.result); };
+        req.onerror = function () { selesai(undefined); };
+      });
+    });
+  }
+  function idbPut(kunci, nilai) {
+    return bukaDB().then(function (d) {
+      if (!d) { return false; }
+      return new Promise(function (selesai) {
+        var tx, req;
+        try { tx = d.transaction("kv", "readwrite"); req = tx.objectStore("kv").put(nilai, kunci); }
+        catch (e) { selesai(false); return; }
+        req.onsuccess = function () { selesai(true); };
+        req.onerror = function () { selesai(false); };
+      });
+    });
+  }
+  function lsCadanganGet(kunci) { try { var r = localStorage.getItem(STORAGE_KEY + ".idb-" + kunci); return r ? JSON.parse(r) : undefined; } catch (e) { return undefined; } }
+  function lsCadanganPut(kunci, nilai) { try { localStorage.setItem(STORAGE_KEY + ".idb-" + kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; } }
+  function simpanKV(kunci, nilai) {
+    return idbPut(kunci, nilai).then(function (ok) {
+      if (!ok) { lsCadanganPut(kunci, nilai); }
+      return true;
+    });
+  }
+  function muatKV(kunci) {
+    return idbGet(kunci).then(function (v) {
+      if (v !== undefined) { return v; }
+      return lsCadanganGet(kunci);
+    });
+  }
+  function b64DariBuffer(buf) { var b = new Uint8Array(buf); var s = ""; for (var i = 0; i < b.length; i++) { s += String.fromCharCode(b[i]); } return btoa(s); }
+  function bufferDariB64(s) { var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); } return b.buffer; }
+  function siapkanKripto() {
+    if (!window.crypto || !crypto.subtle || !crypto.getRandomValues) { infoSimpan.enkripsi = false; return Promise.resolve(false); }
+    return muatKV("kunci").then(function (jwk) {
+      var janji = jwk
+        ? crypto.subtle.importKey("jwk", jwk, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+        : crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+            .then(function (k) { return crypto.subtle.exportKey("jwk", k).then(function (j) { return simpanKV("kunci", j).then(function () { return k; }); }); });
+      return janji.then(function (k) { kunciKripto = k; infoSimpan.enkripsi = true; return true; })
+        .catch(function () { infoSimpan.enkripsi = false; return false; });
+    });
+  }
+  function enkripData(obj) {
+    if (!kunciKripto) { return Promise.resolve({ v: 0, data: obj }); }
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, kunciKripto, new TextEncoder().encode(JSON.stringify(obj)))
+      .then(function (ct) { return { v: 1, iv: b64DariBuffer(iv.buffer), data: b64DariBuffer(ct) }; })
+      .catch(function () { return { v: 0, data: obj }; });
+  }
+  function dekripData(paket) {
+    if (!paket) { return Promise.resolve(null); }
+    if (paket.v !== 1 || !kunciKripto) { return Promise.resolve(paket.v === 0 ? paket.data : paket); }
+    return crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(bufferDariB64(paket.iv)) }, kunciKripto, bufferDariB64(paket.data))
+      .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); })
+      .catch(function () { return null; });
+  }
+  // saveState() tetap bisa dipanggil sinkron dari kode lama (fire-and-forget berantre).
+  function saveState() {
+    if (!state) { return; }
+    antreSimpan = antreSimpan.then(function () {
+      return enkripData(state).then(function (paket) { return simpanKV("state", paket); });
+    }).catch(function () { /* simpan gagal: data tetap di memori */ });
+  }
+  function normalisasiDb(obj) {
+    if (!obj || typeof obj !== "object") { obj = seedState(); }
+    if (!obj.resto) { obj.resto = { nama: "Warung Kopi Oyen", alamat: "Jl. Mawar No. 12, Jakarta Selatan", wa: "081247986994" }; }
+    if (!Array.isArray(obj.kategori) || !obj.kategori.length) {
+      obj.kategori = [
+        { id: 1, nama: "Makanan" },
+        { id: 2, nama: "Minuman" },
+        { id: 3, nama: "Camilan" },
+        { id: 4, nama: "Paket" }
+      ];
+    }
+    if (!Array.isArray(obj.items)) { obj.items = []; }
+    if (!Array.isArray(obj.bahan)) { obj.bahan = []; }
+    if (!Array.isArray(obj.resep)) { obj.resep = []; }
+    if (!Array.isArray(obj.produksi)) { obj.produksi = []; }
+    if (!Array.isArray(obj.mutasi)) { obj.mutasi = []; }
+    if (!Array.isArray(obj.outlet) || !obj.outlet.length) {
+      obj.outlet = OUTLET_CONTOH.map(function (o) { return { id: o.id, nama: o.nama, alamat: o.alamat }; });
+    }
+    if (!obj.outletAktif) { obj.outletAktif = "pusat"; }
+    obj.items.forEach(function (x) { if (!x.outlet) { x.outlet = "pusat"; } });
+    obj.bahan.forEach(function (x) { if (!x.outlet) { x.outlet = "pusat"; } });
+    obj.resep.forEach(function (x) { if (!x.outlet) { x.outlet = "pusat"; } });
+    obj.produksi.forEach(function (x) { if (!x.outlet) { x.outlet = "pusat"; } });
+    obj.mutasi.forEach(function (x) { if (!x.outlet) { x.outlet = "pusat"; } });
+    if (!Array.isArray(obj.persetujuan)) { obj.persetujuan = []; }
+    if (!Array.isArray(obj.audit)) { obj.audit = []; }
+    if (typeof obj.nextPersetujuan !== "number") { obj.nextPersetujuan = (obj.persetujuan.reduce(function (m, x) { return Math.max(m, x.id || 0); }, 0)) + 1; }
+    if (!obj.seqResep) { obj.seqResep = obj.resep.length + 1; }
+    if (!obj.seqBahan) { obj.seqBahan = obj.bahan.length + 1; }
+    if (!obj.seqProduksi) { obj.seqProduksi = obj.produksi.length + 1; }
+    if (!obj.seqMutasi) { obj.seqMutasi = obj.mutasi.length + 1; }
+    return obj;
+  }
+  function muatState() {
+    return muatKV("state").then(function (paket) {
+      if (paket !== undefined) {
+        return dekripData(paket).then(function (obj) {
+          if (obj && Array.isArray(obj.bahan) && Array.isArray(obj.resep)) { state = normalisasiDb(obj); return; }
+          state = normalisasiDb(seedState()); saveState();
+        });
+      }
+      // Migrasi SATU KALI dari localStorage lama
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          var lama = JSON.parse(raw);
+          if (lama && Array.isArray(lama.bahan) && Array.isArray(lama.resep)) {
+            state = normalisasiDb(lama);
+            infoSimpan.termigrasi = true;
+            state.audit.unshift({ waktu: new Date().toISOString(), user: "sistem", peran: "-", outlet: "pusat", aksi: "sistem", detail: "Data dimigrasikan dari localStorage ke IndexedDB terenkripsi." });
+            try { localStorage.setItem(STORAGE_KEY + ".cadangan-lama", raw); localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            saveState();
+            return;
+          }
+        }
+      } catch (e) { /* lanjut ke data contoh */ }
+      state = normalisasiDb(seedState());
+      saveState();
+    }).catch(function () {
+      state = normalisasiDb(seedState());
+      saveState();
+    });
   }
 
   // ---------- Pencarian data ----------
@@ -723,45 +976,199 @@
     return Math.round(total);
   }
   function hampirHabis() {
-    return state.bahan.filter(function (b) { return statusBahan(b) !== "aman"; });
+    return bahanAktif().filter(function (b) { return statusBahan(b) !== "aman"; });
   }
   function nilaiStok() {
-    return state.bahan.reduce(function (a, b) { return a + b.stok * b.harga; }, 0);
+    return bahanAktif().reduce(function (a, b) { return a + b.stok * b.harga; }, 0);
   }
 
   // ---------- Login & pengguna ----------
   var USERS_KEY = STORAGE_KEY + ".users";
   var SESSION_KEY = STORAGE_KEY + ".session";
+  var PERAN_VALID = ["admin", "manajer", "dapur"];
   var DEFAULT_USERS = [
     { username: "admin", password: "admin123", name: "Admin", role: "admin", aktif: true },
-    { username: "kasir", password: "kasir123", name: "Kasir", role: "kasir", aktif: true }
+    { username: "manajer", password: "manajer123", name: "Manajer", role: "manajer", aktif: true },
+    { username: "dapur", password: "dapur123", name: "Dapur", role: "dapur", aktif: true }
   ];
   var users = [];
   var currentUser = null;
 
-  function loadUsers() {
-    try {
-      var raw = localStorage.getItem(USERS_KEY);
-      if (!raw) { users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); }); saveUsers(); return; }
-      var d = JSON.parse(raw);
-      if (!Array.isArray(d) || d.length === 0) throw new Error("kosong");
-      users = d.map(function (x) {
-        return { username: x.username, password: x.password, name: x.name || x.username, role: x.role === "admin" ? "admin" : "kasir", aktif: x.aktif !== false };
-      });
-    } catch (e) {
-      users = DEFAULT_USERS.map(function (u) { return Object.assign({}, u); });
+  function normalisasiPengguna(u) {
+    var r = u.role || u.peran || "dapur";
+    if (r === "kasir") { r = "dapur"; } // peran lama "kasir" dimigrasikan ke "dapur"
+    if (PERAN_VALID.indexOf(r) === -1) { r = "dapur"; }
+    return { username: String(u.username || "").toLowerCase(), password: String(u.password || ""), name: u.name || u.nama || u.username, role: r, aktif: u.aktif !== false };
+  }
+  function getUsers() { return users; }
+  function saveUsers() {
+    var salinan = users.map(function (u) { return { username: u.username, password: u.password, name: u.name, role: u.role, aktif: u.aktif }; });
+    antreSimpan = antreSimpan.then(function () {
+      return enkripData(salinan).then(function (paket) { return simpanKV("pengguna", paket); });
+    }).catch(function () { /* simpan gagal */ });
+  }
+  function muatUsers() {
+    return muatKV("pengguna").then(function (paket) {
+      if (paket !== undefined) {
+        return dekripData(paket).then(function (arr) {
+          if (Array.isArray(arr) && arr.length) { users = arr.map(normalisasiPengguna); return; }
+          users = DEFAULT_USERS.map(normalisasiPengguna);
+        });
+      }
+      // Migrasi SATU KALI pengguna dari localStorage lama (".users"); sesi
+      // (".session") tetap di localStorage dengan kunci yang sama.
+      try {
+        var raw = localStorage.getItem(USERS_KEY);
+        if (raw) {
+          var lama = JSON.parse(raw);
+          if (Array.isArray(lama) && lama.length) {
+            users = lama.map(normalisasiPengguna);
+            try { localStorage.setItem(USERS_KEY + ".cadangan-lama", raw); localStorage.removeItem(USERS_KEY); } catch (e) {}
+            saveUsers();
+            return;
+          }
+        }
+      } catch (e) { /* lanjut ke default */ }
+      users = DEFAULT_USERS.map(normalisasiPengguna);
       saveUsers();
+    }).catch(function () {
+      users = DEFAULT_USERS.map(normalisasiPengguna);
+    });
+  }
+
+  // ---------- Peran ----------
+  function labelPeran(r) { return { admin: "Admin", manajer: "Manajer", dapur: "Dapur" }[r] || r; }
+  function peran() { return currentUser ? currentUser.role : null; }
+  function bisa(aksi) {
+    var r = peran();
+    if (!r) { return false; }
+    if (aksi === "kelola_pengguna") { return r === "admin"; }
+    if (aksi === "audit" || aksi === "putuskan" || aksi === "pulihkan" || aksi === "reset") { return r === "admin" || r === "manajer"; }
+    if (aksi === "kelola_resep") { return r === "admin" || r === "manajer"; }
+    return true;
+  }
+  function butuh(aksi, pesan) {
+    if (bisa(aksi)) { return true; }
+    toast(pesan || "Akses ditolak untuk peran Anda.");
+    return false;
+  }
+
+  // ---------- Outlet ----------
+  function namaOutlet(id) {
+    var c = (state.outlet || []).find(function (x) { return x.id === id; });
+    return c ? c.nama : id;
+  }
+  function outletAktif() { return (state && state.outletAktif) || "pusat"; }
+  function isiSelectOutlet() {
+    var sel = $("selOutletAktif");
+    if (!sel || !state.outlet) { return; }
+    sel.innerHTML = state.outlet.map(function (c) { return '<option value="' + c.id + '">' + esc(c.nama) + "</option>"; }).join("");
+    sel.value = outletAktif();
+  }
+  function setOutlet(id) {
+    if (!state.outlet.some(function (c) { return c.id === id; })) { return; }
+    state.outletAktif = id;
+    saveState();
+    catatAudit("sistem", "Outlet aktif diubah ke " + namaOutlet(id) + ".");
+    renderSemua();
+  }
+  function resepAktif() { var cb = outletAktif(); return state.resep.filter(function (r) { return (r.outlet || "pusat") === cb; }); }
+  function bahanAktif() { var cb = outletAktif(); return state.bahan.filter(function (b) { return (b.outlet || "pusat") === cb; }); }
+  function itemsAktif() { var cb = outletAktif(); return state.items.filter(function (m) { return (m.outlet || "pusat") === cb; }); }
+  function produksiAktif() { var cb = outletAktif(); return state.produksi.filter(function (p) { return (p.outlet || "pusat") === cb; }); }
+
+  // ---------- Audit log ----------
+  function catatAudit(aksi, detail) {
+    if (!state) { return; }
+    if (!Array.isArray(state.audit)) { state.audit = []; }
+    state.audit.unshift({
+      waktu: new Date().toISOString(),
+      user: currentUser ? currentUser.username : "sistem",
+      peran: currentUser ? currentUser.role : "-",
+      outlet: outletAktif(),
+      aksi: aksi, detail: detail || ""
+    });
+    if (state.audit.length > 200) { state.audit.length = 200; }
+    saveState();
+  }
+
+  // ---------- Persetujuan ----------
+  function labelTipePersetujuan(t) {
+    return {
+      hapus_resep: "Hapus resep",
+      hapus_bahan: "Hapus bahan baku",
+      ubah_harga_bahan: "Ubah harga pokok bahan (>25%)",
+      ubah_resep: "Ubah resep (biaya porsi >25%)",
+      hapus_produksi: "Hapus catatan produksi"
+    }[t] || t;
+  }
+  function buatPersetujuan(tipe, detail, ringkasan) {
+    var id = state.nextPersetujuan++;
+    state.persetujuan.unshift({
+      id: id, tipe: tipe, outlet: outletAktif(),
+      dibuatOleh: currentUser ? currentUser.username : "tamu",
+      dibuatPada: new Date().toISOString(),
+      status: "menunggu", detail: detail, ringkasan: ringkasan || "",
+      diputuskanOleh: "", diputuskanPada: ""
+    });
+    catatAudit("persetujuan", "Permintaan persetujuan #" + id + " (" + labelTipePersetujuan(tipe) + "): " + (ringkasan || "") + ".");
+    saveState(); perbaruiBadge();
+    return id;
+  }
+  function terapkanPersetujuan(apr) {
+    var d = apr.detail || {};
+    if (apr.tipe === "hapus_resep") {
+      state.resep = state.resep.filter(function (x) { return x.id !== d.resepId; });
+      if (resepTerpilih === d.resepId) { resepTerpilih = null; }
+    } else if (apr.tipe === "hapus_bahan") {
+      state.bahan = state.bahan.filter(function (x) { return x.id !== d.bahanId; });
+    } else if (apr.tipe === "ubah_harga_bahan") {
+      var b = cariBahan(d.bahanId);
+      if (b) { b.harga = d.hargaBaru; }
+    } else if (apr.tipe === "ubah_resep") {
+      var r = cariResep(d.resepId);
+      if (r) { r.bahan = d.bahan; }
+    } else if (apr.tipe === "hapus_produksi") {
+      var pr = state.produksi.find(function (x) { return x.id === d.produksiId; });
+      if (pr) {
+        (pr.pakai || []).forEach(function (it) {
+          var bb = cariBahan(it.b);
+          if (bb) { bb.stok += it.j; }
+        });
+        state.mutasi = state.mutasi.filter(function (x) { return !(x.jenis === "produksi" && String(x.keterangan || "").indexOf(pr.no) === 0); });
+        state.produksi = state.produksi.filter(function (x) { return x.id !== d.produksiId; });
+      }
     }
   }
-  function saveUsers() {
-    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) { /* abaikan */ }
+  function putuskanPersetujuan(id, setuju) {
+    if (!bisa("putuskan")) { toast("Hanya Admin atau Manajer yang bisa memutuskan persetujuan."); return; }
+    var apr = state.persetujuan.find(function (a) { return a.id === id; });
+    if (!apr || apr.status !== "menunggu") { toast("Permintaan ini sudah diputuskan."); return; }
+    apr.status = setuju ? "disetujui" : "ditolak";
+    apr.diputuskanOleh = currentUser.username;
+    apr.diputuskanPada = new Date().toISOString();
+    if (setuju) { terapkanPersetujuan(apr); }
+    catatAudit("persetujuan", "Permintaan #" + id + " (" + labelTipePersetujuan(apr.tipe) + ") " + (setuju ? "DISETUJUI" : "DITOLAK") + " oleh " + currentUser.username + ".");
+    saveState(); renderSemua();
+    toast("Permintaan #" + id + (setuju ? " disetujui." : " ditolak."));
   }
+  function perbaruiBadge() {
+    var b = $("badgePersetujuan");
+    if (!b) { return; }
+    var menunggu = state && state.persetujuan ? state.persetujuan.filter(function (a) { return a.status === "menunggu"; }).length : 0;
+    var tampil = menunggu > 0 && bisa("putuskan");
+    b.hidden = !tampil;
+    b.textContent = menunggu;
+  }
+
+  // ---------- Sesi & login ----------
   function terapkanSesi() {
     document.body.setAttribute("data-role", currentUser ? currentUser.role : "");
-    $("userChip").textContent = currentUser ? currentUser.name + " (" + (currentUser.role === "admin" ? "Admin" : "Kasir") + ")" : "—";
+    $("userChip").textContent = currentUser ? currentUser.name + " (" + labelPeran(currentUser.role) + ")" : "—";
     $("namaAkunSaya").textContent = currentUser ? currentUser.name : "—";
     $("loginOverlay").classList.toggle("hidden", !!currentUser);
     $("cardPengguna").style.display = currentUser && currentUser.role === "admin" ? "" : "none";
+    perbaruiBadge();
   }
   function masuk(username, password) {
     var u = users.find(function (x) { return x.username === username && x.password === password && x.aktif !== false; });
@@ -769,9 +1176,11 @@
     currentUser = u;
     try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username: u.username })); } catch (e) { /* abaikan */ }
     terapkanSesi();
+    catatAudit("login", "Masuk sebagai " + u.username + " (" + labelPeran(u.role) + ").");
     return true;
   }
   function keluar() {
+    if (currentUser) { catatAudit("login", "Keluar (" + currentUser.username + ")."); }
     currentUser = null;
     try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* abaikan */ }
     terapkanSesi();
@@ -788,6 +1197,7 @@
 
   $("formLogin").addEventListener("submit", function (e) {
     e.preventDefault();
+    if (!window.__mrSiap) { toast("Aplikasi masih memuat data — coba lagi sebentar."); return; }
     var u = $("loginUser").value.trim();
     var p = $("loginPass").value;
     if (masuk(u, p)) {
@@ -807,24 +1217,29 @@
   // ---------- Tab ----------
   document.querySelectorAll(".tab-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
+      var tab = btn.getAttribute("data-tab");
+      if ((tab === "persetujuan" || tab === "audit") && !bisa("audit")) { toast("Hanya Admin atau Manajer yang bisa membuka tab ini."); return; }
       document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
       document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
-      $("panel-" + btn.getAttribute("data-tab")).classList.add("active");
-      var tab = btn.getAttribute("data-tab");
+      $("panel-" + tab).classList.add("active");
       if (tab === "dashboard") renderDashboard();
       if (tab === "resep") renderResep();
       if (tab === "bahan") renderBahan();
       if (tab === "produksi") renderProduksi();
       if (tab === "biaya") renderBiaya();
       if (tab === "laporan") renderLaporan();
+      if (tab === "persetujuan") renderPersetujuan();
+      if (tab === "audit") renderAudit();
     });
   });
 
+  $("selOutletAktif").addEventListener("change", function () { setOutlet(this.value); });
+
   // ---------- Dashboard ----------
   function renderDashboard() {
-    $("dResep").textContent = state.resep.length;
-    $("dBahan").textContent = state.bahan.length;
+    $("dResep").textContent = resepAktif().length;
+    $("dBahan").textContent = bahanAktif().length;
     var hh = hampirHabis();
     $("dHampirHabis").textContent = hh.length;
     $("dNilaiStok").textContent = rupiah(nilaiStok());
@@ -836,7 +1251,7 @@
         '<div class="aksi"><button class="btn hijau kecil" type="button" data-stok-masuk="' + b.id + '">+ Stok</button></div></div>';
     }).join("") : '<p class="kosong">Semua bahan masih aman — tidak ada yang di bawah stok minimum.</p>';
     var kunci = hariIniKey();
-    var hariIni = state.produksi.filter(function (p) { return p.tanggal.slice(0, 10) === kunci; });
+    var hariIni = produksiAktif().filter(function (p) { return p.tanggal.slice(0, 10) === kunci; });
     var totalPorsi = hariIni.reduce(function (a, p) { return a + p.jumlah; }, 0);
     var totalBiaya = hariIni.reduce(function (a, p) { return a + p.totalBiaya; }, 0);
     $("produksiHariIni").innerHTML = hariIni.length ? '<div class="item-bar"><div><div class="nm">' + totalPorsi + ' porsi diproduksi</div>' +
@@ -849,15 +1264,17 @@
     var wrap = $("daftarPengguna");
     if (!currentUser || currentUser.role !== "admin") { wrap.innerHTML = ""; return; }
     wrap.innerHTML = users.map(function (u) {
-      var labelPeran = u.role === "admin" ? "Admin" : "Kasir";
+      var label = labelPeran(u.role);
+      var kelasLencana = u.role === "admin" ? "st-biru" : (u.role === "manajer" ? "st-aman" : "st-rendah");
       var tombol = "";
       if (u.username !== currentUser.username) {
-        tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="peran" data-user="' + esc(u.username) + '">Ubah ke ' + (u.role === "admin" ? "Kasir" : "Admin") + "</button>";
+        tombol += '<select data-peran-user="' + esc(u.username) + '" aria-label="Peran ' + esc(u.name) + '">' +
+          PERAN_VALID.map(function (r) { return '<option value="' + r + '"' + (u.role === r ? " selected" : "") + ">" + labelPeran(r) + "</option>"; }).join("") + "</select>";
         tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="aktif" data-user="' + esc(u.username) + '">' + (u.aktif !== false ? "Nonaktifkan" : "Aktifkan") + "</button>";
         tombol += '<button class="btn ghost kecil" type="button" data-aksi-pengguna="sandi" data-user="' + esc(u.username) + '">Reset Sandi</button>';
       }
       return '<div class="user-row"><div><b>' + esc(u.name) + '</b> <span style="color:var(--muted)">(@' + esc(u.username) + ")</span><br>" +
-        '<span class="lencana ' + (u.role === "admin" ? "st-biru" : "st-rendah") + '">' + labelPeran + "</span> " +
+        '<span class="lencana ' + kelasLencana + '">' + label + "</span> " +
         (u.aktif === false ? '<span class="lencana st-habis">Nonaktif</span>' : "") + "</div>" +
         '<div class="aksi">' + tombol + "</div></div>";
     }).join("");
@@ -871,29 +1288,43 @@
     var aksi = btn.getAttribute("data-aksi-pengguna");
     var u = users.find(function (x) { return x.username === username; });
     if (!u) return;
-    if (aksi === "peran") {
-      if (u.role === "admin" && users.filter(function (x) { return x.role === "admin"; }).length <= 1) {
-        toast("Tidak bisa: minimal harus ada 1 admin."); return;
-      }
-      u.role = u.role === "admin" ? "kasir" : "admin";
-      saveUsers();
-      renderPengguna();
-      toast("Peran diubah: " + u.name + " sekarang " + (u.role === "admin" ? "Admin" : "Kasir") + ".");
-    } else if (aksi === "aktif") {
+    if (aksi === "aktif") {
       if (u.role === "admin" && u.aktif !== false && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
         toast("Tidak bisa: minimal harus ada 1 admin aktif."); return;
       }
       u.aktif = u.aktif === false ? true : false;
       saveUsers();
+      catatAudit("pengguna", "Pengguna " + u.name + " (@" + u.username + ") " + (u.aktif !== false ? "diaktifkan" : "dinonaktifkan") + ".");
       renderPengguna();
       toast(u.aktif !== false ? u.name + " diaktifkan." : u.name + " dinonaktifkan.");
     } else if (aksi === "sandi") {
       tanyaKonfirmasi("Reset kata sandi", "Reset kata sandi " + u.name + " (@" + u.username + ') menjadi "rb123"?', function () {
         u.password = "rb123";
         saveUsers();
+        catatAudit("pengguna", "Kata sandi " + u.name + " (@" + u.username + ") direset admin.");
         toast("Kata sandi " + u.name + " direset menjadi rb123.");
       });
     }
+  });
+
+  $("daftarPengguna").addEventListener("change", function (e) {
+    var sel = e.target.closest("[data-peran-user]");
+    if (!sel) return;
+    if (!currentUser || currentUser.role !== "admin") { toast("Hanya admin yang bisa mengelola pengguna."); renderPengguna(); return; }
+    var username = sel.getAttribute("data-peran-user");
+    var u = users.find(function (x) { return x.username === username; });
+    if (!u) return;
+    var peranBaru = sel.value;
+    if (PERAN_VALID.indexOf(peranBaru) === -1) { renderPengguna(); return; }
+    if (u.role === "admin" && peranBaru !== "admin" && users.filter(function (x) { return x.role === "admin" && x.aktif !== false; }).length <= 1) {
+      toast("Tidak bisa: minimal harus ada 1 admin aktif."); renderPengguna(); return;
+    }
+    var peranLama = u.role;
+    u.role = peranBaru;
+    saveUsers();
+    catatAudit("pengguna", "Peran " + u.name + " (@" + u.username + ") diubah: " + labelPeran(peranLama) + " → " + labelPeran(peranBaru) + ".");
+    renderPengguna();
+    toast("Peran diubah: " + u.name + " sekarang " + labelPeran(peranBaru) + ".");
   });
 
   $("btnTambahPengguna").addEventListener("click", function () {
@@ -903,9 +1334,11 @@
     var pass = $("nuPass").value;
     var peran = $("nuPeran").value;
     if (!nama || !username || !pass) { toast("Nama, nama pengguna, dan kata sandi wajib diisi."); return; }
+    if (PERAN_VALID.indexOf(peran) === -1) { peran = "dapur"; }
     if (users.some(function (x) { return x.username === username; })) { toast("Nama pengguna sudah dipakai."); return; }
     users.push({ username: username, password: pass, name: nama, role: peran, aktif: true });
     saveUsers();
+    catatAudit("pengguna", "Pengguna baru " + nama + " (@" + username + ", " + labelPeran(peran) + ") ditambahkan.");
     $("nuNama").value = ""; $("nuUser").value = ""; $("nuPass").value = "";
     renderPengguna();
     toast("Pengguna " + nama + " ditambahkan.");
@@ -928,7 +1361,7 @@
   var resepTerpilih = null;
   function renderResep() {
     var q = ($("cariResep").value || "").trim().toLowerCase();
-    var daftar = state.resep.filter(function (r) {
+    var daftar = resepAktif().filter(function (r) {
       var m = cariMenu(r.menuId);
       if (!m) return false;
       return !q || m.nama.toLowerCase().indexOf(q) !== -1;
@@ -971,7 +1404,7 @@
   $("cariResep").addEventListener("input", renderResep);
 
   function opsiBahan(terpilih) {
-    return state.bahan.map(function (b) {
+    return bahanAktif().map(function (b) {
       return '<option value="' + b.id + '"' + (b.id === terpilih ? " selected" : "") + ">" + esc(b.nama) + " (" + esc(b.satuan) + " — " + rupiah(b.harga) + ")</option>";
     }).join("");
   }
@@ -982,7 +1415,8 @@
       '<button class="btn ghost kecil" type="button" data-hapus-baris>Hapus</button></div>';
   }
   function bukaFormResep(resepLama) {
-    var menuTanpaResep = state.items.filter(function (it) { return !cariResepByMenu(it.id) || (resepLama && resepLama.menuId === it.id); });
+    if (!bisa("kelola_resep")) { toast("Hanya Admin atau Manajer yang bisa mengelola resep."); return; }
+    var menuTanpaResep = itemsAktif().filter(function (it) { return !cariResepByMenu(it.id) || (resepLama && resepLama.menuId === it.id); });
     if (!resepLama && menuTanpaResep.length === 0) { toast("Semua menu sudah punya resep."); return; }
     var opsiMenu = menuTanpaResep.map(function (it) {
       return '<option value="' + it.id + '"' + (resepLama && resepLama.menuId === it.id ? " selected" : "") + ">" + esc(it.nama) + " — " + rupiah(it.harga) + "</option>";
@@ -991,7 +1425,7 @@
     if (resepLama) {
       barisAwal = resepLama.bahan.map(function (it) { return barisBahanHtml(it.b, it.t); }).join("");
     } else {
-      barisAwal = barisBahanHtml(state.bahan[0] ? state.bahan[0].id : 0, "");
+      barisAwal = barisBahanHtml(bahanAktif()[0] ? bahanAktif()[0].id : 0, "");
     }
     bukaModalForm(resepLama ? "Ubah Resep" : "Tambah Resep",
       '<form id="formResep"><div class="field"><label for="frMenu">Menu *</label><select id="frMenu"' + (resepLama ? " disabled" : "") + ">" + opsiMenu + "</select></div>" +
@@ -1000,7 +1434,7 @@
       '<div class="aksi" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost kecil" type="button" id="frBatal">Batal</button><button class="btn kecil" type="submit">Simpan Resep</button></div></form>');
     $("frTambahBaris").addEventListener("click", function () {
       var div = document.createElement("div");
-      div.innerHTML = barisBahanHtml(state.bahan[0] ? state.bahan[0].id : 0, "");
+      div.innerHTML = barisBahanHtml(bahanAktif()[0] ? bahanAktif()[0].id : 0, "");
       $("frBaris").appendChild(div.firstChild);
     });
     $("frBaris").addEventListener("click", function (e) {
@@ -1027,10 +1461,23 @@
       if (duplikat) { toast("Satu bahan tidak boleh muncul dua kali dalam satu resep."); return; }
       if (takaranSalah || bahanList.length === 0) { toast("Isi semua takaran dengan angka lebih dari 0."); return; }
       if (resepLama) {
+        var biayaLama = biayaResep(resepLama);
+        var biayaBaru = Math.round(bahanList.reduce(function (a, it) { var b = cariBahan(it.b); return a + (b ? it.t * b.harga : 0); }, 0));
+        var mLama = cariMenu(resepLama.menuId);
+        if (biayaLama > 0 && Math.abs(biayaBaru - biayaLama) / biayaLama > 0.25) {
+          buatPersetujuan("ubah_resep", { resepId: resepLama.id, bahan: bahanList, biayaLama: biayaLama, biayaBaru: biayaBaru },
+            "Ubah resep " + (mLama ? mLama.nama : "") + ": biaya porsi " + rupiah(biayaLama) + " → " + rupiah(biayaBaru) + " (" + (biayaBaru > biayaLama ? "naik" : "turun") + " " + persen(Math.abs(biayaBaru - biayaLama) / biayaLama * 100) + ").");
+          tutupModal();
+          toast("Perubahan biaya porsi di atas 25% — diajukan ke Persetujuan.");
+          return;
+        }
         resepLama.bahan = bahanList;
+        catatAudit("resep", "Resep " + (mLama ? mLama.nama : "") + " diperbarui (biaya porsi " + rupiah(biayaBaru) + ").");
         toast("Resep diperbarui.");
       } else {
-        state.resep.push({ id: state.seqResep++, menuId: menuId, bahan: bahanList });
+        state.resep.push({ id: state.seqResep++, menuId: menuId, bahan: bahanList, outlet: outletAktif() });
+        var mBaru = cariMenu(menuId);
+        catatAudit("resep", "Resep baru " + (mBaru ? mBaru.nama : "") + " ditambahkan (" + namaOutlet(outletAktif()) + ").");
         toast("Resep baru ditambahkan.");
       }
       saveState();
@@ -1048,12 +1495,10 @@
     var r = cariResep(resepTerpilih);
     if (!r) return;
     var m = cariMenu(r.menuId);
-    tanyaKonfirmasi("Hapus resep", "Hapus resep " + (m ? m.nama : "") + "? Biaya porsinya tidak bisa dihitung lagi sampai resep dibuat ulang.", function () {
-      state.resep = state.resep.filter(function (x) { return x.id !== r.id; });
-      saveState();
-      renderSemua();
+    tanyaKonfirmasi("Ajukan hapus resep", "Ajukan penghapusan resep " + (m ? m.nama : "") + " ke Persetujuan? Biaya porsinya tidak bisa dihitung lagi sampai resep dibuat ulang. Penghapusan baru berlaku bila disetujui Admin atau Manajer.", function () {
+      buatPersetujuan("hapus_resep", { resepId: r.id }, "Hapus resep " + (m ? m.nama : "") + " (biaya porsi " + rupiah(biayaResep(r)) + ").");
       renderDetailResep(null);
-      toast("Resep dihapus.");
+      toast("Penghapusan resep diajukan ke Persetujuan.");
     });
   });
 
@@ -1061,7 +1506,7 @@
   function renderBahan() {
     var q = ($("cariBahan").value || "").trim().toLowerCase();
     var f = $("filterBahan").value;
-    var daftar = state.bahan.filter(function (b) {
+    var daftar = bahanAktif().filter(function (b) {
       if (q && b.nama.toLowerCase().indexOf(q) === -1) return false;
       if (f !== "semua" && statusBahan(b) !== f) return false;
       return true;
@@ -1079,7 +1524,7 @@
         '<td><div class="aksi" style="display:flex;gap:4px;flex-wrap:wrap">' +
         '<button class="btn hijau kecil" type="button" data-stok-masuk="' + b.id + '">+ Stok</button>' +
         '<button class="btn ghost kecil" type="button" data-stok-keluar="' + b.id + '">− Stok</button>' +
-        '<button class="btn ghost kecil" type="button" data-ubah-bahan="' + b.id + '">Ubah</button>' +
+        '<button class="btn ghost kecil hanya-manajer" type="button" data-ubah-bahan="' + b.id + '">Ubah</button>' +
         '<button class="btn merah kecil" type="button" data-hapus-bahan="' + b.id + '">Hapus</button>' +
         "</div></td></tr>";
     }).join("");
@@ -1089,6 +1534,7 @@
   $("filterBahan").addEventListener("change", renderBahan);
 
   function bukaFormBahan(bahanLama) {
+    if (!bisa("kelola_resep")) { toast("Hanya Admin atau Manajer yang bisa mengelola bahan baku."); return; }
     var satuanOpsi = ["g", "ml", "pcs", "butir", "lembar"].map(function (s) {
       return '<option value="' + s + '"' + (bahanLama && bahanLama.satuan === s ? " selected" : "") + ">" + s + "</option>";
     }).join("");
@@ -1116,13 +1562,26 @@
       if (!(harga > 0)) { toast("Harga beli harus lebih dari 0."); return; }
       if (!(stokMin >= 0)) { toast("Stok minimum harus 0 atau lebih."); return; }
       if (bahanLama) {
-        bahanLama.nama = nama; bahanLama.satuan = satuan; bahanLama.kat = kat; bahanLama.harga = harga; bahanLama.stokMin = stokMin;
+        var hargaLama = bahanLama.harga;
+        bahanLama.nama = nama; bahanLama.satuan = satuan; bahanLama.kat = kat; bahanLama.stokMin = stokMin;
+        if (hargaLama > 0 && Math.abs(harga - hargaLama) / hargaLama > 0.25) {
+          buatPersetujuan("ubah_harga_bahan", { bahanId: bahanLama.id, hargaBaru: harga, hargaLama: hargaLama },
+            "Ubah harga pokok " + nama + ": " + rupiah(hargaLama) + " → " + rupiah(harga) + " per " + satuan + " (" + (harga > hargaLama ? "naik" : "turun") + " " + persen(Math.abs(harga - hargaLama) / hargaLama * 100) + ").");
+          saveState();
+          tutupModal();
+          renderSemua();
+          toast("Perubahan harga pokok di atas 25% — diajukan ke Persetujuan. Perubahan lain sudah disimpan.");
+          return;
+        }
+        bahanLama.harga = harga;
+        catatAudit("bahan", "Bahan " + nama + " diperbarui (harga " + rupiah(harga) + " / " + satuan + ").");
         toast("Bahan diperbarui.");
       } else {
         var stok = Number($("fbStok").value);
         if (!(stok >= 0)) { toast("Stok awal harus 0 atau lebih."); return; }
-        if (state.bahan.some(function (x) { return x.nama.toLowerCase() === nama.toLowerCase(); })) { toast("Bahan dengan nama itu sudah ada."); return; }
-        state.bahan.push({ id: state.seqBahan++, nama: nama, satuan: satuan, stok: stok, stokMin: stokMin, harga: harga, kat: kat });
+        if (bahanAktif().some(function (x) { return x.nama.toLowerCase() === nama.toLowerCase(); })) { toast("Bahan dengan nama itu sudah ada di outlet ini."); return; }
+        state.bahan.push({ id: state.seqBahan++, nama: nama, satuan: satuan, stok: stok, stokMin: stokMin, harga: harga, kat: kat, outlet: outletAktif() });
+        catatAudit("bahan", "Bahan baru " + nama + " ditambahkan (" + namaOutlet(outletAktif()) + ", stok " + fmtAngka(stok) + " " + satuan + ").");
         toast("Bahan baru ditambahkan.");
       }
       saveState();
@@ -1134,7 +1593,7 @@
 
   function catatMutasi(bahanId, jenis, jumlah, keterangan) {
     var b = cariBahan(bahanId);
-    state.mutasi.unshift({ id: state.seqMutasi++, bahanId: bahanId, jenis: jenis, jumlah: jumlah, tanggal: new Date().toISOString(), keterangan: keterangan, nilai: Math.round(jumlah * (b ? b.harga : 0)) });
+    state.mutasi.unshift({ id: state.seqMutasi++, bahanId: bahanId, jenis: jenis, jumlah: jumlah, tanggal: new Date().toISOString(), keterangan: keterangan, nilai: Math.round(jumlah * (b ? b.harga : 0)), outlet: outletAktif() });
   }
   function bukaFormStok(bahanId, arah) {
     var b = cariBahan(bahanId);
@@ -1155,6 +1614,7 @@
       if (!masuk && jumlah > b.stok) { toast("Stok tidak cukup. Stok " + b.nama + " hanya " + fmtAngka(b.stok) + " " + b.satuan + "."); return; }
       b.stok = masuk ? b.stok + jumlah : b.stok - jumlah;
       catatMutasi(b.id, masuk ? "masuk" : "keluar", jumlah, ket);
+      catatAudit("bahan", "Stok " + b.nama + " " + (masuk ? "masuk +" : "keluar -") + fmtAngka(jumlah) + " " + b.satuan + " (" + ket + ").");
       saveState();
       tutupModal();
       renderSemua();
@@ -1163,6 +1623,18 @@
   }
 
   document.addEventListener("click", function (e) {
+    var btnHapusProd = e.target.closest("[data-hapus-produksi]");
+    if (btnHapusProd) {
+      var pr = state.produksi.find(function (x) { return x.id === Number(btnHapusProd.getAttribute("data-hapus-produksi")); });
+      if (!pr) return;
+      var rPr = cariResep(pr.resepId);
+      var mPr = rPr ? cariMenu(rPr.menuId) : null;
+      tanyaKonfirmasi("Ajukan hapus produksi", "Ajukan penghapusan catatan produksi " + pr.no + " (" + (mPr ? mPr.nama : "") + " × " + pr.jumlah + " porsi)? Bila disetujui, stok bahan yang terpakai dikembalikan. Penghapusan baru berlaku bila disetujui Admin atau Manajer.", function () {
+        buatPersetujuan("hapus_produksi", { produksiId: pr.id, no: pr.no }, "Hapus produksi " + pr.no + " — " + (mPr ? mPr.nama : "") + " × " + pr.jumlah + " porsi, biaya bahan " + rupiah(pr.totalBiaya) + " (stok bahan dikembalikan).");
+        toast("Penghapusan produksi diajukan ke Persetujuan.");
+      });
+      return;
+    }
     var btnMasuk = e.target.closest("[data-stok-masuk]");
     if (btnMasuk) { bukaFormStok(Number(btnMasuk.getAttribute("data-stok-masuk")), "masuk"); return; }
     var btnKeluar = e.target.closest("[data-stok-keluar]");
@@ -1179,11 +1651,9 @@
         toast("Tidak bisa hapus: " + b.nama + " dipakai di resep " + namaMenu + ". Hapus dari resep dulu.");
         return;
       }
-      tanyaKonfirmasi("Hapus bahan", "Hapus bahan " + b.nama + " dari daftar?", function () {
-        state.bahan = state.bahan.filter(function (x) { return x.id !== b.id; });
-        saveState();
-        renderSemua();
-        toast("Bahan " + b.nama + " dihapus.");
+      tanyaKonfirmasi("Ajukan hapus bahan", "Ajukan penghapusan bahan " + b.nama + " ke Persetujuan? Penghapusan baru berlaku bila disetujui Admin atau Manajer.", function () {
+        buatPersetujuan("hapus_bahan", { bahanId: b.id }, "Hapus bahan " + b.nama + " (stok " + fmtAngka(b.stok) + " " + b.satuan + ", harga " + rupiah(b.harga) + " / " + b.satuan + ").");
+        toast("Penghapusan bahan diajukan ke Persetujuan.");
       });
     }
   });
@@ -1202,18 +1672,19 @@
   function renderProduksi() {
     var sel = $("prodResep");
     var nilai = sel.value;
-    sel.innerHTML = state.resep.map(function (r) {
+    sel.innerHTML = resepAktif().map(function (r) {
       var m = cariMenu(r.menuId);
       return '<option value="' + r.id + '">' + esc(m ? m.nama : "?") + " — biaya " + rupiah(biayaResep(r)) + "/porsi</option>";
     }).join("");
     if (nilai && cariResep(Number(nilai))) sel.value = nilai;
     renderRincianProduksi();
-    var daftar = state.produksi.slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+    var daftar = produksiAktif().slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
     $("riwayatProduksi").innerHTML = daftar.length ? daftar.slice(0, 20).map(function (p) {
       var r = cariResep(p.resepId);
       var m = r ? cariMenu(r.menuId) : null;
       return '<div class="item-bar"><div><div class="nm">' + p.no + " · " + esc(m ? m.nama : "?") + " × " + p.jumlah + ' porsi</div>' +
         '<div class="dt">' + tglDari(p.tanggal) + " · Biaya bahan " + rupiah(p.totalBiaya) + "</div></div>" +
+        '<div class="aksi"><button class="btn merah kecil" type="button" data-hapus-produksi="' + p.id + '">Hapus</button></div>' +
         '<div class="harga">' + rupiah(p.totalBiaya) + "</div></div>";
     }).join("") : '<p class="kosong">Belum ada produksi. Produksi pertama Anda akan tercatat di sini.</p>';
   }
@@ -1250,18 +1721,19 @@
       return;
     }
     var m = cariMenu(k.resep.menuId);
+    var no = "PRD-" + String(state.seqProduksi).padStart(3, "0");
     k.butuh.forEach(function (x) {
       if (!x.bahan) return;
       x.bahan.stok -= x.perlu;
-      catatMutasi(x.bahan.id, "produksi", x.perlu, "Produksi " + (m ? m.nama : "") + " × " + jumlah);
+      catatMutasi(x.bahan.id, "produksi", x.perlu, no + " " + (m ? m.nama : "") + " × " + jumlah);
     });
-    var no = "PRD-" + String(state.seqProduksi).padStart(3, "0");
     state.produksi.push({
-      id: state.seqProduksi, no: no, resepId: resepId, jumlah: jumlah,
+      id: state.seqProduksi, no: no, resepId: resepId, jumlah: jumlah, outlet: outletAktif(),
       tanggal: new Date().toISOString(), totalBiaya: k.totalBiaya,
       pakai: k.butuh.map(function (x) { return { b: x.bahan.id, j: x.perlu }; })
     });
     state.seqProduksi++;
+    catatAudit("produksi", "Produksi " + no + ": " + (m ? m.nama : "") + " × " + jumlah + " porsi, biaya bahan " + rupiah(k.totalBiaya) + " (" + namaOutlet(outletAktif()) + ").");
     saveState();
     renderSemua();
     toast("Produksi " + no + " berhasil: " + (m ? m.nama : "") + " × " + jumlah + " porsi, biaya bahan " + rupiah(k.totalBiaya) + ".");
@@ -1269,7 +1741,7 @@
 
   // ---------- Biaya Porsi ----------
   function renderBiaya() {
-    var baris = state.items.map(function (m) {
+    var baris = itemsAktif().map(function (m) {
       var r = cariResepByMenu(m.id);
       var biaya = r ? biayaResep(r) : null;
       var margin = biaya == null ? null : m.harga - biaya;
@@ -1303,7 +1775,7 @@
     } else if (periode === "7hari") {
       batas = new Date(kini.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
-    var daftar = state.produksi.filter(function (p) {
+    var daftar = produksiAktif().filter(function (p) {
       return !batas || new Date(p.tanggal) >= batas;
     });
     var totalPorsi = daftar.reduce(function (a, p) { return a + p.jumlah; }, 0);
@@ -1329,7 +1801,7 @@
           '<td class="angka">' + fmtAngka(x.jumlah) + " " + esc(x.bahan.satuan) + "</td>" +
           '<td class="angka">' + rupiah(x.biaya) + "</td></tr>";
       }).join("") : '<tr><td colspan="3" class="kosong">Tidak ada pemakaian bahan pada periode ini.</td></tr>');
-    var mutasi = state.mutasi.filter(function (x) { return x.jenis === "masuk" || x.jenis === "keluar"; })
+    var mutasi = state.mutasi.filter(function (x) { return (x.outlet || "pusat") === outletAktif() && (x.jenis === "masuk" || x.jenis === "keluar"); })
       .slice().sort(function (a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
     $("riwayatMutasi").innerHTML = mutasi.length ? mutasi.slice(0, 20).map(function (x) {
       var b = cariBahan(x.bahanId);
@@ -1338,14 +1810,127 @@
         '<div class="dt">' + tglDari(x.tanggal) + " · " + esc(x.keterangan || "") + "</div></div>" +
         '<div class="harga">' + rupiah(x.nilai || 0) + "</div></div>";
     }).join("") : '<p class="kosong">Belum ada mutasi stok masuk/keluar.</p>';
+    renderRingkasanOutlet();
   }
   $("lapPeriode").addEventListener("change", renderLaporan);
 
+  // ---------- Persetujuan ----------
+  function renderPersetujuan() {
+    var box = $("daftarPersetujuan");
+    var box2 = $("daftarPersetujuanSelesai");
+    if (!box || !box2) { return; }
+    var menunggu = state.persetujuan.filter(function (a) { return a.status === "menunggu"; });
+    var selesai = state.persetujuan.filter(function (a) { return a.status !== "menunggu"; }).slice(0, 10);
+    var bolehPutus = bisa("putuskan");
+    if (!menunggu.length) {
+      box.innerHTML = '<p class="kosong">Tidak ada permintaan menunggu. Hapus resep, hapus bahan baku, ubah harga pokok di atas 25%, dan hapus catatan produksi akan muncul di sini.</p>';
+    } else {
+      box.innerHTML = menunggu.map(function (a) {
+        return '<div class="item-bar" style="align-items:flex-start"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana st-menunggu">Menunggu</span></div>' +
+          '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+          '<div class="dt">Diajukan ' + esc(String(a.dibuatPada || "").replace("T", " ").slice(0, 16)) + " oleh " + esc(a.dibuatOleh) + " · " + esc(namaOutlet(a.outlet)) + "</div></div>" +
+          '<div style="display:flex;gap:6px"><button class="btn kecil hijau" type="button" data-putus="ya" data-id="' + a.id + '"' + (bolehPutus ? "" : " disabled") + '>Setujui</button>' +
+          '<button class="btn kecil merah" type="button" data-putus="tidak" data-id="' + a.id + '"' + (bolehPutus ? "" : " disabled") + ">Tolak</button></div></div>";
+      }).join("");
+    }
+    if (!selesai.length) {
+      box2.innerHTML = '<p class="kosong">Belum ada keputusan.</p>';
+    } else {
+      box2.innerHTML = selesai.map(function (a) {
+        return '<div class="item-bar"><div><div class="nm">#' + a.id + " · " + esc(labelTipePersetujuan(a.tipe)) + ' <span class="lencana ' + (a.status === "disetujui" ? "st-disetujui" : "st-ditolak") + '">' + (a.status === "disetujui" ? "Disetujui" : "Ditolak") + "</span></div>" +
+          '<div class="dt">' + esc(a.ringkasan || "") + "</div>" +
+          '<div class="dt">Diputuskan oleh ' + esc(a.diputuskanOleh || "-") + " · " + esc(String(a.diputuskanPada || "").replace("T", " ").slice(0, 16)) + "</div></div></div>";
+      }).join("");
+    }
+    box.querySelectorAll("[data-putus]").forEach(function (b) {
+      b.addEventListener("click", function () { putuskanPersetujuan(Number(b.getAttribute("data-id")), b.getAttribute("data-putus") === "ya"); });
+    });
+  }
+
+  // ---------- Audit Log ----------
+  function renderAudit() {
+    var box = $("daftarAudit");
+    if (!box) { return; }
+    var fu = $("filterAuditUser");
+    if (fu) {
+      var pengguna = [];
+      state.audit.forEach(function (a) { if (pengguna.indexOf(a.user) === -1) { pengguna.push(a.user); } });
+      var nilai = fu.value;
+      fu.innerHTML = '<option value="">Semua pengguna</option>' + pengguna.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + "</option>"; }).join("");
+      fu.value = nilai;
+    }
+    var fa = $("filterAuditAksi").value;
+    var list = state.audit.filter(function (a) {
+      if (fu && fu.value && a.user !== fu.value) { return false; }
+      if (fa && a.aksi !== fa) { return false; }
+      return true;
+    }).slice(0, 100);
+    if (!list.length) { box.innerHTML = '<p class="kosong">Belum ada catatan audit pada filter ini.</p>'; return; }
+    box.innerHTML = '<table class="tabel-harga"><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Outlet</th><th>Aksi</th><th>Detail</th></tr>' +
+      list.map(function (a) {
+        return "<tr><td>" + esc(String(a.waktu || "").replace("T", " ").slice(0, 19)) + "</td><td>" + esc(a.user) + "</td><td>" + esc(a.peran) + "</td><td>" + esc(namaOutlet(a.outlet)) + "</td><td>" + esc(a.aksi) + "</td><td>" + esc(a.detail) + "</td></tr>";
+      }).join("") + "</table>";
+  }
+  $("filterAuditUser").addEventListener("change", renderAudit);
+  $("filterAuditAksi").addEventListener("change", renderAudit);
+
+  // ---------- Ringkasan per outlet ----------
+  function renderRingkasanOutlet() {
+    var t = $("ringkasanOutlet");
+    if (!t) { return; }
+    var kunci = hariIniKey();
+    var rows = (state.outlet || []).map(function (c) {
+      var resep = state.resep.filter(function (r) { return (r.outlet || "pusat") === c.id; }).length;
+      var bahan = state.bahan.filter(function (b) { return (b.outlet || "pusat") === c.id; });
+      var prod = state.produksi.filter(function (p) { return (p.outlet || "pusat") === c.id; });
+      var porsiHariIni = prod.filter(function (p) { return p.tanggal.slice(0, 10) === kunci; }).reduce(function (a, p) { return a + p.jumlah; }, 0);
+      var nilai = bahan.reduce(function (a, b) { return a + b.stok * b.harga; }, 0);
+      return "<tr><td>" + esc(c.nama) + "</td><td>" + resep + "</td><td>" + bahan.length + "</td><td>" + prod.length + "</td><td>" + porsiHariIni + "</td><td>" + rupiah(nilai) + "</td></tr>";
+    }).join("");
+    t.innerHTML = '<table class="tabel-harga"><tr><th>Outlet</th><th>Resep</th><th>Bahan Baku</th><th>Produksi</th><th>Porsi Hari Ini</th><th>Nilai Stok</th></tr>' + rows + "</table>";
+  }
+
+  // ---------- Backup JSON & Pulihkan ----------
+  $("btnBackupJson").addEventListener("click", function () {
+    var paket = { aplikasi: "Manajemen Resep & Bahan Baku", versi: "v1", dieksporPada: new Date().toISOString(), data: state, pengguna: getUsers() };
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" }));
+    a.download = "backup-manajemen-resep.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    catatAudit("ekspor", "Backup JSON diunduh.");
+    toast("Backup JSON diunduh.");
+  });
+  $("filePulihkan").addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    if (!f) { return; }
+    if (!butuh("pulihkan", "Hanya Admin atau Manajer yang bisa memulihkan data.")) { this.value = ""; return; }
+    var input = this;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var paket = JSON.parse(rd.result);
+        var d = paket.data || paket;
+        if (!d || !Array.isArray(d.bahan) || !Array.isArray(d.resep)) { toast("File backup tidak valid."); return; }
+        state = normalisasiDb(d);
+        if (Array.isArray(paket.pengguna) && paket.pengguna.length) { users = paket.pengguna.map(normalisasiPengguna); saveUsers(); }
+        saveState();
+        resepTerpilih = null;
+        catatAudit("sistem", "Data dipulihkan dari file backup JSON.");
+        renderSemua(); toast("Data dipulihkan dari backup.");
+      } catch (err) { toast("File backup tidak bisa dibaca."); }
+    };
+    rd.readAsText(f);
+    input.value = "";
+  });
+
   // ---------- Reset data ----------
   $("btnResetData").addEventListener("click", function () {
+    if (!butuh("reset", "Hanya Admin atau Manajer yang bisa mengembalikan data contoh.")) return;
     tanyaKonfirmasi("Kembalikan data contoh", "Hapus semua perubahan dan kembalikan data contoh Warung Kopi Oyen?", function () {
       try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* abaikan */ }
       state = seedState();
+      catatAudit("sistem", "Data contoh dikembalikan (oleh " + (currentUser ? currentUser.username : "sistem") + ").");
       saveState();
       resepTerpilih = null;
       renderSemua();
@@ -1355,20 +1940,32 @@
 
   // ---------- Init ----------
   function renderSemua() {
+    isiSelectOutlet();
+    document.querySelectorAll(".outlet-nama").forEach(function (el) { el.textContent = namaOutlet(outletAktif()); });
     renderDashboard();
     renderResep();
     renderBahan();
     renderProduksi();
     renderBiaya();
     renderLaporan();
+    renderPersetujuan();
+    renderAudit();
+    perbaruiBadge();
     if (resepTerpilih) renderDetailResep(resepTerpilih);
   }
   $("tanggalHari").textContent = tanggalHariIni();
-  loadState();
-  loadUsers();
-  pulihkanSesi();
-  terapkanSesi();
-  renderSemua();
+  // Boot asinkron: siapkan kunci enkripsi, muat dari IndexedDB dulu (dengan
+  // migrasi sekali dari localStorage lama), baru render.
+  siapkanKripto().then(muatState).then(muatUsers).then(function () {
+    terapkanSesi();
+    pulihkanSesi();
+    renderSemua();
+    window.__mrSiap = true;
+  }).catch(function () {
+    terapkanSesi();
+    renderSemua();
+    window.__mrSiap = true;
+  });
 })();
 </script>
 

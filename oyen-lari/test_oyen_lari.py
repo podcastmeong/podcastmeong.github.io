@@ -17,6 +17,7 @@ WAJIB = [
     "Oyen Lari", "localStorage", "oyenLari.rekor", "Kembali ke Game",
     "Harga menyusul", "Spasi", "500 m", "3 nyawa", "Suara",
     "lambat", "normal", "cepat", "Demo web",
+    "burung", "Perisai", "Statistik", "oyenLari.statistik",
 ]
 DILARANG = ["Rp149.000", "Rp19.900", "Rp49.900", "Rp99.900", "http://", "https://cdn",
             "fonts.googleapis", "<script src="]
@@ -131,6 +132,57 @@ const skorAkhir = T.status().skor;
 T.tabrak();
 check("game over saat nyawa 0", T.status().status === "selesai");
 check("rekor tersimpan di localStorage", store["oyenLari.rekor"] === String(Math.max(skorAkhir, 0)) && T.status().rekor === skorAkhir);
+
+console.log("RINGKASAN lolos=" + pass + " gagal=" + fail);
+
+// --- FITUR BARU 25 Nov: burung terbang ---
+T.mulai();
+T.buatBurung();
+const b = T.rintanganTerakhir();
+check("burung: jenis burung", b && b.jenis === "burung");
+check("burung: terbang di ketinggian lompatan (y=174)", b && b.y === 174 && b.h === 20);
+check("burung: dasar burung di atas kepala Oyen berdiri (194 < 222)", b && (b.y + b.h) < 222);
+const nyawaSebelumBurung = T.status().nyawa;
+T.tambahBurungDiOyen(); // burung di ketinggian spawn, tepat di atas Oyen
+T.langkah(1);
+check("burung: lari di bawah burung tidak kena tabrakan", T.status().nyawa === nyawaSebelumBurung);
+T.tambahRintanganDiOyen("burung"); // burung menabrak kotak Oyen (simulasi lompat ke burung)
+T.langkah(1);
+check("burung: lompat ke burung mengurangi nyawa", T.status().nyawa === nyawaSebelumBurung - 1);
+
+// --- FITUR BARU 25 Nov: perisai ---
+T.mulai();
+check("perisai: awal tidak punya perisai", T.status().perisai === false);
+T.tambahPerisaiDiOyen();
+T.langkah(1);
+check("perisai: ambil item perisai mengaktifkan perisai", T.status().perisai === true);
+check("perisai: HUD menampilkan perisai", els["perisai"] && els["perisai"].textContent.indexOf("🛡️") >= 0);
+const nyawaPerisai = T.status().nyawa;
+T.tambahRintanganDiOyen("kaleng");
+T.langkah(1);
+check("perisai: tabrakan dengan perisai tidak mengurangi nyawa", T.status().nyawa === nyawaPerisai);
+check("perisai: perisai habis setelah menahan satu tabrakan", T.status().perisai === false);
+T.langkah(100); // tunggu kebal sementara habis (1,5 dtk)
+T.tambahRintanganDiOyen("kaleng");
+T.langkah(1);
+check("perisai: tabrakan tanpa perisai mengurangi nyawa", T.status().nyawa === nyawaPerisai - 1);
+T.mulai();
+check("perisai: mulai baru mereset perisai", T.status().perisai === false);
+
+// --- FITUR BARU 25 Nov: statistik lari tersimpan ---
+const stat0 = T.statistik();
+T.mulai();
+T.tambahKoin(); T.tambahKoin();
+T.langkah(60);
+T.akhiri();
+const stat1 = T.statistik();
+check("statistik: jumlah lari bertambah 1", stat1.lari === stat0.lari + 1);
+check("statistik: total jarak bertambah", stat1.jarak > stat0.jarak);
+check("statistik: total ikan bertambah 2", stat1.ikan === stat0.ikan + 2);
+let statTersimpan = null;
+try { statTersimpan = JSON.parse(store["oyenLari.statistik"] || "null"); } catch (e) {}
+check("statistik: tersimpan di localStorage", !!statTersimpan && statTersimpan.lari === stat1.lari);
+check("statistik: tampil di layar awal", els["teksStatistik"] && els["teksStatistik"].textContent.indexOf("Statistik") >= 0);
 
 console.log("RINGKASAN lolos=" + pass + " gagal=" + fail);
 process.exit(fail ? 1 : 0);

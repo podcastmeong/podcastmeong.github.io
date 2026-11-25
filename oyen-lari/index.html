@@ -90,17 +90,19 @@
     <div class="stat"><div class="label">Tahap</div><div class="value" id="level">1</div></div>
     <div class="stat"><div class="label">Nyawa</div><div class="value nyawa" id="nyawa">&hearts;&hearts;&hearts;</div></div>
   </div>
-  <div class="hud" style="grid-template-columns: repeat(2, 1fr);">
+  <div class="hud" style="grid-template-columns: repeat(3, 1fr);">
     <div class="stat"><div class="label">Ikan</div><div class="value" id="ikan">0</div></div>
     <div class="stat"><div class="label">Rekor</div><div class="value" id="rekor">0</div></div>
+    <div class="stat"><div class="label">Perisai</div><div class="value" id="perisai">&mdash;</div></div>
   </div>
 
   <div class="stage-wrap">
     <canvas id="papan" width="520" height="300"></canvas>
     <div class="overlay" id="overlayAwal">
       <h2>Siap lari?</h2>
-      <p>Oyen berlari sendiri. Tekan <b>Spasi</b> atau ketuk layar untuk melompat. Lompat kaleng dan tikus, ambil ikan sebanyak-banyaknya!</p>
+      <p>Oyen berlari sendiri. Tekan <b>Spasi</b> atau ketuk layar untuk melompat. Lompat kaleng dan tikus, awas burung terbang, ambil ikan dan perisai sebanyak-banyaknya!</p>
       <button class="btn orange btn-inline" id="btnMulai" type="button">Mulai Lari</button>
+      <p id="teksStatistik" style="font-size:12px">Belum ada statistik &mdash; lari pertamamu dimulai di sini!</p>
       <p style="font-size:12px">Spasi / &uarr; / ketuk layar = lompat &middot; P = jeda</p>
     </div>
     <div class="overlay hidden" id="overlayAkhir">
@@ -135,7 +137,10 @@
     <ul>
       <li>Oyen berlari otomatis. Tekan <kbd>Spasi</kbd>, <kbd>&uarr;</kbd>, atau ketuk layar untuk melompat.</li>
       <li>Lompati <b>kaleng</b> dan <b>tikus</b> &mdash; menabrak mengurangi 1 nyawa. Oyen punya 3 nyawa.</li>
+      <li>Hati-hati <b>burung</b> terbang rendah &mdash; jangan lompat saat burung lewat, lari saja di bawahnya.</li>
+      <li>Ambil <b>perisai</b> (&#x1F6E1;&#xFE0F;) untuk menahan satu tabrakan tanpa kehilangan nyawa.</li>
       <li>Ambil <b>ikan</b> (&plusmn;25 poin tiap ikan). Skor = jarak + bonus ikan.</li>
+      <li>Statistik larimu (total lari, jarak, dan ikan) tersimpan di perangkat ini &mdash; lihat di layar awal.</li>
       <li>Tiap <b>500 m</b> naik 1 tahap dan lari makin cepat. Tahap naik juga menambah kecepatan rintangan.</li>
       <li>Setelah menabrak, Oyen kebal sebentar (berkedip) &mdash; manfaatkan untuk lewat.</li>
       <li>Skor tertinggi tersimpan di perangkat ini (localStorage) &mdash; kalahkan rekormu sendiri!</li>
@@ -162,15 +167,19 @@
   var KUNCI_REKOR = "oyenLari.rekor";
   var KUNCI_SUARA = "oyenLari.suara";
   var KUNCI_SULIT = "oyenLari.kesulitan";
+  var KUNCI_STAT = "oyenLari.statistik";
 
   var status = "siap", skor = 0, jarak = 0, level = 1, nyawa = 3, ikan = 0;
   var rekor = 0, suaraNyala = true, kesulitan = "normal";
+  var punyaPerisai = false;
+  var statistik = { lari: 0, jarak: 0, ikan: 0 };
   var oyen = { x: 80, y: TANAH, vy: 0, diTanah: true, kebal: 0 };
-  var rintangan = [], koin = [], awan = [], rumput = [];
+  var rintangan = [], koin = [], perisaiItem = [], awan = [], rumput = [];
   var kecepatan = SULIT.normal, jarakSpawn = 0, frame = 0, raf = null, terakhir = 0;
   var elSkor = document.getElementById("skor"), elJarak = document.getElementById("jarak"),
       elLevel = document.getElementById("level"), elNyawa = document.getElementById("nyawa"),
       elIkan = document.getElementById("ikan"), elRekor = document.getElementById("rekor"),
+      elPerisai = document.getElementById("perisai"), elStatistik = document.getElementById("teksStatistik"),
       elAwal = document.getElementById("overlayAwal"), elAkhir = document.getElementById("overlayAkhir"),
       elJeda = document.getElementById("overlayJeda"), elSkorAkhir = document.getElementById("skorAkhir"),
       elTeksAkhir = document.getElementById("teksAkhir"), elTeksRekor = document.getElementById("teksRekor"),
@@ -179,7 +188,22 @@
   try { rekor = parseInt(localStorage.getItem(KUNCI_REKOR) || "0", 10) || 0; } catch (e) { rekor = 0; }
   try { suaraNyala = localStorage.getItem(KUNCI_SUARA) !== "mati"; } catch (e) { suaraNyala = true; }
   try { var s = localStorage.getItem(KUNCI_SULIT); if (SULIT[s]) kesulitan = s; } catch (e) {}
+  try {
+    var st = JSON.parse(localStorage.getItem(KUNCI_STAT) || "null");
+    if (st && typeof st === "object") {
+      statistik.lari = st.lari | 0; statistik.jarak = st.jarak | 0; statistik.ikan = st.ikan | 0;
+    }
+  } catch (e) {}
   elRekor.textContent = rekor;
+
+  function simpanStatistik() { try { localStorage.setItem(KUNCI_STAT, JSON.stringify(statistik)); } catch (e) {} }
+  function tampilStatistik() {
+    if (!elStatistik) return;
+    elStatistik.textContent = statistik.lari > 0
+      ? "Statistik: " + statistik.lari + " lari \u2022 " + statistik.jarak + " m \u2022 " + statistik.ikan + " ikan"
+      : "Belum ada statistik \u2014 lari pertamamu dimulai di sini!";
+  }
+  tampilStatistik();
 
   var audioCtx = null;
   function bunyi(freq, dur, tipe, vol) {
@@ -205,8 +229,15 @@
 
   function acak(min, maks) { return min + Math.random() * (maks - min); }
   function buatRintangan() {
-    var jenis = Math.random() < 0.6 ? "kaleng" : "tikus";
-    rintangan.push({ jenis: jenis, x: W + 20, y: jenis === "kaleng" ? TANAH - 34 : TANAH - 22, w: jenis === "kaleng" ? 30 : 34, h: jenis === "kaleng" ? 34 : 22, kena: false });
+    var ac = Math.random();
+    var jenis = ac < 0.5 ? "kaleng" : (ac < 0.8 ? "tikus" : "burung");
+    var y = jenis === "kaleng" ? TANAH - 34 : (jenis === "tikus" ? TANAH - 22 : TANAH - 78);
+    var w = jenis === "kaleng" ? 30 : (jenis === "tikus" ? 34 : 36);
+    var h = jenis === "kaleng" ? 34 : (jenis === "tikus" ? 22 : 20);
+    rintangan.push({ jenis: jenis, x: W + 20, y: y, w: w, h: h, kena: false });
+  }
+  function buatPerisai() {
+    perisaiItem.push({ x: W + 20, y: TANAH - 60, ambil: false });
   }
   function buatKoin() {
     var y = Math.random() < 0.5 ? TANAH - 70 : TANAH - 110;
@@ -251,7 +282,7 @@
 
     // spawn
     jarakSpawn += maju;
-    if (jarakSpawn > acak(260, 420)) { jarakSpawn = 0; buatRintangan(); if (Math.random() < 0.6) buatKoin(); }
+    if (jarakSpawn > acak(260, 420)) { jarakSpawn = 0; buatRintangan(); if (Math.random() < 0.6) buatKoin(); if (Math.random() < 0.10) buatPerisai(); }
     if (frame % 240 === 0) buatAwan();
     if (frame % 40 === 0) buatRumput();
 
@@ -260,9 +291,16 @@
       var r = rintangan[i]; r.x -= maju;
       if (r.x < -60) { rintangan.splice(i, 1); continue; }
       if (!r.kena && oyen.kebal <= 0 && tabrakan({ x: oyen.x, y: oyen.y - 30, w: 34, h: 30 }, r)) {
-        r.kena = true; nyawa--; oyen.kebal = 1.5;
-        bunyi(160, 0.25, "sawtooth", 0.12);
-        if (nyawa <= 0) { akhiriGame(); return; }
+        r.kena = true; oyen.kebal = 1.5;
+        if (punyaPerisai) {
+          punyaPerisai = false;
+          bunyi(300, 0.2, "square", 0.1);
+          setTimeout(function () { bunyi(520, 0.12, "triangle", 0.08); }, 90);
+        } else {
+          nyawa--;
+          bunyi(160, 0.25, "sawtooth", 0.12);
+          if (nyawa <= 0) { akhiriGame(); return; }
+        }
       }
     }
     for (var j = koin.length - 1; j >= 0; j--) {
@@ -272,6 +310,15 @@
       if (dx * dx + dy * dy < 32 * 32) {
         koin.splice(j, 1); ikan++; skor = hitungSkor(jarak, ikan);
         bunyi(880, 0.1, "triangle", 0.09); setTimeout(function () { bunyi(1170, 0.1, "triangle", 0.08); }, 70);
+      }
+    }
+    for (var p = perisaiItem.length - 1; p >= 0; p--) {
+      var pi = perisaiItem[p]; pi.x -= maju;
+      if (pi.x < -30) { perisaiItem.splice(p, 1); continue; }
+      var pdx = (oyen.x + 17) - pi.x, pdy = (oyen.y - 15) - pi.y;
+      if (pdx * pdx + pdy * pdy < 32 * 32) {
+        perisaiItem.splice(p, 1); punyaPerisai = true;
+        bunyi(660, 0.12, "triangle", 0.09); setTimeout(function () { bunyi(990, 0.12, "triangle", 0.08); }, 80);
       }
     }
     for (var a = awan.length - 1; a >= 0; a--) { awan[a].x -= awan[a].v + maju * 0.2; if (awan[a].x < -80) awan.splice(a, 1); }
@@ -302,12 +349,18 @@
     // koin ikan
     ctx.font = "26px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     koin.forEach(function (k) { ctx.fillText("\uD83D\uDC1F", k.x, k.y); });
+    // perisai
+    perisaiItem.forEach(function (p) { ctx.fillText("\uD83D\uDEE1\uFE0F", p.x, p.y); });
     // rintangan
     rintangan.forEach(function (r) {
       if (r.jenis === "kaleng") {
         ctx.fillStyle = "#c8d4de"; ctx.fillRect(r.x, r.y, r.w, r.h);
         ctx.fillStyle = "#8fa3b3"; ctx.fillRect(r.x, r.y, r.w, 5); ctx.fillRect(r.x, r.y + r.h - 5, r.w, 5);
         ctx.font = "18px sans-serif"; ctx.fillText("\uD83D\uDC1F", r.x + 15, r.y + 17);
+      } else if (r.jenis === "burung") {
+        ctx.font = "26px sans-serif";
+        var kepak = Math.sin(frame * 0.5 + r.x * 0.05) * 3;
+        ctx.fillText("\uD83D\uDC26", r.x + 18, r.y + 12 + kepak);
       } else {
         ctx.font = "26px sans-serif"; ctx.fillText("\uD83D\uDC2D", r.x + 17, r.y + 12);
       }
@@ -339,12 +392,13 @@
     elNyawa.innerHTML = "&hearts;".repeat(Math.max(0, nyawa)) + "<span style='opacity:.25'>" + "&hearts;".repeat(Math.max(0, 3 - nyawa)) + "</span>";
     elIkan.textContent = ikan;
     elRekor.textContent = rekor;
+    elPerisai.textContent = punyaPerisai ? "\uD83D\uDEE1\uFE0F" : "\u2014";
   }
 
   function mulaiGame() {
-    skor = 0; jarak = 0; level = 1; nyawa = 3; ikan = 0;
+    skor = 0; jarak = 0; level = 1; nyawa = 3; ikan = 0; punyaPerisai = false;
     oyen.y = TANAH; oyen.vy = 0; oyen.diTanah = true; oyen.kebal = 0;
-    rintangan = []; koin = []; awan = []; rumput = []; jarakSpawn = 0; frame = 0;
+    rintangan = []; koin = []; perisaiItem = []; awan = []; rumput = []; jarakSpawn = 0; frame = 0;
     for (var i = 0; i < 3; i++) buatAwan();
     status = "main";
     elAwal.classList.add("hidden"); elAkhir.classList.add("hidden"); elJeda.classList.add("hidden");
@@ -359,6 +413,8 @@
     status = "selesai";
     cancelAnimationFrame(raf);
     document.getElementById("btnJeda").disabled = true;
+    statistik.lari++; statistik.jarak += Math.floor(jarak); statistik.ikan += ikan;
+    simpanStatistik(); tampilStatistik();
     var rekorBaru = false;
     if (skor > rekor) { rekor = skor; rekorBaru = true; try { localStorage.setItem(KUNCI_REKOR, String(rekor)); } catch (e) {} }
     elSkorAkhir.textContent = skor;
@@ -422,7 +478,7 @@
   perbaruiHud(); gambar();
 
   window.OYEN_TEST = {
-    status: function () { return { status: status, skor: skor, jarak: Math.floor(jarak), level: level, nyawa: nyawa, ikan: ikan, rekor: rekor, kesulitan: kesulitan, kecepatan: kecepatanSekarang(), oyenY: oyen.y, diTanah: oyen.diTanah }; },
+    status: function () { return { status: status, skor: skor, jarak: Math.floor(jarak), level: level, nyawa: nyawa, ikan: ikan, rekor: rekor, kesulitan: kesulitan, kecepatan: kecepatanSekarang(), oyenY: oyen.y, diTanah: oyen.diTanah, perisai: punyaPerisai }; },
     mulai: mulaiGame,
     lompat: lompat,
     langkah: function (n) { for (var i = 0; i < n; i++) langkah(0.016); },
@@ -432,7 +488,18 @@
     hitungLevel: hitungLevel,
     hitungSkor: hitungSkor,
     kecepatanSekarang: kecepatanSekarang,
-    akhiri: akhiriGame
+    akhiri: akhiriGame,
+    statistik: function () { return { lari: statistik.lari, jarak: statistik.jarak, ikan: statistik.ikan }; },
+    beriPerisai: function () { punyaPerisai = true; perbaruiHud(); },
+    buatBurung: function () { rintangan.push({ jenis: "burung", x: W + 20, y: TANAH - 78, w: 36, h: 20, kena: false }); },
+    rintanganTerakhir: function () { var r = rintangan[rintangan.length - 1]; return r ? { jenis: r.jenis, x: r.x, y: r.y, w: r.w, h: r.h } : null; },
+    tambahBurungDiOyen: function () { rintangan.push({ jenis: "burung", x: oyen.x + 5, y: TANAH - 78, w: 36, h: 20, kena: false }); },
+    tambahRintanganDiOyen: function (jenis) {
+      var y = jenis === "kaleng" ? TANAH - 34 : (jenis === "tikus" ? TANAH - 22 : oyen.y - 40);
+      var h = jenis === "kaleng" ? 34 : (jenis === "tikus" ? 22 : 20);
+      rintangan.push({ jenis: jenis, x: oyen.x + 5, y: y, w: 36, h: h, kena: false });
+    },
+    tambahPerisaiDiOyen: function () { perisaiItem.push({ x: oyen.x + 17, y: oyen.y - 15, ambil: false }); }
   };
 })();
 </script>
